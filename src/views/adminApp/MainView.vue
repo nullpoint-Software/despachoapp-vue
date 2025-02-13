@@ -1,8 +1,9 @@
 <template>
     <div class="h-auto min-h-screen w-full bg-slate-200 text-slate-900 flex flex-col">
+        <!-- Navigation Bar -->
         <nav class="flex justify-between items-center p-2 bg-stone-50 shadow-lg">
             <div class="flex items-center space-x-2">
-                <button @click="menuOpen = true" class="md:hidden text-slate-900 text-2xl ml-4">
+                <button @click="menuOpen = true" class="md:hidden text-slate-900 text-2xl ml-4 cursor-pointer">
                     <i class="pi pi-bars"></i>
                 </button>
                 <img :src="mainImageSrc" alt="Company Logo" class="w-20 md:w-20" />
@@ -14,12 +15,11 @@
                 <Avatar v-tooltip.bottom="ProfileName" :image="profilePicture" shape="circle"/>
                 <span class="font-bold">{{ ProfileName }}</span>
                 <Divider  layout="vertical"></Divider>
-                <Button label="Logout" icon="pi pi-sign-out" class="flex-auto" severity="danger" text></Button>
+                <Button label="Logout" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text></Button>
             </div>
 
             <!-- Botón Menú en Móviles -->
-
-            <Drawer v-model:visible="menuOpen" header="Drawer">
+            <Drawer v-model:visible="menuOpen" header="Drawer" >
                 <template #header>
                     <img :src="logoTextImageSrc" alt="Company Logo" class=" w-60" />
                 </template>
@@ -42,6 +42,7 @@
                 </template>
             </Drawer>
         </nav>
+        <!-- Contenido -->
         <div class="flex flex-grow">
             <div class="hidden p-4 md:block container max-w-50 ml-0 p-2 bg-stone-50 ">
                 <MenuOptions></MenuOptions>
