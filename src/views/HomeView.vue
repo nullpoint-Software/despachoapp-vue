@@ -7,7 +7,7 @@
       <div class="flex items-center space-x-2">
         <img :src="mainImageSrc" alt="Company Logo" class="w-20" />
         <span class="text-lg font-bold text-amber-50"
-          >Despacho Contable Sanchez</span
+          >DESPACHO CONTABLE Y FISCAL SÁNCHEZ</span
         >
       </div>
       <div class="hidden md:flex text-amber-50 space-x-6">
@@ -27,7 +27,7 @@
       class="flex flex-col items-center justify-center text-center py-16 px-6 flex-grow bg-blue-500 text-white"
     >
       <h1 class="text-5xl font-extrabold drop-shadow-lg">
-        Despacho Contable Sánchez
+        DESPACHO CONTABLE Y FISCAL SÁNCHEZ
       </h1>
       <p class="max-w-3xl mt-6 text-lg leading-relaxed opacity-90">
         Soluciones estratégicas en
@@ -37,8 +37,8 @@
         >
         <br /><br />
         Atención personalizada con el
-        <span class="font-semibold">L.C.P. Antonio Sánchez</span> y un equipo
-        comprometido con tu tranquilidad financiera.
+        <span class="font-semibold">L.C.P. Antonio Sánchez Gutiérrez</span> y un
+        equipo comprometido con tu tranquilidad financiera.
       </p>
       <div class="mt-8">
         <button
@@ -82,30 +82,49 @@
 
     <!-- Footer -->
     <footer
-      class="flex flex-col w-full bg-blue-900 text-green-200 px-8 md:px-48 py-11 mt-0"
+      class="flex flex-col w-full h-fit bg-blue-900 text-gray-200 px-8 md:px-48 py-9"
     >
-      <div class="flex flex-col md:flex-row">
-        <div class="flex flex-col gap-2 justify-center md:w-[35%]">
-          <div class="flex items-center w-full gap-4">
-            <img :src="mainImageSrc" alt="Logo" class="w-20" />
-            <div class="text-xl text-green-200">Despacho Contable Sanchez</div>
-            <a href="#"
-              ><i class="pi pi-facebook text-xl" style="font-size: 1.5rem"></i
-            ></a>
+      <div class="flex flex-row items-center justify-between">
+        <!-- Logo, Nombre de la Empresa e Icono de Facebook -->
+        <div class="flex items-center gap-4 w-[35%]">
+          <img :src="mainImageSrc" alt="Logo" class="w-20" />
+          <div class="flex items-center gap-3">
+            <span class="text-lg md:text-xl font-semibold uppercase"
+              >Despacho Contable y Fiscal Sánchez</span
+            >
+            <a href="#" class="text-gray-300 hover:text-white">
+              <i class="pi pi-facebook text-2xl"></i>
+            </a>
           </div>
         </div>
-        <div class="flex flex-row md:w-[65%] justify-end gap-16 text-nowrap">
-          <div class="grid grid-cols-1 gap-12">
+
+        <!-- Sección de Contacto -->
+        <div class="flex flex-row w-[65%] justify-end gap-16 text-nowrap">
+          <div class="grid grid-cols-1 gap-0">
             <div class="flex flex-col gap-2">
-              <div class="font-bold uppercase text-green-400 pb-3">
+              <div class="font-bold uppercase text-gray-300 pb-3 text-lg">
                 Contacto
               </div>
-              <p>Lic. Antonio Sanchez</p>
-              <a class="hover:underline">Correo@gmail.com</a>
-              <a href="#xxx" class="hover:underline">73727737</a>
+              <p>L.C.P. Antonio Sánchez Gutiérrez</p>
+              <a
+                href="mailto:contador_sanchez@yahoo.com.mx"
+                class="hover:underline"
+              >
+                contador_sanchez@yahoo.com.mx
+              </a>
+              <a href="tel:3163720279" class="hover:underline">316 372 0279</a>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Línea divisoria -->
+      <div class="w-full border-t border-gray-400 my-8"></div>
+
+      <!-- Derechos reservados -->
+      <div class="text-center text-sm text-gray-300">
+        © 2025 Despacho Contable y Fiscal Sánchez - Todos los derechos
+        reservados.
       </div>
     </footer>
   </div>
