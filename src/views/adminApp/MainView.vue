@@ -12,14 +12,15 @@
                 </span> -->
             </div>
             <div class="hidden md:flex text-slate-900 space-x-3 items-center mr-4 ">
-                <Avatar v-tooltip.bottom="ProfileName" :image="profilePicture" shape="circle"/>
+                <Avatar v-tooltip.bottom="ProfileName" :image="profilePicture" shape="circle" />
                 <span class="font-bold">{{ ProfileName }}</span>
-                <Divider  layout="vertical"></Divider>
-                <Button label="Logout" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text></Button>
+                <Divider layout="vertical"></Divider>
+                <Button label="Logout" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger"
+                    text></Button>
             </div>
 
             <!-- Botón Menú en Móviles -->
-            <Drawer v-model:visible="menuOpen" header="Drawer" >
+            <Drawer v-model:visible="menuOpen" header="Drawer">
                 <template #header>
                     <img :src="logoTextImageSrc" alt="Company Logo" class=" w-60" />
                 </template>
@@ -42,16 +43,14 @@
                 </template>
             </Drawer>
         </nav>
-        <!-- Contenido -->
+        <!-- sidebar-->
         <div class="flex flex-grow">
             <div class="hidden p-4 md:block container max-w-50 ml-0 p-2 bg-stone-50 ">
-                <MenuOptions></MenuOptions>
+                <MenuOptions @closeMenu="menuOpen = false"></MenuOptions>
             </div>
-            <div class="shadow-md  p-4 m-5 bg-stone-100 h-full w-full">
-                <div class="font-bold text-2xl pl-2">Inicio</div>
-            </div>
+            <!-- Contenido -->
+             <RouterView/>
         </div>
-
     </div>
 </template>
 <script>
@@ -65,8 +64,9 @@ import Divider from "primevue/divider";
 import { Avatar } from "primevue";
 import profilePicture from "@/assets/img/havatar.jpg"
 import MenuOptions from "@/components/adminApp/MenuOptions.vue";
+import { RouterView } from "vue-router";
 export default {
-    components: { Drawer, Button, Avatar, Divider, MenuOptions },
+    components: { Drawer, Button, Avatar, Divider, MenuOptions, RouterView },
     setup() {
         const menuOpen = ref(false);
         const ProfileName = ref("Hachikuji Mayoi");
