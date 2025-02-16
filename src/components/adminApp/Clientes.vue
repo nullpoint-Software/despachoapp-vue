@@ -5,6 +5,5 @@
 </template>
 <script>
 import * as cs from '@/service/adminApp/clienteService';
-cs.default();
-cs.nigga();
+cs.default.setup()
 </script>

@@ -7,8 +7,6 @@ export default {
     }
 }
 
-export function nigga() {
-    console.log("nigga")
-}
+
 
 
