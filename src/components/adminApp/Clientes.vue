@@ -4,4 +4,6 @@
     </div>
 </template>
 <script>
+import * as cs from '@/service/adminApp/clienteService';
+cs.nigga();
 </script>
