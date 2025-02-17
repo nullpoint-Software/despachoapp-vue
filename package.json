@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "concurrently \"vite --host\" \"node ./src/server/server.js\"",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
@@ -13,6 +13,11 @@
   "dependencies": {
     "@primevue/themes": "^4.2.5",
     "@tailwindcss/vite": "^4.0.1",
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mysql": "^2.18.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.2.5",
     "tailwindcss": "^4.0.1",
@@ -26,6 +31,7 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitejs/plugin-vue-jsx": "^4.1.1",
     "@vue/tsconfig": "^0.7.0",
+    "concurrently": "^9.1.2",
     "npm-run-all2": "^7.0.2",
     "typescript": "~5.7.3",
     "vite": "^6.0.11",
