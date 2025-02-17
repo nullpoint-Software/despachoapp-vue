@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 dotenv.config();
 
-const serverip = String(process.env.VITE_API_SERVER_IP).replace("http://", "");
+const serverip = process.env.VITE_SQL_IP;
 const sqluser = process.env.VITE_SQL_USER;
 const sqlpass = process.env.VITE_SQL_PASS;
 const dbname = process.env.VITE_SQL_DB;
@@ -16,7 +16,7 @@ app.use(cors());
 
 
 const con = mysql.createConnection({
-  host: "192.168.1.39",
+  host: serverip,
   user: sqluser,
   password: sqlpass,
   database: dbname
