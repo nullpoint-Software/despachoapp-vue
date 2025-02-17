@@ -8,6 +8,7 @@ const serverip = process.env.VITE_API_SQL_IP;
 const sqluser = process.env.VITE_SQL_USER;
 const sqlpass = process.env.VITE_SQL_PASS;
 const dbname = process.env.VITE_SQL_DB;
+const sqlport = process.env.VITE_SQL_PORT;
 
 const app = express()
 const PORT = 5000
@@ -19,6 +20,7 @@ const con = mysql.createConnection({
   host: serverip,
   user: sqluser,
   password: sqlpass,
+  port: sqlport,
   database: dbname
 });
 con.connect(function (err) {
