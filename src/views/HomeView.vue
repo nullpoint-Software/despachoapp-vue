@@ -11,10 +11,15 @@
         </span>
       </div>
       <div class="hidden md:flex text-amber-50 space-x-6">
-        <a href="#" class="hover:text-blue-300">Inicio</a>
-        <a href="#" class="hover:text-blue-300">Contacto</a>
-        <a href="#" class="hover:text-blue-300">Sobre Nosotros</a>
-        <p></p>
+        <router-link to="/" class="hover:text-blue-300">Inicio</router-link>
+
+        <a href="#" @click.prevent="scrollToFooter" class="hover:text-blue-300"
+          >Contacto</a
+        >
+
+        <router-link to="/aboutus" class="hover:text-blue-300"
+          >Sobre Nosotros</router-link
+        >
       </div>
 
       <!-- Botón Menú en Móviles -->
@@ -33,15 +38,24 @@
         <button @click="menuOpen = false" class="self-end text-white text-2xl">
           <i class="pi pi-times"></i>
         </button>
-        <a href="#" class="text-white text-lg py-2 hover:text-blue-300"
-          >Inicio</a
+
+        <router-link to="/" class="text-white text-lg py-2 hover:text-blue-300"
+          >Inicio</router-link
         >
-        <a href="#" class="text-white text-lg py-2 hover:text-blue-300"
+
+        <a
+          href="#"
+          @click.prevent="scrollToFooter"
+          class="text-white text-lg py-2 hover:text-blue-300"
           >Contacto</a
         >
-        <a href="#" class="text-white text-lg py-2 hover:text-blue-300"
-          >Sobre Nosotros</a
+
+        <router-link
+          to="/aboutus"
+          class="text-white text-lg py-2 hover:text-blue-300"
+          >Sobre Nosotros</router-link
         >
+
         <button
           class="mt-4 bg-white px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-100"
         >
@@ -110,6 +124,7 @@
 
     <!-- Footer -->
     <footer
+      id="footer"
       class="flex flex-col w-full bg-blue-900 text-gray-200 px-6 md:px-48 py-9 text-center md:text-left"
     >
       <div
@@ -189,7 +204,15 @@ export default {
       },
     ]);
 
-    return { carouselItems, mainImageSrc, menuOpen };
+    // Función para hacer scroll hasta el footer
+    const scrollToFooter = () => {
+      const footer = document.getElementById("footer");
+      if (footer) {
+        footer.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+
+    return { carouselItems, mainImageSrc, menuOpen, scrollToFooter };
   },
 };
 </script>
