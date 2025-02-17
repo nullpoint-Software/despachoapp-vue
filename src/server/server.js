@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 dotenv.config();
 
-const serverip = process.env.VITE_SQL_IP;
+const serverip = process.env.VITE_API_SQL_IP;
 const sqluser = process.env.VITE_SQL_USER;
 const sqlpass = process.env.VITE_SQL_PASS;
 const dbname = process.env.VITE_SQL_DB;
