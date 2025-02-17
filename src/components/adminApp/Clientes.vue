@@ -3,7 +3,7 @@
         <div class="font-bold text-2xl pl-2">Clientes</div>
     </div>
 </template>
-<script>
+<script setup>
 import * as cs from '@/service/adminApp/clienteService';
-cs.default.setup()
+cs.getClientes();
 </script>
