@@ -12,14 +12,17 @@
         <Avatar v-tooltip.bottom="ProfileName" :image="profilePicture" shape="circle" />
         <span class="font-bold">{{ ProfileName }}</span>
         <Divider layout="vertical"></Divider>
-        <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text></Button>
+        <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger"
+          text></Button>
       </div>
     </nav>
 
     <!-- Menú Deslizante para Móviles -->
     <transition name="slide-fade">
       <div v-if="menuOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50" @click.self="toggleMenu">
-        <div class="w-64 bg-blue-800 text-white h-full flex flex-col p-6 transform transition-transform duration-300 ease-in-out" :class="{'-translate-x-full': !menuOpen, 'translate-x-0': menuOpen}">
+        <div
+          class="w-64 bg-blue-800 text-white h-full flex flex-col p-6 transform transition-transform duration-300 ease-in-out"
+          :class="{ '-translate-x-full': !menuOpen, 'translate-x-0': menuOpen }">
           <button @click="toggleMenu" class="self-end text-white text-2xl">
             <i class="pi pi-times"></i>
           </button>
@@ -34,8 +37,10 @@
               <Avatar :image="profilePicture" shape="circle" />
               <span class="font-bold">{{ ProfileName }}</span>
             </div>
-            <Button label="Cuenta" icon="pi pi-user" class="w-full text-white bg-blue-600 hover:bg-blue-700" outlined></Button>
-            <Button label="Cerrar sesión" icon="pi pi-sign-out" class="w-full bg-blue-600 hover:bg-blue-700" severity="danger" text></Button>
+            <Button label="Cuenta" icon="pi pi-user" class="w-full text-white bg-blue-600 hover:bg-blue-700"
+              outlined></Button>
+            <Button label="Cerrar sesión" icon="pi pi-sign-out" class="w-full bg-blue-600 hover:bg-blue-700"
+              severity="danger" text></Button>
           </div>
         </div>
       </div>
@@ -44,18 +49,18 @@
     <!-- Contenedor Principal -->
     <div class="flex flex-grow">
       <!-- Barra Lateral para Escritorio -->
-      <div class="hidden md:flex flex-col p-4 bg-blue-900 text-white w-16 hover:w-64 transition-all duration-300 ease-in-out relative group">
+      <div
+        class="hidden md:flex flex-col p-4 bg-blue-900 text-white w-16 hover:w-64 transition-all duration-300 ease-in-out relative group">
         <ul>
           <li v-for="item in menuItems" :key="item.name" class="flex items-center p-2 space-x-2">
             <i :class="item.icon"></i>
-            <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white menu-text">{{ item.name }}</span>
+            <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white menu-text">{{
+              item.name }}</span>
           </li>
         </ul>
       </div>
       <!-- Contenido Principal -->
-      <div class="flex-grow p-6">
-        <RouterView />
-      </div>
+      <RouterView />
     </div>
   </div>
 </template>
@@ -97,6 +102,7 @@ export default {
 .slide-fade-leave-active {
   transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+
 .slide-fade-enter-from,
 .slide-fade-leave-to {
   transform: translateX(-100%);
@@ -107,6 +113,7 @@ export default {
 .group:hover .menu-text {
   opacity: 1;
 }
+
 .menu-text {
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
