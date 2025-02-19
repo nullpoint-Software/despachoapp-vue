@@ -57,7 +57,7 @@
         >
 
         <button
-          class="mt-4 bg-white px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-100"
+          class="mt-4 bg-white px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-100" :onclick="goLogin"
         >
           Iniciar Sesión
         </button>
@@ -84,8 +84,8 @@
       </p>
       <div class="mt-8">
         <button
-          class="bg-white text-blue-700 font-semibold px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-lg shadow-md hover:bg-blue-100 transition duration-300"
-        >
+          class="bg-white text-blue-700 font-semibold px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-lg shadow-md hover:bg-blue-100 transition duration-300 cursor-pointer"
+          :onclick="goLogin">
           Iniciar Sesión
         </button>
       </div>
@@ -181,11 +181,13 @@ import carr1 from "@/assets/img/carrCont.jpg";
 import carr2 from "@/assets/img/carrPagReg.jpg";
 import carr3 from "@/assets/img/carrActiReg.jpg";
 import "primeicons/primeicons.css";
+import { useRouter } from "vue-router";
 
 export default {
   components: { Carousel },
   setup() {
     const menuOpen = ref(false);
+    const router = useRouter();
     const carouselItems = ref([
       {
         image: carr1,
@@ -212,7 +214,11 @@ export default {
       }
     };
 
-    return { carouselItems, mainImageSrc, menuOpen, scrollToFooter };
+    function goLogin(){
+      router.push('/login')
+    }
+
+    return { carouselItems, mainImageSrc, menuOpen, scrollToFooter, goLogin };
   },
 };
 </script>

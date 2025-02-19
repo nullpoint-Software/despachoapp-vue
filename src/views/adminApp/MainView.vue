@@ -13,7 +13,7 @@
         <span class="font-bold">{{ ProfileName }}</span>
         <Divider layout="vertical"></Divider>
         <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger"
-          text></Button>
+          text :onclick="logOut"></Button>
       </div>
     </nav>
 
@@ -40,7 +40,7 @@
             <Button label="Cuenta" icon="pi pi-user" class="w-full text-white bg-blue-600 hover:bg-blue-700"
               outlined></Button>
             <Button label="Cerrar sesión" icon="pi pi-sign-out" class="w-full bg-blue-600 hover:bg-blue-700"
-              severity="danger" text></Button>
+              severity="danger" text :onclick="logOut"></Button>
           </div>
         </div>
       </div>
@@ -74,11 +74,13 @@ import Divider from "primevue/divider";
 import Avatar from "primevue/avatar";
 import profilePicture from "@/assets/img/havatar.jpg";
 import { RouterView } from "vue-router";
+import { useRouter } from "vue-router";
 
 export default {
   components: { Button, Avatar, Divider, RouterView },
   setup() {
     const menuOpen = ref(false);
+    const router = useRouter();
     const ProfileName = ref("Hachikuji Mayoi");
     const menuItems = ref([
       { name: "Inicio", icon: "pi pi-home" },
@@ -91,7 +93,11 @@ export default {
       menuOpen.value = !menuOpen.value;
     };
 
-    return { mainImageSrc, menuOpen, profilePicture, ProfileName, menuItems, toggleMenu };
+    function logOut(){
+      router.push('/')
+    }
+
+    return { mainImageSrc, menuOpen, profilePicture, ProfileName, menuItems, toggleMenu, logOut };
   },
 };
 </script>

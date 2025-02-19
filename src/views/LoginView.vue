@@ -44,7 +44,7 @@
             v-model="email"
             type="email"
             class="w-full p-3 border rounded-md bg-white text-gray-900 focus:ring-2 focus:ring-blue-500"
-            placeholder="usuario@example.com"
+            placeholder="joseramirez@gmail.com"
             @input="createWave"
           />
         </div>
@@ -93,7 +93,7 @@
         <!-- Botón de inicio -->
         <button
           type="submit"
-          class="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition"
+          class="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition cursor-pointer" :onclick="goLogin"
         >
           Iniciar Sesión
         </button>
@@ -106,6 +106,9 @@
 import { ref } from "vue";
 import InputText from "primevue/inputtext";
 import mainImageSrc from "@/assets/img/logsymbolwhite.png";
+import { RouterLink } from "vue-router";
+import { useRouter } from "vue-router";
+
 
 export default {
   components: { InputText },
@@ -115,7 +118,7 @@ export default {
     const rememberMe = ref(false);
     const showPassword = ref(false);
     const waves = ref([]);
-
+    const router = useRouter();
     // Alternar visibilidad de la contraseña
     const togglePassword = () => {
       showPassword.value = !showPassword.value;
@@ -142,6 +145,10 @@ export default {
       });
     };
 
+    function goLogin(){
+      router.push('/app')
+    }
+
     return {
       email,
       password,
@@ -152,6 +159,7 @@ export default {
       togglePassword,
       waves,
       createWave,
+      goLogin,
     };
   },
 };
