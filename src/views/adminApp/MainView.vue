@@ -7,7 +7,10 @@
           <i class="pi pi-bars"></i>
         </button>
         <img :src="mainImageSrc" alt="Logo de la Empresa" class="w-20 md:w-20" />
+        <MenuOptions></MenuOptions>
       </div>
+        
+
       <div class="hidden md:flex text-white space-x-3 items-center mr-4">
         <Avatar v-tooltip.bottom="ProfileName" :image="profilePicture" shape="circle" />
         <span class="font-bold">{{ ProfileName }}</span>
@@ -75,9 +78,10 @@ import Avatar from "primevue/avatar";
 import profilePicture from "@/assets/img/havatar.jpg";
 import { RouterView } from "vue-router";
 import { useRouter } from "vue-router";
+import MenuOptions from "@/components/adminApp/MenuOptions.vue";
 
 export default {
-  components: { Button, Avatar, Divider, RouterView },
+  components: { Button, Avatar, Divider, RouterView, MenuOptions },
   setup() {
     const menuOpen = ref(false);
     const router = useRouter();

@@ -1,23 +1,24 @@
 <template>
-    <header class="flex font-semibold font-sans mb-2 ml-2">Opciones</header>
-    <PanelMenu :model="items">
-        <template #item="{ item }">
-            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="'/app/' + item.route" custom >
-                <a v-ripple class="flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-2"
-                    :href="href" @click="navigate; emit('closeMenu')" >
+
+    <div class="flex space-x-4 bg-blue-900 p-2 rounded-lg shadow-md">
+        <template v-for="item in items" :key="item.label">
+            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="'/app/' + item.route" custom>
+                <a v-ripple 
+                    class="flex items-center cursor-pointer text-slate-900 dark:text-surface-0 px-4 py-2 bg-white rounded-lg hover:bg-gray-200 transition"
+                    :href="href" @click="navigate; emit('closeMenu')">
                     <span :class="item.icon" />
                     <span class="ml-2">{{ item.label }}</span>
                 </a>
             </router-link>
-            <a v-else v-ripple class="flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-2"
+            <a v-else v-ripple 
+                class="flex items-center cursor-pointer text-slate-900 dark:text-surface-0 px-4 py-2 bg-white rounded-lg hover:bg-gray-200 transition"
                 :href="item.url" :target="item.target">
                 <span :class="item.icon" />
                 <span class="ml-2">{{ item.label }}</span>
                 <span v-if="item.items" class="pi pi-angle-down text-primary ml-auto" />
             </a>
         </template>
-    </PanelMenu>
-
+    </div>
 </template>
 
 <script setup>
