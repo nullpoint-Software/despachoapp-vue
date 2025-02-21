@@ -7,7 +7,6 @@
           <i class="pi pi-bars"></i>
         </button>
         <img :src="mainImageSrc" alt="Logo de la Empresa" class="w-20 md:w-20" />
-        <MenuOptions></MenuOptions>
       </div>
         
 
@@ -53,7 +52,7 @@
     <div class="flex flex-grow">
       <!-- Barra Lateral para Escritorio -->
       <div
-        class="hidden md:flex flex-col p-4 bg-blue-900 text-white w-16 hover:w-64 transition-all duration-300 ease-in-out relative group">
+        class="hidden md:flex flex-col p-4 bg-blue-700 text-white w-16 hover:w-64 transition-all duration-300 ease-in-out relative group">
         <ul>
           <li v-for="item in menuItems" :key="item.name" class="flex items-center p-2 space-x-2">
             <i :class="item.icon"></i>
@@ -78,19 +77,18 @@ import Avatar from "primevue/avatar";
 import profilePicture from "@/assets/img/havatar.jpg";
 import { RouterView } from "vue-router";
 import { useRouter } from "vue-router";
-import MenuOptions from "@/components/adminApp/MenuOptions.vue";
 
 export default {
-  components: { Button, Avatar, Divider, RouterView, MenuOptions },
+  components: { Button, Avatar, Divider, RouterView },
   setup() {
     const menuOpen = ref(false);
     const router = useRouter();
     const ProfileName = ref("Hachikuji Mayoi");
     const menuItems = ref([
       { name: "Inicio", icon: "pi pi-home" },
-      { name: "Perfil", icon: "pi pi-user" },
-      { name: "Configuración", icon: "pi pi-cog" },
-      { name: "Ayuda", icon: "pi pi-question" },
+      { name: "Tareas", icon: "pi pi-th-large" },
+      { name: "Clientes", icon: "pi pi-id-card" },
+      { name: "Pagos", icon: "pi pi-wallet" },
     ]);
 
     const toggleMenu = () => {

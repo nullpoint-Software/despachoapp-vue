@@ -6,6 +6,7 @@ import Aura from '@primevue/themes/aura';
 import App from './App.vue'
 import router from './router'
 import Tooltip from 'primevue/tooltip';
+import ToastService from 'primevue/toastservice';
 
 
 const app = createApp(App)
@@ -19,5 +20,6 @@ app.use(PrimeVue, {
         }
     }
 });
+app.use(ToastService); // Registra el ToastService globalmente
 app.mount('#app')
 app.directive('tooltip', Tooltip);
