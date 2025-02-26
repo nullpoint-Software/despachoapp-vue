@@ -1,19 +1,30 @@
 <template>
-  <!-- Contenedor principal sin cambios en margin o padding -->
-  <div
-    class="shadow-xl bg-transparent text-white w-full h-full flex flex-col"
-  >
-    <!-- Título principal -->
+  <!-- Contenedor principal de la vista con estilos globales -->
+  <div class="shadow-xl bg-transparent text-white w-full h-full flex flex-col">
+    <!-- Sección del título principal -->
     <div class="flex-auto font-extrabold text-2xl sm:text-4xl mb-6 text-center">
       <br />
       Clientes
     </div>
 
-    <!-- Contenedor para la tabla con overflow horizontal -->
-    <div
-      class="flex-grow w-full overflow-hidden overflow-x-auto rounded-xl shadow-lg"
-    >
-      <!-- DataTable sin cambios en margin o padding -->
+    <!-- Contenedor de la tabla que maneja el overflow horizontal y esquinas redondeadas -->
+    <div class="flex-grow w-full overflow-hidden overflow-x-auto rounded-xl shadow-lg">
+      <!--
+        Componente DataTable de PrimeVue.
+        Atributos:
+          :value="customers"                -> Lista reactiva de clientes.
+          :filters="filters"                -> Objeto de filtros para la tabla.
+          :globalFilterFields="['id', 'name', 'empresa', 'email', 'tel', 'dom']"
+                                            -> Campos a filtrar globalmente.
+          paginator                         -> Activa la paginación.
+          sortMode="multiple"               -> Permite ordenar por varias columnas a la vez.
+          removableSort                   -> Permite eliminar el ordenamiento aplicado.
+          :rows="5"                         -> Número fijo de filas por página.
+          :rowsPerPageOptions="[5, 10, 20, 50]"
+                                            -> Opciones para el número de filas por página.
+          :rowClass="rowClass"              -> Función que asigna clases CSS a cada fila.
+          class="w-full rounded-lg"         -> Asegura que la tabla ocupe todo el ancho y tenga bordes redondeados.
+      -->
       <DataTable
         :value="customers"
         :filters="filters"
@@ -28,9 +39,8 @@
       >
         <!-- Encabezado de la tabla -->
         <template #header>
-          <div
-            class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
-          >
+          <div class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+            <!-- Botón para limpiar los filtros activos -->
             <Button
               type="button"
               icon="pi pi-filter-slash"
@@ -39,9 +49,8 @@
               @click="clearFilter"
               class="mb-2 sm:mb-0 sm:mr-4"
             />
-            <div
-              class="flex items-center bg-white rounded-lg overflow-hidden w-full sm:w-auto"
-            >
+            <!-- Contenedor del campo de búsqueda global -->
+            <div class="flex items-center bg-white rounded-lg overflow-hidden w-full sm:w-auto">
               <span class="p-2">
                 <i class="pi pi-search text-gray-400"></i>
               </span>
@@ -52,8 +61,8 @@
               />
             </div>
           </div>
-          <!-- NUEVO: Slider para móviles (solo se muestra en dispositivos móviles) -->
-          <div v-if="isMobile" class="flex justify-center items-center space-x-2 p-2">
+          <!-- Slider para navegación entre columnas cuando no caben todas en la pantalla -->
+          <div v-if="showSlider" class="flex justify-center items-center space-x-2 p-2">
             <Button
               icon="pi pi-chevron-left"
               @click="prevPair"
@@ -69,7 +78,7 @@
           </div>
         </template>
 
-        <!-- Se renderizan las columnas usando una propiedad computada para simplificar -->
+        <!-- Renderizado dinámico de columnas basado en 'visibleColumns' -->
         <Column
           v-for="col in visibleColumns"
           :key="col.field"
@@ -79,9 +88,7 @@
         >
           <!-- Encabezado de cada columna -->
           <template #header="{ header }">
-            <div
-              class="p-1 text-white font-semibold text-center text-sm transition-colors duration-200"
-            >
+            <div class="p-1 text-white font-semibold text-center text-sm transition-colors duration-200">
               {{ header }}
             </div>
           </template>
@@ -97,25 +104,31 @@
         </Column>
       </DataTable>
     </div>
-    <!-- Componente Toast para notificaciones -->
+    <!-- Componente Toast para notificaciones emergentes -->
     <Toast />
   </div>
 </template>
 
 <script setup>
-// Importación de funciones y componentes necesarios desde Vue y PrimeVue
-import { ref, computed, onMounted, onUnmounted } from "vue"; // Se añaden computed, onMounted y onUnmounted para el slider responsive
-import { useToast } from "primevue/usetoast"; // Importa el hook para utilizar Toast
-import DataTable from "primevue/datatable"; // Importa el componente DataTable para mostrar tablas
-import Column from "primevue/column"; // Importa el componente Column para definir columnas en la tabla
-import InputText from "primevue/inputtext"; // Importa el componente InputText para campos de texto
-import Button from "primevue/button"; // Importa el componente Button para botones
-import Toast from "primevue/toast"; // Importa el componente Toast para notificaciones
+/* 
+  Importación de funciones y componentes esenciales:
+  - ref: Para declarar variables reactivas.
+  - computed: Para crear propiedades computadas.
+  - onMounted, onUnmounted: Para gestionar eventos del ciclo de vida del componente.
+  - Los componentes de PrimeVue se usan para construir la interfaz de usuario.
+*/
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useToast } from "primevue/usetoast";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import InputText from "primevue/inputtext";
+import Button from "primevue/button";
+import Toast from "primevue/toast";
 
-// Inicialización del Toast para mostrar notificaciones al usuario (sin cambios)
+// Inicialización del Toast para mostrar notificaciones al usuario.
 const toast = useToast();
 
-// Definición de la lista de clientes (sin cambios)
+// Lista reactiva de clientes.
 const customers = ref([
   {
     id: "2333",
@@ -143,7 +156,7 @@ const customers = ref([
   },
 ]);
 
-// Definición de las columnas de la tabla (sin cambios)
+// Definición reactiva de las columnas de la tabla.
 const columns = ref([
   { field: "id", header: "ID" },
   { field: "name", header: "Nombre" },
@@ -153,24 +166,24 @@ const columns = ref([
   { field: "dom", header: "Domicilio" },
 ]);
 
-// Configuración inicial de los filtros para la tabla (sin cambios)
+// Configuración inicial de filtros para la tabla.
 const filters = ref({
   global: { value: null, matchMode: "contains" },
 });
 
-// Función para limpiar el filtro global (sin cambios)
+// Función para limpiar el filtro global.
 const clearFilter = () => {
   filters.value.global.value = null;
 };
 
-// Función para asignar clases a las filas de la tabla (sin cambios)
+// Función que asigna clases condicionales a cada fila para alternar estilos.
 const rowClass = (data, index) => {
   return index % 2 === 0
-    ? "bg-white hover:bg-gray-100"
-    : "bg-gray-50 hover:bg-gray-100";
+    ? "bg-white hover:bg-gray-100"  // Filas pares
+    : "bg-gray-50 hover:bg-gray-100"; // Filas impares
 };
 
-// Función asíncrona para copiar texto al portapapeles (sin cambios)
+// Función asíncrona para copiar texto al portapapeles y mostrar notificación.
 const copyToClipboard = async (text) => {
   try {
     await navigator.clipboard.writeText(text);
@@ -190,37 +203,67 @@ const copyToClipboard = async (text) => {
   }
 };
 
-// NUEVO: Detectar si es un dispositivo móvil (ancho <= 640px)
+// Detectar si se utiliza un dispositivo móvil (ancho de pantalla <= 640px).
 const isMobile = ref(window.innerWidth <= 640);
+
+// Variable reactiva que almacena el ancho actual de la pantalla.
+const screenWidth = ref(window.innerWidth);
+
+// Función para manejar el redimensionamiento de la ventana.
 const handleResize = () => {
-  isMobile.value = window.innerWidth <= 640;
+  screenWidth.value = window.innerWidth;
+  isMobile.value = screenWidth.value <= 640;
 };
+
+// Registrar el evento 'resize' al montar el componente.
 onMounted(() => {
   window.addEventListener("resize", handleResize);
 });
+
+// Remover el evento 'resize' al desmontar el componente.
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
 
-// NUEVO: Estado actual del slider: índice del par actual (cada par son 2 columnas)
-const currentPairIndex = ref(0);
-// NUEVO: Calcula el índice máximo del slider (número de pares - 1)
-const maxPairIndex = computed(() => Math.ceil(columns.value.length / 2) - 1);
-
-// NUEVO: Computed property que determina las columnas visibles
-const visibleColumns = computed(() => {
-  // Si es móvil, se muestran 2 columnas según el índice actual; en desktop se muestran todas
-  return isMobile.value
-    ? columns.value.slice(currentPairIndex.value * 2, currentPairIndex.value * 2 + 2)
-    : columns.value;
+// Propiedad computada que determina cuántas columnas mostrar según el ancho de la pantalla.
+const columnsToShow = computed(() => {
+  if (screenWidth.value <= 640) return 2;         // Móviles: 2 columnas
+  else if (screenWidth.value <= 1024) return 3;     // Tablets: 3 columnas
+  else return columns.value.length;               // Escritorio: todas las columnas
 });
 
-// NUEVO: Funciones para navegar en el slider
+// Propiedad computada que indica si se debe mostrar el slider para navegación entre columnas.
+const showSlider = computed(() => {
+  return columnsToShow.value < columns.value.length;
+});
+
+// Variable reactiva que almacena el índice del grupo actual de columnas en el slider.
+const currentPairIndex = ref(0);
+
+// Propiedad computada que calcula el índice máximo permitido para el slider.
+const maxPairIndex = computed(() =>
+  Math.ceil(columns.value.length / columnsToShow.value) - 1
+);
+
+// Propiedad computada que determina las columnas visibles actualmente.
+const visibleColumns = computed(() => {
+  if (showSlider.value) {
+    return columns.value.slice(
+      currentPairIndex.value * columnsToShow.value,
+      currentPairIndex.value * columnsToShow.value + columnsToShow.value
+    );
+  }
+  return columns.value;
+});
+
+// Función para retroceder en el slider.
 const prevPair = () => {
   if (currentPairIndex.value > 0) {
     currentPairIndex.value--;
   }
 };
+
+// Función para avanzar en el slider.
 const nextPair = () => {
   if (currentPairIndex.value < maxPairIndex.value) {
     currentPairIndex.value++;
