@@ -1,7 +1,7 @@
 <template>
   <!-- Contenedor principal sin cambios en margin o padding -->
   <div
-    class="shadow-xl bg-transparent bg-gradient-to-r from-blue-500 to-purple-600 text-white w-full h-full flex flex-col"
+    class="shadow-xl bg-transparent text-white w-full h-full flex flex-col"
   >
     <!-- Título principal -->
     <div class="flex-auto font-extrabold text-2xl sm:text-4xl mb-6 text-center">
@@ -24,7 +24,7 @@
         :rows="5"
         :rowsPerPageOptions="[5, 10, 20, 50]"
         :rowClass="rowClass"
-        class="w-full border border-black bg-white text-gray-900 rounded-lg"
+        class="w-full rounded-lg"
       >
         <!-- Encabezado de la tabla -->
         <template #header>
