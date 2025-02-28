@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
 
-class ClienteService {
+class TareasService {
     private serverip: string;
     private axios: AxiosInstance;
 
@@ -9,15 +9,15 @@ class ClienteService {
         this.axios = axios;
     }
 
-    async getClientes(): Promise<any> {
+    async getTareas(): Promise<any> {
         try {
-            const response = await this.axios.get(`${this.serverip}:5000/clientes`);
+            const response = await this.axios.get(`${this.serverip}:5000/tareas`);
             return response.data;
         } catch (error) {
-            console.error("Error fetching clientes:", error);
+            console.error("Error fetching tareas:", error);
             throw error;
         }
     }
 }
 
-export default ClienteService;
+export default TareasService;

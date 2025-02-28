@@ -9,15 +9,15 @@
   
       <div class="flex-1">
         <!-- Título de la tarjeta -->
-        <h3 class="text-lg font-semibold text-gray-800">{{ card.title }}</h3>
+        <h3 class="text-lg font-semibold text-gray-800">{{ card.titulo }}</h3>
   
         <!-- Descripción -->
-        <p class="text-sm text-gray-600">{{ card.description }}</p>
+        <p class="text-sm text-gray-600">{{ card.descripcion }}</p>
   
         <!-- Estado e icono -->
         <div class="flex items-center mt-2">
           <span class="w-3 h-3 rounded-full" :class="statusColor"></span>
-          <span class="ml-2 text-sm text-gray-700">{{ card.status }}</span>
+          <span class="ml-2 text-sm text-gray-700">{{ card.estado }}</span>
         </div>
       </div>
     </div>
@@ -33,7 +33,7 @@
   
   // Función que se ejecuta cuando se inicia el arrastre de la tarjeta
   const dragStart = (event, card) => {
-    event.dataTransfer.setData('text/plain', card.id);
+    event.dataTransfer.setData('text/plain', card.id_tarea);
   };
   
   // Computed para determinar el color del estado
