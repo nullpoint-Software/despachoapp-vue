@@ -1,7 +1,10 @@
 <template>
-    <div class="shadow-md  p-4 m-5 bg-stone-100 text-slate-900 h-full w-full">
-        <div class="font-bold text-2xl pl-2">Tareas</div>
+    <div class="shadow-md p-4 m-5 bg-transparent text-white h-full w-full">
+        <div class="flex-auto font-extrabold text-2xl sm:text-4xl mb-6 text-center">Tareas</div>
+        <KanbanBoard />
     </div>
 </template>
-<script>
+
+<script setup>
+import KanbanBoard from '../kanbanComponents/KanbanBoard.vue';
 </script>

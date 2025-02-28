@@ -1,9 +1,9 @@
 <template>
   <div
-    class="h-auto min-h-screen w-full bg-blue-200 text-green-900 flex flex-col"
+    class="h-auto min-h-screen w-full bg-black text-green-900 flex flex-col"
   >
     <!-- Navbar -->
-    <nav class="flex justify-between items-center p-4 bg-blue-900 shadow-lg">
+    <nav class="flex justify-between items-center p-4 bg-black shadow-lg">
       <div class="flex items-center space-x-2">
         <img :src="mainImageSrc" alt="Company Logo" class="w-14 md:w-20" />
         <span class="hidden md:block text-lg font-bold text-amber-50">
