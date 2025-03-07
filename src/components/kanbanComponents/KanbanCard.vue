@@ -1,53 +1,92 @@
+<!-- KanbanCard.vue -->
 <template>
-    <div
-      class="kanban-card bg-white rounded-2xl shadow-lg p-4 mb-3 cursor-pointer border border-gray-300 hover:shadow-xl transition-all duration-300 flex items-start gap-3"
-      draggable="true"
-      @dragstart="dragStart($event, card)"
-    >
-      <!-- Miniatura de la tarjeta -->
-      <img :src="card.image" alt="Miniatura" class="w-12 h-12 rounded-lg object-cover" />
-  
-      <div class="flex-1">
-        <!-- Título de la tarjeta -->
-        <h3 class="text-lg font-semibold text-gray-800">{{ card.title }}</h3>
-  
-        <!-- Descripción -->
-        <p class="text-sm text-gray-600">{{ card.description }}</p>
-  
-        <!-- Estado e icono -->
-        <div class="flex items-center mt-2">
-          <span class="w-3 h-3 rounded-full" :class="statusColor"></span>
-          <span class="ml-2 text-sm text-gray-700">{{ card.status }}</span>
-        </div>
+  <div
+    class="kanban-card bg-white rounded-2xl shadow-lg p-4 mb-3 cursor-pointer border border-gray-300 hover:shadow-xl transition-all duration-300 flex items-start gap-3"
+    :class="{ highlighted: card.highlight }"
+    draggable="true"
+    @dragstart="dragStart($event, card)"
+  >
+    <!--
+      NOTA: Antes se usaba la prop 'highlight' para esto.
+      Se deja aquí para no eliminar nada, pero ahora la lógica está en card.highlight
+      por alguna razon, crashea la pagina al modificarlo, favor de revisarlo
+    -->
+    <!-- Miniatura de la tarjeta -->
+    <img
+      :src="card.image"
+      alt="Miniatura"
+      class="w-12 h-12 rounded-lg object-cover"
+    />
+
+    <div class="flex-1">
+      <!-- Título de la tarjeta -->
+      <h3 class="text-lg font-semibold text-gray-800">{{ card.title }}</h3>
+
+      <!-- Descripción -->
+      <p class="text-sm text-gray-600">{{ card.description }}</p>
+
+      <!-- Fechas -->
+      <p class="text-xs text-gray-500 mt-1">Inicio: {{ card.startDate }}</p>
+      <p class="text-xs text-gray-500">Fin: {{ card.endDate }}</p>
+
+      <!-- Estado e icono -->
+      <div class="flex items-center mt-2">
+        <span class="w-3 h-3 rounded-full" :class="statusColor"></span>
+        <span class="ml-2 text-sm text-gray-700">{{ card.status }}</span>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { defineProps, computed } from 'vue';
-  
-  // Definimos las propiedades que recibe el componente, en este caso una tarjeta con más información.
-  const props = defineProps({
-    card: Object, // La tarjeta debe ser un objeto con 'id', 'title', 'description', 'image' y 'status'
-  });
-  
-  // Función que se ejecuta cuando se inicia el arrastre de la tarjeta
-  const dragStart = (event, card) => {
-    event.dataTransfer.setData('text/plain', card.id);
-  };
-  
-  // Computed para determinar el color del estado
-  const statusColor = computed(() => {
-    switch (props.card.status) {
-      case 'Pendiente':
-        return 'bg-yellow-500';
-      case 'En progreso':
-        return 'bg-blue-500';
-      case 'Completado':
-        return 'bg-green-500';
-      default:
-        return 'bg-gray-400';
-    }
-  });
-  </script>
-  
+  </div>
+</template>
+
+<script setup>
+import { defineProps, computed } from "vue";
+
+const props = defineProps({
+  card: Object,
+  highlight: Boolean, // Se deja para no eliminar nada del código original
+  highlightedCard: {
+    type: [Number, null],
+    default: null,
+  },
+});
+
+// Función para iniciar el drag and drop
+const dragStart = (event, card) => {
+  event.dataTransfer.setData("text/plain", card.id);
+};
+
+// Computa la clase del color según el status de la tarjeta
+const statusColor = computed(() => {
+  switch (props.card.status) {
+    case "Disponible":
+      return "bg-green-300";
+    case "Por Hacer":
+      return "bg-yellow-300";
+    case "En progreso":
+      return "bg-blue-300";
+    case "Terminado":
+      return "bg-gray-300";
+    default:
+      return "bg-gray-400";
+  }
+});
+</script>
+
+<style scoped>
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 102, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+  }
+}
+
+.highlighted {
+  animation: pulseGlow 1.5s infinite alternate; /* Animación para el resaltado */
+  border-color: rgba(0, 102, 255, 0.8); /* Color de borde cuando se resalta */
+}
+</style>
