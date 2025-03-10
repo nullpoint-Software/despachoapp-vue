@@ -137,7 +137,10 @@
         </div>
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
+      <!--suspense para operacion async-->
+      <Suspense>
       <RouterView />
+    </Suspense>
     </div>
   </div>
 </template>
@@ -157,6 +160,7 @@ import "primeicons/primeicons.css";
 import Button from "primevue/button";
 import Divider from "primevue/divider";
 import Avatar from "primevue/avatar";
+import { Suspense } from "vue";
 import profilePicture from "@/assets/img/havatar.jpg";
 import { RouterView, RouterLink } from "vue-router";
 import { useRouter } from "vue-router";

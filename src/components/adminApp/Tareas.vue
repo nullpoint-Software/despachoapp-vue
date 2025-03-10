@@ -7,4 +7,5 @@
 
 <script setup>
 import KanbanBoard from '../kanbanComponents/KanbanBoard.vue';
+
 </script>

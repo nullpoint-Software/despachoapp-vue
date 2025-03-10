@@ -27,15 +27,15 @@
       >
         <li
           v-for="card in filteredCards"
-          :key="card.id"
-          @click="markCard(card.id)"
+          :key="card.id_tarea"
+          @click="markCard(card.id_tarea)"
           class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition"
         >
           <span
             class="w-5 h-5 rounded-full mr-3"
-            :style="{ backgroundColor: getColumnColor(card.status) }"
+            :style="{ backgroundColor: getColumnColor(card.estado) }"
           ></span>
-          <span class="flex-1">{{ card.title }}</span>
+          <span class="flex-1">{{ card.titulo }}</span>
         </li>
       </ul>
     </div>
@@ -99,8 +99,11 @@
 import { ref, computed } from "vue";
 import KanbanColumn from "./KanbanColumn.vue";
 import profilePicture from "@/assets/img/havatar.jpg";
+import { ts } from "@/service/adminApp/client";
 
-// Se definen los estados/etiquetas de las columnas
+const cards = ref(await ts.getTareas());
+console.log("cards", cards);
+
 const columnStatuses = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
 const statusOrder = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
 const cardsPerPage = 5;
@@ -112,120 +115,6 @@ const currentPage = ref({
   "En progreso": 0,
   Terminado: 0,
 });
-
-// Arreglo de tarjetas, cada una con "highlight: false" para el efecto de resaltado
-const cards = ref([
-  {
-    id: 1,
-    title: "Cita",
-    description: "Cita con los asociados",
-    status: "Disponible",
-    startDate: "2024-03-05",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 2,
-    title: "Revisión de documentos",
-    description: "Verificar contratos",
-    status: "Disponible",
-    startDate: "2024-03-04",
-    endDate: "2024-03-07",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 3,
-    title: "Revisión técnica",
-    description: "Analizar códigos",
-    status: "Disponible",
-    startDate: "2024-03-03",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 4,
-    title: "Planificación",
-    description: "Organizar actividades",
-    status: "Disponible",
-    startDate: "2024-03-02",
-    endDate: "2024-03-08",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 5,
-    title: "Charros",
-    description: "Reunión con los charros",
-    status: "Por Hacer",
-    startDate: "2024-03-05",
-    endDate: "2024-03-07",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 6,
-    title: "Actualizar sistema",
-    description: "Migrar a nueva versión",
-    status: "Por Hacer",
-    startDate: "2024-03-04",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 7,
-    title: "Entrevistas",
-    description: "Seleccionar nuevos miembros",
-    status: "Por Hacer",
-    startDate: "2024-03-03",
-    endDate: "2024-03-09",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 8,
-    title: "Toros",
-    description: "Ajuste de cuentas",
-    status: "En progreso",
-    startDate: "2024-03-05",
-    endDate: "2024-03-07",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 9,
-    title: "Revisión de proyecto",
-    description: "Verificar avances",
-    status: "En progreso",
-    startDate: "2024-03-04",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 10,
-    title: "Carnaval",
-    description: "Ir al carnaval",
-    status: "Terminado",
-    startDate: "2024-03-05",
-    endDate: "2024-03-07",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 11,
-    title: "Entrega de informe",
-    description: "Enviar reporte mensual",
-    status: "Terminado",
-    startDate: "2024-03-04",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-]);
 
 // ID que se usaba para resaltar la tarjeta (se deja para no eliminar nada)
 const highlightedCard = ref(null);

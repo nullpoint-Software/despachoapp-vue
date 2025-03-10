@@ -1,6 +1,6 @@
 <template>
   <!-- Contenedor principal de la vista con estilos globales -->
-  <div class="shadow-xl bg-transparent text-white w-full h-full flex flex-col">
+  <div class="shadow-xl bg-transparent text-white w-full h-full flex flex-col lg:pl-20 lg:pr-20">
     <!-- Sección del título principal -->
     <div class="flex-auto font-extrabold text-2xl sm:text-4xl mb-6 text-center">
       <br />
@@ -25,6 +25,7 @@
           :rowClass="rowClass"              -> Función que asigna clases CSS a cada fila.
           class="w-full rounded-lg"         -> Asegura que la tabla ocupe todo el ancho y tenga bordes redondeados.
       -->
+          
       <DataTable
         :value="customers"
         :filters="filters"
@@ -124,46 +125,22 @@ import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
+import { cs } from "@/service/adminApp/client";
 
 // Inicialización del Toast para mostrar notificaciones al usuario.
 const toast = useToast();
-
+const customers = ref(await cs.getClientes())
+console.log("da cliente", customers)
 // Lista reactiva de clientes.
-const customers = ref([
-  {
-    id: "2333",
-    name: "Juan Perez",
-    empresa: "Abarrotes Perez",
-    email: "juanp@yahoo.mx",
-    tel: "(536) 234 2344",
-    dom: "Morelos 18, El Grullo, Jalisco",
-  },
-  {
-    id: "2334",
-    name: "Maria López",
-    empresa: "Tienda Lupita",
-    email: "maria.lopez@gmail.com",
-    tel: "(331) 789 5678",
-    dom: "Juárez 45, Autlán, Jalisco",
-  },
-  {
-    id: "2335",
-    name: "Carlos Ramírez",
-    empresa: "Electro Ramírez",
-    email: "c.ramirez@hotmail.com",
-    tel: "(312) 456 7890",
-    dom: "Av. Hidalgo 90, Tonaya, Jalisco",
-  },
-]);
 
 // Definición reactiva de las columnas de la tabla.
 const columns = ref([
-  { field: "id", header: "ID" },
-  { field: "name", header: "Nombre" },
+  { field: "id_cliente", header: "ID" },
+  { field: "nombre", header: "Nombre" },
   { field: "empresa", header: "Empresa" },
   { field: "email", header: "Correo Electrónico" },
-  { field: "tel", header: "Teléfono" },
-  { field: "dom", header: "Domicilio" },
+  { field: "telefono", header: "Teléfono" },
+  { field: "domicilio", header: "Domicilio" },
 ]);
 
 // Configuración inicial de filtros para la tabla.
