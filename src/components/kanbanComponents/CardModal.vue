@@ -9,10 +9,10 @@
           &times;
         </button>
         <h2 class="text-xl font-bold mb-4">{{ card.title }}</h2>
-        <p class="mb-2"><strong>Descripción:</strong> {{ card.description }}</p>
-        <p class="mb-2"><strong>Estado:</strong> {{ card.status }}</p>
-        <p class="mb-2"><strong>Inicio:</strong> {{ card.startDate }}</p>
-        <p class="mb-2"><strong>Fin:</strong> {{ card.endDate }}</p>
+        <p class="mb-2"><strong>Descripción:</strong> {{ card.descripcion }}</p>
+        <p class="mb-2"><strong>Estado:</strong> {{ card.estado }}</p>
+        <p class="mb-2"><strong>Inicio:</strong> {{ card.fecha_creacion }}</p>
+        <p class="mb-2"><strong>Fin:</strong> {{ card.fencha_vencimiento }}</p>
         <img v-if="card.image" :src="card.image" alt="Imagen" class="w-full h-auto rounded mt-4" />
       </div>
     </div>

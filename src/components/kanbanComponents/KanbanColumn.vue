@@ -6,7 +6,8 @@
   >
     <!-- Encabezado de la columna con color dinámico -->
     <h2 
-      class="font-bold text-lg text-gray-800 py-2 px-4 rounded-md text-center shadow :style="{ backgroundColor: color }"
+      class="font-bold text-lg text-gray-800 py-2 px-4 rounded-md text-center shadow "
+      :style="{ backgroundColor: color }"
     >
       {{ status }}
     </h2>

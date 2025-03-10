@@ -13,34 +13,35 @@
     -->
     <!-- Miniatura de la tarjeta -->
     <img
-      :src="card.image"
+      :src="card.imagen || defaultProfilePicture"
       alt="Miniatura"
       class="w-12 h-12 rounded-lg object-cover"
     />
 
     <div class="flex-1">
       <!-- Título de la tarjeta -->
-      <h3 class="text-lg font-semibold text-gray-800">{{ card.title }}</h3>
+      <h3 class="text-lg font-semibold text-gray-800">{{ card.titulo }}</h3>
 
       <!-- Descripción -->
-      <p class="text-sm text-gray-600">{{ card.description }}</p>
+      <p class="text-sm text-gray-600">{{ card.descripcion }}</p>
 
       <!-- Fechas -->
-      <p class="text-xs text-gray-500 mt-1">Inicio: {{ card.startDate }}</p>
-      <p class="text-xs text-gray-500">Fin: {{ card.endDate }}</p>
+      <p class="text-xs text-gray-500 mt-1">Inicio: {{ formatFechaSQL(card.fecha_creacion) }}</p>
+      <p class="text-xs text-gray-500">Fin: {{ formatFechaSQL(card.fecha_vencimiento) }}</p>
 
       <!-- Estado e icono -->
       <div class="flex items-center mt-2">
         <span class="w-3 h-3 rounded-full" :class="statusColor"></span>
-        <span class="ml-2 text-sm text-gray-700">{{ card.status }}</span>
+        <span class="ml-2 text-sm text-gray-700">{{ card.estado }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import defaultProfilePicture from '@/assets/img/WorkerHome.png'
 import { defineProps, computed } from "vue";
-
+import { formatFechaSQL } from "@/service/adminApp/client";
 const props = defineProps({
   card: Object,
   highlight: Boolean, // Se deja para no eliminar nada del código original
@@ -52,17 +53,17 @@ const props = defineProps({
 
 // Función para iniciar el drag and drop
 const dragStart = (event, card) => {
-  event.dataTransfer.setData("text/plain", card.id);
+  event.dataTransfer.setData("text/plain", card.id_tarea);
 };
 
 // Computa la clase del color según el status de la tarjeta
 const statusColor = computed(() => {
-  switch (props.card.status) {
+  switch (props.card.estado) {
     case "Disponible":
       return "bg-green-300";
-    case "Por Hacer":
+    case "Pendiente":
       return "bg-yellow-300";
-    case "En progreso":
+    case "En Progreso":
       return "bg-blue-300";
     case "Terminado":
       return "bg-gray-300";

@@ -101,18 +101,21 @@ import KanbanColumn from "./KanbanColumn.vue";
 import profilePicture from "@/assets/img/havatar.jpg";
 import { ts } from "@/service/adminApp/client";
 
-const cards = ref(await ts.getTareas());
+const cards = ref((await ts.getTareas()).map(item => ({ 
+    ...item, 
+    highlight: false 
+})));
 console.log("cards", cards);
 
-const columnStatuses = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
-const statusOrder = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
+const columnStatuses = ["Disponible", "Pendiente", "En Progreso", "Terminado"];
+const statusOrder = ["Disponible", "Pendiente", "En Progreso", "Terminado"];
 const cardsPerPage = 5;
 
 // Control de páginas por cada estado
 const currentPage = ref({
   Disponible: 0,
-  "Por Hacer": 0,
-  "En progreso": 0,
+  "Pendiente": 0,
+  "En Progreso": 0,
   Terminado: 0,
 });
 
@@ -123,7 +126,7 @@ const highlightedCard = ref(null);
 const pages = computed(() => {
   const result = {};
   columnStatuses.forEach((status) => {
-    const total = cards.value.filter((card) => card.status === status).length;
+    const total = cards.value.filter((card) => card.estado === status).length;
     result[status] = Math.ceil(total / cardsPerPage);
   });
   return result;
@@ -132,8 +135,8 @@ const pages = computed(() => {
 // Retorna las tarjetas filtradas y paginadas por status
 const getPaginatedCardsByStatus = (status) => {
   const filtered = cards.value
-    .filter((card) => card.status === status)
-    .sort((a, b) => a.id - b.id);
+    .filter((card) => card.estado === status)
+    .sort((a, b) => a.id_tarea - b.id_tarea);
   const start = currentPage.value[status] * cardsPerPage;
   return filtered.slice(start, start + cardsPerPage);
 };
@@ -147,12 +150,12 @@ const changePage = (status, newPage) => {
 
 // Mueve la tarjeta de un status a otro
 const moveCard = (cardId, newStatus) => {
-  const card = cards.value.find((card) => card.id === cardId);
+  const card = cards.value.find((card) => card.id_tarea === cardId);
   if (card) {
-    const currentIndex = statusOrder.indexOf(card.status);
+    const currentIndex = statusOrder.indexOf(card.estado);
     const newIndex = statusOrder.indexOf(newStatus);
     if (newIndex > currentIndex) {
-      card.status = newStatus;
+      card.estado = newStatus;
       currentPage.value[newStatus] = 0;
     }
   }
@@ -162,7 +165,7 @@ const moveCard = (cardId, newStatus) => {
 const getColumnColor = (status) => {
   const colors = {
     Disponible: "#A7F3D0",
-    "Por Hacer": "#FCD34D",
+    "Pendiente": "#FCD34D",
     "En progreso": "#93C5FD",
     Terminado: "#D1D5DB",
   };
@@ -171,7 +174,7 @@ const getColumnColor = (status) => {
 
 // Al hacer clic en un resultado del buscador, resalta la tarjeta y cambia a la página adecuada
 const markCard = (cardId) => {
-  const card = cards.value.find((c) => c.id === cardId);
+  const card = cards.value.find((c) => c.id_tarea === cardId);
   if (card) {
     // Activa el highlight en la tarjeta
     card.highlight = true;
@@ -180,10 +183,10 @@ const markCard = (cardId) => {
     highlightedCard.value = cardId;
 
     // Determina en qué página está la tarjeta
-    const status = card.status;
+    const status = card.estado;
     const index = cards.value
-      .filter((c) => c.status === status)
-      .findIndex((c) => c.id === cardId);
+      .filter((c) => c.estado === status)
+      .findIndex((c) => c.id_tarea === cardId);
     currentPage.value[status] = Math.floor(index / cardsPerPage);
 
     // Desactiva el resaltado después de 3 segundos
@@ -198,7 +201,7 @@ const searchQuery = ref("");
 // Retorna las tarjetas que coinciden con el texto ingresado
 const filteredCards = computed(() => {
   return cards.value.filter((card) =>
-    card.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+    card.titulo.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
 </script>

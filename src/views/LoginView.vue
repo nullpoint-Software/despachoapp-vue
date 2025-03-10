@@ -1,28 +1,17 @@
 <template>
-  <div
-    class="relative flex justify-center items-center min-h-screen overflow-hidden"
-  >
+  <div class="relative flex justify-center items-center min-h-screen overflow-hidden">
     <!-- Fondo Animado -->
-    <div
-      class="absolute inset-0 bg-gradient-to-b from-blue-200 to-blue-900 overflow-hidden"
-    >
-      <div
-        class="wave-container"
-        v-for="wave in waves"
-        :key="wave.id"
-        :style="{
-          top: wave.y + 'px',
-          left: wave.x + 'px',
-          width: wave.size + 'px',
-          height: wave.size + 'px',
-        }"
-      ></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-blue-200 to-blue-900 overflow-hidden">
+      <div class="wave-container" v-for="wave in waves" :key="wave.id" :style="{
+        top: wave.y + 'px',
+        left: wave.x + 'px',
+        width: wave.size + 'px',
+        height: wave.size + 'px',
+      }"></div>
     </div>
 
     <!-- Contenido -->
-    <div
-      class="relative bg-white shadow-lg rounded-lg p-8 w-full max-w-md z-10"
-    >
+    <div class="relative bg-white shadow-lg rounded-lg p-8 w-full max-w-md z-10">
       <!-- Logo -->
       <div class="flex justify-center mb-4">
         <img :src="mainImageSrc" alt="Logo" class="w-16" />
@@ -37,33 +26,19 @@
       <!-- Formulario -->
       <form @submit.prevent="login">
         <div class="mb-4 relative">
-          <label class="block text-gray-700 font-medium mb-1"
-            >Correo Electrónico</label
-          >
-          <InputText
-            v-model="email"
-            type="email"
+          <label class="block text-gray-700 font-medium mb-1">Correo Electrónico</label>
+          <InputText v-model="email" type="text"
             class="w-full p-3 border rounded-md bg-white text-gray-900 focus:ring-2 focus:ring-blue-500"
-            placeholder="joseramirez@gmail.com"
-            @input="createWave"
-          />
+            placeholder="joseramirez@gmail.com" @input="createWave" />
         </div>
 
         <div class="mb-4 relative">
           <label class="block text-gray-700 font-medium mb-1">Contraseña</label>
           <div class="relative">
-            <input
-              v-model="password"
-              :type="showPassword ? 'text' : 'password'"
+            <input v-model="password" :type="showPassword ? 'text' : 'password'"
               class="w-full p-3 border rounded-md bg-white text-gray-900 focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••••"
-              @input="createWave"
-            />
-            <button
-              type="button"
-              class="absolute right-3 top-3 text-gray-500"
-              @click="togglePassword"
-            >
+              placeholder="••••••••" @input="createWave" />
+            <button type="button" class="absolute right-3 top-3 text-gray-500" @click="togglePassword">
               <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
             </button>
           </div>
@@ -72,29 +47,19 @@
         <!-- Recordar y Recuperar -->
         <div class="flex justify-between items-center mb-6">
           <label for="remember" class="flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              id="remember"
-              class="hidden"
-              v-model="rememberMe"
-            />
+            <input type="checkbox" id="remember" class="hidden" v-model="rememberMe" />
             <div
               class="w-5 h-5 border-2 border-blue-500 rounded-md flex items-center justify-center transition-all duration-300"
-              :class="{ 'bg-blue-500': rememberMe }"
-            >
+              :class="{ 'bg-blue-500': rememberMe }">
               <i v-if="rememberMe" class="pi pi-check text-white text-sm"></i>
             </div>
-            <span class="ml-2 text-gray-700 text-sm select-none"
-              >Recuérdame</span
-            >
+            <span class="ml-2 text-gray-700 text-sm select-none">Recuérdame</span>
           </label>
         </div>
 
         <!-- Botón de inicio -->
-        <button
-          type="submit"
-          class="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition cursor-pointer" :onclick="goLogin"
-        >
+        <button type="submit"
+          class="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition cursor-pointer">
           Iniciar Sesión
         </button>
       </form>
@@ -103,11 +68,12 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import InputText from "primevue/inputtext";
 import mainImageSrc from "@/assets/img/logsymbolwhite.png";
 import { RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
+import { as } from "@/service/adminApp/client";
 
 
 export default {
@@ -124,6 +90,22 @@ export default {
       showPassword.value = !showPassword.value;
     };
 
+    const checkAuth = () => {
+      const router = useRouter();
+
+      // Check if the token exists in localStorage
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        // If the token doesn't exist, redirect to /login
+        router.push("/login");
+      }else{
+        router.push("/app")
+      }
+    };
+    onMounted(() => {
+      checkAuth();
+    });
     // Crear onda en posiciones aleatorias dentro del fondo
     const createWave = () => {
       const size = Math.random() * 100 + 50; // Tamaño aleatorio entre 50px y 150px
@@ -138,14 +120,23 @@ export default {
       }, 800);
     };
 
-    const login = () => {
+    const login = async () => {
       console.log("Iniciar sesión con:", {
         email: email.value,
         password: password.value,
       });
+      const isLoggedIn = await as.loginUser({ username: email.value, password: password.value });
+
+      if (isLoggedIn) {
+        // If loginUser is successful, run goLogin
+        goLogin();
+      } else {
+        console.log("Login failed");
+      }
     };
 
-    function goLogin(){
+
+    function goLogin() {
       router.push('/app')
     }
 
