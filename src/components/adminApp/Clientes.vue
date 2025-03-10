@@ -36,7 +36,7 @@
         :rows="5"
         :rowsPerPageOptions="[5, 10, 20, 50]"
         :rowClass="rowClass"
-        class="w-full rounded-lg"
+        class="w-full rounded-lg p-5"
       >
         <!-- Encabezado de la tabla -->
         <template #header>

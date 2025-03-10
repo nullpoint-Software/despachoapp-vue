@@ -1,108 +1,204 @@
+<!-- KanbanBoard.vue -->
 <template>
   <div class="p-4 relative">
     <!-- Buscador -->
-    <div class="relative">
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Buscar tareas..."
-        class="p-2 border border-gray-300 rounded w-full mb-4"
-      />
+    <div class="relative w-full max-w-lg mx-auto">
+      <div
+        class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md"
+      >
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Buscar tareas..."
+          class="bg-transparent flex-1 outline-none px-2 py-1 text-lg"
+        />
+        <button
+          v-if="searchQuery"
+          @click="searchQuery = ''"
+          class="text-gray-400 hover:text-white transition"
+        >
+          ✕
+        </button>
+      </div>
+
       <ul
         v-if="searchQuery"
-        class="absolute top-full left-0 w-full bg-gray-200 shadow-md rounded mt-1 z-10 text-black"
+        class="absolute top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white"
       >
         <li
           v-for="card in filteredCards"
           :key="card.id_tarea"
           @click="markCard(card.id_tarea)"
-          class="flex justify-between p-2 border-b cursor-pointer hover:bg-gray-200"
+          class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition"
         >
-          <span>{{ card.titulo }}</span>
           <span
-            :class="{
-              'text-green-900': card.estado === 'Terminado',
-              'text-red-900': card.estado !== 'Terminado',
-            }"
-          >
-            {{ card.estado === "Terminado" ? "Completado" : "Pendiente" }}
-          </span>
+            class="w-5 h-5 rounded-full mr-3"
+            :style="{ backgroundColor: getColumnColor(card.estado) }"
+          ></span>
+          <span class="flex-1">{{ card.titulo }}</span>
         </li>
       </ul>
     </div>
 
     <!-- Kanban Board -->
+    <!-- 
+      Código original (comentado para no eliminar nada):
+      <div class="kanban-board flex flex-col sm:flex-row gap-2 p-6 bg-transparent min-h-screen overflow-x-auto">
+    -->
+    <!-- 
+      Reemplazamos por un grid que, dependiendo del tamaño de la pantalla, 
+      muestra 1, 2 o 4 columnas:
+        - Por defecto (móvil): 1 columna
+        - sm (>=640px): 2 columnas
+        - lg (>=1024px): 4 columnas
+    -->
     <div
-      class="kanban-board flex flex-col sm:flex-row gap-2 p-6 bg-transparent min-h-screen overflow-x-auto"
+      class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto"
     >
-      <KanbanColumn
-        v-for="estado in columnStatuses"
-        :key="estado"
-        :status="estado"
-        :cards="filteredCards.filter((card) => card.estado === estado)"
-        @moveCard="moveCard"
-        class="flex-shrink-0 w-80"
-      />
+      <div v-for="status in columnStatuses" :key="status" class="flex flex-col">
+        <!-- 
+          NOTA: Conservamos "flex flex-col" aquí para que 
+          el contenido interno (tarjetas) se apile verticalmente 
+          dentro de cada columna 
+        -->
+        <!-- Columna con tarjetas paginadas -->
+        <KanbanColumn
+          :status="status"
+          :cards="getPaginatedCardsByStatus(status)"
+          :color="getColumnColor(status)"
+          @moveCard="moveCard"
+          :highlighted-card="highlightedCard"
+        />
+
+        <!-- Paginación en la parte inferior -->
+        <div class="flex justify-center items-center mt-2 space-x-2">
+          <button
+            @click="changePage(status, currentPage[status] - 1)"
+            :disabled="currentPage[status] === 0"
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &lt;
+          </button>
+          <span class="px-4 py-2 bg-blue-500 rounded shadow">
+            {{ currentPage[status] + 1 }}
+          </span>
+          <button
+            @click="changePage(status, currentPage[status] + 1)"
+            :disabled="currentPage[status] >= pages[status] - 1"
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &gt;
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from "vue";
-import KanbanColumn from "./kanbanColumn.vue";
+import KanbanColumn from "./KanbanColumn.vue";
 import profilePicture from "@/assets/img/havatar.jpg";
 import { ts } from "@/service/adminApp/client";
 
 const cards = ref(await ts.getTareas());
 console.log("cards", cards);
 
-// Lista de tarjetas con sus respectivos estados
-// const cards = ref([
-//   { id: 1, title: 'Cita', description: 'Cita con los asociados', status: 'Disponible', marked: false, image:profilePicture },
-//   { id: 2, title: 'Charros', description: 'Reunion con los charros', status: 'Por Hacer', marked: false, image:profilePicture  },
-//   { id: 3, title: 'Toros', description: 'Ajuste de cuentas', status: 'En progreso', marked: false, image:profilePicture  },
-//   { id: 4, title: 'Carnaval', description: 'Ir al carnaval', status: 'Terminado', marked: false, image:profilePicture  },
-// ]);
+const columnStatuses = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
+const statusOrder = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
+const cardsPerPage = 5;
 
-// Estados disponibles para las columnas
-const columnStatuses = ["Disponible", "Pendiente", "En Progreso", "Terminado"];
-
-// Buscador de tareas
-const searchQuery = ref("");
-const filteredCards = computed(() => {
-  const seen = new Set();
-  return cards.value.filter((card) => {
-    const matchesSearchQuery = card.titulo
-      .toLowerCase()
-      .includes(searchQuery.value.toLowerCase());
-    const isUnique = !seen.has(card.id_tarea);
-    if (matchesSearchQuery && isUnique) {
-      seen.add(card.id_tarea);
-      return true;
-    }
-    return false;
-  });
+// Control de páginas por cada estado
+const currentPage = ref({
+  Disponible: 0,
+  "Por Hacer": 0,
+  "En progreso": 0,
+  Terminado: 0,
 });
 
-// Función para mover tarjetas entre columnas
-const moveCard = (cardId, newStatus) => {
-  const card = cards.value.find((card) => card.id_tarea === cardId);
-  if (card) {
-    card.estado = newStatus;
+// ID que se usaba para resaltar la tarjeta (se deja para no eliminar nada)
+const highlightedCard = ref(null);
+
+// Calcula cuántas páginas hay para cada columna
+const pages = computed(() => {
+  const result = {};
+  columnStatuses.forEach((status) => {
+    const total = cards.value.filter((card) => card.status === status).length;
+    result[status] = Math.ceil(total / cardsPerPage);
+  });
+  return result;
+});
+
+// Retorna las tarjetas filtradas y paginadas por status
+const getPaginatedCardsByStatus = (status) => {
+  const filtered = cards.value
+    .filter((card) => card.status === status)
+    .sort((a, b) => a.id - b.id);
+  const start = currentPage.value[status] * cardsPerPage;
+  return filtered.slice(start, start + cardsPerPage);
+};
+
+// Cambia de página dentro de una columna dada
+const changePage = (status, newPage) => {
+  if (newPage >= 0 && newPage < pages.value[status]) {
+    currentPage.value[status] = newPage;
   }
 };
 
-// Marcar tarjeta seleccionada
-const markCard = (cardId) => {
-  cards.value.forEach((card) => {
-    card.marked = card.id_tarea === cardId;
-  });
+// Mueve la tarjeta de un status a otro
+const moveCard = (cardId, newStatus) => {
+  const card = cards.value.find((card) => card.id === cardId);
+  if (card) {
+    const currentIndex = statusOrder.indexOf(card.status);
+    const newIndex = statusOrder.indexOf(newStatus);
+    if (newIndex > currentIndex) {
+      card.status = newStatus;
+      currentPage.value[newStatus] = 0;
+    }
+  }
 };
-</script>
 
-<style>
-.marked {
-  border: 2px solid blue;
-  background-color: rgba(0, 0, 255, 0.1);
-}
-</style>
+// Devuelve el color de la columna según su status
+const getColumnColor = (status) => {
+  const colors = {
+    Disponible: "#A7F3D0",
+    "Por Hacer": "#FCD34D",
+    "En progreso": "#93C5FD",
+    Terminado: "#D1D5DB",
+  };
+  return colors[status] || "#FFFFFF";
+};
+
+// Al hacer clic en un resultado del buscador, resalta la tarjeta y cambia a la página adecuada
+const markCard = (cardId) => {
+  const card = cards.value.find((c) => c.id === cardId);
+  if (card) {
+    // Activa el highlight en la tarjeta
+    card.highlight = true;
+
+    // Se deja para no eliminar nada
+    highlightedCard.value = cardId;
+
+    // Determina en qué página está la tarjeta
+    const status = card.status;
+    const index = cards.value
+      .filter((c) => c.status === status)
+      .findIndex((c) => c.id === cardId);
+    currentPage.value[status] = Math.floor(index / cardsPerPage);
+
+    // Desactiva el resaltado después de 3 segundos
+    setTimeout(() => {
+      card.highlight = false;
+    }, 3000);
+  }
+};
+
+// Campo de búsqueda
+const searchQuery = ref("");
+// Retorna las tarjetas que coinciden con el texto ingresado
+const filteredCards = computed(() => {
+  return cards.value.filter((card) =>
+    card.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+</script>

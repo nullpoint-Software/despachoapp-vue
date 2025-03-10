@@ -4,9 +4,9 @@
     @dragover.prevent
     @drop="drop($event)"
   >
-    <!-- Encabezado de la columna -->
-    <h2
-      class="font-bold text-lg text-gray-800 bg-gray-200 py-2 px-4 rounded-md text-center shadow"
+    <!-- Encabezado de la columna con color dinámico -->
+    <h2 
+      class="font-bold text-lg text-gray-800 py-2 px-4 rounded-md text-center shadow :style="{ backgroundColor: color }"
     >
       {{ status }}
     </h2>
@@ -23,6 +23,7 @@
 </template>
 
 <script setup>
+
 import { defineProps, defineEmits } from "vue";
 import KanbanCard from "./KanbanCard.vue";
 import { computed } from "vue";
@@ -30,6 +31,7 @@ import { computed } from "vue";
 const props = defineProps({
   status: String, // Nombre de la columna
   cards: Array, // Lista de tarjetas asociadas a la columna
+  color: String // Color de fondo del encabezado
 });
 
 // Evento para mover tarjetas entre columnas
