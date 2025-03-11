@@ -164,6 +164,8 @@ import { Suspense } from "vue";
 import profilePicture from "@/assets/img/havatar.jpg";
 import { RouterView, RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
+import { onMounted } from "vue";
+import { as } from "@/service/adminApp/client";
 
 export default {
   components: { Button, Avatar, Divider, RouterView, RouterLink },
@@ -190,9 +192,15 @@ export default {
       menuOpen.value = !menuOpen.value;
     };
 
+    //checar si hay autenticacion
+    onMounted(() => {
+      as.checkAuthRedirect();
+    });
+
     // Función para cerrar sesión y redirigir a la página principal.
     function logOut() {
       router.push("/");
+      localStorage.clear();
     }
 
     // Se retornan las variables y funciones para su uso en el template.

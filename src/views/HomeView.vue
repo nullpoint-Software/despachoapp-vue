@@ -84,10 +84,11 @@
         </p>
         <div class="mt-12">
           <button
-            class="bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg text-lg shadow-md hover:bg-blue-700 transition duration-300"
+            class="text-white font-semibold px-6 py-3 rounded-lg text-lg shadow-md hover:bg-blue-700 transition duration-300"
+            :class="isLogged ? 'bg-green-600' : 'bg-blue-600'"
             @click="goLogin"
           >
-            Iniciar Sesión
+            {{ isLogged ? "Ingresar" : "Iniciar Sesión"}}
           </button>
         </div>
       </div>
@@ -288,12 +289,18 @@ import adminImg from "@/assets/img/AdminHome.png";
 import clientImg from "@/assets/img/ClientHome.png";
 import desktopImg from "@/assets/img/DesktopHome.png";
 import payImg from "@/assets/img/payHome.png";
+import { as } from "@/service/adminApp/client";
 
 export default {
   setup() {
     const router = useRouter();
     const menuOpen = ref(false);
     const currentSlide = ref(0);
+    const token = localStorage.getItem("token");
+    const isLogged = ref(false);
+    if (token){
+      isLogged.value = true;
+    }
     // Definición de los items de "Nuestros Servicios"
     const serviceItems = ref([
       {
@@ -358,6 +365,7 @@ export default {
     });
 
     return {
+      isLogged,
       router,
       menuOpen,
       currentSlide,

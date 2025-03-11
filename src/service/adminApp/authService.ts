@@ -1,8 +1,10 @@
 import type { AxiosInstance } from "axios";
 import axios, { AxiosError } from "axios";
+import { useRouter } from "vue-router";
 class authService {
   private serverip: string;
   private axios: AxiosInstance;
+  public authStatus: boolean = false;
 
   constructor(serverip: string, axios: AxiosInstance) {
     this.serverip = serverip;
@@ -19,6 +21,21 @@ class authService {
     } catch (error) {
       console.error(error);
       return false;
+    }
+  };
+  checkAuthRedirect = () => {
+    const router = useRouter();
+
+    // Check if the token exists in localStorage
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      // If the token doesn't exist, redirect to /login
+      router.push("/login");
+      this.authStatus = false;
+    }else{
+      router.push("/app");
+      this.authStatus = true;
     }
   };
 }

@@ -90,21 +90,9 @@ export default {
       showPassword.value = !showPassword.value;
     };
 
-    const checkAuth = () => {
-      const router = useRouter();
-
-      // Check if the token exists in localStorage
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        // If the token doesn't exist, redirect to /login
-        router.push("/login");
-      }else{
-        router.push("/app")
-      }
-    };
+    //checar si hay autenticacion
     onMounted(() => {
-      checkAuth();
+      as.checkAuthRedirect();
     });
     // Crear onda en posiciones aleatorias dentro del fondo
     const createWave = () => {
