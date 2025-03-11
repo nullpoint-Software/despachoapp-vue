@@ -3,9 +3,7 @@
   <div class="p-4 relative">
     <!-- Buscador -->
     <div class="relative w-full max-w-lg mx-auto">
-      <div
-        class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md"
-      >
+      <div class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
         <input
           v-model="searchQuery"
           type="text"
@@ -20,7 +18,6 @@
           ✕
         </button>
       </div>
-
       <ul
         v-if="searchQuery"
         class="absolute top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white"
@@ -41,36 +38,21 @@
     </div>
 
     <!-- Kanban Board -->
-    <!-- 
-      Código original (comentado para no eliminar nada):
-      <div class="kanban-board flex flex-col sm:flex-row gap-2 p-6 bg-transparent min-h-screen overflow-x-auto">
-    -->
-    <!-- 
-      Reemplazamos por un grid que, dependiendo del tamaño de la pantalla, 
-      muestra 1, 2 o 4 columnas:
-        - Por defecto (móvil): 1 columna
-        - sm (>=640px): 2 columnas
-        - lg (>=1024px): 4 columnas
-    -->
     <div
       class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto"
     >
       <div v-for="status in columnStatuses" :key="status" class="flex flex-col">
-        <!-- 
-          NOTA: Conservamos "flex flex-col" aquí para que 
-          el contenido interno (tarjetas) se apile verticalmente 
-          dentro de cada columna 
-        -->
-        <!-- Columna con tarjetas paginadas -->
+        <!-- Cada tarjeta tiene su id="card-{card.id}" para scroll -->
         <KanbanColumn
           :status="status"
           :cards="getPaginatedCardsByStatus(status)"
           :color="getColumnColor(status)"
           @moveCard="moveCard"
+          @viewDetails="openCardDetail"
           :highlighted-card="highlightedCard"
         />
 
-        <!-- Paginación en la parte inferior -->
+        <!-- Paginación -->
         <div class="flex justify-center items-center mt-2 space-x-2">
           <button
             @click="changePage(status, currentPage[status] - 1)"
@@ -92,20 +74,29 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Detalle (se abre al hacer clic en la tarjeta) -->
+    <CardDetail
+      v-if="selectedCard"
+      :card="selectedCard"
+      @close="selectedCard = null"
+      @advanceState="advanceState"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 import KanbanColumn from "./KanbanColumn.vue";
+import CardDetail from "./CardDetail.vue";
 import profilePicture from "@/assets/img/havatar.jpg";
 
-// Se definen los estados/etiquetas de las columnas
+// Estados de columnas y orden
 const columnStatuses = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
 const statusOrder = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
 const cardsPerPage = 5;
 
-// Control de páginas por cada estado
+// Control de páginas para cada columna
 const currentPage = ref({
   Disponible: 0,
   "Por Hacer": 0,
@@ -113,122 +104,202 @@ const currentPage = ref({
   Terminado: 0,
 });
 
-// Arreglo de tarjetas, cada una con "highlight: false" para el efecto de resaltado
+// Arreglo de tarjetas con datos coherentes
 const cards = ref([
   {
     id: 1,
     title: "Cita",
-    description: "Cita con los asociados",
+    description: "Cita con los asociados para discutir estrategias.",
     status: "Disponible",
     startDate: "2024-03-05",
-    endDate: "2024-03-06",
+    endDate: null, // No disponible hasta terminado
     image: profilePicture,
+    userIcon: "pi pi-user", // Icono predeterminado
+    userName: "", // Sin asignación en 'Disponible'
+    ClientName: "Juan Pérez",
+    attachmentName: "agenda.pdf",
+    date: "2024-03-05",
+    startTime: "09:00 AM",
+    endTime: null,
     highlight: false,
   },
   {
     id: 2,
     title: "Revisión de documentos",
-    description: "Verificar contratos",
+    description: "Verificar contratos y anexos legales.",
     status: "Disponible",
     startDate: "2024-03-04",
-    endDate: "2024-03-07",
+    endDate: null,
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "",
+    ClientName: "María López",
+    // Múltiples archivos adjuntos
+    attachmentName: ["contrato.pdf", "anexo.pdf"],
+    date: "2024-03-04",
+    startTime: "10:00 AM",
+    endTime: null,
     highlight: false,
   },
   {
     id: 3,
     title: "Revisión técnica",
-    description: "Analizar códigos",
+    description: "Analizar y optimizar código.",
     status: "Disponible",
     startDate: "2024-03-03",
-    endDate: "2024-03-06",
+    endDate: null,
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "",
+    ClientName: "Luis Martínez",
+    attachmentName: "specs.pdf",
+    date: "2024-03-03",
+    startTime: "08:30 AM",
+    endTime: null,
     highlight: false,
   },
   {
     id: 4,
     title: "Planificación",
-    description: "Organizar actividades",
+    description: "Organizar actividades y asignar tareas.",
     status: "Disponible",
     startDate: "2024-03-02",
-    endDate: "2024-03-08",
+    endDate: null,
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "",
+    ClientName: "Sofía Fernández",
+    attachmentName: "planificacion.pdf",
+    date: "2024-03-02",
+    startTime: "11:00 AM",
+    endTime: null,
     highlight: false,
   },
   {
     id: 5,
     title: "Charros",
-    description: "Reunión con los charros",
+    description: "Reunión con los charros para coordinar el evento.",
     status: "Por Hacer",
     startDate: "2024-03-05",
-    endDate: "2024-03-07",
+    endDate: null,
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "Carlos Ruiz", // Asignado
+    ClientName: "Carlos Ruiz Hernández",
+    attachmentName: "evento.pdf",
+    date: "2024-03-05",
+    startTime: "10:30 AM",
+    endTime: null,
     highlight: false,
   },
   {
     id: 6,
     title: "Actualizar sistema",
-    description: "Migrar a nueva versión",
+    description: "Migrar a nueva versión del software.",
     status: "Por Hacer",
     startDate: "2024-03-04",
-    endDate: "2024-03-06",
+    endDate: null,
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "Ana Gómez", // Asignado
+    ClientName: "Ana Gómez Rivera",
+    attachmentName: "actualizacion.pdf",
+    date: "2024-03-04",
+    startTime: "02:00 PM",
+    endTime: null,
     highlight: false,
   },
   {
     id: 7,
     title: "Entrevistas",
-    description: "Seleccionar nuevos miembros",
+    description: "Seleccionar nuevos miembros del equipo.",
     status: "Por Hacer",
     startDate: "2024-03-03",
-    endDate: "2024-03-09",
+    endDate: null,
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "Ricardo Mora", // Asignado
+    ClientName: "Ricardo Mora Jiménez",
+    attachmentName: "entrevista.pdf",
+    date: "2024-03-03",
+    startTime: "03:00 PM",
+    endTime: null,
     highlight: false,
   },
   {
     id: 8,
     title: "Toros",
-    description: "Ajuste de cuentas",
+    description: "Ajuste de cuentas y conciliación.",
     status: "En progreso",
     startDate: "2024-03-05",
-    endDate: "2024-03-07",
+    endDate: null,
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "Verónica Díaz",
+    ClientName: "Verónica Díaz Castro",
+    attachmentName: "cuentas.pdf",
+    date: "2024-03-05",
+    startTime: "01:00 PM",
+    endTime: null,
     highlight: false,
   },
   {
     id: 9,
     title: "Revisión de proyecto",
-    description: "Verificar avances",
+    description: "Verificar avances y coordinar equipo.",
     status: "En progreso",
     startDate: "2024-03-04",
-    endDate: "2024-03-06",
+    endDate: null,
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "Miguel Torres",
+    ClientName: "Miguel Torres Salinas",
+    attachmentName: "proyecto.pdf",
+    date: "2024-03-04",
+    startTime: "09:30 AM",
+    endTime: null,
     highlight: false,
   },
   {
     id: 10,
     title: "Carnaval",
-    description: "Ir al carnaval",
+    description: "Preparar logística para el carnaval.",
     status: "Terminado",
     startDate: "2024-03-05",
-    endDate: "2024-03-07",
+    endDate: "2024-03-07", // Disponible en Terminado
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "Elena Ríos",
+    ClientName: "Elena Ríos Martínez",
+    attachmentName: "carnaval.pdf",
+    date: "2024-03-07",
+    startTime: "08:00 AM",
+    endTime: "05:00 PM",
     highlight: false,
   },
   {
     id: 11,
     title: "Entrega de informe",
-    description: "Enviar reporte mensual",
+    description: "Enviar reporte mensual al cliente.",
     status: "Terminado",
     startDate: "2024-03-04",
     endDate: "2024-03-06",
     image: profilePicture,
+    userIcon: "pi pi-user",
+    userName: "Laura Méndez",
+    ClientName: "Laura Méndez Sánchez",
+    attachmentName: "informe.pdf",
+    date: "2024-03-06",
+    startTime: "07:00 AM",
+    endTime: "12:00 PM",
     highlight: false,
   },
 ]);
 
-// ID que se usaba para resaltar la tarjeta (se deja para no eliminar nada)
+// ID para resaltar la tarjeta
 const highlightedCard = ref(null);
+// Tarjeta seleccionada para abrir CardDetail
+const selectedCard = ref(null);
 
 // Calcula cuántas páginas hay para cada columna
 const pages = computed(() => {
@@ -249,21 +320,31 @@ const getPaginatedCardsByStatus = (status) => {
   return filtered.slice(start, start + cardsPerPage);
 };
 
-// Cambia de página dentro de una columna dada
+// Cambia de página dentro de una columna
 const changePage = (status, newPage) => {
   if (newPage >= 0 && newPage < pages.value[status]) {
     currentPage.value[status] = newPage;
   }
 };
 
-// Mueve la tarjeta de un status a otro
+// Lógica para avanzar estado (solo se permite avanzar una columna a la vez)
 const moveCard = (cardId, newStatus) => {
   const card = cards.value.find((card) => card.id === cardId);
   if (card) {
     const currentIndex = statusOrder.indexOf(card.status);
     const newIndex = statusOrder.indexOf(newStatus);
-    if (newIndex > currentIndex) {
+    if (newIndex === currentIndex + 1) {
       card.status = newStatus;
+      // Si el estado ya no es "Disponible", se asigna el nombre de usuario
+      if (newStatus !== "Disponible" && !card.userName) {
+        card.userName = "Usuario Asignado";
+      }
+      // Si se completa, asignar fecha y hora de finalización si no existen
+      if (newStatus === "Terminado") {
+        card.endDate = card.endDate || new Date().toISOString().split("T")[0];
+        card.endTime = card.endTime || "06:00 PM";
+        card.date = card.endDate;
+      }
       currentPage.value[newStatus] = 0;
     }
   }
@@ -280,24 +361,32 @@ const getColumnColor = (status) => {
   return colors[status] || "#FFFFFF";
 };
 
-// Al hacer clic en un resultado del buscador, resalta la tarjeta y cambia a la página adecuada
+// Función para abrir el detalle al hacer clic en la tarjeta (emitida desde KanbanColumn)
+const openCardDetail = (card) => {
+  selectedCard.value = card;
+};
+
+// Función de búsqueda (para resultados)
 const markCard = (cardId) => {
   const card = cards.value.find((c) => c.id === cardId);
   if (card) {
-    // Activa el highlight en la tarjeta
     card.highlight = true;
-
-    // Se deja para no eliminar nada
     highlightedCard.value = cardId;
-
-    // Determina en qué página está la tarjeta
+    searchQuery.value = "";
     const status = card.status;
-    const index = cards.value
-      .filter((c) => c.status === status)
-      .findIndex((c) => c.id === cardId);
+    const index = cards.value.filter((c) => c.status === status).findIndex((c) => c.id === cardId);
     currentPage.value[status] = Math.floor(index / cardsPerPage);
-
-    // Desactiva el resaltado después de 3 segundos
+    nextTick(() => {
+      setTimeout(() => {
+        const cardElement = document.getElementById(`card-${cardId}`);
+        if (cardElement) {
+          const rect = cardElement.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const top = rect.top + scrollTop - 50;
+          window.scrollTo({ top, behavior: "smooth" });
+        }
+      }, 100);
+    });
     setTimeout(() => {
       card.highlight = false;
     }, 3000);
@@ -306,7 +395,6 @@ const markCard = (cardId) => {
 
 // Campo de búsqueda
 const searchQuery = ref("");
-// Retorna las tarjetas que coinciden con el texto ingresado
 const filteredCards = computed(() => {
   return cards.value.filter((card) =>
     card.title.toLowerCase().includes(searchQuery.value.toLowerCase())
