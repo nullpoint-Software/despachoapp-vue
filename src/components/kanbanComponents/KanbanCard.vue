@@ -8,14 +8,9 @@
     draggable="true"
     @dragstart="dragStart($event, card)"
   >
-    <!--
-      NOTA: Antes se usaba la prop 'highlight' para esto.
-      Se deja aquí para no eliminar nada, pero ahora la lógica está en card.highlight
-      por alguna razón, crashea la página al modificarlo, favor de revisarlo
-    -->
-    <!-- Miniatura de la tarjeta -->
+    <!-- Cambio: Se agrega un placeholder si card.image es nula -->
     <img
-      :src="card.image"
+      :src="card.image ? card.image : logo"
       alt="Miniatura"
       class="w-12 h-12 rounded-lg object-cover"
     />
@@ -42,6 +37,7 @@
 
 <script setup>
 import { defineProps, computed } from "vue";
+import logo from '@/assets/img/logsymbolblack.png';
 
 const props = defineProps({
   card: Object,

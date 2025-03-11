@@ -5,14 +5,7 @@
     <div class="modal-overlay" @click.self="$emit('close')">
       <!-- Contenedor del Modal con fondo gris bajito -->
       <div class="modal-content relative bg-gray-50">
-        <!-- Botón para cerrar el modal -->
-        <button
-          @click="$emit('close')"
-          class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-3xl focus:outline-none"
-        >
-          &times;
-        </button>
-
+        
         <!-- Encabezado: Foto del usuario y nombre -->
         <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
           <div class="w-16 h-16">
@@ -24,9 +17,10 @@
               />
             </template>
             <template v-else>
+              <!-- Cambio: Se aumenta el tamaño del icono cambiando text-6xl a text-7xl -->
               <i
-                :class="card.userIcon || 'pi pi-user'"
-                class="w-16 h-16 text-gray-400 text-6xl flex items-center justify-center"
+                :class="card.userIcon || ''"
+                class="w-16 h-16 text-gray-400 items-center justify-center"
               ></i>
             </template>
           </div>
@@ -88,6 +82,14 @@
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha</td>
               <td class="px-4 py-2 text-gray-600 text-center">
                 {{ card.date ? card.date : 'No disponible' }}
+              </td>
+            </tr>
+
+            <!-- Agregado: Fila para mostrar la fecha de finalización -->
+            <tr class="border-b border-gray-200">
+              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha Finalizacion</td>
+              <td class="px-4 py-2 text-gray-600 text-center">
+                {{ card.fechaFinalizacion ? card.fechaFinalizacion : 'No disponible' }}
               </td>
             </tr>
 

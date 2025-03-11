@@ -1,6 +1,8 @@
 <!-- KanbanBoard.vue -->
 <template>
   <div class="p-4 relative">
+    <!-- Bloque: Información del usuario (nombre, foto e id) se omite aquí, ya que se obtiene de localStorage -->
+    
     <!-- Buscador -->
     <div class="relative w-full max-w-lg mx-auto">
       <div class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
@@ -90,13 +92,17 @@ import { ref, computed, nextTick } from "vue";
 import KanbanColumn from "./KanbanColumn.vue";
 import CardDetail from "./CardDetail.vue";
 import profilePicture from "@/assets/img/havatar.jpg";
+import logo from "@/assets/img/logsymbolblack.png";
 
-// Estados de columnas y orden
+// Obtener datos del usuario desde localStorage
+const userName = ref(localStorage.getItem("userName") || "Usuario Desconocido");
+const userPhoto = ref(localStorage.getItem("userPhoto") || logo);
+const userId = ref(localStorage.getItem("userId") || null);
+
 const columnStatuses = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
 const statusOrder = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
 const cardsPerPage = 5;
 
-// Control de páginas para cada columna
 const currentPage = ref({
   Disponible: 0,
   "Por Hacer": 0,
@@ -104,7 +110,8 @@ const currentPage = ref({
   Terminado: 0,
 });
 
-// Arreglo de tarjetas con datos coherentes
+// Cada tarjeta incluye 'fechaFinalizacion' que se asignará al pasar a "Terminado"
+// La fecha original 'date' permanece estática
 const cards = ref([
   {
     id: 1,
@@ -112,11 +119,12 @@ const cards = ref([
     description: "Cita con los asociados para discutir estrategias.",
     status: "Disponible",
     startDate: "2024-03-05",
-    endDate: null, // No disponible hasta terminado
-    image: profilePicture,
-    userIcon: "pi pi-user", // Icono predeterminado
-    userName: "", // Sin asignación en 'Disponible'
-    ClientName: "Juan Pérez",
+    endDate: null,
+    fechaFinalizacion: null,
+    image: null,
+    userIcon: null,
+    userName: "",
+    ClientName: "Cliente 1",
     attachmentName: "agenda.pdf",
     date: "2024-03-05",
     startTime: "09:00 AM",
@@ -130,11 +138,11 @@ const cards = ref([
     status: "Disponible",
     startDate: "2024-03-04",
     endDate: null,
-    image: profilePicture,
-    userIcon: "pi pi-user",
+    fechaFinalizacion: null,
+    image: null,
+    userIcon: null,
     userName: "",
-    ClientName: "María López",
-    // Múltiples archivos adjuntos
+    ClientName: "Cliente 2",
     attachmentName: ["contrato.pdf", "anexo.pdf"],
     date: "2024-03-04",
     startTime: "10:00 AM",
@@ -148,10 +156,11 @@ const cards = ref([
     status: "Disponible",
     startDate: "2024-03-03",
     endDate: null,
-    image: profilePicture,
-    userIcon: "pi pi-user",
+    fechaFinalizacion: null,
+    image: null,
+    userIcon: null,
     userName: "",
-    ClientName: "Luis Martínez",
+    ClientName: "Cliente 3",
     attachmentName: "specs.pdf",
     date: "2024-03-03",
     startTime: "08:30 AM",
@@ -165,10 +174,11 @@ const cards = ref([
     status: "Disponible",
     startDate: "2024-03-02",
     endDate: null,
-    image: profilePicture,
-    userIcon: "pi pi-user",
+    fechaFinalizacion: null,
+    image: null,
+    userIcon: null,
     userName: "",
-    ClientName: "Sofía Fernández",
+    ClientName: "Cliente 4",
     attachmentName: "planificacion.pdf",
     date: "2024-03-02",
     startTime: "11:00 AM",
@@ -182,10 +192,11 @@ const cards = ref([
     status: "Por Hacer",
     startDate: "2024-03-05",
     endDate: null,
+    fechaFinalizacion: null,
     image: profilePicture,
     userIcon: "pi pi-user",
-    userName: "Carlos Ruiz", // Asignado
-    ClientName: "Carlos Ruiz Hernández",
+    userName: "Carlos Ruiz",
+    ClientName: "Cliente 5",
     attachmentName: "evento.pdf",
     date: "2024-03-05",
     startTime: "10:30 AM",
@@ -199,10 +210,11 @@ const cards = ref([
     status: "Por Hacer",
     startDate: "2024-03-04",
     endDate: null,
+    fechaFinalizacion: null,
     image: profilePicture,
     userIcon: "pi pi-user",
-    userName: "Ana Gómez", // Asignado
-    ClientName: "Ana Gómez Rivera",
+    userName: "Ana Gómez",
+    ClientName: "Cliente 6",
     attachmentName: "actualizacion.pdf",
     date: "2024-03-04",
     startTime: "02:00 PM",
@@ -216,10 +228,11 @@ const cards = ref([
     status: "Por Hacer",
     startDate: "2024-03-03",
     endDate: null,
+    fechaFinalizacion: null,
     image: profilePicture,
     userIcon: "pi pi-user",
-    userName: "Ricardo Mora", // Asignado
-    ClientName: "Ricardo Mora Jiménez",
+    userName: "Ricardo Mora",
+    ClientName: "Cliente 7",
     attachmentName: "entrevista.pdf",
     date: "2024-03-03",
     startTime: "03:00 PM",
@@ -233,10 +246,11 @@ const cards = ref([
     status: "En progreso",
     startDate: "2024-03-05",
     endDate: null,
+    fechaFinalizacion: null,
     image: profilePicture,
     userIcon: "pi pi-user",
     userName: "Verónica Díaz",
-    ClientName: "Verónica Díaz Castro",
+    ClientName: "Cliente 8",
     attachmentName: "cuentas.pdf",
     date: "2024-03-05",
     startTime: "01:00 PM",
@@ -250,10 +264,11 @@ const cards = ref([
     status: "En progreso",
     startDate: "2024-03-04",
     endDate: null,
+    fechaFinalizacion: null,
     image: profilePicture,
     userIcon: "pi pi-user",
     userName: "Miguel Torres",
-    ClientName: "Miguel Torres Salinas",
+    ClientName: "Cliente 9",
     attachmentName: "proyecto.pdf",
     date: "2024-03-04",
     startTime: "09:30 AM",
@@ -266,11 +281,12 @@ const cards = ref([
     description: "Preparar logística para el carnaval.",
     status: "Terminado",
     startDate: "2024-03-05",
-    endDate: "2024-03-07", // Disponible en Terminado
+    endDate: "2024-03-07",
+    fechaFinalizacion: "2024-03-07",
     image: profilePicture,
     userIcon: "pi pi-user",
     userName: "Elena Ríos",
-    ClientName: "Elena Ríos Martínez",
+    ClientName: "Cliente 10",
     attachmentName: "carnaval.pdf",
     date: "2024-03-07",
     startTime: "08:00 AM",
@@ -284,10 +300,11 @@ const cards = ref([
     status: "Terminado",
     startDate: "2024-03-04",
     endDate: "2024-03-06",
+    fechaFinalizacion: "2024-03-06",
     image: profilePicture,
     userIcon: "pi pi-user",
     userName: "Laura Méndez",
-    ClientName: "Laura Méndez Sánchez",
+    ClientName: "Cliente 11",
     attachmentName: "informe.pdf",
     date: "2024-03-06",
     startTime: "07:00 AM",
@@ -296,9 +313,8 @@ const cards = ref([
   },
 ]);
 
-// ID para resaltar la tarjeta
+// Variables para resaltar y seleccionar tarjetas
 const highlightedCard = ref(null);
-// Tarjeta seleccionada para abrir CardDetail
 const selectedCard = ref(null);
 
 // Calcula cuántas páginas hay para cada columna
@@ -311,7 +327,7 @@ const pages = computed(() => {
   return result;
 });
 
-// Retorna las tarjetas filtradas y paginadas por status
+// Filtra y pagina tarjetas por estado
 const getPaginatedCardsByStatus = (status) => {
   const filtered = cards.value
     .filter((card) => card.status === status)
@@ -320,37 +336,52 @@ const getPaginatedCardsByStatus = (status) => {
   return filtered.slice(start, start + cardsPerPage);
 };
 
-// Cambia de página dentro de una columna
+// Cambia de página en la columna
 const changePage = (status, newPage) => {
   if (newPage >= 0 && newPage < pages.value[status]) {
     currentPage.value[status] = newPage;
   }
 };
 
-// Lógica para avanzar estado (solo se permite avanzar una columna a la vez)
+// Función para obtener la hora actual en formato 12 horas
+function getCurrentTimeFormatted() {
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = now.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const minutesStr = minutes < 10 ? "0" + minutes : minutes;
+  return hours + ":" + minutesStr + " " + ampm;
+}
+
+// Lógica para avanzar de estado.
+// Si se cambia de "Disponible" a "Por Hacer", la tarjeta recibe la foto y el nombre del usuario.
 const moveCard = (cardId, newStatus) => {
   const card = cards.value.find((card) => card.id === cardId);
   if (card) {
-    const currentIndex = statusOrder.indexOf(card.status);
+    const originalStatus = card.status;
+    const currentIndex = statusOrder.indexOf(originalStatus);
     const newIndex = statusOrder.indexOf(newStatus);
     if (newIndex === currentIndex + 1) {
       card.status = newStatus;
-      // Si el estado ya no es "Disponible", se asigna el nombre de usuario
-      if (newStatus !== "Disponible" && !card.userName) {
+      if (originalStatus === "Disponible" && newStatus === "Por Hacer") {
+        // Asigna los datos del usuario a la tarea
+        card.userName = userName.value;
+        card.image = userPhoto.value;
+      } else if (newStatus !== "Disponible" && !card.userName) {
         card.userName = "Usuario Asignado";
       }
-      // Si se completa, asignar fecha y hora de finalización si no existen
       if (newStatus === "Terminado") {
-        card.endDate = card.endDate || new Date().toISOString().split("T")[0];
-        card.endTime = card.endTime || "06:00 PM";
-        card.date = card.endDate;
+        card.fechaFinalizacion = card.fechaFinalizacion || new Date().toISOString().split("T")[0];
+        card.endTime = card.endTime || getCurrentTimeFormatted();
       }
       currentPage.value[newStatus] = 0;
     }
   }
 };
 
-// Devuelve el color de la columna según su status
+// Devuelve el color de la columna según su estado
 const getColumnColor = (status) => {
   const colors = {
     Disponible: "#A7F3D0",
@@ -361,12 +392,12 @@ const getColumnColor = (status) => {
   return colors[status] || "#FFFFFF";
 };
 
-// Función para abrir el detalle al hacer clic en la tarjeta (emitida desde KanbanColumn)
+// Abre el detalle de una tarjeta
 const openCardDetail = (card) => {
   selectedCard.value = card;
 };
 
-// Función de búsqueda (para resultados)
+// Función de búsqueda
 const markCard = (cardId) => {
   const card = cards.value.find((c) => c.id === cardId);
   if (card) {
@@ -393,11 +424,20 @@ const markCard = (cardId) => {
   }
 };
 
-// Campo de búsqueda
 const searchQuery = ref("");
-const filteredCards = computed(() => {
-  return cards.value.filter((card) =>
+const filteredCards = computed(() =>
+  cards.value.filter((card) =>
     card.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-});
+  )
+);
 </script>
+
+<style scoped>
+.custom-scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.custom-scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>
