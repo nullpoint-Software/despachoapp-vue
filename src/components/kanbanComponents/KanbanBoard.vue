@@ -102,7 +102,7 @@ import profilePicture from "@/assets/img/havatar.jpg";
 import { ts } from "@/service/adminApp/client";
 
 const cards = ref((await ts.getTareas()).map(item => ({ 
-    ...item, 
+    ...item,
     highlight: false 
 })));
 console.log("cards", cards);
@@ -152,7 +152,7 @@ const changePage = (status, newPage) => {
 const moveCard = (cardId, newStatus) => {
   const card = cards.value.find((card) => card.id_tarea === cardId);
   if (card) {
-    const currentIndex = statusOrder.indexOf(card.estado);
+    const currentIndex = statusOrder.indexOf(card.estao);
     const newIndex = statusOrder.indexOf(newStatus);
     if (newIndex > currentIndex) {
       card.estado = newStatus;
@@ -166,7 +166,7 @@ const getColumnColor = (status) => {
   const colors = {
     Disponible: "#A7F3D0",
     "Pendiente": "#FCD34D",
-    "En progreso": "#93C5FD",
+    "En Progreso": "#93C5FD",
     Terminado: "#D1D5DB",
   };
   return colors[status] || "#FFFFFF";
