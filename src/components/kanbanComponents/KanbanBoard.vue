@@ -1,8 +1,6 @@
 <!-- KanbanBoard.vue -->
 <template>
   <div class="p-4 relative">
-    <!-- Bloque: Información del usuario (nombre, foto e id) se omite aquí, ya que se obtiene de localStorage -->
-    
     <!-- Buscador -->
     <div class="relative w-full max-w-lg mx-auto">
       <div class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
@@ -77,12 +75,25 @@
       </div>
     </div>
 
-    <!-- Modal de Detalle (se abre al hacer clic en la tarjeta) -->
+    <!-- Modal de Detalle -->
     <CardDetail
       v-if="selectedCard"
       :card="selectedCard"
       @close="selectedCard = null"
       @advanceState="advanceState"
+      @edit="openTaskForm('edit', $event)"
+    />
+
+    <!-- Botón flotante para añadir tarea -->
+    <FloatingTaskButton @click="openTaskForm('add')" />
+
+    <!-- Modal de Formulario para Añadir/Modificar Tarea -->
+    <TaskFormModal
+      v-if="showTaskForm"
+      :mode="taskFormMode"
+      :task="currentTaskForm"
+      @close="closeTaskForm"
+      @save="saveTaskForm"
     />
   </div>
 </template>
@@ -91,10 +102,12 @@
 import { ref, computed, nextTick } from "vue";
 import KanbanColumn from "./KanbanColumn.vue";
 import CardDetail from "./CardDetail.vue";
+import FloatingTaskButton from "./FloatingTaskButton.vue";
+import TaskFormModal from "./TaskFormModal.vue";
 import profilePicture from "@/assets/img/havatar.jpg";
 import logo from "@/assets/img/logsymbolblack.png";
 
-// Obtener datos del usuario desde localStorage
+// Datos del usuario
 const userName = ref(localStorage.getItem("userName") || "Usuario Desconocido");
 const userPhoto = ref(localStorage.getItem("userPhoto") || logo);
 const userId = ref(localStorage.getItem("userId") || null);
@@ -110,9 +123,9 @@ const currentPage = ref({
   Terminado: 0,
 });
 
-// Cada tarjeta incluye 'fechaFinalizacion' que se asignará al pasar a "Terminado"
-// La fecha original 'date' permanece estática
+// Array reactivo de tareas
 const cards = ref([
+  // (Se mantienen las tareas iniciales)
   {
     id: 1,
     title: "Cita",
@@ -313,11 +326,10 @@ const cards = ref([
   },
 ]);
 
-// Variables para resaltar y seleccionar tarjetas
 const highlightedCard = ref(null);
 const selectedCard = ref(null);
 
-// Calcula cuántas páginas hay para cada columna
+// Cálculo de páginas basado en el número de tareas por estado
 const pages = computed(() => {
   const result = {};
   columnStatuses.forEach((status) => {
@@ -327,7 +339,6 @@ const pages = computed(() => {
   return result;
 });
 
-// Filtra y pagina tarjetas por estado
 const getPaginatedCardsByStatus = (status) => {
   const filtered = cards.value
     .filter((card) => card.status === status)
@@ -336,14 +347,12 @@ const getPaginatedCardsByStatus = (status) => {
   return filtered.slice(start, start + cardsPerPage);
 };
 
-// Cambia de página en la columna
 const changePage = (status, newPage) => {
   if (newPage >= 0 && newPage < pages.value[status]) {
     currentPage.value[status] = newPage;
   }
 };
 
-// Función para obtener la hora actual en formato 12 horas
 function getCurrentTimeFormatted() {
   const now = new Date();
   let hours = now.getHours();
@@ -355,8 +364,7 @@ function getCurrentTimeFormatted() {
   return hours + ":" + minutesStr + " " + ampm;
 }
 
-// Lógica para avanzar de estado.
-// Si se cambia de "Disponible" a "Por Hacer", la tarjeta recibe la foto y el nombre del usuario.
+// Al mover la tarjeta, se actualiza el estado y se asignan datos del usuario si es necesario.
 const moveCard = (cardId, newStatus) => {
   const card = cards.value.find((card) => card.id === cardId);
   if (card) {
@@ -366,7 +374,6 @@ const moveCard = (cardId, newStatus) => {
     if (newIndex === currentIndex + 1) {
       card.status = newStatus;
       if (originalStatus === "Disponible" && newStatus === "Por Hacer") {
-        // Asigna los datos del usuario a la tarea
         card.userName = userName.value;
         card.image = userPhoto.value;
       } else if (newStatus !== "Disponible" && !card.userName) {
@@ -381,7 +388,6 @@ const moveCard = (cardId, newStatus) => {
   }
 };
 
-// Devuelve el color de la columna según su estado
 const getColumnColor = (status) => {
   const colors = {
     Disponible: "#A7F3D0",
@@ -392,12 +398,10 @@ const getColumnColor = (status) => {
   return colors[status] || "#FFFFFF";
 };
 
-// Abre el detalle de una tarjeta
 const openCardDetail = (card) => {
   selectedCard.value = card;
 };
 
-// Función de búsqueda
 const markCard = (cardId) => {
   const card = cards.value.find((c) => c.id === cardId);
   if (card) {
@@ -430,6 +434,85 @@ const filteredCards = computed(() =>
     card.title.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 );
+
+/* -----------------------------------------------------------
+   Código para el modal de formulario para añadir/modificar tarea
+----------------------------------------------------------- */
+const showTaskForm = ref(false);
+const taskFormMode = ref("add"); // "add" o "edit"
+const currentTaskForm = ref({
+  id: null,
+  title: "",
+  description: "",
+  ClientName: "",
+  startDate: "",
+  startTime: "",
+  status: "Disponible",
+  image: null,
+  userName: "",
+  attachmentName: [] // Asegurarse de tener la propiedad de archivos
+});
+
+// Cambio: Modificación de openTaskForm para normalizar archivos adjuntos y cerrar CardDetail al editar
+const openTaskForm = (mode, task = null) => {
+  taskFormMode.value = mode;
+  if (mode === "edit" && task) {
+    // Normalizar la propiedad attachmentName para que siempre sea un array de objetos { name, file }
+    let normalizedAttachments = [];
+    if (task.attachmentName) {
+      if (Array.isArray(task.attachmentName)) {
+        // Si el primer elemento es un objeto, se asume que ya está normalizado
+        if (task.attachmentName.length > 0 && typeof task.attachmentName[0] === "object") {
+          normalizedAttachments = task.attachmentName;
+        } else {
+          // Si es un array de strings, se transforma cada uno en objeto
+          normalizedAttachments = task.attachmentName.map(fileName => ({ name: fileName, file: null }));
+        }
+      } else {
+        // Si no es un array, se envuelve en un array como objeto
+        normalizedAttachments = [{ name: task.attachmentName, file: null }];
+      }
+    }
+    currentTaskForm.value = { ...task, attachmentName: normalizedAttachments };
+    // Cambio: Cerrar el CardDetail después de modificar
+    selectedCard.value = null;
+  } else {
+    currentTaskForm.value = {
+      id: null,
+      title: "",
+      description: "",
+      ClientName: "",
+      startDate: "",
+      startTime: "",
+      status: "Disponible",
+      image: null,
+      userName: "",
+      attachmentName: [] // Inicialización de archivos vacía
+    };
+  }
+  showTaskForm.value = true;
+};
+
+const closeTaskForm = () => {
+  showTaskForm.value = false;
+};
+
+const saveTaskForm = (taskData) => {
+  if (taskFormMode.value === "add") {
+    const newId = cards.value.length > 0 ? Math.max(...cards.value.map((c) => c.id)) + 1 : 1;
+    taskData.id = newId;
+    cards.value.push({ ...taskData });
+    // Resetear la página del estado del nuevo tarea a 0
+    currentPage.value[taskData.status] = 0;
+  } else if (taskFormMode.value === "edit") {
+    const index = cards.value.findIndex((c) => c.id === taskData.id);
+    if (index !== -1) {
+      cards.value.splice(index, 1, { ...taskData });
+    }
+  }
+  searchQuery.value = ""; // limpiar búsqueda
+  closeTaskForm();
+};
 </script>
 
 <style scoped>

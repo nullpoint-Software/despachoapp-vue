@@ -108,6 +108,7 @@
         <div class="flex space-x-4">
           <!-- Botón Modificar -->
           <button
+            @click="editTask"
             class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none"
           >
             <i class="pi pi-pencil"></i>
@@ -139,7 +140,13 @@ const props = defineProps({
     required: true,
   },
 });
-const emit = defineEmits(['advanceState', 'close']);
+// Cambio: Se agrega el evento 'edit' para que el botón Modificar pueda emitirlo
+const emit = defineEmits(['advanceState', 'close', 'edit']);
+
+// Cambio: Función para emitir el evento 'edit' con la tarea (card) como argumento
+const editTask = () => {
+  emit('edit', props.card);
+};
 
 const advanceState = () => {
   emit('advanceState', props.card.id);
