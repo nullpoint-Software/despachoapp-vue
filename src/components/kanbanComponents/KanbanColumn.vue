@@ -1,3 +1,4 @@
+<!-- KanbanColumn.vue -->
 <template>
   <div
     class="kanban-column bg-gray-100 shadow-lg rounded-xl p-4 flex-1 mx-2 min-w-[250px] max-w-sm"
@@ -11,14 +12,15 @@
     >
       {{ status }}
     </h2>
-
     <!-- Contenedor de tarjetas -->
     <div class="mt-3 space-y-3">
-      <KanbanCard
+      <div
         v-for="card in cards"
         :key="card.id_tarea"
-        :card="card"
+        @click="handleCardClick(card)" :id="`card-${card.id}`">
+        <KanbanCard :card="card"
       />
+      </div>
     </div>
   </div>
 </template>
@@ -35,12 +37,15 @@ const props = defineProps({
   color: String // Color de fondo del encabezado
 });
 
-// Evento para mover tarjetas entre columnas
-const emit = defineEmits(["moveCard"]);
+const emit = defineEmits(['moveCard', 'viewDetails']);
 
 // Función que maneja la acción de soltar una tarjeta en la columna
 const drop = (event) => {
   const cardId = event.dataTransfer.getData("text/plain");
   emit("moveCard", parseInt(cardId, 10), props.status);
+};
+
+const handleCardClick = (card) => {
+  emit('viewDetails', card);
 };
 </script>

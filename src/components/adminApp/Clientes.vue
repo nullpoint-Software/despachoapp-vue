@@ -1,35 +1,18 @@
 <template>
-  <!-- Contenedor principal de la vista con estilos globales -->
-  <div class="shadow-xl bg-transparent text-white w-full h-full flex flex-col lg:pl-20 lg:pr-20">
-    <!-- Sección del título principal -->
+  <!-- Contenedor principal de la vista -->
+  <div class="shadow-xl bg-transparent text-white w-full h-full flex flex-col">
+    <!-- Título -->
     <div class="flex-auto font-extrabold text-2xl sm:text-4xl mb-6 text-center">
       <br />
       Clientes
     </div>
 
-    <!-- Contenedor de la tabla que maneja el overflow horizontal y esquinas redondeadas -->
+    <!-- Contenedor de la tabla (diseño original) -->
     <div class="flex-grow w-full overflow-hidden overflow-x-auto rounded-xl shadow-lg">
-      <!--
-        Componente DataTable de PrimeVue.
-        Atributos:
-          :value="customers"                -> Lista reactiva de clientes.
-          :filters="filters"                -> Objeto de filtros para la tabla.
-          :globalFilterFields="['id', 'name', 'empresa', 'email', 'tel', 'dom']"
-                                            -> Campos a filtrar globalmente.
-          paginator                         -> Activa la paginación.
-          sortMode="multiple"               -> Permite ordenar por varias columnas a la vez.
-          removableSort                   -> Permite eliminar el ordenamiento aplicado.
-          :rows="5"                         -> Número fijo de filas por página.
-          :rowsPerPageOptions="[5, 10, 20, 50]"
-                                            -> Opciones para el número de filas por página.
-          :rowClass="rowClass"              -> Función que asigna clases CSS a cada fila.
-          class="w-full rounded-lg"         -> Asegura que la tabla ocupe todo el ancho y tenga bordes redondeados.
-      -->
-          
       <DataTable
         :value="customers"
         :filters="filters"
-        :globalFilterFields="['id', 'name', 'empresa', 'email', 'tel', 'dom']"
+        :globalFilterFields="['nombre', 'rfc', 'fiel', 'clecf', 'celular', 'correo']"
         paginator
         sortMode="multiple"
         removableSort
@@ -41,28 +24,41 @@
         <!-- Encabezado de la tabla -->
         <template #header>
           <div class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
-            <!-- Botón para limpiar los filtros activos -->
-            <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              label="Limpiar Filtros"
-              outlined
-              @click="clearFilter"
-              class="mb-2 sm:mb-0 sm:mr-4"
-            />
-            <!-- Contenedor del campo de búsqueda global -->
-            <div class="flex items-center bg-white rounded-lg overflow-hidden w-full sm:w-auto">
-              <span class="p-2">
-                <i class="pi pi-search text-gray-400"></i>
-              </span>
-              <InputText
-                v-model="filters.global.value"
-                placeholder="Buscar..."
-                class="p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
-              />
+            <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+              <!-- Buscador con ícono a la izquierda -->
+              <div class="flex space-x-2 border-2 border-solid">
+                <span class="">
+                  <i class="pi pi-search text-gray-400 text-xl"></i>
+                </span>
+              </div>
+              <div class="relative w-full sm:w-auto">
+                <InputText
+                  v-model="filters.global.value"
+                  placeholder="Buscar..."
+                  class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <!-- Botones -->
+              <div class="flex space-x-2">
+                <Button
+                  type="button"
+                  icon="pi pi-filter-slash"
+                  :label="isMobile ? '' : 'Limpiar Filtros'"
+                  outlined
+                  class="p-2"
+                  @click="clearFilter"
+                />
+                <Button
+                  icon="pi pi-plus"
+                  :label="isMobile ? '' : 'Agregar Cliente'"
+                  class="p-button-success p-2"
+                  @click="openCard(null)"
+                />
+              </div>
             </div>
           </div>
-          <!-- Slider para navegación entre columnas cuando no caben todas en la pantalla -->
+          <!-- Slider para navegación entre columnas (si aplica) -->
           <div v-if="showSlider" class="flex justify-center items-center space-x-2 p-2">
             <Button
               icon="pi pi-chevron-left"
@@ -79,7 +75,7 @@
           </div>
         </template>
 
-        <!-- Renderizado dinámico de columnas basado en 'visibleColumns' -->
+        <!-- Renderizado dinámico de columnas -->
         <Column
           v-for="col in visibleColumns"
           :key="col.field"
@@ -87,37 +83,56 @@
           :field="col.field"
           :header="col.header"
         >
-          <!-- Encabezado de cada columna -->
+          <!-- Header centrado -->
           <template #header="{ header }">
-            <div class="p-1 text-white font-semibold text-center text-sm transition-colors duration-200">
+            <div class="p-1 text-white font-semibold text-center text-sm">
               {{ header }}
             </div>
           </template>
-          <!-- Cuerpo de cada columna -->
+          <!-- Cuerpo centrado -->
           <template #body="{ data, field }">
             <div
-              class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 transition-colors duration-200 text-sm"
+              class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
               @click="copyToClipboard(data[field])"
             >
               {{ data[field] }}
             </div>
           </template>
         </Column>
+
+        <!-- Columna de acciones SIN header -->
+        <Column>
+          <template #body="{ data }">
+            <div class="flex justify-center space-x-2">
+              <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
+              <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+            </div>
+          </template>
+        </Column>
       </DataTable>
     </div>
-    <!-- Componente Toast para notificaciones emergentes -->
+
+    <!-- Toast -->
     <Toast />
+
+    <!-- Card para agregar/editar clientes -->
+    <CardDetailCliente
+      v-if="cardVisible"
+      :customer="selectedCustomer"
+      @close="cardVisible = false"
+      @save="saveCustomer"
+    />
+
+    <!-- Confirmación para eliminación -->
+    <ConfirmDeleteDialog
+      v-if="confirmDialogVisible"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
 <script setup>
-/* 
-  Importación de funciones y componentes esenciales:
-  - ref: Para declarar variables reactivas.
-  - computed: Para crear propiedades computadas.
-  - onMounted, onUnmounted: Para gestionar eventos del ciclo de vida del componente.
-  - Los componentes de PrimeVue se usan para construir la interfaz de usuario.
-*/
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
@@ -125,104 +140,93 @@ import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
-import { cs } from "@/service/adminApp/client";
+import CardDetailCliente from "./CardDetailCliente.vue";
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 
-// Inicialización del Toast para mostrar notificaciones al usuario.
 const toast = useToast();
-const customers = ref(await cs.getClientes())
-console.log("da cliente", customers)
-// Lista reactiva de clientes.
 
-// Definición reactiva de las columnas de la tabla.
-const columns = ref([
-  { field: "id_cliente", header: "ID" },
-  { field: "nombre", header: "Nombre" },
-  { field: "empresa", header: "Empresa" },
-  { field: "email", header: "Correo Electrónico" },
-  { field: "telefono", header: "Teléfono" },
-  { field: "domicilio", header: "Domicilio" },
+// Ejemplos de clientes
+const customers = ref([
+  {
+    id: "1001",
+    nombre: "Juan Pérez",
+    rfc: "JUPE880101XYZ",
+    fiel: "claveFIEL123",
+    clecf: "claveCLECF123",
+    celular: "5566778899",
+    correo: "juan.perez@email.com",
+  },
+  {
+    id: "1002",
+    nombre: "María López",
+    rfc: "MALO900202ABC",
+    fiel: "claveFIEL456",
+    clecf: "claveCLECF456",
+    celular: "5544332211",
+    correo: "maria.lopez@email.com",
+  },
+  {
+    id: "1003",
+    nombre: "Carlos Ramírez",
+    rfc: "CARA920303DEF",
+    fiel: "claveFIEL789",
+    clecf: "claveCLECF789",
+    celular: "5511223344",
+    correo: "carlos.ramirez@email.com",
+  },
 ]);
 
-// Configuración inicial de filtros para la tabla.
+// Columnas definidas
+const columns = ref([
+  { field: "nombre", header: "Nombre Cliente" },
+  { field: "rfc", header: "RFC" },
+  { field: "fiel", header: "Contraseña FIEL" },
+  { field: "clecf", header: "Contraseña CLECF" },
+  { field: "celular", header: "Celular" },
+  { field: "correo", header: "Correo Electrónico" },
+]);
+
+// Filtros
 const filters = ref({
   global: { value: null, matchMode: "contains" },
 });
-
-// Función para limpiar el filtro global.
 const clearFilter = () => {
   filters.value.global.value = null;
 };
 
-// Función que asigna clases condicionales a cada fila para alternar estilos.
-const rowClass = (data, index) => {
-  return index % 2 === 0
-    ? "bg-white hover:bg-gray-100"  // Filas pares
-    : "bg-gray-50 hover:bg-gray-100"; // Filas impares
-};
+// Clase para filas
+const rowClass = (data, index) =>
+  index % 2 === 0 ? "bg-white hover:bg-gray-100" : "bg-gray-50 hover:bg-gray-100";
 
-// Función asíncrona para copiar texto al portapapeles y mostrar notificación.
+// Copiar texto al portapapeles
 const copyToClipboard = async (text) => {
   try {
     await navigator.clipboard.writeText(text);
-    toast.add({
-      severity: "info",
-      summary: "Copiado",
-      detail: `${text}`,
-      life: 2000,
-    });
+    toast.add({ severity: "info", summary: "Copiado", detail: text, life: 2000 });
   } catch (err) {
-    toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: "No se pudo copiar al portapapeles",
-      life: 2000,
-    });
+    toast.add({ severity: "error", summary: "Error", detail: "No se pudo copiar", life: 2000 });
   }
 };
 
-// Detectar si se utiliza un dispositivo móvil (ancho de pantalla <= 640px).
+// Slider de columnas
 const isMobile = ref(window.innerWidth <= 640);
-
-// Variable reactiva que almacena el ancho actual de la pantalla.
 const screenWidth = ref(window.innerWidth);
-
-// Función para manejar el redimensionamiento de la ventana.
 const handleResize = () => {
   screenWidth.value = window.innerWidth;
   isMobile.value = screenWidth.value <= 640;
 };
-
-// Registrar el evento 'resize' al montar el componente.
-onMounted(() => {
-  window.addEventListener("resize", handleResize);
-});
-
-// Remover el evento 'resize' al desmontar el componente.
-onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
-
-// Propiedad computada que determina cuántas columnas mostrar según el ancho de la pantalla.
+onMounted(() => window.addEventListener("resize", handleResize));
+onUnmounted(() => window.removeEventListener("resize", handleResize));
 const columnsToShow = computed(() => {
-  if (screenWidth.value <= 640) return 2;         // Móviles: 2 columnas
-  else if (screenWidth.value <= 1024) return 3;     // Tablets: 3 columnas
-  else return columns.value.length;               // Escritorio: todas las columnas
+  if (screenWidth.value <= 640) return 2;
+  else if (screenWidth.value <= 1024) return 3;
+  else return columns.value.length;
 });
-
-// Propiedad computada que indica si se debe mostrar el slider para navegación entre columnas.
-const showSlider = computed(() => {
-  return columnsToShow.value < columns.value.length;
-});
-
-// Variable reactiva que almacena el índice del grupo actual de columnas en el slider.
+const showSlider = computed(() => columnsToShow.value < columns.value.length);
 const currentPairIndex = ref(0);
-
-// Propiedad computada que calcula el índice máximo permitido para el slider.
 const maxPairIndex = computed(() =>
   Math.ceil(columns.value.length / columnsToShow.value) - 1
 );
-
-// Propiedad computada que determina las columnas visibles actualmente.
 const visibleColumns = computed(() => {
   if (showSlider.value) {
     return columns.value.slice(
@@ -232,18 +236,79 @@ const visibleColumns = computed(() => {
   }
   return columns.value;
 });
-
-// Función para retroceder en el slider.
 const prevPair = () => {
-  if (currentPairIndex.value > 0) {
-    currentPairIndex.value--;
-  }
+  if (currentPairIndex.value > 0) currentPairIndex.value--;
+};
+const nextPair = () => {
+  if (currentPairIndex.value < maxPairIndex.value) currentPairIndex.value++;
 };
 
-// Función para avanzar en el slider.
-const nextPair = () => {
-  if (currentPairIndex.value < maxPairIndex.value) {
-    currentPairIndex.value++;
+// Variables para el card de agregar/editar
+const cardVisible = ref(false);
+const selectedCustomer = ref({});
+const openCard = (customer) => {
+  if (customer) {
+    selectedCustomer.value = { ...customer };
+  } else {
+    selectedCustomer.value = {
+      id: "",
+      nombre: "",
+      rfc: "",
+      fiel: "",
+      clecf: "",
+      celular: "",
+      correo: "",
+    };
   }
+  cardVisible.value = true;
+};
+const saveCustomer = (customer) => {
+  if (customer.id) {
+    const index = customers.value.findIndex((c) => c.id === customer.id);
+    if (index !== -1) {
+      customers.value[index] = { ...customer };
+      toast.add({
+        severity: "success",
+        summary: "Actualizado",
+        detail: "Cliente actualizado correctamente",
+        life: 2000,
+      });
+    }
+  } else {
+    customer.id = Date.now().toString();
+    customers.value.push(customer);
+    toast.add({
+      severity: "success",
+      summary: "Agregado",
+      detail: "Cliente agregado correctamente",
+      life: 2000,
+    });
+  }
+  cardVisible.value = false;
+};
+
+// Variables para confirmación de eliminación
+const confirmDialogVisible = ref(false);
+const candidateToDelete = ref(null);
+const openConfirmDialog = (customer) => {
+  candidateToDelete.value = { ...customer };
+  confirmDialogVisible.value = true;
+};
+const confirmDelete = () => {
+  if (candidateToDelete.value) {
+    customers.value = customers.value.filter((c) => c.id !== candidateToDelete.value.id);
+    toast.add({
+      severity: "warn",
+      summary: "Eliminado",
+      detail: "Cliente eliminado correctamente",
+      life: 2000,
+    });
+  }
+  confirmDialogVisible.value = false;
+  candidateToDelete.value = null;
+};
+const cancelDelete = () => {
+  confirmDialogVisible.value = false;
+  candidateToDelete.value = null;
 };
 </script>

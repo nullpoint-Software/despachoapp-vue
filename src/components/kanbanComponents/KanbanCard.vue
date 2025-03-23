@@ -1,19 +1,16 @@
 <!-- KanbanCard.vue -->
 <template>
+  <!-- Cambio: Se agregó el atributo id para identificar la tarjeta y permitir el scroll hacia ella -->
   <div
+    :id="`card-${card.id}`"
     class="kanban-card bg-white rounded-2xl shadow-lg p-4 mb-3 cursor-pointer border border-gray-300 hover:shadow-xl transition-all duration-300 flex items-start gap-3"
     :class="{ highlighted: card.highlight }"
     draggable="true"
     @dragstart="dragStart($event, card)"
   >
-    <!--
-      NOTA: Antes se usaba la prop 'highlight' para esto.
-      Se deja aquí para no eliminar nada, pero ahora la lógica está en card.highlight
-      por alguna razon, crashea la pagina al modificarlo, favor de revisarlo
-    -->
-    <!-- Miniatura de la tarjeta -->
+    <!-- Cambio: Se agrega un placeholder si card.image es nula -->
     <img
-      :src="card.imagen || defaultProfilePicture"
+      :src="card.image ? card.image : logo"
       alt="Miniatura"
       class="w-12 h-12 rounded-lg object-cover"
     />
@@ -41,6 +38,7 @@
 <script setup>
 import defaultProfilePicture from '@/assets/img/WorkerHome.png'
 import { defineProps, computed } from "vue";
+import logo from '@/assets/img/logsymbolblack.png';
 import { formatFechaSQL } from "@/service/adminApp/client";
 const props = defineProps({
   card: Object,
