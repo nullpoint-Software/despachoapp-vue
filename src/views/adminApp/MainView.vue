@@ -177,7 +177,7 @@ export default {
     const router = useRouter();
     
     // Nombre del perfil del usuario, utilizado en tooltips y displays.
-    const ProfileName = ref("Hachikuji Mayoi");
+    const ProfileName = localStorage.getItem("fullname")
     
     // Lista de elementos del menú para navegación, cada uno con nombre e ícono.
     const menuItems = ref([

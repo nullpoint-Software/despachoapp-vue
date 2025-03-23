@@ -16,7 +16,7 @@ class authService {
       const response = await this.axios.post(`${this.serverip}:5000/login`, credentials);
 
       localStorage.setItem("token", response.data.token); // Store JWT token
-
+      localStorage.setItem("fullname", response.data.fullName);
       return true;
     } catch (error) {
       console.error(error);
