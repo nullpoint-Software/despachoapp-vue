@@ -1,0 +1,16 @@
+
+{
+    "Administrador": {
+      "canMoveAllCards": true,
+      "canEditCard": true,
+      "canDeleteCard": true
+    },
+    "Empleado": {
+      "canMoveAllCards": false, 
+      "canMoveOwnCard": true,
+      "canMoveAvailableCard": true,
+      "canEditCard": true,
+      "canDeleteCard": false
+    }
+  }
+  

@@ -18,6 +18,16 @@ class TareasService {
             throw error;
         }
     }
+
+    async getTareasDisponibles(): Promise<any> {
+        try {
+            const response = await this.axios.get(`${this.serverip}:5000/tareas/disponible`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching tareas:", error);
+            throw error;
+        }
+    }
 }
 
 export default TareasService;

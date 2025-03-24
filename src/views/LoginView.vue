@@ -22,7 +22,9 @@
         Iniciar Sesión
       </h2>
       <p class="text-gray-500 text-center mb-6">Accede a tu cuenta</p>
-
+      <div v-if="showError" class="relative bg-red-600 rounded-md mb-1">
+        <p class="text-1xl font-bold text-white p-2 ">El usuario o contraseña es incorrecto!</p>
+      </div>
       <!-- Formulario -->
       <form @submit.prevent="login">
         <div class="mb-4 relative">
@@ -85,6 +87,7 @@ export default {
     const showPassword = ref(false);
     const waves = ref([]);
     const router = useRouter();
+    const showError = ref(false);
     // Alternar visibilidad de la contraseña
     const togglePassword = () => {
       showPassword.value = !showPassword.value;
@@ -113,6 +116,7 @@ export default {
         email: email.value,
         password: password.value,
       });
+      showError.value = false;
       const isLoggedIn = await as.loginUser({ username: email.value, password: password.value });
 
       if (isLoggedIn) {
@@ -120,6 +124,7 @@ export default {
         goLogin();
       } else {
         console.log("Login failed");
+        showError.value = true;
       }
     };
 
@@ -139,6 +144,7 @@ export default {
       waves,
       createWave,
       goLogin,
+      showError
     };
   },
 };

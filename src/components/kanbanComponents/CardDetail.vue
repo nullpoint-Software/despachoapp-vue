@@ -26,8 +26,9 @@
           </div>
           <div>
             <h3 class="text-2xl font-bold text-gray-800">
-              {{ card.userName && card.status !== 'Disponible' ? card.userName : 'No asignado' }}
+              {{ card.username && card.status !== 'Disponible' ? card.nombre+" "+card.apellido : 'No asignado' }}
             </h3>
+            <h2 class="text-1xl font-bold text-gray-600">{{card.username}}</h2>
           </div>
         </div>
 

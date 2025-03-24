@@ -1,37 +1,21 @@
 <!-- KanbanBoard.vue -->
 <template>
+  <Toast />
   <div class="p-4 relative">
     <!-- Buscador -->
     <div class="relative w-full max-w-lg mx-auto">
       <div class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Buscar tareas..."
-          class="bg-transparent flex-1 outline-none px-2 py-1 text-lg"
-        />
-        <button
-          v-if="searchQuery"
-          @click="searchQuery = ''"
-          class="text-gray-400 hover:text-white transition"
-        >
+        <input v-model="searchQuery" type="text" placeholder="Buscar tareas..."
+          class="bg-transparent flex-1 outline-none px-2 py-1 text-lg" />
+        <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-white transition">
           ✕
         </button>
       </div>
-      <ul
-        v-if="searchQuery"
-        class="absolute top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white"
-      >
-        <li
-          v-for="card in filteredCards"
-          :key="card.id_tarea"
-          @click="markCard(card.id_tarea)"
-          class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition"
-        >
-          <span
-            class="w-5 h-5 rounded-full mr-3"
-            :style="{ backgroundColor: getColumnColor(card.estado) }"
-          ></span>
+      <ul v-if="searchQuery"
+        class="absolute top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white">
+        <li v-for="card in filteredCards" :key="card.id_tarea" @click="markCard(card.id_tarea)"
+          class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition">
+          <span class="w-5 h-5 rounded-full mr-3" :style="{ backgroundColor: getColumnColor(card.estado) }"></span>
           <span class="flex-1">{{ card.titulo }}</span>
         </li>
       </ul>
@@ -39,36 +23,46 @@
 
     <!-- Kanban Board -->
     <div
-      class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto"
-    >
-      <div v-for="status in columnStatuses" :key="status" class="flex flex-col">
+      class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto">
+      <div v-if=cardsDisponible class="flex flex-col">
+        <!-- SEPARAR COLUMNA DISPONIBLE PARA MOSTRAR LAS TAREAS SIN USUARIO ASIGNADO -->
+        <KanbanColumn :status="'Disponible'" :cards="cardsDisponible" :color="getColumnColor('Disponible')"
+          @moveCard="moveCard" @viewDetails="openCardDetail" :highlighted-card="highlightedCard" />
+
+        <div class="flex justify-center items-center mt-2 space-x-2">
+          <button @click="changePage('Disponible', currentPage['Disponible'] - 1)"
+            :disabled="currentPage['Disponible'] === 0"
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            &lt;
+          </button>
+          <span class="px-4 py-2 bg-blue-500 rounded shadow">
+            {{ currentPage['Disponible'] + 1 }}
+          </span>
+          <button @click="changePage('Disponible', currentPage['Disponible'] + 1)"
+            :disabled="currentPage['Disponible'] >= pages['Disponible'] - 1"
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            &gt;
+          </button>
+        </div>
+      </div>
+      <div v-if="cards" v-for="status in columnStatuses" :key="status" class="flex flex-col">
         <!-- Cada tarjeta tiene su id="card-{card.id}" para scroll -->
-        <KanbanColumn
-          :status="status"
-          :cards="getPaginatedCardsByStatus(status)"
-          :color="getColumnColor(status)"
-          @moveCard="moveCard"
-          @viewDetails="openCardDetail"
-          :highlighted-card="highlightedCard"
-        />
+        <KanbanColumn :status="status" :cards="getPaginatedCardsByStatus(status)" :color="getColumnColor(status)"
+          @moveCard="moveCard" @viewDetails="openCardDetail" :highlighted-card="highlightedCard" />
+
 
         <!-- Paginación -->
         <div class="flex justify-center items-center mt-2 space-x-2">
-          <button
-            @click="changePage(status, currentPage[status] - 1)"
-            :disabled="currentPage[status] === 0"
-            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <button @click="changePage(status, currentPage[status] - 1)" :disabled="currentPage[status] === 0"
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             &lt;
           </button>
           <span class="px-4 py-2 bg-blue-500 rounded shadow">
             {{ currentPage[status] + 1 }}
           </span>
-          <button
-            @click="changePage(status, currentPage[status] + 1)"
+          <button @click="changePage(status, currentPage[status] + 1)"
             :disabled="currentPage[status] >= pages[status] - 1"
-            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             &gt;
           </button>
         </div>
@@ -76,44 +70,46 @@
     </div>
 
     <!-- Modal de Detalle -->
-    <CardDetail
-      v-if="selectedCard"
-      :card="selectedCard"
-      @close="selectedCard = null"
-      @advanceState="advanceState"
-      @edit="openTaskForm('edit', $event)"
-    />
+    <CardDetail v-if="selectedCard" :card="selectedCard" @close="selectedCard = null" @advanceState="advanceState"
+      @edit="openTaskForm('edit', $event)" />
 
     <!-- Botón flotante para añadir tarea -->
     <FloatingTaskButton @click="openTaskForm('add')" />
 
     <!-- Modal de Formulario para Añadir/Modificar Tarea -->
-    <TaskFormModal
-      v-if="showTaskForm"
-      :mode="taskFormMode"
-      :task="currentTaskForm"
-      @close="closeTaskForm"
-      @save="saveTaskForm"
-    />
+    <TaskFormModal v-if="showTaskForm" :mode="taskFormMode" :task="currentTaskForm" @close="closeTaskForm"
+      @save="saveTaskForm" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, nextTick } from "vue";
 import KanbanColumn from "./KanbanColumn.vue";
+import { Toast, useToast } from "primevue";
 import CardDetail from "./CardDetail.vue";
 import FloatingTaskButton from "./FloatingTaskButton.vue";
 import TaskFormModal from "./TaskFormModal.vue";
-import profilePicture from "@/assets/img/havatar.jpg";
+import { hasPermission } from "@/service/adminApp/permissionsService";
 import { ts } from "@/service/adminApp/client";
-
-const cards = ref((await ts.getTareas()).map(item => ({ 
-    ...item,
-    highlight: false 
+import { base64ToFile } from "@/service/adminApp/authService";
+const toast = useToast();
+const userId = ref(localStorage.getItem("userid"))
+const userFullName = ref(localStorage.getItem("fullname"));
+const userName = ref(localStorage.getItem("username"));
+const userPhoto = ref(localStorage.getItem("userphoto"))
+const cardsDisponible = ref((await ts.getTareasDisponibles()).map(item => ({
+  ...item,
+  highlight: false
+})));
+console.log("cards disponibles", cardsDisponible);
+const cards = ref((await ts.getTareas()).map(item => ({
+  ...item,
+  highlight: false,
+  image: URL.createObjectURL(base64ToFile(item.usuario_imagen, "task-img.png"))
 })));
 console.log("cards", cards);
 
-const columnStatuses = ["Disponible", "Pendiente", "En Progreso", "Terminado"];
+const columnStatuses = ["Pendiente", "En Progreso", "Terminado"];
 const statusOrder = ["Disponible", "Pendiente", "En Progreso", "Terminado"];
 const cardsPerPage = 5;
 
@@ -125,118 +121,7 @@ const currentPage = ref({
 });
 
 // Arreglo de tarjetas, cada una con "highlight: false" para el efecto de resaltado
-const cards = ref([
-  {
-    id: 1,
-    title: "Cita",
-    description: "Cita con los asociados",
-    status: "Disponible",
-    startDate: "2024-03-05",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 2,
-    title: "Revisión de documentos",
-    description: "Verificar contratos",
-    status: "Disponible",
-    startDate: "2024-03-04",
-    endDate: "2024-03-07",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 3,
-    title: "Revisión técnica",
-    description: "Analizar códigos",
-    status: "Disponible",
-    startDate: "2024-03-03",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 4,
-    title: "Planificación",
-    description: "Organizar actividades",
-    status: "Disponible",
-    startDate: "2024-03-02",
-    endDate: "2024-03-08",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 5,
-    title: "Charros",
-    description: "Reunión con los charros",
-    status: "Por Hacer",
-    startDate: "2024-03-05",
-    endDate: "2024-03-07",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 6,
-    title: "Actualizar sistema",
-    description: "Migrar a nueva versión",
-    status: "Por Hacer",
-    startDate: "2024-03-04",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 7,
-    title: "Entrevistas",
-    description: "Seleccionar nuevos miembros",
-    status: "Por Hacer",
-    startDate: "2024-03-03",
-    endDate: "2024-03-09",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 8,
-    title: "Toros",
-    description: "Ajuste de cuentas",
-    status: "En progreso",
-    startDate: "2024-03-05",
-    endDate: "2024-03-07",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 9,
-    title: "Revisión de proyecto",
-    description: "Verificar avances",
-    status: "En progreso",
-    startDate: "2024-03-04",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 10,
-    title: "Carnaval",
-    description: "Ir al carnaval",
-    status: "Terminado",
-    startDate: "2024-03-05",
-    endDate: "2024-03-07",
-    image: profilePicture,
-    highlight: false,
-  },
-  {
-    id: 11,
-    title: "Entrega de informe",
-    description: "Enviar reporte mensual",
-    status: "Terminado",
-    startDate: "2024-03-04",
-    endDate: "2024-03-06",
-    image: profilePicture,
-    highlight: false,
-  },
-]);
+
 
 const highlightedCard = ref(null);
 const selectedCard = ref(null);
@@ -244,10 +129,23 @@ const selectedCard = ref(null);
 // Cálculo de páginas basado en el número de tareas por estado
 const pages = computed(() => {
   const result = {};
+
+  // For each status, calculate pages
   columnStatuses.forEach((status) => {
-    const total = cards.value.filter((card) => card.estado === status).length;
-    result[status] = Math.ceil(total / cardsPerPage);
+    let allCards = [];
+
+    if (status === "Disponible") {
+      // For "Disponible", consider both cards and cardsDisponible
+      allCards = [...cards.value, ...cardsDisponible.value];
+    } else {
+      // For other statuses, use just cards
+      allCards = cards.value.filter((card) => card.estado === status);
+    }
+
+    const total = allCards.length;
+    result[status] = Math.max(1, Math.ceil(total / cardsPerPage)); // Ensure at least 1 page
   });
+
   return result;
 });
 
@@ -265,40 +163,62 @@ const changePage = (status, newPage) => {
   }
 };
 
-function getCurrentTimeFormatted() {
-  const now = new Date();
-  let hours = now.getHours();
-  const minutes = now.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const minutesStr = minutes < 10 ? "0" + minutes : minutes;
-  return hours + ":" + minutesStr + " " + ampm;
-}
-
 // Al mover la tarjeta, se actualiza el estado y se asignan datos del usuario si es necesario.
+// BUSCA SI LA CARTA QUE SE QUIERE MOVER ESTA EN cards o cardsDisponible
 const moveCard = (cardId, newStatus) => {
-  const card = cards.value.find((card) => card.id_tarea === cardId);
-  if (card) {
-    const originalStatus = card.status;
-    const currentIndex = statusOrder.indexOf(originalStatus);
-    const newIndex = statusOrder.indexOf(newStatus);
-    if (newIndex === currentIndex + 1) {
-      card.estado = newStatus;
-      if (originalStatus === "Disponible" && newStatus === "Por Hacer") {
-        card.userName = userName.value;
-        card.image = userPhoto.value;
-      } else if (newStatus !== "Disponible" && !card.userName) {
-        card.userName = "Usuario Asignado";
+
+  let card = cards.value.find((card) => card.id_tarea === cardId);
+  if (!card) {
+    card = cardsDisponible.value.find((card) => card.id_tarea === cardId);
+  }
+
+  //JERARQUIA DE OPERACION, solo puede mover carta, si: eres admin, la card tiene tu id de usuario asignado, la card no tiene id usuario asignado (status = disponible)
+  const permission = (hasPermission("canMoveAllCards") || (card.id_usuario == localStorage.getItem("userid") && hasPermission("canMoveOwnCard")) || (!card.id_usuario && hasPermission("canMoveAvailableCard")) ? true : false)
+  console.log("card moving", card);
+  if (permission) {
+    if (card) {
+      const originalStatus = card.estado;
+      const currentIndex = statusOrder.indexOf(originalStatus);
+      const newIndex = statusOrder.indexOf(newStatus);
+      if (newIndex === currentIndex + 1) {
+        card.estado = newStatus;
+        if (originalStatus === "Disponible" && newStatus === "Pendiente") {
+          card.id_usuario = parseInt(userId.value); //tambien int por si es problema
+          card.username = userName.value;
+          card.image = userPhoto.value;
+          card.nombre = userFullName.value.split(" ")[0]; //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
+          card.apellido = userFullName.value.split(" ")[1];
+        }
+        else if (newStatus !== "Disponible" && !card.username) {
+          card.username = "Usuario Asignado";
+        }
+        if (newStatus === "Terminado") {
+          card.fecha_vencimiento = card.fecha_vencimiento || new Date().toISOString();
+        }
+        if (originalStatus === "Disponible") {
+          cardsDisponible.value = cardsDisponible.value.filter((c) => c.id_tarea !== cardId);
+          cards.value.push(card);
+        }
+        currentPage.value[newStatus] = 0;
+        toast.add({
+          severity: "info",
+          summary: "Exito",
+          detail: "Tarea actualizada con exito",
+          life: 2000,
+        });
       }
-      if (newStatus === "Terminado") {
-        card.fechaFinalizacion = card.fechaFinalizacion || new Date().toISOString().split("T")[0];
-        card.endTime = card.endTime || getCurrentTimeFormatted();
-      }
-      currentPage.value[newStatus] = 0;
     }
+  } else {
+    console.log("no permission de mover!!")
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "No tienes permiso para mover esta tarea!",
+      life: 2000,
+    });
   }
 };
+
 
 const getColumnColor = (status) => {
   const colors = {
@@ -315,7 +235,10 @@ const openCardDetail = (card) => {
 };
 
 const markCard = (cardId) => {
-  const card = cards.value.find((c) => c.id_tarea === cardId);
+  let card = cards.value.find((c) => c.id_tarea === cardId); //mutable para que funcione con la disponibles
+  if (!card) {
+    card = cardsDisponible.value.find((card) => card.id_tarea === cardId);
+  }
   if (card) {
     card.highlight = true;
     highlightedCard.value = cardId;
@@ -342,7 +265,7 @@ const markCard = (cardId) => {
 
 const searchQuery = ref("");
 const filteredCards = computed(() =>
-  cards.value.filter((card) =>
+  [...cards.value, ...cardsDisponible.value].filter((card) =>
     card.titulo.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 );
@@ -431,6 +354,7 @@ const saveTaskForm = (taskData) => {
 .custom-scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .custom-scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

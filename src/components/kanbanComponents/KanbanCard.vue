@@ -23,8 +23,8 @@
       <p class="text-sm text-gray-600">{{ card.descripcion }}</p>
 
       <!-- Fechas -->
-      <p class="text-xs text-gray-500 mt-1">Inicio: {{ formatFechaSQL(card.fecha_creacion) }}</p>
-      <p class="text-xs text-gray-500">Fin: {{ formatFechaSQL(card.fecha_vencimiento) }}</p>
+      <p class="text-xs text-gray-500 mt-1">Inicio: {{ formatFechaHoraSQL(card.fecha_creacion) }}</p>
+      <p class="text-xs text-gray-500">Fin: {{ (card.fecha_vencimiento) ? formatFechaHoraSQL(card.fecha_vencimiento) : "N/A" }}</p>
 
       <!-- Estado e icono -->
       <div class="flex items-center mt-2">
@@ -39,7 +39,7 @@
 import defaultProfilePicture from '@/assets/img/WorkerHome.png'
 import { defineProps, computed } from "vue";
 import logo from '@/assets/img/logsymbolblack.png';
-import { formatFechaSQL } from "@/service/adminApp/client";
+import { formatFechaHoraSQL } from "@/service/adminApp/client";
 const props = defineProps({
   card: Object,
   highlight: Boolean, // Se deja para no eliminar nada del código original
