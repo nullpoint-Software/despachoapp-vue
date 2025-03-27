@@ -3,14 +3,20 @@
     "Administrador": {
       "canMoveAllCards": true,
       "canEditCard": true,
-      "canDeleteCard": true
+      "canDeleteCard": true,
+      "canAddCliente": true,
+      "canEditCliente": true,
+      "canDeleteCliente": true
     },
     "Empleado": {
       "canMoveAllCards": false, 
       "canMoveOwnCard": true,
       "canMoveAvailableCard": true,
       "canEditCard": true,
-      "canDeleteCard": false
+      "canDeleteCard": false,
+      "canAddCliente": true,
+      "canEditCliente": false,
+      "canDeleteCliente": false
     }
   }
   

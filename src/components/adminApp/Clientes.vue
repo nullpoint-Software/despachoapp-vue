@@ -8,11 +8,20 @@
     </div>
 
     <!-- Contenedor de la tabla (diseño original) -->
-    <div class="flex-grow w-full overflow-hidden overflow-x-auto rounded-xl shadow-lg">
+    <div
+      class="flex-grow w-full overflow-hidden overflow-x-auto rounded-xl shadow-lg"
+    >
       <DataTable
         :value="customers"
         :filters="filters"
-        :globalFilterFields="['nombre', 'rfc', 'fiel', 'clecf', 'celular', 'correo']"
+        :globalFilterFields="[
+          'nombre',
+          'rfc',
+          'fiel',
+          'ciecf',
+          'telefono',
+          'correo',
+        ]"
         paginator
         sortMode="multiple"
         removableSort
@@ -23,7 +32,9 @@
       >
         <!-- Encabezado de la tabla -->
         <template #header>
-          <div class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
+          >
             <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
               <!-- Buscador con ícono a la izquierda -->
               <div class="flex space-x-2 border-2 border-solid">
@@ -38,7 +49,7 @@
                   class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               <!-- Botones -->
               <div class="flex space-x-2">
                 <Button
@@ -51,6 +62,7 @@
                 />
                 <Button
                   icon="pi pi-plus"
+                  v-if="hasPermission('canAddCliente')"
                   :label="isMobile ? '' : 'Agregar Cliente'"
                   class="p-button-success p-2"
                   @click="openCard(null)"
@@ -59,7 +71,10 @@
             </div>
           </div>
           <!-- Slider para navegación entre columnas (si aplica) -->
-          <div v-if="showSlider" class="flex justify-center items-center space-x-2 p-2">
+          <div
+            v-if="showSlider"
+            class="flex justify-center items-center space-x-2 p-2"
+          >
             <Button
               icon="pi pi-chevron-left"
               @click="prevPair"
@@ -104,8 +119,18 @@
         <Column>
           <template #body="{ data }">
             <div class="flex justify-center space-x-2">
-              <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-              <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+              <Button
+                icon="pi pi-pencil"
+                v-if="hasPermission('canEditCliente')"
+                class="p-button-rounded p-button-warning"
+                @click="openCard(data)"
+              />
+              <Button
+                icon="pi pi-trash"
+                v-if="hasPermission('canDeleteCliente')"
+                class="p-button-rounded p-button-danger"
+                @click="openConfirmDialog(data)"
+              />
             </div>
           </template>
         </Column>
@@ -140,50 +165,29 @@ import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
+import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailCliente from "./CardDetailCliente.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
+import { cs } from "@/service/adminApp/client";
 
 const toast = useToast();
 
 // Ejemplos de clientes
-const customers = ref([
-  {
-    id: "1001",
-    nombre: "Juan Pérez",
-    rfc: "JUPE880101XYZ",
-    fiel: "claveFIEL123",
-    clecf: "claveCLECF123",
-    celular: "5566778899",
-    correo: "juan.perez@email.com",
-  },
-  {
-    id: "1002",
-    nombre: "María López",
-    rfc: "MALO900202ABC",
-    fiel: "claveFIEL456",
-    clecf: "claveCLECF456",
-    celular: "5544332211",
-    correo: "maria.lopez@email.com",
-  },
-  {
-    id: "1003",
-    nombre: "Carlos Ramírez",
-    rfc: "CARA920303DEF",
-    fiel: "claveFIEL789",
-    clecf: "claveCLECF789",
-    celular: "5511223344",
-    correo: "carlos.ramirez@email.com",
-  },
-]);
+const customers = ref(
+  (await cs.getClientes()).map((item) => ({
+    ...item,
+    nombre: item.nombre + " " + item.apellido,
+  }))
+);
 
 // Columnas definidas
 const columns = ref([
   { field: "nombre", header: "Nombre Cliente" },
   { field: "rfc", header: "RFC" },
   { field: "fiel", header: "Contraseña FIEL" },
-  { field: "clecf", header: "Contraseña CLECF" },
-  { field: "celular", header: "Celular" },
-  { field: "correo", header: "Correo Electrónico" },
+  { field: "ciecf", header: "Contraseña CLECF" },
+  { field: "telefono", header: "Celular" },
+  { field: "email", header: "Correo Electrónico" },
 ]);
 
 // Filtros
@@ -196,15 +200,27 @@ const clearFilter = () => {
 
 // Clase para filas
 const rowClass = (data, index) =>
-  index % 2 === 0 ? "bg-white hover:bg-gray-100" : "bg-gray-50 hover:bg-gray-100";
+  index % 2 === 0
+    ? "bg-white hover:bg-gray-100"
+    : "bg-gray-50 hover:bg-gray-100";
 
 // Copiar texto al portapapeles
 const copyToClipboard = async (text) => {
   try {
     await navigator.clipboard.writeText(text);
-    toast.add({ severity: "info", summary: "Copiado", detail: text, life: 2000 });
+    toast.add({
+      severity: "info",
+      summary: "Copiado",
+      detail: text,
+      life: 2000,
+    });
   } catch (err) {
-    toast.add({ severity: "error", summary: "Error", detail: "No se pudo copiar", life: 2000 });
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "No se pudo copiar",
+      life: 2000,
+    });
   }
 };
 
@@ -224,8 +240,8 @@ const columnsToShow = computed(() => {
 });
 const showSlider = computed(() => columnsToShow.value < columns.value.length);
 const currentPairIndex = ref(0);
-const maxPairIndex = computed(() =>
-  Math.ceil(columns.value.length / columnsToShow.value) - 1
+const maxPairIndex = computed(
+  () => Math.ceil(columns.value.length / columnsToShow.value) - 1
 );
 const visibleColumns = computed(() => {
   if (showSlider.value) {
@@ -251,31 +267,34 @@ const openCard = (customer) => {
     selectedCustomer.value = { ...customer };
   } else {
     selectedCustomer.value = {
-      id: "",
+      id_cliente: "",
       nombre: "",
       rfc: "",
       fiel: "",
-      clecf: "",
-      celular: "",
-      correo: "",
+      ciecf: "",
+      telefono: "",
+      email: "",
     };
   }
   cardVisible.value = true;
 };
-const saveCustomer = (customer) => {
-  if (customer.id) {
-    const index = customers.value.findIndex((c) => c.id === customer.id);
-    if (index !== -1) {
-      customers.value[index] = { ...customer };
-      toast.add({
-        severity: "success",
-        summary: "Actualizado",
-        detail: "Cliente actualizado correctamente",
-        life: 2000,
-      });
-    }
+const saveCustomer = async (customer) => {
+  if (customer) {
+    // const index = customers.value.findIndex((c) => c.id_cliente === customer.id_cliente);
+    const apellido = customer.nombre.split(" ")[1]
+    customer.nombre = customer.nombre.split(" ")[0]
+    customer.apellido = apellido;
+    console.log("sending", await cs.addCliente(customer));
+    // if (index !== -1) {
+    customers.value[index] = { ...customer };
+    toast.add({
+      severity: "success",
+      summary: "Actualizado",
+      detail: "Cliente actualizado correctamente",
+      life: 2000,
+    });
+    // }
   } else {
-    customer.id = Date.now().toString();
     customers.value.push(customer);
     toast.add({
       severity: "success",
@@ -296,7 +315,9 @@ const openConfirmDialog = (customer) => {
 };
 const confirmDelete = () => {
   if (candidateToDelete.value) {
-    customers.value = customers.value.filter((c) => c.id !== candidateToDelete.value.id);
+    customers.value = customers.value.filter(
+      (c) => c.id !== candidateToDelete.value.id
+    );
     toast.add({
       severity: "warn",
       summary: "Eliminado",
