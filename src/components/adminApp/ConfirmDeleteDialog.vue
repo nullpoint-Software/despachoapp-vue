@@ -18,7 +18,7 @@
           <!-- Mensaje y checkbox -->
           <div class="mb-6 px-4">
             <p class="text-center text-gray-700 mb-4">
-              ¿Estás seguro de eliminar este cliente? Marca la casilla para confirmar.
+              ¿Estás seguro de eliminar este Elemento? Marca la casilla para confirmar.
             </p>
             <div class="flex items-center justify-center">
               <input type="checkbox" id="confirmDelete" v-model="agreed" class="mr-2" />
