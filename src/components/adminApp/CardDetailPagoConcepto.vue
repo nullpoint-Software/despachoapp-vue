@@ -188,7 +188,7 @@ onMounted(() => {
     pago.value.fecha = formatoFecha(hoy); // dd/mm/yyyy
   }
   // Asignar quienAtendio si está vacío
-  if (!pago.value.quienAtendio.trim() && props.usuario.nombre) {
+  if (!pago.value.quienAtendio && props.usuario.nombre) {
     pago.value.quienAtendio = props.usuario.nombre;
   }
   // Convertir la cadena a Date para el Calendar

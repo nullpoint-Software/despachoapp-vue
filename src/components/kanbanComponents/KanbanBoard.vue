@@ -90,7 +90,7 @@ import CardDetail from "./CardDetail.vue";
 import FloatingTaskButton from "./FloatingTaskButton.vue";
 import TaskFormModal from "./TaskFormModal.vue";
 import { hasPermission } from "@/service/adminApp/permissionsService";
-import { ts } from "@/service/adminApp/client";
+import { cs, ts } from "@/service/adminApp/client";
 import { base64ToFile } from "@/service/adminApp/authService";
 const toast = useToast();
 const userId = ref(localStorage.getItem("userid"))
@@ -119,9 +119,6 @@ const currentPage = ref({
   "En Progreso": 0,
   Terminado: 0,
 });
-
-// Arreglo de tarjetas, cada una con "highlight: false" para el efecto de resaltado
-
 
 const highlightedCard = ref(null);
 const selectedCard = ref(null);
@@ -165,7 +162,7 @@ const changePage = (status, newPage) => {
 
 // Al mover la tarjeta, se actualiza el estado y se asignan datos del usuario si es necesario.
 // BUSCA SI LA CARTA QUE SE QUIERE MOVER ESTA EN cards o cardsDisponible
-const moveCard = (cardId, newStatus) => {
+const moveCard = async (cardId, newStatus) => {
 
   let card = cards.value.find((card) => card.id_tarea === cardId);
   if (!card) {
@@ -186,8 +183,7 @@ const moveCard = (cardId, newStatus) => {
           card.id_usuario = parseInt(userId.value); //tambien int por si es problema
           card.username = userName.value;
           card.image = userPhoto.value;
-          card.nombre = userFullName.value.split(" ")[0]; //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
-          card.apellido = userFullName.value.split(" ")[1];
+          card.nombre = userFullName.value //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
         }
         else if (newStatus !== "Disponible" && !card.username) {
           card.username = "Usuario Asignado";
@@ -199,6 +195,7 @@ const moveCard = (cardId, newStatus) => {
           cardsDisponible.value = cardsDisponible.value.filter((c) => c.id_tarea !== cardId);
           cards.value.push(card);
         }
+        console.log("update estado", await ts.updateTareaEstado(card.id_tarea,newStatus))
         currentPage.value[newStatus] = 0;
         toast.add({
           severity: "info",

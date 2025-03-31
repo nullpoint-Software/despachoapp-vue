@@ -171,9 +171,9 @@ const props = defineProps({
   task: {
     type: Object,
     default: () => ({
-      id: null,
-      title: "",
-      description: "",
+      id_tarea: null,
+      titulo: "",
+      descripcion: "",
       ClientName: "",
       startDate: "",
       startTime: "",
@@ -186,7 +186,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "save"]);
 
 // "isEdit" es verdadero si la tarea tiene un id (modo edición)
-const isEdit = computed(() => !!props.task.id);
+const isEdit = computed(() => !!props.task.id_tarea);
 
 // Se crea una copia reactiva local para editar la tarea
 const localTask = ref({ ...props.task });

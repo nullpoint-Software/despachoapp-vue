@@ -9,7 +9,7 @@
         <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
           <i class="pi pi-user-edit text-3xl text-blue-500"></i>
           <h3 class="text-2xl font-bold text-black">
-            {{ customer.nombre ? 'Editar Cliente' : 'Agregar Cliente' }}
+            {{ customer.id_cliente ? 'Editar Cliente' : 'Agregar Cliente' }}
           </h3>
         </div>
         <!-- Formulario -->
@@ -91,7 +91,6 @@ const props = defineProps({
     type: Object,
     default: () => ({
       id_cliente: "",
-      apellido:"",
       nombre: "",
       rfc: "",
       fiel: "",

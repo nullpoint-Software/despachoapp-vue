@@ -8,30 +8,19 @@
     </div>
     <!-- Contenedor de la tabla: se usa containerRef para medir el ancho asignado -->
     <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
-      <DataTable
-        :value="customers"
-        :filters="filters"
-        :globalFilterFields="[
-          'nombre',
-          'rfc',
-          'fiel',
-          'ciecf',
-          'telefono',
-          'correo',
-        ]"
-        paginator
-        sortMode="multiple"
-        removableSort
-        :rows="5"
-        :rowsPerPageOptions="[5, 10, 20, 50]"
-        :rowClass="rowClass"
-        class="w-full rounded-lg p-5"
-      >
+      <DataTable :value="customers" :filters="filters" :globalFilterFields="[
+        'nombre',
+        'rfc',
+        'fiel',
+        'ciecf',
+        'telefono',
+        'correo',
+      ]" paginator sortMode="multiple" removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
+        :rowClass="rowClass" class="w-full rounded-lg p-5">
         <!-- Encabezado de la tabla -->
         <template #header>
           <div
-            class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
-          >
+            class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
             <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
               <!-- Buscador con ícono -->
               <div class="flex space-x-2 border-2 border-solid">
@@ -40,59 +29,31 @@
                 </span>
               </div>
               <div class="relative w-full sm:w-auto">
-                <InputText
-                  v-model="filters.global.value"
-                  placeholder="Buscar..."
-                  class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <InputText v-model="filters.global.value" autocomplete="off" placeholder="Buscar..."
+                  class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <!-- Botones -->
               <div class="flex space-x-2">
-                <Button
-                  type="button"
-                  icon="pi pi-filter-slash"
-                  :label="isMobile ? '' : 'Limpiar Filtros'"
-                  outlined
-                  class="p-2"
-                  @click="clearFilter"
-                />
-                <Button
-                  icon="pi pi-plus"
-                  v-if="hasPermission('canAddCliente')"
-                  :label="isMobile ? '' : 'Agregar Cliente'"
-                  class="p-button-success p-2"
-                  @click="openCard(null)"
-                />
+                <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
+                  class="p-2" @click="clearFilter" />
+                <Button icon="pi pi-plus" v-if="hasPermission('canAddCliente')"
+                  :label="isMobile ? '' : 'Agregar Cliente'" class="p-button-success p-2" @click="openCard(null)" />
               </div>
             </div>
           </div>
           <!-- Slider para columnas: se muestra cuando hay más de una página -->
-          <div
-            v-if="pages.length > 1"
-            class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2"
-          >
-            <Button
-              icon="pi pi-chevron-left"
-              @click="prevPage"
-              :disabled="currentPageIndex === 0"
-              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-            />
-            <Button
-              icon="pi pi-chevron-right"
-              @click="nextPage"
-              :disabled="currentPageIndex === maxPageIndex"
-              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-            />
+          <div v-if="pages.length > 1"
+            class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2">
+            <Button icon="pi pi-chevron-left" @click="prevPage" :disabled="currentPageIndex === 0"
+              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
+            <Button icon="pi pi-chevron-right" @click="nextPage" :disabled="currentPageIndex === maxPageIndex"
+              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
           </div>
         </template>
 
         <!-- Renderizado dinámico de columnas usando la página actual -->
-        <Column
-          v-for="col in visibleColumns"
-          :key="col.field"
-          :sortable="col.field !== 'actions'"
-          :field="col.field !== 'actions' ? col.field : undefined"
-        >
+        <Column v-for="col in visibleColumns" :key="col.field" :sortable="col.field !== 'actions'"
+          :field="col.field !== 'actions' ? col.field : undefined">
           <!-- Encabezado de columna: color negro -->
           <template #header>
             <div class="p-1 text-black font-semibold text-center text-sm">
@@ -106,11 +67,8 @@
               <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
             </div>
             <!-- Sino, mostrar el contenido de la celda -->
-            <div
-              v-else
-              class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-              @click="copyToClipboard(data[col.field])"
-            >
+            <div v-else class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+              @click="copyToClipboard(data[col.field])">
               {{ data[col.field] }}
             </div>
           </template>
@@ -122,19 +80,11 @@
     <Toast />
 
     <!-- Card para agregar/editar clientes -->
-    <CardDetailCliente
-      v-if="cardVisible"
-      :customer="selectedCustomer"
-      @close="cardVisible = false"
-      @save="saveCustomer"
-    />
+    <CardDetailCliente v-if="cardVisible" :customer="selectedCustomer" @close="cardVisible = false"
+      @save="saveCustomer" />
 
     <!-- Confirmación para eliminación -->
-    <ConfirmDeleteDialog
-      v-if="confirmDialogVisible"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
-    />
+    <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
   </div>
 </template>
 
@@ -154,12 +104,7 @@ import { cs } from "@/service/adminApp/client";
 const toast = useToast();
 
 // Ejemplos de clientes
-const customers = ref(
-  (await cs.getClientes()).map((item) => ({
-    ...item,
-    nombre: item.nombre + " " + item.apellido,
-  }))
-);
+const customers = ref(await cs.getClientes());
 
 // Definición de columnas base (sin la columna de acciones)
 const columns = ref([
@@ -318,31 +263,29 @@ const openCard = (customer) => {
 };
 const saveCustomer = async (customer) => {
   if (customer) {
-    // const index = customers.value.findIndex((c) => c.id_cliente === customer.id_cliente);
-    const apellido = customer.nombre.split(" ")[1]
-    customer.nombre = customer.nombre.split(" ")[0]
-    customer.apellido = apellido;
-    console.log("sending", await cs.addCliente(customer));
-    // if (index !== -1) {
-    customers.value[index] = { ...customer };
-    toast.add({
-      severity: "success",
-      summary: "Actualizado",
-      detail: "Cliente actualizado correctamente",
-      life: 2000,
-    });
-    // }
-  } else {
-    customers.value.push(customer);
-    toast.add({
-      severity: "success",
-      summary: "Agregado",
-      detail: "Cliente agregado correctamente",
-      life: 2000,
-    });
+    const index = customers.value.findIndex((c) => c.id_cliente === customer.id_cliente);
+    if (index !== -1) {
+      customers.value[index] = { ...customer };
+      console.log("sending edit to id "+customer.id_cliente, await cs.editCliente(customer))
+      toast.add({
+        severity: "success",
+        summary: "Actualizado",
+        detail: "Cliente actualizado correctamente",
+        life: 2000,
+      });
+    } else {
+      customers.value.push(customer);
+      toast.add({
+        severity: "success",
+        summary: "Agregado",
+        detail: "Cliente agregado correctamente",
+        life: 2000,
+      });
+      console.log("sending", await cs.addCliente(customer));
+    }
+    cardVisible.value = false;
   }
-  cardVisible.value = false;
-};
+}
 
 // Variables para confirmación de eliminación
 const confirmDialogVisible = ref(false);
@@ -351,10 +294,11 @@ const openConfirmDialog = (customer) => {
   candidateToDelete.value = { ...customer };
   confirmDialogVisible.value = true;
 };
-const confirmDelete = () => {
+const confirmDelete = async () => {
   if (candidateToDelete.value) {
-    customers.value = customers.value.filter(
-      (c) => c.id !== candidateToDelete.value.id
+    console.log("deleting cliente with id "+candidateToDelete.value.id, await cs.deleteCliente(candidateToDelete.value.id_cliente))
+    customers.value = await customers.value.filter(
+      (c) => c.id_cliente !== candidateToDelete.value.id_cliente
     );
     toast.add({
       severity: "warn",

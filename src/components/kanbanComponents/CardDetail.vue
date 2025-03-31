@@ -26,7 +26,7 @@
           </div>
           <div>
             <h3 class="text-2xl font-bold text-gray-800">
-              {{ card.username && card.status !== 'Disponible' ? card.nombre+" "+card.apellido : 'No asignado' }}
+              {{ card.username && card.status !== 'Disponible' ? card.nombre : 'No asignado' }}
             </h3>
             <h2 class="text-1xl font-bold text-gray-600">{{card.username}}</h2>
           </div>
@@ -57,7 +57,7 @@
             <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Descripción</td>
               <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.description }}
+                {{ card.descripcion }}
               </td>
             </tr>
 
@@ -82,7 +82,7 @@
             <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha</td>
               <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.date ? card.date : 'No disponible' }}
+                {{ card.fecha_creacion ? formatFechaHoraFullSQL(card.fecha_creacion) : 'No disponible' }}
               </td>
             </tr>
 
@@ -134,6 +134,7 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue';
 import 'primeicons/primeicons.css';
+import { formatFechaHoraFullSQL } from '@/service/adminApp/client';
 
 const props = defineProps({
   card: {

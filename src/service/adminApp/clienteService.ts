@@ -30,6 +30,28 @@ class ClienteService {
             throw error;
         }
     }
+
+    async editCliente(cliente:any){
+        try{
+            const response = await this.axios.put(`${this.serverip}:5000/clientes/${cliente.id_cliente}`,cliente);
+            console.log("try edit cliente",cliente);
+            return response.data;
+        }catch(error){
+            console.error("error edit cliente", error)
+            throw error;
+        }
+    }
+
+    async deleteCliente(id_cliente:String){
+        try{
+            const response = await this.axios.delete(`${this.serverip}:5000/clientes/${id_cliente}`);
+            console.log("try delete cliente",id_cliente);
+            return response.data;
+        }catch(error){
+            console.error("error delete cliente", error)
+            throw error;
+        }
+    }
 }
 
 export default ClienteService;
