@@ -6,11 +6,8 @@
       <br />
       Clientes
     </div>
-
-    <!-- Contenedor de la tabla (diseño original) -->
-    <div
-      class="flex-grow w-full overflow-hidden overflow-x-auto rounded-xl shadow-lg"
-    >
+    <!-- Contenedor de la tabla: se usa containerRef para medir el ancho asignado -->
+    <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
       <DataTable
         :value="customers"
         :filters="filters"
@@ -36,9 +33,9 @@
             class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
           >
             <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
-              <!-- Buscador con ícono a la izquierda -->
+              <!-- Buscador con ícono -->
               <div class="flex space-x-2 border-2 border-solid">
-                <span class="">
+                <span>
                   <i class="pi pi-search text-gray-400 text-xl"></i>
                 </span>
               </div>
@@ -49,7 +46,6 @@
                   class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
               <!-- Botones -->
               <div class="flex space-x-2">
                 <Button
@@ -70,67 +66,52 @@
               </div>
             </div>
           </div>
-          <!-- Slider para navegación entre columnas (si aplica) -->
+          <!-- Slider para columnas: se muestra cuando hay más de una página -->
           <div
-            v-if="showSlider"
-            class="flex justify-center items-center space-x-2 p-2"
+            v-if="pages.length > 1"
+            class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2"
           >
             <Button
               icon="pi pi-chevron-left"
-              @click="prevPair"
-              :disabled="currentPairIndex === 0"
-              class="p-button-rounded p-button-outlined"
+              @click="prevPage"
+              :disabled="currentPageIndex === 0"
+              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
             />
             <Button
               icon="pi pi-chevron-right"
-              @click="nextPair"
-              :disabled="currentPairIndex === maxPairIndex"
-              class="p-button-rounded p-button-outlined"
+              @click="nextPage"
+              :disabled="currentPageIndex === maxPageIndex"
+              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
             />
           </div>
         </template>
 
-        <!-- Renderizado dinámico de columnas -->
+        <!-- Renderizado dinámico de columnas usando la página actual -->
         <Column
           v-for="col in visibleColumns"
           :key="col.field"
-          sortable
-          :field="col.field"
-          :header="col.header"
+          :sortable="col.field !== 'actions'"
+          :field="col.field !== 'actions' ? col.field : undefined"
         >
-          <!-- Header centrado -->
-          <template #header="{ header }">
-            <div class="p-1 text-white font-semibold text-center text-sm">
-              {{ header }}
+          <!-- Encabezado de columna: color negro -->
+          <template #header>
+            <div class="p-1 text-black font-semibold text-center text-sm">
+              {{ col.header }}
             </div>
           </template>
-          <!-- Cuerpo centrado -->
-          <template #body="{ data, field }">
-            <div
-              class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-              @click="copyToClipboard(data[field])"
-            >
-              {{ data[field] }}
-            </div>
-          </template>
-        </Column>
-
-        <!-- Columna de acciones SIN header -->
-        <Column>
           <template #body="{ data }">
-            <div class="flex justify-center space-x-2">
-              <Button
-                icon="pi pi-pencil"
-                v-if="hasPermission('canEditCliente')"
-                class="p-button-rounded p-button-warning"
-                @click="openCard(data)"
-              />
-              <Button
-                icon="pi pi-trash"
-                v-if="hasPermission('canDeleteCliente')"
-                class="p-button-rounded p-button-danger"
-                @click="openConfirmDialog(data)"
-              />
+            <!-- Si la columna es de acciones, mostrar botones -->
+            <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
+              <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
+              <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+            </div>
+            <!-- Sino, mostrar el contenido de la celda -->
+            <div
+              v-else
+              class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+              @click="copyToClipboard(data[col.field])"
+            >
+              {{ data[col.field] }}
             </div>
           </template>
         </Column>
@@ -158,7 +139,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -180,7 +161,7 @@ const customers = ref(
   }))
 );
 
-// Columnas definidas
+// Definición de columnas base (sin la columna de acciones)
 const columns = ref([
   { field: "nombre", header: "Nombre Cliente" },
   { field: "rfc", header: "RFC" },
@@ -190,6 +171,12 @@ const columns = ref([
   { field: "email", header: "Correo Electrónico" },
 ]);
 
+// Columna de acciones (siempre se mostrará)
+const actionsColumn = { field: "actions", header: "Acciones" };
+
+// Base de columnas para el slider (excluyendo la columna de acciones)
+const baseColumns = computed(() => columns.value);
+
 // Filtros
 const filters = ref({
   global: { value: null, matchMode: "contains" },
@@ -198,13 +185,13 @@ const clearFilter = () => {
   filters.value.global.value = null;
 };
 
-// Clase para filas
+// Clase para las filas
 const rowClass = (data, index) =>
   index % 2 === 0
     ? "bg-white hover:bg-gray-100"
     : "bg-gray-50 hover:bg-gray-100";
 
-// Copiar texto al portapapeles
+// Función para copiar al portapapeles
 const copyToClipboard = async (text) => {
   try {
     await navigator.clipboard.writeText(text);
@@ -224,7 +211,7 @@ const copyToClipboard = async (text) => {
   }
 };
 
-// Slider de columnas
+// Detección de dispositivo móvil
 const isMobile = ref(window.innerWidth <= 640);
 const screenWidth = ref(window.innerWidth);
 const handleResize = () => {
@@ -233,33 +220,84 @@ const handleResize = () => {
 };
 onMounted(() => window.addEventListener("resize", handleResize));
 onUnmounted(() => window.removeEventListener("resize", handleResize));
-const columnsToShow = computed(() => {
-  if (screenWidth.value <= 640) return 2;
-  else if (screenWidth.value <= 1024) return 3;
-  else return columns.value.length;
-});
-const showSlider = computed(() => columnsToShow.value < columns.value.length);
-const currentPairIndex = ref(0);
-const maxPairIndex = computed(
-  () => Math.ceil(columns.value.length / columnsToShow.value) - 1
-);
-const visibleColumns = computed(() => {
-  if (showSlider.value) {
-    return columns.value.slice(
-      currentPairIndex.value * columnsToShow.value,
-      currentPairIndex.value * columnsToShow.value + columnsToShow.value
-    );
-  }
-  return columns.value;
-});
-const prevPair = () => {
-  if (currentPairIndex.value > 0) currentPairIndex.value--;
-};
-const nextPair = () => {
-  if (currentPairIndex.value < maxPairIndex.value) currentPairIndex.value++;
-};
 
-// Variables para el card de agregar/editar
+// ====================== MEDICIÓN DEL ANCHO DEL COMPONENTE ======================
+// Uso de containerRef y ResizeObserver para medir el ancho asignado al componente
+const containerRef = ref(null);
+const containerWidth = ref(0);
+let resizeObserver = null;
+onMounted(() => {
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        containerWidth.value = entry.contentRect.width;
+      }
+    });
+    resizeObserver.observe(containerRef.value);
+  }
+});
+onUnmounted(() => {
+  if (resizeObserver && containerRef.value) {
+    resizeObserver.unobserve(containerRef.value);
+  }
+});
+// ====================== FIN DE MEDICIÓN ======================
+
+// ====================== CÁLCULO DE PÁGINAS DEL SLIDER ======================
+// Definición del ancho mínimo para cada columna (en píxeles)
+const minColumnWidth = 150;
+// Número de columnas que cabrían si se muestran todas (incluyendo la columna de acciones)
+const visibleCount = computed(() =>
+  Math.floor((containerWidth.value || screenWidth.value) / minColumnWidth)
+);
+// Si todas (baseColumns + actions) caben, no se activa el slider
+const totalColumnsWithActions = computed(() => baseColumns.value.length + 1);
+const sliderActive = computed(() => totalColumnsWithActions.value > visibleCount.value);
+
+// Para el slider, reservamos siempre espacio para la columna de acciones.
+// La primera página mostrará (visibleCount - 1) columnas de base, y las páginas siguientes se agruparán de 2 en 2.
+const pages = computed(() => {
+  const total = baseColumns.value.length;
+  const vis = visibleCount.value;
+  // Si todas las columnas (base + actions) caben, una sola página
+  if (total + 1 <= vis) return [baseColumns.value];
+  const pagesArray = [];
+  // Primera página: vis - 1 columnas de base
+  const firstPageCount = Math.max(1, vis - 1);
+  pagesArray.push(baseColumns.value.slice(0, firstPageCount));
+  const remaining = baseColumns.value.slice(firstPageCount);
+  for (let i = 0; i < remaining.length; i += 2) {
+    pagesArray.push(remaining.slice(i, i + 2));
+  }
+  return pagesArray;
+});
+
+// Reinicia el índice de página cuando cambian las páginas (por redimensionamiento, por ejemplo)
+const currentPageIndex = ref(0);
+watch(pages, () => {
+  currentPageIndex.value = 0;
+});
+const maxPageIndex = computed(() => pages.value.length - 1);
+
+// Las columnas visibles siempre incluyen la página actual de baseColumns + la columna de acciones
+const visibleColumns = computed(() => {
+  if (pages.value.length === 1) {
+    return [...baseColumns.value, actionsColumn];
+  } else {
+    return [...pages.value[currentPageIndex.value], actionsColumn];
+  }
+});
+
+// Funciones de navegación del slider (páginas)
+const prevPage = () => {
+  if (currentPageIndex.value > 0) currentPageIndex.value--;
+};
+const nextPage = () => {
+  if (currentPageIndex.value < maxPageIndex.value) currentPageIndex.value++;
+};
+// ====================== FIN DEL SLIDER ======================
+
+// Variables para el Card de agregar/editar clientes
 const cardVisible = ref(false);
 const selectedCustomer = ref({});
 const openCard = (customer) => {
