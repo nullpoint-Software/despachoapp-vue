@@ -26,6 +26,7 @@
           </div>
           <div>
             <h3 class="text-2xl font-bold text-gray-800">
+              <!-- Cambio: Si la tarea está asignada se muestra el nombre; de lo contrario se indica 'No asignado' -->
               {{ card.userName && card.status !== 'Disponible' ? card.userName : 'No asignado' }}
             </h3>
           </div>
@@ -60,22 +61,10 @@
               </td>
             </tr>
 
-            <!-- Archivo(s) Adjunto(s) -->
-            <tr v-if="card.attachmentName" class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Archivo</td>
-              <td class="px-4 py-2 text-blue-600 text-center">
-                <template v-if="Array.isArray(card.attachmentName)">
-                  <div v-for="(file, index) in card.attachmentName" :key="index" class="flex items-center justify-center">
-                    <i class="pi pi-file mr-1"></i>
-                    <span class="underline hover:text-blue-500 cursor-pointer">{{ file }}</span>
-                  </div>
-                </template>
-                <template v-else>
-                  <i class="pi pi-file mr-1"></i>
-                  <span class="underline hover:text-blue-500 cursor-pointer">{{ card.attachmentName }}</span>
-                </template>
-              </td>
-            </tr>
+            <!-- 
+              Cambio: Se eliminó el bloque de "Archivo(s) Adjunto(s)" para quitar los archivos
+              adjuntos de la interfaz.
+            -->
 
             <!-- Fecha -->
             <tr class="border-b border-gray-200">
@@ -85,7 +74,7 @@
               </td>
             </tr>
 
-            <!-- Agregado: Fila para mostrar la fecha de finalización -->
+            <!-- Fecha Finalización -->
             <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha Finalizacion</td>
               <td class="px-4 py-2 text-gray-600 text-center">
@@ -143,7 +132,7 @@ const props = defineProps({
 // Cambio: Se agrega el evento 'edit' para que el botón Modificar pueda emitirlo
 const emit = defineEmits(['advanceState', 'close', 'edit']);
 
-// Cambio: Función para emitir el evento 'edit' con la tarea (card) como argumento
+// Función para emitir el evento 'edit' con la tarea (card) como argumento
 const editTask = () => {
   emit('edit', props.card);
 };
