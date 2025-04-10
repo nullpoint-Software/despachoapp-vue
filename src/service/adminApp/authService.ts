@@ -11,51 +11,90 @@ class authService {
     this.axios = axios;
   }
 
-  async loginUser(credentials: { username: string, password: string}) {
+  async loginUser(credentials: { username: string; password: string }) {
     try {
-      const response = await this.axios.post(`${this.serverip}:5000/login`, credentials);
+      const response = await this.axios.post(
+        `${this.serverip}:5000/login`,
+        credentials
+      );
 
       localStorage.setItem("token", response.data.token); // Store JWT token
       localStorage.setItem("fullname", response.data.fullName);
       localStorage.setItem("username", response.data.username);
       localStorage.setItem("userid", response.data.userid);
-      
+
       localStorage.setItem("level", response.data.level);
       const base64Image = response.data.userphoto;
-    // const imageFile = base64ToFile(base64Image, 'profile-photo.png');
-    // const imageUrl = URL.createObjectURL(imageFile); // Create a URL for the image blob
+      // const imageFile = base64ToFile(base64Image, 'profile-photo.png');
+      // const imageUrl = URL.createObjectURL(imageFile); // Create a URL for the image blob
 
-    localStorage.setItem("userphoto", "data:image/png;base64,"+response.data.userphoto);
+      localStorage.setItem(
+        "userphoto",
+        "data:image/png;base64," + response.data.userphoto
+      );
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  getUserInfo = async () => {
+    try {
+      const response = await axios.get(`${this.serverip}:5000/usuario`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      localStorage.setItem("fullname", response.data.fullName);
+      localStorage.setItem("username", response.data.username);
+      localStorage.setItem("userid", response.data.userid);
+
+      localStorage.setItem("level", response.data.level);
+      localStorage.setItem(
+        "userphoto",
+        "data:image/png;base64," + response.data.userphoto
+      );
       return true;
     } catch (error) {
       console.error(error);
       return false;
     }
   };
-  checkAuthRedirect = async() => {
+
+  checkAuthRedirect = async () => {
     const router = useRouter();
     const currentRoute = useRoute();
 
     // Check if the token exists in localStorage
     const token = await localStorage.getItem("token");
-
-    if (!token) {
-      // If the token doesn't exist, redirect to /login
+    if(!await this.getUserInfo()){
+      localStorage.clear()
       await router.push("/login");
       this.authStatus = false;
-    }else if(token && currentRoute.path === "/login"){
+    }
+    if (!token) {
+      // If the token doesn't exist, redirect to /login
+      localStorage.clear()
+      await router.push("/login");
+      this.authStatus = false;
+    } else if (token && currentRoute.path === "/login") {
       await router.push("/app");
       this.authStatus = true;
     }
-  }
-};
+  };
+}
 
-export function base64ToFile(base64String: string, filename: string, mimeType: string = "image/png"): Blob {
+export function base64ToFile(
+  base64String: string,
+  filename: string,
+  mimeType: string = "image/png"
+): Blob {
   // Clean the base64 string to remove any whitespace characters
-  const cleanedBase64String = base64String.replace(/\s+/g, ''); // Remove all spaces, newlines, etc.
-  
+  const cleanedBase64String = base64String.replace(/\s+/g, ""); // Remove all spaces, newlines, etc.
+
   // Split the base64 string into the MIME part and the actual base64 data
-  const arr = cleanedBase64String.split(',');
+  const arr = cleanedBase64String.split(",");
 
   // Default to 'image/png' if no MIME type is provided
   let mime = mimeType;
@@ -91,7 +130,5 @@ export function base64ToFile(base64String: string, filename: string, mimeType: s
     throw new Error(`Invalid base64 string: ${error.message}`);
   }
 }
-
-
 
 export default authService;

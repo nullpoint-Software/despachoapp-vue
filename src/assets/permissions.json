@@ -10,7 +10,7 @@
     },
     "Empleado": {
       "canMoveAllCards": false, 
-      "canMoveOwnCard": true,
+      "canMoveOwnCard": false,
       "canMoveAvailableCard": true,
       "canEditCard": true,
       "canDeleteCard": false,

@@ -3,10 +3,12 @@ const serverip = import.meta.env.VITE_API_SERVER_IP;
 import ClienteService from "./clienteService";
 import TareasService from "./tareasService";
 import authService from "./authService";
+import PagosService from "./pagosService";
 
 export const cs = new ClienteService(serverip, axios);
 export const ts = new TareasService(serverip, axios);
 export const as = new authService(serverip, axios);
+export const ps = new PagosService(serverip, axios);
 
 export const formatFechaSQL = (dateStr: string): string => {
     const date = new Date(dateStr);

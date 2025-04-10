@@ -46,13 +46,13 @@
                   class="w-8 h-8 rounded-full mr-2"
                 />
                 <InputText
-                  v-model="pago.quienAtendio"
+                  v-model="pago.atendio"
                   disabled
                   class="p-2 border border-gray-300 rounded w-full"
                   placeholder="Nombre del usuario"
                 />
               </div>
-              <span v-if="errors.quienAtendio" class="text-red-500 text-sm">{{ errors.quienAtendio }}</span>
+              <span v-if="errors.atendio" class="text-red-500 text-sm">{{ errors.atendio }}</span>
             </div>
             <!-- Campo 'cobramos' con prefijo "$" -->
             <div class="flex flex-col">
@@ -123,7 +123,7 @@
         id: "",
         nombreCompleto: "",
         asunto: "",
-        quienAtendio: "",
+        atendio: "",
         cobramos: "",
         pagamos: "",
         saldo: "",
@@ -144,7 +144,7 @@
   const errors = ref({
     nombreCompleto: "",
     asunto: "",
-    quienAtendio: "",
+    atendio: "",
     cobramos: "",
     pagamos: "",
     saldo: "",
@@ -155,7 +155,7 @@
     errors.value = {
       nombreCompleto: "",
       asunto: "",
-      quienAtendio: "",
+      atendio: "",
       cobramos: "",
       pagamos: "",
       saldo: "",
@@ -168,7 +168,7 @@
     errors.value = {
       nombreCompleto: "",
       asunto: "",
-      quienAtendio: "",
+      atendio: "",
       cobramos: "",
       pagamos: "",
       saldo: "",
@@ -182,8 +182,8 @@
       errors.value.asunto = "El asunto o trámite es obligatorio.";
       valid = false;
     }
-    if (!pago.value.quienAtendio.trim()) {
-      errors.value.quienAtendio = "El campo 'quien atendió' es obligatorio.";
+    if (!pago.value.atendio.trim()) {
+      errors.value.atendio = "El campo 'quien atendió' es obligatorio.";
       valid = false;
     }
     if (!pago.value.cobramos.trim()) {

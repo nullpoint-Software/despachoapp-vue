@@ -4,7 +4,7 @@
     <DataTable
       :value="mensual"
       :filters="filters"
-      :globalFilterFields="['cliente', 'quienAtendio', 'honorarios', 'mesAno']"
+      :globalFilterFields="['cliente', 'atendio', 'honorarios', 'mes_ano']"
       paginator
       sortMode="multiple"
       removableSort
@@ -126,14 +126,11 @@ import Button from "primevue/button";
 import Toast from "primevue/toast";
 import CardDetailMensual from "./CardDetailMensual.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
-
+import { ps } from "@/service/adminApp/client";
 const toast = useToast();
 
 // Datos de ejemplo
-const mensual = ref([
-  { id: "M-1001", cliente: "Cliente 1", quienAtendio: "Usuario X", honorarios: "$1,000.00", mesAno: "04/2025" },
-  { id: "M-1002", cliente: "Cliente 2", quienAtendio: "Usuario Y", honorarios: "$1,500.00", mesAno: "05/2025" },
-]);
+const mensual = ref(await ps.getPagoMensual());
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
@@ -145,9 +142,9 @@ const usuario = ref({
 // Definición de columnas base
 const columns = ref([
   { field: "cliente", header: "Cliente" },
-  { field: "quienAtendio", header: "Atendió" },
+  { field: "atendio", header: "Atendió" },
   { field: "honorarios", header: "Honorarios" },
-  { field: "mesAno", header: "Mes y Año" },
+  { field: "mes_ano", header: "Mes y Año" },
 ]);
 const actionsColumn = { field: "actions", header: "Acciones" };
 const baseColumns = computed(() => columns.value);
@@ -252,9 +249,9 @@ const openCard = (pago) => {
     selectedMensual.value = {
       id: "",
       cliente: "",
-      quienAtendio: usuario.value.nombre, // se asigna nombre del usuario
+      atendio: usuario.value.nombre, // se asigna nombre del usuario
       honorarios: "",
-      mesAno: "",
+      mes_ano: "",
     };
   }
   cardVisible.value = true;
@@ -290,8 +287,9 @@ const openConfirmDialog = (pago) => {
   candidateToDelete.value = { ...pago };
   confirmDialogVisible.value = true;
 };
-const confirmDelete = () => {
+const confirmDelete = async () => {
   if (candidateToDelete.value) {
+    await ps.deletePagoMensual(candidateToDelete.value.id)
     mensual.value = mensual.value.filter((m) => m.id !== candidateToDelete.value.id);
     toast.add({
       severity: "warn",

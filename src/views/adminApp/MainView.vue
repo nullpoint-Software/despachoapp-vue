@@ -129,6 +129,7 @@ export default {
     onMounted(async () => {
       try {
         await as.checkAuthRedirect();
+        // await this.getUserInfo()
       } catch (error) {
         console.error("Auth check failed:", error);
         router.push("/login"); // Redirect to login if auth fails

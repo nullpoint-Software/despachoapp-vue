@@ -4,7 +4,7 @@
     <DataTable
       :value="historial"
       :filters="filters"
-      :globalFilterFields="['cliente', 'quienAtendio', 'fecha', 'cantidad', 'tipo']"
+      :globalFilterFields="['cliente', 'atendio', 'fecha', 'cantidad', 'tipo']"
       paginator
       sortMode="multiple"
       removableSort
@@ -131,8 +131,8 @@ const toast = useToast();
 
 // Datos de ejemplo
 const historial = ref([
-  { id: "H-1001", cliente: "Cliente A", quienAtendio: "Usuario X", fecha: "01/05/2025", cantidad: "$500.00", tipo: "cobro" },
-  { id: "H-1002", cliente: "Cliente B", quienAtendio: "Usuario Y", fecha: "02/05/2025", cantidad: "$300.00", tipo: "pago" },
+  { id: "H-1001", cliente: "Cliente A", atendio: "Usuario X", fecha: "01/05/2025", cantidad: "$500.00", tipo: "cobro" },
+  { id: "H-1002", cliente: "Cliente B", atendio: "Usuario Y", fecha: "02/05/2025", cantidad: "$300.00", tipo: "pago" },
 ]);
 
 // Lectura del usuario desde localStorage
@@ -145,7 +145,7 @@ const usuario = ref({
 // Definición de columnas base
 const columns = ref([
   { field: "cliente", header: "Cliente" },
-  { field: "quienAtendio", header: "Atendió" },
+  { field: "atendio", header: "Atendió" },
   { field: "fecha", header: "Fecha" },
   { field: "cantidad", header: "Cantidad" },
   { field: "tipo", header: "Tipo" },
@@ -253,7 +253,7 @@ const openCard = (registro) => {
     selectedHistorial.value = {
       id: "",
       cliente: "",
-      quienAtendio: usuario.value.nombre, // se asigna nombre del usuario
+      atendio: usuario.value.nombre, // se asigna nombre del usuario
       fecha: "",
       cantidad: "",
       tipo: "",

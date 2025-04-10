@@ -170,7 +170,11 @@ const moveCard = async (cardId, newStatus) => {
   }
 
   //JERARQUIA DE OPERACION, solo puede mover carta, si: eres admin, la card tiene tu id de usuario asignado, la card no tiene id usuario asignado (status = disponible)
-  const permission = (hasPermission("canMoveAllCards") || (card.id_usuario == localStorage.getItem("userid") && hasPermission("canMoveOwnCard")) || (!card.id_usuario && hasPermission("canMoveAvailableCard")) ? true : false)
+  const permission = (
+    await hasPermission("canMoveAllCards") 
+  || (card.id_usuario == localStorage.getItem("userid") && await hasPermission("canMoveOwnCard")) 
+  || (!card.id_usuario && await hasPermission("canMoveAvailableCard")) 
+  ? true : false)
   console.log("card moving", card);
   if (permission) {
     if (card) {

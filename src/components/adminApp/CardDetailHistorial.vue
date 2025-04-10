@@ -37,13 +37,13 @@
                 class="w-8 h-8 rounded-full mr-2"
               />
               <InputText
-                v-model="registro.quienAtendio"
+                v-model="registro.atendio"
                 disabled
                 class="p-2 border border-gray-300 rounded w-full"
                 placeholder="Nombre del usuario"
               />
             </div>
-            <span v-if="errors.quienAtendio" class="text-red-500 text-sm">{{ errors.quienAtendio }}</span>
+            <span v-if="errors.atendio" class="text-red-500 text-sm">{{ errors.atendio }}</span>
           </div>
 
           <!-- Fecha con Calendar -->
@@ -110,7 +110,7 @@ const props = defineProps({
     default: () => ({
       id: "",
       cliente: "",
-      quienAtendio: "",
+      atendio: "",
       fecha: "",
       cantidad: "",
       tipo: "",
@@ -130,7 +130,7 @@ const emit = defineEmits(["close", "save"]);
 const registro = ref({ ...props.registro });
 const errors = ref({
   cliente: "",
-  quienAtendio: "",
+  atendio: "",
   fecha: "",
   cantidad: "",
   tipo: "",
@@ -145,8 +145,8 @@ onMounted(() => {
     const hoy = new Date();
     registro.value.fecha = formatoFecha(hoy);
   }
-  if (!registro.value.quienAtendio.trim() && props.usuario.nombre) {
-    registro.value.quienAtendio = props.usuario.nombre;
+  if (!registro.value.atendio.trim() && props.usuario.nombre) {
+    registro.value.atendio = props.usuario.nombre;
   }
   fechaSeleccionada.value = aDate(registro.value.fecha);
 });
@@ -155,7 +155,7 @@ watch(() => props.registro, (newVal) => {
   registro.value = { ...newVal };
   errors.value = {
     cliente: "",
-    quienAtendio: "",
+    atendio: "",
     fecha: "",
     cantidad: "",
     tipo: "",
@@ -182,7 +182,7 @@ const validate = () => {
   let valid = true;
   errors.value = {
     cliente: "",
-    quienAtendio: "",
+    atendio: "",
     fecha: "",
     cantidad: "",
     tipo: "",
@@ -191,8 +191,8 @@ const validate = () => {
     errors.value.cliente = "El cliente es obligatorio.";
     valid = false;
   }
-  if (!registro.value.quienAtendio.trim()) {
-    errors.value.quienAtendio = "El campo 'quien atendio' es obligatorio.";
+  if (!registro.value.atendio.trim()) {
+    errors.value.atendio = "El campo 'quien atendio' es obligatorio.";
     valid = false;
   }
   if (!registro.value.fecha.trim()) {
