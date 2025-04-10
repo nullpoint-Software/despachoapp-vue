@@ -1,20 +1,27 @@
-import permissions from "@/assets/permissions.json";
 import { as } from "./client";
 interface PermissionsService {
   [level: string]: {
     [permission: string]: boolean;
   };
 }
-const perms: PermissionsService = permissions;
+let perms: PermissionsService | null = null;
 
 export async function hasPermission(permissionKey: string) {
   // Get the user's level from localStorage
   await as.getUserInfo();
   const userLevel = localStorage.getItem("level");
-  console.log("the level: ",userLevel);
-  
+  console.log("the level: ", userLevel);
+
+  try {
+    const response = await fetch("http://localhost:5000/permissions.json");
+    perms = await response.json();
+    // Optionally cache the result in localStorage
+  } catch (error) {
+    console.error("Failed to load permissions:", error);
+    return false; // Default to false if the request fails
+  }
   // Check if userLevel exists and if permissions for that level are defined
-  if (userLevel && perms[userLevel]) {
+  if (perms && userLevel && perms[userLevel]) {
     return perms[userLevel][permissionKey] === true;
   }
 
