@@ -1,10 +1,21 @@
 <template>
   <!-- Contenedor de la tabla -->
-  <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
+  <div
+    ref="containerRef"
+    class="flex-grow w-full overflow-hidden rounded-xl shadow-lg"
+  >
     <DataTable
       :value="payments"
       :filters="filters"
-      :globalFilterFields="['cliente', 'asunto', 'atendio', 'cobramos', 'pagamos', 'fecha', 'saldo']"
+      :globalFilterFields="[
+        'cliente',
+        'asunto',
+        'atendio',
+        'cobramos',
+        'pagamos',
+        'fecha',
+        'saldo',
+      ]"
       paginator
       sortMode="multiple"
       removableSort
@@ -15,7 +26,9 @@
     >
       <!-- Encabezado de la tabla -->
       <template #header>
-        <div class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
+        >
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
             <!-- Buscador -->
             <div class="flex space-x-2 border-2 border-solid">
@@ -83,11 +96,29 @@
         </template>
         <template #body="{ data }">
           <!-- Acciones -->
-          <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-            <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+          <div
+            v-if="col.field === 'actions'"
+            class="flex justify-center space-x-2"
+          >
+            <Button
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-warning"
+              @click="openCard(data)"
+            />
+            <Button
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-danger"
+              @click="openConfirmDialog(data)"
+            />
           </div>
           <!-- Celdas normales -->
+          <span
+            v-if="col.field === 'fecha'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(formatFechaSQL(data[col.field]))"
+          >
+            {{ formatFechaSQL(data[col.field]) }}
+          </span>
           <div
             v-else
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
@@ -127,32 +158,13 @@ import Button from "primevue/button";
 import Toast from "primevue/toast";
 import CardDetailPagoConcepto from "./CardDetailPagoConcepto.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
+import { ps } from "@/service/adminApp/client";
+import { formatFechaSQL } from "@/service/adminApp/client";
 
 const toast = useToast();
 
 // Datos de ejemplo
-const payments = ref([
-  {
-    id: "C-1001",
-    cliente: "Cliente Uno",
-    asunto: "Trámite A",
-    atendio: "Usuario X",
-    cobramos: "$1,000.00",
-    pagamos: "$700.00",
-    fecha: "01/04/2025",
-    saldo: "$300.00",
-  },
-  {
-    id: "C-1002",
-    cliente: "Cliente Dos",
-    asunto: "Trámite B",
-    atendio: "Usuario Y",
-    cobramos: "$2,000.00",
-    pagamos: "$1,500.00",
-    fecha: "02/04/2025",
-    saldo: "$500.00",
-  },
-]);
+const payments = ref(await ps.getPagoConcepto());
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
@@ -184,15 +196,27 @@ const clearFilter = () => {
 
 // Clase para las filas
 const rowClass = (data, index) =>
-  index % 2 === 0 ? "bg-white hover:bg-gray-100" : "bg-gray-50 hover:bg-gray-100";
+  index % 2 === 0
+    ? "bg-white hover:bg-gray-100"
+    : "bg-gray-50 hover:bg-gray-100";
 
 // Copiar al portapapeles
 const copyToClipboard = async (text) => {
   try {
     await navigator.clipboard.writeText(text);
-    toast.add({ severity: "info", summary: "Copiado", detail: text, life: 2000 });
+    toast.add({
+      severity: "info",
+      summary: "Copiado",
+      detail: text,
+      life: 2000,
+    });
   } catch (err) {
-    toast.add({ severity: "error", summary: "Error", detail: "No se pudo copiar", life: 2000 });
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "No se pudo copiar",
+      life: 2000,
+    });
   }
 };
 
@@ -317,7 +341,9 @@ const openConfirmDialog = (payment) => {
 };
 const confirmDelete = () => {
   if (candidateToDelete.value) {
-    payments.value = payments.value.filter((p) => p.id !== candidateToDelete.value.id);
+    payments.value = payments.value.filter(
+      (p) => p.id !== candidateToDelete.value.id
+    );
     toast.add({
       severity: "warn",
       summary: "Eliminado",

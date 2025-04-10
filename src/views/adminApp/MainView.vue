@@ -100,7 +100,9 @@
         </div>
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
+       <Suspense>
       <RouterView />
+    </Suspense>
     </div>
 
     <!-- Modal para abrir el Tablero de Notas -->
@@ -112,7 +114,9 @@
             <i class="pi pi-times text-2xl"></i>
           </button>
           <!-- Se renderiza el componente del Tablero de Notas -->
+           <Suspense>
           <BoardNote/>
+        </Suspense>
         </div>
       </div>
     </transition>
@@ -126,12 +130,14 @@ import "primeicons/primeicons.css";
 import Button from "primevue/button";
 import Divider from "primevue/divider";
 import Avatar from "primevue/avatar";
+import { onMounted } from "vue";
 import { Suspense } from "vue";
 import defaultprofilePicture from "@/assets/img/havatar.jpg";
 import { RouterView, RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
 // Cambio: Importación del componente BoardNote(Tablero de Notas)
 import BoardNote from "@/components/notes/BoardNote.vue";
+import { as } from "@/service/adminApp/client";
 
 export default {
   components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote},
@@ -141,7 +147,7 @@ export default {
     const router = useRouter();
     const ProfileName = localStorage.getItem("fullname")
     // Definir un ID de usuario de ejemplo
-    const userId = ref("HM-001");
+    const userId = ref(localStorage.getItem("userid"));
     const profilePicture = ref(localStorage.getItem("userphoto"));
     const menuItems = ref([
       { name: "Inicio", icon: "pi pi-home" },
@@ -166,12 +172,10 @@ export default {
     // Función para cerrar sesión y redirigir a la página principal.
     function logOut() {
       router.push("/");
+      localStorage.clear();
     }
     
     // Al iniciar, almacenar los datos del usuario en localStorage
-    localStorage.setItem("userName", ProfileName.value);
-    localStorage.setItem("userPhoto", profilePicture);
-    localStorage.setItem("userId", userId.value);
 
     // Cambio: Variable para controlar la apertura del modal del Tablero de Notas
     const showNotesModal = ref(false);
