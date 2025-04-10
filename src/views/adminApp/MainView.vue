@@ -13,8 +13,8 @@
         <!-- Logo de la empresa: La fuente de la imagen se define de manera reactiva -->
         <img :src="mainImageSrc" alt="Logo de la Empresa" class="w-20 lg:w-20" />
       </div>
-
-      <!-- Sección derecha del navbar: Muestra la información del usuario y el botón de cerrar sesión, visible en pantallas grandes -->
+      
+      <!-- Sección derecha del navbar: Muestra la información del usuario y los botones -->
       <div class="hidden lg:flex text-white space-x-3 items-center mr-4">
         <!-- Avatar del usuario con tooltip que muestra el nombre del perfil -->
         <Avatar v-tooltip.bottom="ProfileName" :image="profilePicture" shape="circle" />
@@ -22,9 +22,22 @@
         <span class="font-bold">{{ ProfileName }}</span>
         <!-- Separador vertical -->
         <Divider layout="vertical" />
+        <!-- Botón para abrir el modal con el Tablero de Notas -->
+        <Button
+          icon="pi pi-book"
+          class="p-button-rounded bg-yellow-500 hover:bg-yellow-600"
+          @click="openNotesModal"
+          aria-label="Abrir Tablero de Notas"
+        />
         <!-- Botón para cerrar sesión -->
-        <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text
-          :onclick="logOut" />
+        <Button
+          label="Cerrar sesión"
+          icon="pi pi-sign-out"
+          class="flex-auto cursor-pointer"
+          severity="danger"
+          text
+          :onclick="logOut"
+        />
       </div>
     </nav>
 
@@ -54,7 +67,7 @@
       </div>
     </transition>
 
-    <!-- Contenedor Principal para el contenido -->
+    <!-- Área principal: Incluye el menú lateral y la vista de rutas -->
     <div class="flex flex-grow bg-gray-700">
       <!-- Menú lateral (Side Menu) para Escritorio -->
       <aside
@@ -87,11 +100,22 @@
         </div>
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
-      <!--suspense para operacion async-->
-      <Suspense>
-        <RouterView />
-      </Suspense>
+      <RouterView />
     </div>
+
+    <!-- Modal para abrir el Tablero de Notas -->
+    <transition name="fade">
+      <div v-if="showNotesModal" class="modal-overlay fixed inset-0 z-50" @click.self="closeNotesModal">
+        <div class="modal-content relative bg-gray-50 p-4 rounded-md shadow-lg max-w-4xl mx-auto mt-20">
+          <!-- Botón para cerrar el modal -->
+          <button @click="closeNotesModal" class="absolute top-2 right-2 text-gray-700">
+            <i class="pi pi-times text-2xl"></i>
+          </button>
+          <!-- Se renderiza el componente del Tablero de Notas -->
+          <BoardNote/>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -106,11 +130,11 @@ import { Suspense } from "vue";
 import defaultprofilePicture from "@/assets/img/havatar.jpg";
 import { RouterView, RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
-import { onMounted } from "vue";
-import { as } from "@/service/adminApp/client";
-export const isAdmin = (localStorage.getItem("level") === "Administrador" ? true : false)
+// Cambio: Importación del componente BoardNote(Tablero de Notas)
+import BoardNote from "@/components/notes/BoardNote.vue";
+
 export default {
-  components: { Button, Avatar, Divider, RouterView, RouterLink },
+  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote},
   setup() {
     
     const menuOpen = ref(false);
@@ -142,11 +166,37 @@ export default {
     // Función para cerrar sesión y redirigir a la página principal.
     function logOut() {
       router.push("/");
-      localStorage.clear();
     }
+    
+    // Al iniciar, almacenar los datos del usuario en localStorage
+    localStorage.setItem("userName", ProfileName.value);
+    localStorage.setItem("userPhoto", profilePicture);
+    localStorage.setItem("userId", userId.value);
 
-    // Se retornan las variables y funciones para su uso en el template.
-    return { isAdmin, mainImageSrc, menuOpen, profilePicture, ProfileName, menuItems, toggleMenu, logOut };
+    // Cambio: Variable para controlar la apertura del modal del Tablero de Notas
+    const showNotesModal = ref(false);
+    // Función para abrir el modal
+    const openNotesModal = () => {
+      showNotesModal.value = true;
+    };
+    // Función para cerrar el modal
+    const closeNotesModal = () => {
+      showNotesModal.value = false;
+    };
+    
+    return { 
+      mainImageSrc, 
+      menuOpen, 
+      profilePicture, 
+      ProfileName, 
+      menuItems, 
+      toggleMenu, 
+      logOut, 
+      userId,
+      showNotesModal,
+      openNotesModal,
+      closeNotesModal
+    };
   },
 };
 </script>
@@ -169,5 +219,19 @@ export default {
 .custom-scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Estilos para el modal de Tablero de Notas */
+.modal-overlay {
+  backdrop-filter: blur(4px);
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

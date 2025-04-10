@@ -1,3 +1,4 @@
+<!-- TaskFormModal.vue -->
 <template>
   <transition name="fade">
     <div class="modal-overlay" @click.self="close">
@@ -66,7 +67,7 @@
               class="w-full p-2 border border-gray-300 rounded bg-white text-black"
             >
               <option :value="null">Ninguno</option>
-              <!-- Nombres reales -->
+              <!-- Lista de empleados -->
               <option v-for="employee in employees" :key="employee.value" :value="employee.value">
                 {{ employee.label }}
               </option>
@@ -80,7 +81,7 @@
           </div>
         </div>
 
-        <!-- Paso 2: Programación y archivos (opcional) -->
+        <!-- Paso 2: Programación -->
         <div v-if="step === 2" class="space-y-4 px-4 mt-6">
           <!-- Fecha de Inicio (obligatoria) con icono -->
           <div>
@@ -119,34 +120,9 @@
               </div>
             </div>
           </div>
-          <!-- Archivos Adjuntos (opcional) -->
-          <div>
-            <label class="block font-semibold text-black">Archivos Adjuntos (Opcional)</label>
-            <div
-              class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100"
-              @dragover.prevent
-              @drop="handleDrop"
-              @click="triggerFileInput"
-            >
-              <input type="file" multiple class="hidden" @change="handleFileUpload" ref="fileInput" />
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              <p class="text-sm text-gray-500 mt-2">Arrastra archivos aquí o haz clic para seleccionarlos</p>
-            </div>
-            <!-- Previsualización de archivos -->
-            <div v-if="attachedFiles.length" class="mt-4">
-              <p class="font-semibold text-black mb-1">Archivos Subidos:</p>
-              <ul class="list-disc pl-5">
-                <li v-for="(fileObj, index) in attachedFiles" :key="index" class="flex items-center space-x-2 text-blue-600 hover:underline cursor-pointer" @click="openFile(fileObj.file)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6" />
-                  </svg>
-                  <span>{{ fileObj.name }}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
+          <!-- 
+            Cambio: Se eliminó la sección de "Archivos Adjuntos" para quitar la funcionalidad de carga de archivos.
+          -->
           <!-- Botones de Navegación -->
           <div class="flex justify-end space-x-4">
             <button @click="step = 1" class="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded">Anterior</button>
@@ -179,7 +155,7 @@ const props = defineProps({
       startTime: "",
       status: "Disponible",
       assignedEmployee: null,
-      attachmentName: [] // Almacenará objetos { name, file }
+      attachmentName: [] // Se mantiene la propiedad, pero ya no se usa para archivos adjuntos
     })
   }
 });
@@ -205,46 +181,12 @@ const errors = ref({
   startDate: false,
 });
 
-// Para manejo de archivos
-const fileInput = ref(null);
-const localFiles = ref([]);
-const attachedFiles = computed(() =>
-  localFiles.value.map(file => ({ name: file.name, file }))
-);
-watch(localFiles, (newFiles) => {
-  localTask.value.attachmentName = newFiles.map(file => ({ name: file.name, file }));
-});
-
 // Lista de empleados con nombres reales
 const employees = ref([
   { label: "Juan Pérez", value: "juan.perez" },
   { label: "María López", value: "maria.lopez" },
   { label: "Carlos García", value: "carlos.garcia" },
 ]);
-
-// Función para abrir un archivo en nueva pestaña
-const openFile = (file) => {
-  const fileURL = URL.createObjectURL(file);
-  window.open(fileURL, "_blank");
-};
-
-// Función para manejar carga de archivos desde input
-const handleFileUpload = (event) => {
-  const files = Array.from(event.target.files);
-  localFiles.value.push(...files);
-};
-
-// Función para manejar archivos mediante drag & drop
-const handleDrop = (event) => {
-  event.preventDefault();
-  const files = Array.from(event.dataTransfer.files);
-  localFiles.value.push(...files);
-};
-
-// Función para disparar click en el input oculto
-const triggerFileInput = () => {
-  fileInput.value.click();
-};
 
 // Validar campos del Paso 1 y avanzar al Paso 2
 const nextStep = () => {
@@ -259,9 +201,17 @@ const nextStep = () => {
 const save = () => {
   errors.value.startDate = !localTask.value.startDate;
   if (errors.value.startDate) return;
-  // Cambio realizado: Se ajusta el valor de status a "Por Hacer" (con H mayúscula) para que coincida con el kanbanboard
-  localTask.value.status = localTask.value.assignedEmployee ? "Por Hacer" : "Disponible";
-  localTask.value.attachmentName = attachedFiles.value;
+  // Cambio: Se ajusta el valor de status según si se asigna un empleado
+  if (localTask.value.assignedEmployee) {
+    // Se busca el empleado en la lista y se asigna su label al campo userName
+    const emp = employees.value.find(e => e.value === localTask.value.assignedEmployee);
+    localTask.value.userName = emp ? emp.label : "Usuario Asignado";
+    localTask.value.status = "Por Hacer";
+  } else {
+    localTask.value.status = "Disponible";
+    localTask.value.userName = "";
+  }
+  // Se emite la tarea sin archivos adjuntos
   emit("save", { ...localTask.value });
 };
 

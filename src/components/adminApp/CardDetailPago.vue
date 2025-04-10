@@ -1,4 +1,4 @@
-<!-- CardDetailPago.vue -->
+<!-- CardDetail.vue -->
 <template>
     <transition name="fade">
       <div class="modal-overlay" @click.self="close">

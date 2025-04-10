@@ -290,30 +290,30 @@ const currentTaskForm = ref({
   status: "Disponible",
   image: null,
   userName: "",
-  attachmentName: [] // Asegurarse de tener la propiedad de archivos
+  attachmentName: [] // Se mantiene la propiedad, pero se inicializa vacía
 });
 
-// Cambio: Modificación de openTaskForm para normalizar archivos adjuntos y cerrar CardDetail al editar
+// Cambio: Modificación de openTaskForm para eliminar la normalización de archivos adjuntos
 const openTaskForm = (mode, task = null) => {
   taskFormMode.value = mode;
   if (mode === "edit" && task) {
-    // Normalizar la propiedad attachmentName para que siempre sea un array de objetos { name, file }
+    /* 
+    Cambio: Se comenta la normalización de archivos adjuntos debido a que se eliminan estos campos.
     let normalizedAttachments = [];
     if (task.attachmentName) {
       if (Array.isArray(task.attachmentName)) {
-        // Si el primer elemento es un objeto, se asume que ya está normalizado
         if (task.attachmentName.length > 0 && typeof task.attachmentName[0] === "object") {
           normalizedAttachments = task.attachmentName;
         } else {
-          // Si es un array de strings, se transforma cada uno en objeto
           normalizedAttachments = task.attachmentName.map(fileName => ({ name: fileName, file: null }));
         }
       } else {
-        // Si no es un array, se envuelve en un array como objeto
         normalizedAttachments = [{ name: task.attachmentName, file: null }];
       }
     }
-    currentTaskForm.value = { ...task, attachmentName: normalizedAttachments };
+    */
+    // Se asigna attachmentName como array vacío
+    currentTaskForm.value = { ...task, attachmentName: [] };
     // Cambio: Cerrar el CardDetail después de modificar
     selectedCard.value = null;
   } else {
@@ -342,7 +342,7 @@ const saveTaskForm = (taskData) => {
     const newId = cards.value.length > 0 ? Math.max(...cards.value.map((c) => c.id)) + 1 : 1;
     taskData.id = newId;
     cards.value.push({ ...taskData });
-    // Resetear la página del estado del nuevo tarea a 0
+    // Resetear la página del estado del nueva tarea a 0
     currentPage.value[taskData.status] = 0;
   } else if (taskFormMode.value === "edit") {
     const index = cards.value.findIndex((c) => c.id === taskData.id);
