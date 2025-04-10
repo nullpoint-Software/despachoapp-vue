@@ -31,16 +31,22 @@ class TareasService {
     }
   }
 
-  async updateTareaEstado(id_tarea: String, estado:any): Promise<any> {
+  async updateTareaEstado(id_tarea: String, estado:any, fecha_vencimiento:any): Promise<any> {
     try {
         console.log("try update tarea",id_tarea+" est: "+estado);
-      const response = await this.axios.put(`${this.serverip}:5000/tareas/${id_tarea}`,{estado: estado, id_usuario: localStorage.getItem("userid")});
-      return response.data;
+      if(!fecha_vencimiento){ //si no terminado
+        const response = await this.axios.put(`${this.serverip}:5000/tareas/${id_tarea}`,{estado: estado, id_usuario: localStorage.getItem("userid")});
+        return response.data;
+      }else{ // si terminado
+        const response = await this.axios.put(`${this.serverip}:5000/tareas/${id_tarea}`,{estado: estado, id_usuario: localStorage.getItem("userid"), fecha_vencimiento: fecha_vencimiento});
+        return response.data;
+      }
     } catch (error) {
       console.error("error update tarea", error);
       throw error;
     }
   }
+
 }
 
 export default TareasService;

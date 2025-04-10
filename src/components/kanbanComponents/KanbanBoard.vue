@@ -192,14 +192,18 @@ const moveCard = async (cardId, newStatus) => {
         else if (newStatus !== "Disponible" && !card.username) {
           card.username = "Usuario Asignado";
         }
-        if (newStatus === "Terminado") {
-          card.fecha_vencimiento = card.fecha_vencimiento || new Date().toISOString();
-        }
+        
         if (originalStatus === "Disponible") {
           cardsDisponible.value = cardsDisponible.value.filter((c) => c.id_tarea !== cardId);
           cards.value.push(card);
         }
-        console.log("update estado", await ts.updateTareaEstado(card.id_tarea,newStatus))
+        if (!(newStatus === "Terminado")) {
+          console.log("update estado", await ts.updateTareaEstado(card.id_tarea,newStatus))
+        }else{
+          card.fecha_vencimiento = card.fecha_vencimiento || new Date().toISOString();
+          console.log("update estado", await ts.updateTareaEstado(card.id_tarea,newStatus,card.fecha_vencimiento))
+        }
+        
         currentPage.value[newStatus] = 0;
         toast.add({
           severity: "info",
