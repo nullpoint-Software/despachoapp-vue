@@ -1,4 +1,5 @@
 import { as } from "./client";
+const serverip = import.meta.env.VITE_API_SERVER_IP;
 interface PermissionsService {
   [level: string]: {
     [permission: string]: boolean;
@@ -13,7 +14,7 @@ export async function hasPermission(permissionKey: string) {
   console.log("the level: ", userLevel);
 
   try {
-    const response = await fetch("http://localhost:5000/permissions.json");
+    const response = await fetch(`${serverip}:5000/permissions.json`);
     perms = await response.json();
     // Optionally cache the result in localStorage
   } catch (error) {
