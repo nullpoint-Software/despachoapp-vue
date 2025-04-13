@@ -14,7 +14,7 @@ export async function hasPermission(permissionKey: string) {
   console.log("the level: ", userLevel);
 
   try {
-    const response = await fetch(`${serverip}:5000/permissions.json`);
+    const response = await fetch(`${serverip}/permissions.json`);
     perms = await response.json();
     // Optionally cache the result in localStorage
   } catch (error) {

@@ -13,7 +13,7 @@ class PagosService {
 
   async getPagoHistorial() {
     try {
-      const response = await this.axios.get(`${this.serverip}:5000/pagohistorial`);
+      const response = await this.axios.get(`${this.serverip}/pagohistorial`);
       return response.data;
     } catch (error) {
       throw error;
@@ -22,7 +22,7 @@ class PagosService {
 
   async addPagoHistorial(data: any) {
     try {
-      const response = await this.axios.post(`${this.serverip}:5000/pagohistorial`, data);
+      const response = await this.axios.post(`${this.serverip}/pagohistorial`, data);
       return response.data;
     } catch (error) {
       throw error;
@@ -31,7 +31,7 @@ class PagosService {
 
   async updatePagoHistorial(id: number, data: any) {
     try {
-      const response = await this.axios.put(`${this.serverip}:5000/pagohistorial/${id}`, data);
+      const response = await this.axios.put(`${this.serverip}/pagohistorial/${id}`, data);
       return response.data;
     } catch (error) {
       throw error;
@@ -40,7 +40,7 @@ class PagosService {
 
   async deletePagoHistorial(id: number) {
     try {
-      const response = await this.axios.delete(`${this.serverip}:5000/pagohistorial/${id}`);
+      const response = await this.axios.delete(`${this.serverip}/pagohistorial/${id}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -51,7 +51,7 @@ class PagosService {
 
   async getPagoMensual() {
     try {
-      const response = await this.axios.get(`${this.serverip}:5000/pagomensual`);
+      const response = await this.axios.get(`${this.serverip}/pagomensual`);
       return response.data;
     } catch (error) {
       throw error;
@@ -60,7 +60,7 @@ class PagosService {
 
   async addPagoMensual(data: any) {
     try {
-      const response = await this.axios.post(`${this.serverip}:5000/pagomensual`, data);
+      const response = await this.axios.post(`${this.serverip}/pagomensual`, data);
       return response.data;
     } catch (error) {
       throw error;
@@ -69,7 +69,7 @@ class PagosService {
 
   async updatePagoMensual(id: number, data: any) {
     try {
-      const response = await this.axios.put(`${this.serverip}:5000/pagomensual/${id}`, data);
+      const response = await this.axios.put(`${this.serverip}/pagomensual/${id}`, data);
       return response.data;
     } catch (error) {
       throw error;
@@ -78,7 +78,7 @@ class PagosService {
 
   async deletePagoMensual(id: number) {
     try {
-      const response = await this.axios.delete(`${this.serverip}:5000/pagomensual/${id}`);
+      const response = await this.axios.delete(`${this.serverip}/pagomensual/${id}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -89,7 +89,7 @@ class PagosService {
 
   async getPagoConcepto() {
     try {
-      const response = await this.axios.get(`${this.serverip}:5000/pagoconcepto`);
+      const response = await this.axios.get(`${this.serverip}/pagoconcepto`);
       return response.data;
     } catch (error) {
       throw error;
@@ -98,7 +98,7 @@ class PagosService {
 
   async addPagoConcepto(data: any) {
     try {
-      const response = await this.axios.post(`${this.serverip}:5000/pagoconcepto`, data);
+      const response = await this.axios.post(`${this.serverip}/pagoconcepto`, data);
       return response.data;
     } catch (error) {
       throw error;
@@ -107,7 +107,7 @@ class PagosService {
 
   async updatePagoConcepto(id: number, data: any) {
     try {
-      const response = await this.axios.put(`${this.serverip}:5000/pagoconcepto/${id}`, data);
+      const response = await this.axios.put(`${this.serverip}/pagoconcepto/${id}`, data);
       return response.data;
     } catch (error) {
       throw error;
@@ -116,7 +116,7 @@ class PagosService {
 
   async deletePagoConcepto(id: number) {
     try {
-      const response = await this.axios.delete(`${this.serverip}:5000/pagoconcepto/${id}`);
+      const response = await this.axios.delete(`${this.serverip}/pagoconcepto/${id}`);
       return response.data;
     } catch (error) {
       throw error;

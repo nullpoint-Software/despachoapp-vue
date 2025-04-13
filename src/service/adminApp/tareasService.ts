@@ -11,7 +11,7 @@ class TareasService {
 
   async getTareas(): Promise<any> {
     try {
-      const response = await this.axios.get(`${this.serverip}:5000/tareas`);
+      const response = await this.axios.get(`${this.serverip}/tareas`);
       return response.data;
     } catch (error) {
       console.error("Error fetching tareas:", error);
@@ -22,7 +22,7 @@ class TareasService {
   async getTareasDisponibles(): Promise<any> {
     try {
       const response = await this.axios.get(
-        `${this.serverip}:5000/tareas/disponible`
+        `${this.serverip}/tareas/disponible`
       );
       return response.data;
     } catch (error) {
@@ -35,10 +35,10 @@ class TareasService {
     try {
         console.log("try update tarea",id_tarea+" est: "+estado);
       if(!fecha_vencimiento){ //si no terminado
-        const response = await this.axios.put(`${this.serverip}:5000/tareas/${id_tarea}`,{estado: estado, id_usuario: localStorage.getItem("userid")});
+        const response = await this.axios.put(`${this.serverip}/tareas/${id_tarea}`,{estado: estado, id_usuario: localStorage.getItem("userid")});
         return response.data;
       }else{ // si terminado
-        const response = await this.axios.put(`${this.serverip}:5000/tareas/${id_tarea}`,{estado: estado, id_usuario: localStorage.getItem("userid"), fecha_vencimiento: fecha_vencimiento});
+        const response = await this.axios.put(`${this.serverip}/tareas/${id_tarea}`,{estado: estado, id_usuario: localStorage.getItem("userid"), fecha_vencimiento: fecha_vencimiento});
         return response.data;
       }
     } catch (error) {

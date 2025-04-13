@@ -11,7 +11,7 @@ class ClienteService {
 
     async getClientes(): Promise<any> {
         try {
-            const response = await this.axios.get(`${this.serverip}:5000/clientes`);
+            const response = await this.axios.get(`${this.serverip}/clientes`);
             console.log("cliente",response.data);
             return response.data;
         } catch (error) {
@@ -22,7 +22,7 @@ class ClienteService {
 
     async addCliente(cliente:any){
         try{
-            const response = await this.axios.post(`${this.serverip}:5000/clientes`,cliente);
+            const response = await this.axios.post(`${this.serverip}/clientes`,cliente);
             console.log("try insert cliente",cliente);
             return response.data;
         }catch(error){
@@ -33,7 +33,7 @@ class ClienteService {
 
     async editCliente(cliente:any){
         try{
-            const response = await this.axios.put(`${this.serverip}:5000/clientes/${cliente.id_cliente}`,cliente);
+            const response = await this.axios.put(`${this.serverip}/clientes/${cliente.id_cliente}`,cliente);
             console.log("try edit cliente",cliente);
             return response.data;
         }catch(error){
@@ -44,7 +44,7 @@ class ClienteService {
 
     async deleteCliente(id_cliente:String){
         try{
-            const response = await this.axios.delete(`${this.serverip}:5000/clientes/${id_cliente}`);
+            const response = await this.axios.delete(`${this.serverip}/clientes/${id_cliente}`);
             console.log("try delete cliente",id_cliente);
             return response.data;
         }catch(error){

@@ -11,7 +11,7 @@ class NotasService {
 
     async getNotas(): Promise<any> {
         try {
-            const response = await this.axios.get(`${this.serverip}:5000/notas`);
+            const response = await this.axios.get(`${this.serverip}/notas`);
             console.log("notas",response.data);
             return response.data;
         } catch (error) {

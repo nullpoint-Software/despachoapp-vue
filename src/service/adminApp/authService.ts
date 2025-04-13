@@ -14,7 +14,7 @@ class authService {
   async loginUser(credentials: { username: string; password: string }) {
     try {
       const response = await this.axios.post(
-        `${this.serverip}:5000/login`,
+        `${this.serverip}/login`,
         credentials
       );
 
@@ -41,7 +41,7 @@ class authService {
 
   getUserInfo = async () => {
     try {
-      const response = await axios.get(`${this.serverip}:5000/usuario`, {
+      const response = await axios.get(`${this.serverip}/usuario`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
