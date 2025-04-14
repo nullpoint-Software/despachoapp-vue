@@ -11,7 +11,8 @@
       <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 flex flex-col gap-6">
         <!-- Selector de período -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <label for="periodo" class="font-bold text-lg text-gray-700">Ver por:</label>
+          <div class="period-control flex-row">
+            <label for="periodo" class="mr-4 font-bold text-lg text-gray-700">Ver por:</label>
           <select v-model="periodo" id="periodo"
             class="p-2 rounded-md border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-blue-400">
             <option value="dia">Día</option>
@@ -19,16 +20,20 @@
             <option value="anio">Año</option>
             <option value="anios">Años</option>
           </select>
-          <label class="inline-flex items-center space-x-2 text-gray-800 cursor-pointer">
+          </div>
+          
+          <div class="flex sm:inline-flex flex-row sm:items-center sm:gap-4 chart-controls">
+            <label class="mr-2 items-center space-x-2 text-gray-800 cursor-pointer">
             <input type="checkbox" class="form-checkbox text-blue-600" :checked="chartOptions.scales.y.stacked"
               @change="toggleStacked" />
             <span>Agrupar barras</span>
           </label>
-          <label class="inline-flex items-center space-x-2 text-gray-800 cursor-pointer">
+          <label class="items-center space-x-2 text-gray-800 cursor-pointer">
             <input type="checkbox" class="form-checkbox text-blue-600" :checked="chartOptions.plugins.zoom.pan.enabled"
               @change="toggleZoom" />
             <span>Activar zoom</span>
           </label>
+          </div>
           
         </div>
         <div class="info m-0 text-center -mb-7 -mt-4" v-if="chartOptions.plugins.zoom.pan.enabled">
