@@ -112,13 +112,13 @@
             />
           </div>
           <!-- Celdas normales -->
-          <span
+          <div
             v-if="col.field === 'fecha'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
             @click="copyToClipboard(formatFechaSQL(data[col.field]))"
           >
             {{ formatFechaSQL(data[col.field]) }}
-          </span>
+        </div>
           <div
             v-else
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"

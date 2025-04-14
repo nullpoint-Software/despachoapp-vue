@@ -5,12 +5,14 @@ import TareasService from "./tareasService";
 import authService from "./authService";
 import PagosService from "./pagosService";
 import NotasService from "./notasService";
+import EstadisticaService from "./estadisticaService";
 
 export const cs = new ClienteService(serverip, axios);
 export const ts = new TareasService(serverip, axios);
 export const as = new authService(serverip, axios);
 export const ps = new PagosService(serverip, axios);
 export const ns = new NotasService(serverip, axios);
+export const es = new EstadisticaService(serverip, axios);
 
 export const formatFechaSQL = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -20,6 +22,16 @@ export const formatFechaSQL = (dateStr: string): string => {
     const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+};
+
+export const formatFechaMesAnoSQL = (dateStr: string): string => {
+    const date = new Date(dateStr);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${month}/${year}`;
 };
 
 export const formatFechaHoraSQL = (dateStr: string): string => {

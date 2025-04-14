@@ -87,6 +87,13 @@
             <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
             <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
           </div>
+          <div
+            v-if="col.field === 'mes_ano'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(formatFechaMesAnoSQL(data[col.field]))"
+          >
+            {{ formatFechaMesAnoSQL(data[col.field]) }}
+        </div>
           <!-- Celdas normales -->
           <div
             v-else
@@ -126,7 +133,7 @@ import Button from "primevue/button";
 import Toast from "primevue/toast";
 import CardDetailMensual from "./CardDetailMensual.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
-import { ps } from "@/service/adminApp/client";
+import { formatFechaMesAnoSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
 const toast = useToast();
 
 // Datos de ejemplo
