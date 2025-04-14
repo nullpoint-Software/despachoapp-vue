@@ -24,11 +24,22 @@
               @change="toggleStacked" />
             <span>Agrupar barras</span>
           </label>
+          <label class="inline-flex items-center space-x-2 text-gray-800 cursor-pointer">
+            <input type="checkbox" class="form-checkbox text-blue-600" :checked="chartOptions.plugins.zoom.pan.enabled"
+              @change="toggleZoom" />
+            <span>Activar zoom</span>
+          </label>
+          
         </div>
+        <div class="info m-0 text-center -mb-7 -mt-4" v-if="chartOptions.plugins.zoom.pan.enabled">
+            <p class="font-semibold italic px-0 text-gray-600">Ajustar zoom con rueda del mouse o deslizar con 2
+              dedos</p>
+          </div>
         <!-- Contenedor del gráfico: se adapta según el tamaño del contenedor -->
         <div class="relative w-full" :class="chartContainerClass">
           <Bar :data="chartData" :options="chartOptions" :key="chartKey" :ref="chartRef" />
         </div>
+
 
 
         <!-- Resumen de ganancias en tarjetas -->
@@ -188,6 +199,14 @@ const toggleStacked = () => {
   const stackedd = !chartOptions.value.scales.y.stacked;
   chartOptions.value.scales.y.stacked = stackedd;
   chartOptions.value.scales.x.stacked = stackedd;
+  chartKey.value++;
+};
+
+const toggleZoom = () => {
+  const stackedd = !chartOptions.value.plugins.zoom.pan.enabled
+  chartOptions.value.plugins.zoom.pan.enabled = stackedd;
+  chartOptions.value.plugins.zoom.zoom.wheel.enabled = stackedd;
+  chartOptions.value.plugins.zoom.zoom.pinch.enabled = stackedd;
   chartKey.value++;
 };
 
