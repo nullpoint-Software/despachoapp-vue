@@ -62,20 +62,23 @@ class authService {
     }
   };
 
-  checkAuthRedirect = async () => {
+  checkAuthRedirect = async (isLogin: boolean) => {
     const router = useRouter();
     const currentRoute = useRoute();
 
     // Check if the token exists in localStorage
     const token = await localStorage.getItem("token");
-    if(!await this.getUserInfo()){
-      localStorage.clear()
-      await router.push("/login");
-      this.authStatus = false;
+    if (!isLogin) {
+      if (!(await this.getUserInfo())) {
+        localStorage.clear();
+        await router.push("/login");
+        this.authStatus = false;
+      }
     }
+
     if (!token) {
       // If the token doesn't exist, redirect to /login
-      localStorage.clear()
+      localStorage.clear();
       await router.push("/login");
       this.authStatus = false;
     } else if (token && currentRoute.path === "/login") {

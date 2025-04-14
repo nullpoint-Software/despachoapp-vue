@@ -95,7 +95,7 @@ export default {
 
     //checar si hay autenticacion
     onMounted(() => {
-      as.checkAuthRedirect();
+      as.checkAuthRedirect(true);
     });
     // Crear onda en posiciones aleatorias dentro del fondo
     const createWave = () => {

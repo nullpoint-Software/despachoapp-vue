@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "run-p type-check \"build-only {@}\" --",
+    "postbuild": "node generate-htaccess.js",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build"
