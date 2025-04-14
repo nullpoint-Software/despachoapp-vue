@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
+    "prebuild": "node generate-build-time.js",
     "build": "run-p type-check \"build-only {@}\" --",
     "postbuild": "node generate-htaccess.js",
     "preview": "vite preview",

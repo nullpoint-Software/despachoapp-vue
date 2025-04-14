@@ -1,7 +1,7 @@
 <!-- KanbanBoard.vue -->
 <template>
   <Toast />
-  <div class="p-4 relative">
+  <div class="p-5 relative">
     <!-- Buscador -->
     <div class="relative w-full max-w-lg mx-auto">
       <div class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
@@ -23,7 +23,7 @@
 
     <!-- Kanban Board -->
     <div
-      class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto">
+      class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto ">
       <div v-if=cardsDisponible class="flex flex-col">
         <!-- SEPARAR COLUMNA DISPONIBLE PARA MOSTRAR LAS TAREAS SIN USUARIO ASIGNADO -->
         <KanbanColumn :status="'Disponible'" :cards="cardsDisponible" :color="getColumnColor('Disponible')"

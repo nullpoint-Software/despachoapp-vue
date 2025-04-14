@@ -23,21 +23,12 @@
         <!-- Separador vertical -->
         <Divider layout="vertical" />
         <!-- Botón para abrir el modal con el Tablero de Notas -->
-        <Button
-          icon="pi pi-book"
-          class="p-button-rounded bg-yellow-500 hover:bg-yellow-600"
-          @click="openNotesModal"
-          aria-label="Abrir Tablero de Notas"
-        />
+        <Button icon="pi pi-book" class="p-button-rounded bg-yellow-500 hover:bg-yellow-600" @click="openNotesModal"
+          aria-label="Abrir Tablero de Notas" />
         <!-- Botón para cerrar sesión -->
-        <Button
-          label="Cerrar sesión"
-          icon="pi pi-sign-out"
-          class="flex-auto cursor-pointer"
-          severity="danger"
-          text
-          :onclick="logOut"
-        />
+        
+        <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text
+          :onclick="logOut" />
       </div>
     </nav>
 
@@ -57,12 +48,17 @@
                 <span>{{ item.name }}</span>
               </router-link>
             </li>
+            
+            
           </ul>
+          
           <div class="flex flex-col space-y-4 mt-4">
             <Button label="Cuenta" icon="pi pi-user" class="w-full text-white bg-black hover:bg-gray-800" outlined />
             <Button label="Cerrar sesión" icon="pi pi-sign-out" class="w-full bg-black hover:bg-gray-800"
               severity="danger" text :onclick="logOut" />
           </div>
+          <br>
+          <p class="font-thin text-gray-400">Compilado el: {{ buildTime }}</p>
         </div>
       </div>
     </transition>
@@ -87,6 +83,7 @@
             </li>
           </ul>
         </nav>
+        <p class="font-thin text-gray-400">Compilacion: {{ buildTime }}</p>
         <Divider class="my-2 border-gray-700" />
         <div class="p-4 border-t border-gray-700">
           <router-link to="/app/settings"
@@ -100,9 +97,11 @@
         </div>
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
-       <Suspense>
-      <RouterView />
-    </Suspense>
+        <Suspense>
+          <RouterView />
+        </Suspense>
+
+
     </div>
 
     <!-- Modal para abrir el Tablero de Notas -->
@@ -114,13 +113,14 @@
             <i class="pi pi-times text-2xl"></i>
           </button>
           <!-- Se renderiza el componente del Tablero de Notas -->
-           <Suspense>
-          <BoardNote/>
-        </Suspense>
+          <Suspense>
+            <BoardNote />
+          </Suspense>
         </div>
       </div>
     </transition>
   </div>
+
 </template>
 
 <script>
@@ -140,9 +140,9 @@ import BoardNote from "@/components/notes/BoardNote.vue";
 import { as } from "@/service/adminApp/client";
 
 export default {
-  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote},
+  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote },
   setup() {
-    
+    const buildTime = ref('')
     const menuOpen = ref(false);
     const router = useRouter();
     const ProfileName = localStorage.getItem("fullname")
@@ -160,9 +160,12 @@ export default {
       try {
         await as.checkAuthRedirect();
         // await this.getUserInfo()
+        const res = await fetch('/build-time.txt')
+        buildTime.value = await res.text()
       } catch (error) {
         console.error("Auth check failed:", error);
         router.push("/login"); // Redirect to login if auth fails
+        buildTime.value = 'No disponible'
       }
     });
     const toggleMenu = () => {
@@ -174,7 +177,7 @@ export default {
       router.push("/");
       localStorage.clear();
     }
-    
+
     // Al iniciar, almacenar los datos del usuario en localStorage
 
     // Cambio: Variable para controlar la apertura del modal del Tablero de Notas
@@ -187,15 +190,16 @@ export default {
     const closeNotesModal = () => {
       showNotesModal.value = false;
     };
-    
-    return { 
-      mainImageSrc, 
-      menuOpen, 
-      profilePicture, 
-      ProfileName, 
-      menuItems, 
-      toggleMenu, 
-      logOut, 
+
+    return {
+      mainImageSrc,
+      buildTime,
+      menuOpen,
+      profilePicture,
+      ProfileName,
+      menuItems,
+      toggleMenu,
+      logOut,
       userId,
       showNotesModal,
       openNotesModal,
@@ -206,6 +210,11 @@ export default {
 </script>
 
 <style>
+footer {
+  position: relative;
+  width: 100%;
+}
+
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: transform 0.3s ease-in-out;
@@ -230,10 +239,12 @@ export default {
   backdrop-filter: blur(4px);
   background-color: rgba(255, 255, 255, 0.5);
 }
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
