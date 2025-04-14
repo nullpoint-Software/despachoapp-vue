@@ -12,7 +12,7 @@ const buildTime = new Date().toLocaleString('es-MX', {
   timeZone: 'America/Mexico_City',
 });
 
-const outputPath = path.resolve(__dirname, '../public/build-time.txt');
+const outputPath = path.resolve(__dirname, './public/build-time.txt');
 fs.writeFileSync(outputPath, buildTime);
 
 console.log('✔ Fecha y hora de compilación generadas:', buildTime);
