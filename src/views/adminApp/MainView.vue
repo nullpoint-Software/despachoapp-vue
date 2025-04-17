@@ -108,10 +108,6 @@
     <transition name="fade">
       <div v-if="showNotesModal" class="modal-overlay fixed inset-0 z-50" @click.self="closeNotesModal">
         <div class="modal-content relative bg-gray-50 p-4 rounded-md shadow-lg max-w-4xl mx-auto mt-20">
-          <!-- Botón para cerrar el modal -->
-          <button @click="closeNotesModal" class="absolute top-2 right-2 text-gray-700">
-            <i class="pi pi-times text-2xl"></i>
-          </button>
           <!-- Se renderiza el componente del Tablero de Notas -->
           <Suspense>
             <BoardNote />

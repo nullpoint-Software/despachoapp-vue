@@ -1,3 +1,4 @@
+<!-- PaymentsTable.vue -->
 <template>
   <!-- Contenedor de la tabla -->
   <div
@@ -96,20 +97,11 @@
         </template>
         <template #body="{ data }">
           <!-- Acciones -->
-          <div
-            v-if="col.field === 'actions'"
-            class="flex justify-center space-x-2"
-          >
-            <Button
-              icon="pi pi-pencil"
-              class="p-button-rounded p-button-warning"
-              @click="openCard(data)"
-            />
-            <Button
-              icon="pi pi-trash"
-              class="p-button-rounded p-button-danger"
-              @click="openConfirmDialog(data)"
-            />
+          <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
+            <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
+            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+            <!-- Botón Imprimir -->
+            <Button icon="pi pi-print" class="p-button-rounded p-button-info" @click="openPrint(data)" />
           </div>
           <!-- Celdas normales -->
           <div
@@ -133,7 +125,6 @@
 
   <!-- Toast y modales -->
   <Toast />
-  <!-- Card para agregar/editar -->
   <CardDetailPagoConcepto
     v-if="cardVisible"
     :pago="selectedPayment"
@@ -145,6 +136,12 @@
     v-if="confirmDialogVisible"
     @confirm="confirmDelete"
     @cancel="cancelDelete"
+  />
+  <!-- Modal de impresión -->
+  <PrintPagoConcepto
+    v-if="printVisible"
+    :payment="paymentToPrint"
+    @close="printVisible = false"
   />
 </template>
 
@@ -158,8 +155,7 @@ import Button from "primevue/button";
 import Toast from "primevue/toast";
 import CardDetailPagoConcepto from "./CardDetailPagoConcepto.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
-import { ps } from "@/service/adminApp/client";
-import { formatFechaSQL } from "@/service/adminApp/client";
+import PrintPagoConcepto from "./PrintPagoConcepto.vue";
 
 const toast = useToast();
 
@@ -255,7 +251,6 @@ const minColumnWidth = 150;
 const visibleCount = computed(() =>
   Math.floor((containerWidth.value || screenWidth.value) / minColumnWidth)
 );
-const totalColumnsWithActions = computed(() => baseColumns.value.length + 1);
 const pages = computed(() => {
   const total = baseColumns.value.length;
   const vis = visibleCount.value;
@@ -288,7 +283,7 @@ const nextPage = () => {
   if (currentPageIndex.value < maxPageIndex.value) currentPageIndex.value++;
 };
 
-// Lógica para el Card y eliminación
+// Lógica para el Card y eliminación (igual que antes)
 const cardVisible = ref(false);
 const selectedPayment = ref({});
 const openCard = (payment) => {
@@ -299,10 +294,10 @@ const openCard = (payment) => {
       id: "",
       cliente: "",
       asunto: "",
-      atendio: usuario.value.nombre, // Se asigna por defecto el nombre del usuario
+      atendio: usuario.value.nombre,
       cobramos: "",
       pagamos: "",
-      fecha: "", // Se completará con la fecha actual en el CardDetail si está vacío
+      fecha: "",
       saldo: "",
     };
   }
@@ -326,9 +321,9 @@ const savePayment = (payment) => {
     toast.add({
       severity: "success",
       summary: "Agregado",
-      detail: "Pago concepto agregado correctamente",
-      life: 2000,
-    });
+        detail: "Pago concepto agregado correctamente",
+        life: 2000,
+      });
   }
   cardVisible.value = false;
 };
@@ -358,4 +353,16 @@ const cancelDelete = () => {
   confirmDialogVisible.value = false;
   candidateToDelete.value = null;
 };
+
+// --------- Impresión ---------
+const printVisible = ref(false);
+const paymentToPrint = ref({});
+const openPrint = (payment) => {
+  paymentToPrint.value = { ...payment };
+  printVisible.value = true;
+};
 </script>
+
+<style scoped>
+/* tu CSS existente */
+</style>

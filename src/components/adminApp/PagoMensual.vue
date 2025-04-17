@@ -86,6 +86,7 @@
           <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
             <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
             <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+            <Button icon="pi pi-print" class="p-button-rounded p-button-info" @click="printTicket(data)" />
           </div>
           <div
             v-if="col.field === 'mes_ano'"
@@ -121,6 +122,13 @@
     @confirm="confirmDelete"
     @cancel="cancelDelete"
   />
+  
+  <!-- Componente para impresión -->
+  <TicketPrinter
+    v-if="printDialogVisible"
+    :ticket="selectedTicket"
+    @close="printDialogVisible = false"
+  />
 </template>
 
 <script setup>
@@ -133,6 +141,7 @@ import Button from "primevue/button";
 import Toast from "primevue/toast";
 import CardDetailMensual from "./CardDetailMensual.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
+import TicketPrinter from "./TicketPrinter.vue"; // Importa el componente de impresión
 import { formatFechaMesAnoSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
 const toast = useToast();
 
@@ -311,5 +320,13 @@ const confirmDelete = async () => {
 const cancelDelete = () => {
   confirmDialogVisible.value = false;
   candidateToDelete.value = null;
+};
+
+// Lógica para impresión de tickets
+const printDialogVisible = ref(false);
+const selectedTicket = ref(null);
+const printTicket = (data) => {
+  selectedTicket.value = data;
+  printDialogVisible.value = true;
 };
 </script>
