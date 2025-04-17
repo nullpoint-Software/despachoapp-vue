@@ -40,12 +40,6 @@
                 class="p-2"
                 @click="clearFilter"
               />
-              <Button
-                icon="pi pi-plus"
-                :label="isMobile ? '' : 'Agregar Historial'"
-                class="p-button-success p-2"
-                @click="openCard(null)"
-              />
             </div>
           </div>
         </div>
@@ -73,8 +67,8 @@
       <Column
         v-for="col in visibleColumns"
         :key="col.field"
-        :sortable="col.field !== 'actions'"
-        :field="col.field !== 'actions' ? col.field : undefined"
+        :sortable="true"
+        :field="col.field"
       >
         <template #header>
           <div class="p-1 text-black font-semibold text-center text-sm">
@@ -82,14 +76,7 @@
           </div>
         </template>
         <template #body="{ data }">
-          <!-- Acciones -->
-          <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-            <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
-          </div>
-          <!-- Celdas normales -->
           <div
-            v-else
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
             @click="copyToClipboard(data[col.field])"
           >
@@ -142,7 +129,7 @@ const usuario = ref({
   foto: localStorage.getItem("userPhoto") || "",
 });
 
-// Definición de columnas base
+// Definición de columnas base (sin columna de acciones)
 const columns = ref([
   { field: "cliente", header: "Cliente" },
   { field: "quienAtendio", header: "Atendió" },
@@ -150,7 +137,6 @@ const columns = ref([
   { field: "cantidad", header: "Cantidad" },
   { field: "tipo", header: "Tipo" },
 ]);
-const actionsColumn = { field: "actions", header: "Acciones" };
 const baseColumns = computed(() => columns.value);
 
 // Filtros
@@ -210,11 +196,10 @@ const minColumnWidth = 150;
 const visibleCount = computed(() =>
   Math.floor((containerWidth.value || screenWidth.value) / minColumnWidth)
 );
-const totalColumnsWithActions = computed(() => baseColumns.value.length + 1);
 const pages = computed(() => {
   const total = baseColumns.value.length;
   const vis = visibleCount.value;
-  if (total + 1 <= vis) return [baseColumns.value];
+  if (total <= vis) return [baseColumns.value];
   const pagesArray = [];
   const firstPageCount = Math.max(1, vis - 1);
   pagesArray.push(baseColumns.value.slice(0, firstPageCount));
@@ -231,9 +216,9 @@ watch(pages, () => {
 const maxPageIndex = computed(() => pages.value.length - 1);
 const visibleColumns = computed(() => {
   if (pages.value.length === 1) {
-    return [...baseColumns.value, actionsColumn];
+    return baseColumns.value;
   } else {
-    return [...pages.value[currentPageIndex.value], actionsColumn];
+    return pages.value[currentPageIndex.value];
   }
 });
 const prevPage = () => {
