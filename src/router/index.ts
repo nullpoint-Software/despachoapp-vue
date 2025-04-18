@@ -10,6 +10,7 @@ import Pagos from "@/components/adminApp/Pagos.vue";
 import PagoConcepto from "@/components/adminApp/PagoConcepto.vue";
 import PagoMensual from "@/components/adminApp/PagoMensual.vue";
 import PagosHistorial from "@/components/adminApp/PagosHistorial.vue";
+import Settings from "@/components/adminApp/Settings.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,6 +45,7 @@ const router = createRouter({
         { path: "inicio", redirect: "/app" },
         { path: "tareas", component: Tareas },
         { path: "clientes", component: Clientes },
+        { path: "settings", component: Settings },
         {
           path: "pagos",
           component: Pagos,
