@@ -72,7 +72,7 @@
 <script>
 import { ref, onMounted } from "vue";
 import InputText from "primevue/inputtext";
-import mainImageSrc from "@/assets/img/logsymbolwhite.png";
+import mainImageSrc from "@/assets/img/logsymbolblack.png";
 import { RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
 import { as } from "@/service/adminApp/client";
