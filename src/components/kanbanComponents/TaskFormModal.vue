@@ -64,7 +64,7 @@
               <option :value="null">Ninguno</option>
               <!-- Lista de empleados -->
               <option v-for="employee in employees" :key="employee" :value="employee.id_usuario">
-                {{ employee.nombre + " ("+employee.username+")"}}
+                {{ employee.nombre + " (" + employee.username + ")" }}
               </option>
             </select>
           </div>
@@ -84,8 +84,8 @@
 
         <!-- Paso 2: Programación -->
         <!-- <div v-if="step === 2" class="space-y-4 px-4 mt-6"> -->
-          <!-- Fecha de Inicio (obligatoria) con icono -->
-          <!-- <div>
+        <!-- Fecha de Inicio (obligatoria) con icono -->
+        <!-- <div>
             <label class="block font-semibold text-black">Fecha de Inicio *</label>
             <div class="relative">
               <input type="date" v-model="localTask.startDate" lang="es" placeholder="Seleccione una fecha"
@@ -100,8 +100,8 @@
             </div>
             <p v-if="errors.startDate" class="text-red-500 text-sm">Este campo es obligatorio.</p>
           </div> -->
-          <!-- Hora de Inicio (opcional) con icono -->
-          <!-- <div>
+        <!-- Hora de Inicio (opcional) con icono -->
+        <!-- <div>
             <label class="block font-semibold text-black">Hora de Inicio (opcional)</label>
             <div class="relative">
               <input type="time" v-model="localTask.startTime" lang="es" placeholder="Seleccione una hora"
@@ -115,10 +115,10 @@
               </div>
             </div>
           </div> -->
-          <!-- 
+        <!-- 
             Cambio: Se eliminó la sección de "Archivos Adjuntos" para quitar la funcionalidad de carga de archivos.
           -->
-          <!-- Botones de Navegación -->
+        <!-- Botones de Navegación -->
         <!-- </div> -->
       </div>
     </div>
@@ -187,17 +187,27 @@ const save = async () => {
   if (localTask.value.id_usuario) {
     window.location.reload();
     console.log("edit!");
-    console.log("current task: "+localTask.value.id_usuario);
-    
+    console.log("current task: " + localTask.value.id_tarea);
+   
+    console.log("current estado: " + localTask.value.estado);
+
     // const emp = employees.value.find(e => e.value.id_usuario === localTask.assignedEmployee.id_usuario);
-    await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.estado)
-    
+    if (!localTask.value.assignedEmployee) {
+      await ts.updateTarea(localTask.value.id_tarea, null, "Disponible")
+    }else {
+      console.log("assignedEmployee value:", localTask.value.assignedEmployee);
+      await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.estado)
+    }
   } else {
     window.location.reload();
     console.log("new");
-    
+
     localTask.value.estado = "Disponible";
-    await ts.addTarea(localTask.value);
+    if (!localTask.value.assignedEmployee) {
+      await ts.addTarea(localTask.value);
+    }else{ //si se le asigna usuario manualmente desde el dropdown cuando esta disponible
+      await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, "Pendiente")
+    }
     
   }
   // Se emite la tarea sin archivos adjuntos
