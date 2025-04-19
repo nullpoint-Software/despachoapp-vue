@@ -22,7 +22,10 @@ class UsuarioService {
 
   async addUsuario(usuario: any) {
     try {
-      const response = await this.axios.post(`${this.serverip}/usuarios`, usuario);
+      const response = await this.axios.post(
+        `${this.serverip}/usuarios`,
+        usuario
+      );
       console.log("try insert usuario", usuario);
       return response.data;
     } catch (error) {
@@ -31,9 +34,31 @@ class UsuarioService {
     }
   }
 
-  async editUsuario(usuario: any) {
+  async getUsuarioPS(id_usuario: any) {
     try {
-      const response = await this.axios.put(`${this.serverip}/usuarios/${usuario.id_usuario}`, usuario);
+      const response = await this.axios.post(
+        `${this.serverip}/usuario/password`,
+        { id_usuario: id_usuario }, // this is the POST body
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log("try get PS usuario", id_usuario);
+      return response.data;
+    } catch (error) {
+      console.error("error get usuario", error);
+      throw error;
+    }
+  }
+
+  async editUsuario(id_usuario:any, usuario: any) {
+    try {
+      const response = await this.axios.put(
+        `${this.serverip}/usuarios/${id_usuario}`,
+        usuario
+      );
       console.log("try edit usuario", usuario);
       return response.data;
     } catch (error) {
@@ -44,7 +69,9 @@ class UsuarioService {
 
   async deleteUsuario(id_usuario: string) {
     try {
-      const response = await this.axios.delete(`${this.serverip}/usuarios/${id_usuario}`);
+      const response = await this.axios.delete(
+        `${this.serverip}/usuarios/${id_usuario}`
+      );
       console.log("try delete usuario", id_usuario);
       return response.data;
     } catch (error) {
