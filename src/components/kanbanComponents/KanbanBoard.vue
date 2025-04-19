@@ -26,11 +26,12 @@
       class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto">
       <div v-if="cardsDisponible" class="flex flex-col">
         <!-- SEPARAR COLUMNA DISPONIBLE PARA MOSTRAR LAS TAREAS SIN USUARIO ASIGNADO -->
-        <KanbanColumn :status="'Disponible'" :cards="cardsDisponible" :color="getColumnColor('Disponible')"
-          @moveCard="moveCard" @viewDetails="openCardDetail" :highlighted-card="highlightedCard" />
+        <KanbanColumn :status="'Disponible'" :cards="getPaginatedCardsDisponible()"
+          :color="getColumnColor('Disponible')" @moveCard="moveCard" @viewDetails="openCardDetail"
+          :highlighted-card="highlightedCard" />
 
         <div class="flex justify-center items-center mt-2 space-x-2">
-          <button @click="changePage('Disponible', currentPage['Disponible'] - 1)"
+          <button @click="changePageDisponible('Disponible', currentPage['Disponible']--)"
             :disabled="currentPage['Disponible'] === 0"
             class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             &lt;
@@ -38,8 +39,8 @@
           <span class="px-4 py-2 bg-blue-500 rounded shadow">
             {{ currentPage["Disponible"] + 1 }}
           </span>
-          <button @click="changePage('Disponible', currentPage['Disponible'] + 1)"
-            :disabled="currentPage['Disponible'] >= pages['Disponible'] - 1"
+          <button @click="changePageDisponible('Disponible', currentPage['Disponible']++)"
+            :disabled="currentPage['Disponible'] >= pagesDisponible['Disponible'] - 1"
             class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             &gt;
           </button>
@@ -116,7 +117,7 @@ console.log("cards", cards);
 
 const columnStatuses = ["Pendiente", "En Progreso", "Terminado"];
 const statusOrder = ["Disponible", "Pendiente", "En Progreso", "Terminado"];
-const cardsPerPage = 5;
+const cardsPerPage = 4;
 
 const currentPage = ref({
   Disponible: 0,
@@ -151,6 +152,18 @@ const pages = computed(() => {
   return result;
 });
 
+const pagesDisponible = computed(() => {
+  const result = {};
+
+  // Considerar solo las tarjetas con estado "Disponible"
+  const allCards = [...cardsDisponible.value];
+  const total = allCards.length;
+
+  result["Disponible"] = Math.max(1, Math.ceil(total / cardsPerPage)); // Asegura al menos 1 página
+
+  return result;
+});
+
 const getPaginatedCardsByStatus = (status) => {
   const filtered = cards.value
     .filter((card) => card.estado === status)
@@ -159,8 +172,26 @@ const getPaginatedCardsByStatus = (status) => {
   return filtered.slice(start, start + cardsPerPage);
 };
 
+const getPaginatedCardsDisponible = () => {
+  const start = currentPage.value["Disponible"] * cardsPerPage;
+  return [...cards.value, ...cardsDisponible.value]
+    .filter((card) => card.estado === "Disponible")
+    .sort((a, b) => a.id_tarea - b.id_tarea)
+    .slice(start, start + cardsPerPage);
+};
+
 const changePage = (status, newPage) => {
   if (newPage >= 0 && newPage < pages.value[status]) {
+    currentPage.value[status] = newPage;
+  }
+};
+
+const changePageDisponible = (status, newPage) => {
+  console.log(status +" "+ newPage);
+  console.log("curr "+currentPage.value['Disponible']);
+  console.log("disp "+pagesDisponible.value["Disponible"]);
+  
+  if (newPage >= 0 && newPage < pagesDisponible["Disponible"]) {
     currentPage.value[status] = newPage;
   }
 };
@@ -223,7 +254,7 @@ const moveCard = async (cardId, newStatus) => {
           card.fecha_vencimiento = null;
           console.log(
             "update estado",
-            await ts.updateTarea(card.id_tarea,null, newStatus)
+            await ts.updateTarea(card.id_tarea, null, newStatus)
           );
         } else {
           card.fecha_vencimiento =
@@ -384,9 +415,9 @@ const closeTaskForm = () => {
 };
 
 const saveTaskForm = (taskData) => {
-  console.log("save taskform activated with task: " +taskData);
-  console.log("mode is "+ taskFormMode.value);
-  
+  console.log("save taskform activated with task: " + taskData);
+  console.log("mode is " + taskFormMode.value);
+
   // if (taskFormMode.value === "add") {
   //   const newId =
   //     cards.value.length > 0
