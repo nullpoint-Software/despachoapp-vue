@@ -222,14 +222,14 @@
             </div>
           </div>
           <!-- PERMISOS in two columns -->
-          <p class="text-xl font-semibold mb-4"><i class="pi pi-shield mr-2"></i>Permisos</p>
+          <p class="text-xl font-semibold mb-4"><i class="pi pi-shield mr-2"></i>Permisos para el rol "{{ usuarioSeleccionado.puesto }}"</p>
           <div class="grid grid-cols-2 gap-6 mb-4">
             <div v-for="(value, key) in permissions[usuarioSeleccionado.puesto]" :key="key"
               class="flex items-center justify-between">
               <span class="capitalize text-sm">{{ traducirPermiso(key) }}</span>
               <button @click="togglePermission(usuarioSeleccionado.puesto, key)"
                 :class="value ? 'bg-blue-600' : 'bg-gray-300'" class="w-10 h-5 rounded-full relative transition-colors">
-                <span class="block w-5 h-5 bg-white rounded-full transform transition-transform duration-200"
+                <span class="block w- 5 h-5 bg-white rounded-full transform transition-transform duration-200"
                   :class="value ? 'translate-x-5' : 'translate-x-0'"></span>
               </button>
             </div>
@@ -242,12 +242,13 @@
 </template>
 
 <script setup>
-import { as, us } from '@/service/adminApp/client'
+import { as, ps, us } from '@/service/adminApp/client'
 import { ref, computed } from 'vue'
 import defaultAvatar from '@/assets/img/user.jpg'
 import { PrimeIcons } from '@primevue/core/api';
 import { Toast } from 'primevue';
 import { useToast } from 'primevue';
+import { getPermissions,hasPermission,updatePermissions,updateUserPermissions } from '@/service/adminApp/permissionsService';
 const toast = useToast();
 // PERFIL
 const isAdmin = localStorage.getItem('level') === 'Administrador'
@@ -334,28 +335,10 @@ async function updateName(u) {
 }
 
 // PERMISOS JSON
-const permissions = ref({
-  Administrador: {
-    canMoveAllCards: true,
-    canEditCard: true,
-    canDeleteCard: true,
-    canAddCliente: true,
-    canEditCliente: true,
-    canDeleteCliente: true
-  },
-  Empleado: {
-    canMoveAllCards: false,
-    canMoveOwnCard: false,
-    canMoveAvailableCard: true,
-    canEditCard: true,
-    canDeleteCard: false,
-    canAddCliente: true,
-    canEditCliente: false,
-    canDeleteCliente: false
-  }
-})
-function togglePermission(role, key) {
+const permissions = ref(await getPermissions());
+async function togglePermission(role, key) {
   permissions.value[role][key] = !permissions.value[role][key]
+  await updatePermissions(permissions.value)
 }
 function traducirPermiso(k) {
   const map = {

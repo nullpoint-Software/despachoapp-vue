@@ -1,30 +1,89 @@
-import { as } from "./client";
 const serverip = import.meta.env.VITE_API_SERVER_IP;
+import axios from "axios";
 interface PermissionsService {
   [level: string]: {
     [permission: string]: boolean;
   };
 }
-let perms: PermissionsService | null = null;
 
-export async function hasPermission(permissionKey: string) {
-  // Get the user's level from localStorage
-  await as.getUserInfo();
+interface UserPermissions {
+  [id_usuario: string]: {
+    [permission: string]: boolean;
+  };
+}
+
+let perms: PermissionsService | null = null;
+let userPerms: UserPermissions | null = null;
+
+export async function hasPermission(permissionKey: string): Promise<boolean> {
+
   const userLevel = localStorage.getItem("level");
-  console.log("the level: ", userLevel);
+  const userId = localStorage.getItem("userid");
 
   try {
-    const response = await fetch(`${serverip}/permissions.json`);
-    perms = await response.json();
-    // Optionally cache the result in localStorage
+    const [globalRes, userRes] = await Promise.all([
+      fetch(`${serverip}/permissions`),
+      fetch(`${serverip}/user_permissions`)
+    ]);
+
+    perms = await globalRes.json();
+    userPerms = await userRes.json();
   } catch (error) {
     console.error("Failed to load permissions:", error);
-    return false; // Default to false if the request fails
+    return false;
   }
-  // Check if userLevel exists and if permissions for that level are defined
+
+  // First check user-level permissions
+  if (userPerms && userId && userPerms[userId] && userPerms[userId][permissionKey] !== undefined) {
+    return userPerms[userId][permissionKey] === true;
+  }
+
+  // Fallback to role-based permissions
   if (perms && userLevel && perms[userLevel]) {
     return perms[userLevel][permissionKey] === true;
   }
 
-  return false; // Default to false if no valid userLevel
+  return false;
+}
+
+export async function updatePermissions(newPerms: object) {
+  await fetch(`${serverip}/permissions`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(newPerms)
+  });
+}
+
+export async function getPermissions(): Promise<any> {
+  try {
+      const response = await axios.get(`${serverip}/permissions`);
+      console.log("perms got",response.data);
+      return response.data;
+  } catch (error) {
+      console.error("Error fetching permissions:", error);
+      throw error;
+  }
+}
+
+export async function getUserPermissions(): Promise<any> {
+  try {
+      const response = await axios.get(`${serverip}/user-permissions`);
+      console.log("perms got",response.data);
+      return response.data;
+  } catch (error) {
+      console.error("Error fetching permissions:", error);
+      throw error;
+  }
+}
+
+export async function updateUserPermissions(newUserPerms: object) {
+  await fetch(`${serverip}/user-permissions`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(newUserPerms)
+  });
 }

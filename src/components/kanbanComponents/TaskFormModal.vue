@@ -71,8 +71,8 @@
           <!-- Botón para pasar al siguiente paso -->
           <div class="flex justify-end">
             <button @click="emit('close')"
-              class="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded">Cancelar</button>
-            <button @click="save" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+              class="cursor-pointer mr-4 items-center justify-center gap-2 px-4 py-2 bg-gray-500 rounded-md text-white font-semibold shadow hover:bg-gray-400 transition transform hover:scale-105 focus:outline-none">Cancelar</button>
+            <button @click="save" class="cursor-pointer items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none">
               Terminar
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline ml-1" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
