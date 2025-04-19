@@ -23,8 +23,8 @@
 
     <!-- Kanban Board -->
     <div
-      class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto ">
-      <div v-if=cardsDisponible class="flex flex-col">
+      class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto">
+      <div v-if="cardsDisponible" class="flex flex-col">
         <!-- SEPARAR COLUMNA DISPONIBLE PARA MOSTRAR LAS TAREAS SIN USUARIO ASIGNADO -->
         <KanbanColumn :status="'Disponible'" :cards="cardsDisponible" :color="getColumnColor('Disponible')"
           @moveCard="moveCard" @viewDetails="openCardDetail" :highlighted-card="highlightedCard" />
@@ -36,7 +36,7 @@
             &lt;
           </button>
           <span class="px-4 py-2 bg-blue-500 rounded shadow">
-            {{ currentPage['Disponible'] + 1 }}
+            {{ currentPage["Disponible"] + 1 }}
           </span>
           <button @click="changePage('Disponible', currentPage['Disponible'] + 1)"
             :disabled="currentPage['Disponible'] >= pages['Disponible'] - 1"
@@ -49,7 +49,6 @@
         <!-- Cada tarjeta tiene su id="card-{card.id}" para scroll -->
         <KanbanColumn :status="status" :cards="getPaginatedCardsByStatus(status)" :color="getColumnColor(status)"
           @moveCard="moveCard" @viewDetails="openCardDetail" :highlighted-card="highlightedCard" />
-
 
         <!-- Paginación -->
         <div class="flex justify-center items-center mt-2 space-x-2">
@@ -93,20 +92,26 @@ import { hasPermission } from "@/service/adminApp/permissionsService";
 import { cs, ts } from "@/service/adminApp/client";
 import { base64ToFile } from "@/service/adminApp/authService";
 const toast = useToast();
-const userId = ref(localStorage.getItem("userid"))
+const userId = ref(localStorage.getItem("userid"));
 const userFullName = ref(localStorage.getItem("fullname"));
 const userName = ref(localStorage.getItem("username"));
-const userPhoto = ref(localStorage.getItem("userphoto"))
-const cardsDisponible = ref((await ts.getTareasDisponibles()).map(item => ({
-  ...item,
-  highlight: false
-})));
+const userPhoto = ref(localStorage.getItem("userphoto"));
+const cardsDisponible = ref(
+  (await ts.getTareasDisponibles()).map((item) => ({
+    ...item,
+    highlight: false,
+  }))
+);
 console.log("cards disponibles", cardsDisponible);
-const cards = ref((await ts.getTareas()).map(item => ({
-  ...item,
-  highlight: false,
-  image: URL.createObjectURL(base64ToFile(item.usuario_imagen, "task-img.png"))
-})));
+const cards = ref(
+  (await ts.getTareas()).map((item) => ({
+    ...item,
+    highlight: false,
+    image: URL.createObjectURL(
+      base64ToFile(item.usuario_imagen, "task-img.png")
+    ),
+  }))
+);
 console.log("cards", cards);
 
 const columnStatuses = ["Pendiente", "En Progreso", "Terminado"];
@@ -115,7 +120,7 @@ const cardsPerPage = 5;
 
 const currentPage = ref({
   Disponible: 0,
-  "Pendiente": 0,
+  Pendiente: 0,
   "En Progreso": 0,
   Terminado: 0,
 });
@@ -163,47 +168,76 @@ const changePage = (status, newPage) => {
 // Al mover la tarjeta, se actualiza el estado y se asignan datos del usuario si es necesario.
 // BUSCA SI LA CARTA QUE SE QUIERE MOVER ESTA EN cards o cardsDisponible
 const moveCard = async (cardId, newStatus) => {
-
   let card = cards.value.find((card) => card.id_tarea === cardId);
   if (!card) {
     card = cardsDisponible.value.find((card) => card.id_tarea === cardId);
   }
 
   //JERARQUIA DE OPERACION, solo puede mover carta, si: eres admin, la card tiene tu id de usuario asignado, la card no tiene id usuario asignado (status = disponible)
-  const permission = (
-    await hasPermission("canMoveAllCards") 
-  || (card.id_usuario == localStorage.getItem("userid") && await hasPermission("canMoveOwnCard")) 
-  || (!card.id_usuario && await hasPermission("canMoveAvailableCard")) 
-  ? true : false)
+  const permission =
+    (await hasPermission("canMoveAllCards")) ||
+      (card.id_usuario == localStorage.getItem("userid") &&
+        (await hasPermission("canMoveOwnCard"))) ||
+      (!card.id_usuario && (await hasPermission("canMoveAvailableCard")))
+      ? true
+      : false;
   console.log("card moving", card);
   if (permission) {
     if (card) {
       const originalStatus = card.estado;
       const currentIndex = statusOrder.indexOf(originalStatus);
       const newIndex = statusOrder.indexOf(newStatus);
-      if (newIndex === currentIndex + 1) {
+      if (
+        ((await hasPermission("canMoveAllCards")) &&
+          newIndex !== currentIndex) ||
+        (!(
+          (await hasPermission("canMoveAllCards")) && newIndex <= currentIndex
+        ) &&
+          newIndex === currentIndex + 1)
+      ) {
         card.estado = newStatus;
         if (originalStatus === "Disponible" && newStatus === "Pendiente") {
           card.id_usuario = parseInt(userId.value); //tambien int por si es problema
           card.username = userName.value;
           card.image = userPhoto.value;
-          card.nombre = userFullName.value //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
-        }
-        else if (newStatus !== "Disponible" && !card.username) {
+          card.nombre = userFullName.value; //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
+        } else if (newStatus !== "Disponible" && !card.username) {
           card.username = "Usuario Asignado";
         }
-        
+
         if (originalStatus === "Disponible") {
-          cardsDisponible.value = cardsDisponible.value.filter((c) => c.id_tarea !== cardId);
+          cardsDisponible.value = cardsDisponible.value.filter(
+            (c) => c.id_tarea !== cardId
+          );
           cards.value.push(card);
         }
-        if (!(newStatus === "Terminado")) {
-          console.log("update estado", await ts.updateTareaEstado(card.id_tarea,newStatus))
-        }else{
-          card.fecha_vencimiento = card.fecha_vencimiento || new Date().toISOString();
-          console.log("update estado", await ts.updateTareaEstado(card.id_tarea,newStatus,card.fecha_vencimiento))
+
+        if (newStatus === "Disponible") {
+          card.image = null;
+          cards.value = cards.value.filter((c) => c.id_tarea !== cardId);
+          cardsDisponible.value.push(card);
         }
-        
+        if (!(newStatus === "Terminado")) {
+          card.fecha_vencimiento = null;
+          console.log(
+            "update estado",
+            await ts.updateTarea(card.id_tarea,null, newStatus)
+          );
+        } else {
+          card.fecha_vencimiento =
+            card.fecha_vencimiento ||
+            new Date().toLocaleString("sv-SE").replace("T", "");
+          console.log(
+            "update estado",
+            await ts.updateTarea(
+              card.id_tarea,
+              null,
+              newStatus,
+              card.fecha_vencimiento
+            )
+          );
+        }
+
         currentPage.value[newStatus] = 0;
         toast.add({
           severity: "info",
@@ -211,10 +245,18 @@ const moveCard = async (cardId, newStatus) => {
           detail: "Tarea actualizada con exito",
           life: 2000,
         });
+      } else {
+        console.log("no permission de mover!!");
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Solo un administrador puede regresar esta tarea!",
+          life: 2000,
+        });
       }
     }
   } else {
-    console.log("no permission de mover!!")
+    console.log("no permission de mover!!");
     toast.add({
       severity: "error",
       summary: "Error",
@@ -224,11 +266,10 @@ const moveCard = async (cardId, newStatus) => {
   }
 };
 
-
 const getColumnColor = (status) => {
   const colors = {
     Disponible: "#A7F3D0",
-    "Pendiente": "#FCD34D",
+    Pendiente: "#FCD34D",
     "En Progreso": "#93C5FD",
     Terminado: "#D1D5DB",
   };
@@ -249,14 +290,17 @@ const markCard = (cardId) => {
     highlightedCard.value = cardId;
     searchQuery.value = "";
     const status = card.estado;
-    const index = cards.value.filter((c) => c.estado === status).findIndex((c) => c.id_tarea === cardId);
+    const index = cards.value
+      .filter((c) => c.estado === status)
+      .findIndex((c) => c.id_tarea === cardId);
     currentPage.value[status] = Math.floor(index / cardsPerPage);
     nextTick(() => {
       setTimeout(() => {
         const cardElement = document.getElementById(`card-${cardId}`);
         if (cardElement) {
           const rect = cardElement.getBoundingClientRect();
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const scrollTop =
+            window.pageYOffset || document.documentElement.scrollTop;
           const top = rect.top + scrollTop - 50;
           window.scrollTo({ top, behavior: "smooth" });
         }
@@ -290,7 +334,7 @@ const currentTaskForm = ref({
   status: "Disponible",
   image: null,
   userName: "",
-  attachmentName: [] // Se mantiene la propiedad, pero se inicializa vacía
+  attachmentName: [], // Se mantiene la propiedad, pero se inicializa vacía
 });
 
 // Cambio: Modificación de openTaskForm para eliminar la normalización de archivos adjuntos
@@ -313,7 +357,7 @@ const openTaskForm = (mode, task = null) => {
     }
     */
     // Se asigna attachmentName como array vacío
-    currentTaskForm.value = { ...task, attachmentName: [] };
+    currentTaskForm.value = { ...task };
     // Cambio: Cerrar el CardDetail después de modificar
     selectedCard.value = null;
   } else {
@@ -327,7 +371,7 @@ const openTaskForm = (mode, task = null) => {
       status: "Disponible",
       image: null,
       userName: "",
-      attachmentName: [] // Inicialización de archivos vacía
+      attachmentName: [], // Inicialización de archivos vacía
     };
   }
   showTaskForm.value = true;
@@ -339,7 +383,10 @@ const closeTaskForm = () => {
 
 const saveTaskForm = (taskData) => {
   if (taskFormMode.value === "add") {
-    const newId = cards.value.length > 0 ? Math.max(...cards.value.map((c) => c.id)) + 1 : 1;
+    const newId =
+      cards.value.length > 0
+        ? Math.max(...cards.value.map((c) => c.id)) + 1
+        : 1;
     taskData.id = newId;
     cards.value.push({ ...taskData });
     // Resetear la página del estado del nueva tarea a 0

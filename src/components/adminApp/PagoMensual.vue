@@ -1,21 +1,13 @@
 <template>
   <!-- Contenedor de la tabla -->
   <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
-    <DataTable
-      :value="mensual"
-      :filters="filters"
-      :globalFilterFields="['cliente', 'atendio', 'honorarios', 'mes_ano']"
-      paginator
-      sortMode="multiple"
-      removableSort
-      :rows="5"
-      :rowsPerPageOptions="[5, 10, 20, 50]"
-      :rowClass="rowClass"
-      class="w-full rounded-lg p-5"
-    >
+    <DataTable :value="mensual" :filters="filters" :globalFilterFields="['cliente', 'atendio', 'honorarios', 'mes_ano']"
+      paginator sortMode="multiple" removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass"
+      class="w-full rounded-lg p-5">
       <!-- Encabezado de la tabla -->
       <template #header>
-        <div class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
             <!-- Buscador -->
             <div class="flex space-x-2 border-2 border-solid">
@@ -24,58 +16,31 @@
               </span>
             </div>
             <div class="relative w-full sm:w-auto">
-              <InputText
-                v-model="filters.global.value"
-                placeholder="Buscar..."
-                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <InputText v-model="filters.global.value" autocomplete="off" placeholder="Buscar..."
+                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <!-- Botones -->
             <div class="flex space-x-2">
-              <Button
-                type="button"
-                icon="pi pi-filter-slash"
-                :label="isMobile ? '' : 'Limpiar Filtros'"
-                outlined
-                class="p-2"
-                @click="clearFilter"
-              />
-              <Button
-                icon="pi pi-plus"
-                :label="isMobile ? '' : 'Agregar Pago Mensual'"
-                class="p-button-success p-2"
-                @click="openCard(null)"
-              />
+              <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
+                class="p-2" @click="clearFilter" />
+              <Button icon="pi pi-plus" :label="isMobile ? '' : 'Agregar Pago Mensual'" class="p-button-success p-2"
+                @click="openCard(null)" />
             </div>
           </div>
         </div>
         <!-- Slider para columnas -->
-        <div
-          v-if="pages.length > 1"
-          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2"
-        >
-          <Button
-            icon="pi pi-chevron-left"
-            @click="prevPage"
-            :disabled="currentPageIndex === 0"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
-          <Button
-            icon="pi pi-chevron-right"
-            @click="nextPage"
-            :disabled="currentPageIndex === maxPageIndex"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
+        <div v-if="pages.length > 1"
+          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2">
+          <Button icon="pi pi-chevron-left" @click="prevPage" :disabled="currentPageIndex === 0"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
+          <Button icon="pi pi-chevron-right" @click="nextPage" :disabled="currentPageIndex === maxPageIndex"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
         </div>
       </template>
 
       <!-- Renderizado dinámico de columnas -->
-      <Column
-        v-for="col in visibleColumns"
-        :key="col.field"
-        :sortable="col.field !== 'actions'"
-        :field="col.field !== 'actions' ? col.field : undefined"
-      >
+      <Column v-for="col in visibleColumns" :key="col.field" :sortable="col.field !== 'actions'"
+        :field="col.field !== 'actions' ? col.field : undefined">
         <template #header>
           <div class="p-1 text-black font-semibold text-center text-sm">
             {{ col.header }}
@@ -88,19 +53,21 @@
             <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
             <Button icon="pi pi-print" class="p-button-rounded p-button-info" @click="printTicket(data)" />
           </div>
-          <div
-            v-if="col.field === 'mes_ano'"
+          <div v-if="col.field === 'honorarios'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard(formatFechaMesAnoSQL(data[col.field]))"
-          >
+            @click="copyToClipboard(addDollarPrefix(data[col.field]))">
+            {{ "$" + data[col.field] }}
+          </div>
+          <div v-if="col.field === 'mes_ano'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(formatFechaMesAnoSQL(data[col.field]))">
             {{ formatFechaMesAnoSQL(data[col.field]) }}
-        </div>
+          </div>
+
           <!-- Celdas normales -->
-          <div
-            v-else
+          <div v-else-if="col.field !== 'actions' && col.field !== 'honorarios' && col.field !== 'mes_ano'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard(data[col.field])"
-          >
+            @click="copyToClipboard(data[col.field])">
             {{ data[col.field] }}
           </div>
         </template>
@@ -110,25 +77,12 @@
 
   <!-- Toast y modales -->
   <Toast />
-  <CardDetailMensual
-    v-if="cardVisible"
-    :pago="selectedMensual"
-    :usuario="usuario"
-    @close="cardVisible = false"
-    @save="saveMensual"
-  />
-  <ConfirmDeleteDialog
-    v-if="confirmDialogVisible"
-    @confirm="confirmDelete"
-    @cancel="cancelDelete"
-  />
-  
+  <CardDetailMensual v-if="cardVisible" :pago="selectedMensual" :usuario="usuario" @close="cardVisible = false"
+    @save="saveMensual" />
+  <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
+
   <!-- Componente para impresión -->
-  <TicketPrinter
-    v-if="printDialogVisible"
-    :ticket="selectedTicket"
-    @close="printDialogVisible = false"
-  />
+  <TicketPrinter v-if="printDialogVisible" :ticket="selectedTicket" @close="printDialogVisible = false" />
 </template>
 
 <script setup>
@@ -157,6 +111,7 @@ const usuario = ref({
 
 // Definición de columnas base
 const columns = ref([
+  { field: "id", header: "ID" },
   { field: "cliente", header: "Cliente" },
   { field: "atendio", header: "Atendió" },
   { field: "honorarios", header: "Honorarios" },
@@ -285,7 +240,6 @@ const saveMensual = (pago) => {
       });
     }
   } else {
-    pago.id = "M-" + Date.now().toString();
     mensual.value.push(pago);
     toast.add({
       severity: "success",

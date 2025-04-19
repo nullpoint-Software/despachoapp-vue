@@ -1,21 +1,13 @@
 <template>
   <!-- Contenedor de la tabla -->
   <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
-    <DataTable
-      :value="historial"
-      :filters="filters"
-      :globalFilterFields="['cliente', 'atendio', 'fecha', 'cantidad', 'tipo']"
-      paginator
-      sortMode="multiple"
-      removableSort
-      :rows="5"
-      :rowsPerPageOptions="[5, 10, 20, 50]"
-      :rowClass="rowClass"
-      class="w-full rounded-lg p-5"
-    >
+    <DataTable :value="historial" :filters="filters"
+      :globalFilterFields="['cliente', 'atendio', 'fecha', 'cantidad', 'tipo']" paginator sortMode="multiple"
+      removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass" class="w-full rounded-lg p-5">
       <!-- Encabezado de la tabla -->
       <template #header>
-        <div class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
             <!-- Buscador -->
             <div class="flex space-x-2 border-2 border-solid">
@@ -24,63 +16,47 @@
               </span>
             </div>
             <div class="relative w-full sm:w-auto">
-              <InputText
-                v-model="filters.global.value"
-                placeholder="Buscar..."
-                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <InputText v-model="filters.global.value" placeholder="Buscar..."
+                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <!-- Botones -->
             <div class="flex space-x-2">
-              <Button
-                type="button"
-                icon="pi pi-filter-slash"
-                :label="isMobile ? '' : 'Limpiar Filtros'"
-                outlined
-                class="p-2"
-                @click="clearFilter"
-              />
+              <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
+                class="p-2" @click="clearFilter" />
             </div>
           </div>
         </div>
         <!-- Slider para columnas -->
-        <div
-          v-if="pages.length > 1"
-          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2"
-        >
-          <Button
-            icon="pi pi-chevron-left"
-            @click="prevPage"
-            :disabled="currentPageIndex === 0"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
-          <Button
-            icon="pi pi-chevron-right"
-            @click="nextPage"
-            :disabled="currentPageIndex === maxPageIndex"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
+        <div v-if="pages.length > 1"
+          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2">
+          <Button icon="pi pi-chevron-left" @click="prevPage" :disabled="currentPageIndex === 0"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
+          <Button icon="pi pi-chevron-right" @click="nextPage" :disabled="currentPageIndex === maxPageIndex"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
         </div>
       </template>
 
       <!-- Renderizado dinámico de columnas -->
-      <Column
-        v-for="col in visibleColumns"
-        :key="col.field"
-        :sortable="true"
-        :field="col.field"
-      >
+      <Column v-for="col in visibleColumns" :key="col.field" :sortable="true" :field="col.field">
         <template #header>
           <div class="p-1 text-black font-semibold text-center text-sm">
             {{ col.header }}
           </div>
         </template>
         <template #body="{ data }">
-          <div
+          <div v-if="col.field === 'fecha'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard(data[col.field])"
-          >
-            {{ data[col.field] }}
+            @click="copyToClipboard(formatFechaHoraFullSQL(data[col.field]))">
+            {{ formatFechaHoraFullSQL(data[col.field]) }}
+          </div>
+          <div v-if="col.field === 'cantidad'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard('$'+data[col.field])">
+            {{ '$'+data[col.field] }}
+          </div>
+          <div v-else-if="col.field != 'fecha' && col.field != 'cantidad'" class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(data[col.field])">
+            {{ data[col.field] }} 
           </div>
         </template>
       </Column>
@@ -89,18 +65,9 @@
 
   <!-- Toast y modales -->
   <Toast />
-  <CardDetailHistorial
-    v-if="cardVisible"
-    :registro="selectedHistorial"
-    :usuario="usuario"
-    @close="cardVisible = false"
-    @save="saveHistorial"
-  />
-  <ConfirmDeleteDialog
-    v-if="confirmDialogVisible"
-    @confirm="confirmDelete"
-    @cancel="cancelDelete"
-  />
+  <CardDetailHistorial v-if="cardVisible" :registro="selectedHistorial" :usuario="usuario" @close="cardVisible = false"
+    @save="saveHistorial" />
+  <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
 </template>
 
 <script setup>
@@ -113,14 +80,12 @@ import Button from "primevue/button";
 import Toast from "primevue/toast";
 import CardDetailHistorial from "./CardDetailHistorial.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
+import { formatFechaHoraFullSQL, formatFechaHoraSQL, ps } from "@/service/adminApp/client";
 
 const toast = useToast();
 
 // Datos de ejemplo
-const historial = ref([
-  { id: "H-1001", cliente: "Cliente A", atendio: "Usuario X", fecha: "01/05/2025", cantidad: "$500.00", tipo: "cobro" },
-  { id: "H-1002", cliente: "Cliente B", atendio: "Usuario Y", fecha: "02/05/2025", cantidad: "$300.00", tipo: "pago" },
-]);
+const historial = ref(await ps.getPagoHistorial());
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
@@ -159,6 +124,15 @@ const copyToClipboard = async (text) => {
   } catch (err) {
     toast.add({ severity: "error", summary: "Error", detail: "No se pudo copiar", life: 2000 });
   }
+};
+
+const addDollarPrefix = (value) => {
+  // Si está vacío o 0, no le agregamos nada
+  if (!value) return value;
+  if (typeof value === "string" && !value.startsWith("$")) {
+    return "$" + value;
+  }
+  return value;
 };
 
 // Detección de dispositivo móvil

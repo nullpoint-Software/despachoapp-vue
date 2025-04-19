@@ -4,9 +4,7 @@
     <div class="modal-overlay" @click.self="close">
       <div class="modal-content relative bg-gray-50">
         <!-- Encabezado -->
-        <div
-          class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow"
-        >
+        <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
           <div>
             <h3 class="text-2xl font-bold text-black">
               <i class="pi pi-calendar text-3xl text-blue-500"></i>
@@ -20,11 +18,8 @@
           <!-- Cliente -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Cliente</label>
-            <InputText
-              v-model="pago.cliente"
-              class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el nombre del cliente"
-            />
+            <InputText v-model="pago.cliente" class="p-2 border border-gray-300 rounded"
+              placeholder="Ingrese el nombre del cliente" />
             <span v-if="errors.cliente" class="text-red-500 text-sm">{{
               errors.cliente
             }}</span>
@@ -34,18 +29,9 @@
           <div class="flex flex-col">
             <label class="font-semibold text-black">Quien atendio</label>
             <div class="flex items-center">
-              <img
-                v-if="usuario.foto"
-                :src="usuario.foto"
-                alt="Foto"
-                class="w-8 h-8 rounded-full mr-2"
-              />
-              <InputText
-                v-model="pago.atendio"
-                disabled
-                class="p-2 border border-gray-300 rounded w-full"
-                placeholder="Nombre del usuario"
-              />
+              <img v-if="usuario.foto" :src="usuario.foto" alt="Foto" class="w-8 h-8 rounded-full mr-2" />
+              <InputText v-model="pago.atendio" disabled class="p-2 border border-gray-300 rounded w-full"
+                placeholder="Nombre del usuario" />
             </div>
             <span v-if="errors.atendio" class="text-red-500 text-sm">{{
               errors.atendio
@@ -56,18 +42,10 @@
           <div class="flex flex-col">
             <label class="font-semibold text-black">Honorarios</label>
             <div class="flex">
-              <span
-                class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l"
-                >$</span
-              >
-              <InputText
-                type="number"
-                step="0.01"
-                min="0"
-                v-model="pago.honorarios"
+              <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+              <InputText type="number" step="0.01" min="0" v-model="pago.honorarios"
                 class="p-2 border border-gray-300 rounded-r focus:outline-none w-full"
-                placeholder="Ingrese los honorarios"
-              />
+                placeholder="Ingrese los honorarios" />
             </div>
             <span v-if="errors.honorarios" class="text-red-500 text-sm">{{
               errors.honorarios
@@ -77,11 +55,7 @@
           <!-- Mes y Año (texto, pero el user no quiso date) -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Mes y Año</label>
-            <InputText
-              v-model="pago.mes_ano"
-              class="p-2 border border-gray-300 rounded"
-              placeholder="MM/YYYY"
-            />
+            <InputText v-model="pago.mes_ano" class="p-2 border border-gray-300 rounded" placeholder="MM/YYYY" />
             <span v-if="errors.mes_ano" class="text-red-500 text-sm">{{
               errors.mes_ano
             }}</span>
@@ -90,18 +64,8 @@
 
         <!-- Botones -->
         <div class="flex justify-end space-x-6 mt-6 px-4">
-          <Button
-            label="Cancelar"
-            icon="pi pi-times"
-            class="p-button-text"
-            @click="close"
-          />
-          <Button
-            label="Guardar"
-            icon="pi pi-check"
-            class="p-button-primary"
-            @click="save"
-          />
+          <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="close" />
+          <Button label="Guardar" icon="pi pi-check" class="p-button-primary" @click="save" />
         </div>
       </div>
     </div>
@@ -112,7 +76,7 @@
 import { ref, watch, defineProps, defineEmits, onMounted } from "vue";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
-import { ps } from "@/service/adminApp/client";
+import { formatFechaMesAnoSQL, ps } from "@/service/adminApp/client";
 const props = defineProps({
   pago: {
     type: Object,
@@ -138,6 +102,10 @@ const emit = defineEmits(["close", "save"]);
 const pago = ref({ ...props.pago });
 if (pago.value.atendio == "") { //por si es un registro nuevo se ocupa el nombre de user
   pago.value.atendio = localStorage.getItem("username");
+  // pago.value.mes_ano = new Date().toLocaleString("sv-SE").replace('T', '')
+  pago.value.mes_ano = formatFechaMesAnoSQL(new Date().toLocaleString("sv-SE").replace('T', ''))
+} else {
+  pago.value.mes_ano = formatFechaMesAnoSQL(pago.value.mes_ano);
 }
 const errors = ref({
   cliente: "",
@@ -209,20 +177,40 @@ const save = async () => {
   if (validate()) {
     if (!pago.value.id) {
       console.log("nuevo regist");
-
+      if (pago.value.mes_ano && typeof pago.value.mes_ano === 'string') {
+        const [mes, anio] = pago.value.mes_ano.split('/');
+        if (mes && anio) {
+          // Usar padStart por si el usuario mete '5/2020' sin el cero
+          const mesFormateado = mes.padStart(2, '0');
+          pago.value.mes_ano = `${anio}-${mesFormateado}-01 00:00:00`;
+        }
+      }
       try {
+        pago.value.id = "M-" + new Date()
+          .toLocaleString("sv-SE")
+          .replace('T', '')
+          .replace(/[-: ]/g, '');
+
         await ps.addPagoMensual(pago.value);
-        pago.value.honorarios = addDollarPrefix(pago.value.honorarios);
         emit("save", { ...pago.value });
       } catch (error) {
         console.log("error al guardar pago mensual", error);
       }
-    }
-    if (pago.value.id) {
+    }else {
       console.log("edit!");
+
+      // Convertir 'mes_ano' de "MM/YYYY" a "YYYY-MM-01 00:00:00"
+      if (pago.value.mes_ano && typeof pago.value.mes_ano === 'string') {
+        const [mes, anio] = pago.value.mes_ano.split('/');
+        if (mes && anio) {
+          // Usar padStart por si el usuario mete '5/2020' sin el cero
+          const mesFormateado = mes.padStart(2, '0');
+          pago.value.mes_ano = `${anio}-${mesFormateado}-01 00:00:00`;
+        }
+      }
+
       try {
-        await ps.updatePagoMensual(pago.value.id,pago.value)
-        pago.value.honorarios = addDollarPrefix(pago.value.honorarios);
+        await ps.updatePagoMensual(pago.value.id, pago.value);
         emit("save", { ...pago.value });
       } catch (error) {
         console.log("error al guardar pago mensual", error);

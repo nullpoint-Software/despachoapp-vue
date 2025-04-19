@@ -8,7 +8,7 @@
           <div>
             <h3 class="text-2xl font-bold text-black">
               <i class="pi pi-receipt text-3xl text-blue-500"></i>
-              {{ pago.cliente ? 'Editar Pago Concepto' : 'Agregar Pago Concepto' }}
+              {{ pago.id ? 'Editar Pago Concepto' : 'Agregar Pago Concepto' }}
             </h3>
           </div>
         </div>
@@ -18,22 +18,16 @@
           <!-- Cliente -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Cliente</label>
-            <InputText
-              v-model="pago.cliente"
-              class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el nombre del cliente"
-            />
+            <InputText v-model="pago.cliente" class="p-2 border border-gray-300 rounded"
+              placeholder="Ingrese el nombre del cliente" />
             <span v-if="errors.cliente" class="text-red-500 text-sm">{{ errors.cliente }}</span>
           </div>
 
           <!-- Asunto -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Asunto</label>
-            <InputText
-              v-model="pago.asunto"
-              class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el asunto"
-            />
+            <InputText v-model="pago.asunto" class="p-2 border border-gray-300 rounded"
+              placeholder="Ingrese el asunto" />
             <span v-if="errors.asunto" class="text-red-500 text-sm">{{ errors.asunto }}</span>
           </div>
 
@@ -41,18 +35,9 @@
           <div class="flex flex-col">
             <label class="font-semibold text-black">Quien atendio</label>
             <div class="flex items-center">
-              <img
-                v-if="usuario.foto"
-                :src="usuario.foto"
-                alt="Foto"
-                class="w-8 h-8 rounded-full mr-2"
-              />
-              <InputText
-                v-model="pago.atendio"
-                disabled
-                class="p-2 border border-gray-300 rounded w-full"
-                placeholder="Nombre del usuario"
-              />
+              <img v-if="usuario.foto" :src="usuario.foto" alt="Foto" class="w-8 h-8 rounded-full mr-2" />
+              <InputText v-model="pago.atendio" disabled class="p-2 border border-gray-300 rounded w-full"
+                placeholder="Nombre del usuario" />
             </div>
             <span v-if="errors.atendio" class="text-red-500 text-sm">{{ errors.atendio }}</span>
           </div>
@@ -63,14 +48,9 @@
             <div class="flex">
               <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
               <!-- type="number" con step="0.01" impide letras -->
-              <InputText
-                type="number"
-                step="0.01"
-                min="0"
-                v-model="pago.cobramos"
+              <InputText type="number" step="0.01" min="0" v-model="pago.cobramos"
                 class="p-2 border border-gray-300 rounded-r focus:outline-none w-full"
-                placeholder="Ingrese el monto cobrado"
-              />
+                placeholder="Ingrese el monto cobrado" />
             </div>
             <span v-if="errors.cobramos" class="text-red-500 text-sm">{{ errors.cobramos }}</span>
           </div>
@@ -80,14 +60,9 @@
             <label class="font-semibold text-black">Pagamos</label>
             <div class="flex">
               <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
-              <InputText
-                type="number"
-                step="0.01"
-                min="0"
-                v-model="pago.pagamos"
+              <InputText type="number" step="0.01" min="0" v-model="pago.pagamos"
                 class="p-2 border border-gray-300 rounded-r focus:outline-none w-full"
-                placeholder="Ingrese el monto pagado"
-              />
+                placeholder="Ingrese el monto pagado" />
             </div>
             <span v-if="errors.pagamos" class="text-red-500 text-sm">{{ errors.pagamos }}</span>
           </div>
@@ -95,17 +70,12 @@
           <!-- Fecha (con Calendar) -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Fecha</label>
-            <Calendar
-              v-model="fechaSeleccionada"
-              dateFormat="dd/mm/yy"
-              showIcon
-              placeholder="Selecciona la fecha"
-              class="w-full border border-gray-300 rounded focus:outline-none"
-            />
+            <Calendar v-model="fechaSeleccionada" dateFormat="dd/mm/yy" showIcon placeholder="Selecciona la fecha"
+              class="w-full border border-gray-300 rounded focus:outline-none" />
             <span v-if="errors.fecha" class="text-red-500 text-sm">{{ errors.fecha }}</span>
           </div>
 
-          <!-- Saldo -->
+          <!-- Saldo
           <div class="flex flex-col">
             <label class="font-semibold text-black">Saldo</label>
             <div class="flex">
@@ -120,7 +90,7 @@
               />
             </div>
             <span v-if="errors.saldo" class="text-red-500 text-sm">{{ errors.saldo }}</span>
-          </div>
+          </div> -->
         </div>
 
         <!-- Botones -->
@@ -138,6 +108,7 @@ import { ref, watch, defineProps, defineEmits, onMounted, computed } from "vue";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Calendar from "primevue/calendar";
+import { formatFechaHoraFullSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
 
 const props = defineProps({
   pago: {
@@ -174,7 +145,9 @@ const errors = ref({
   fecha: "",
   saldo: "",
 });
-
+if (pago.value.atendio == "") { //por si es un registro nuevo se ocupa el nombre de user
+  pago.value.atendio = localStorage.getItem("username");
+}
 /* 
   Usamos un ref para Calendar, ya que Calendar guarda Date.
   Luego lo convertimos a dd/mm/yyyy en save()
@@ -261,10 +234,6 @@ const validate = () => {
     errors.value.fecha = "La fecha es obligatoria.";
     valid = false;
   }
-  if (!pago.value.saldo) {
-    errors.value.saldo = "El saldo es obligatorio.";
-    valid = false;
-  }
   return valid;
 };
 
@@ -281,16 +250,27 @@ const addDollarPrefix = (value) => {
   return value;
 };
 
-const save = () => {
+const save = async () => {
   if (fechaSeleccionada.value) {
-    pago.value.fecha = formatoFecha(fechaSeleccionada.value);
+    pago.value.fecha = formatFechaSQL(fechaSeleccionada.value);
   }
   if (validate()) {
-    // Preparamos los campos monetarios con "$"
-    pago.value.cobramos = addDollarPrefix(pago.value.cobramos);
-    pago.value.pagamos = addDollarPrefix(pago.value.pagamos);
-    pago.value.saldo = addDollarPrefix(pago.value.saldo);
-    emit("save", { ...pago.value });
+    if (!pago.value.id) {
+      console.log("new");
+      
+      pago.value.id = "C-" + new Date()
+        .toLocaleString("sv-SE")
+        .replace('T', '')
+        .replace(/[-: ]/g, '');
+      await ps.addPagoConcepto(pago.value);
+      emit("save", { ...pago.value });
+    } else {
+      console.log("edit");
+      
+      await ps.updatePagoConcepto(pago.value.id, pago.value);
+      emit("save", { ...pago.value });
+    }
+
   }
 };
 </script>
@@ -306,6 +286,7 @@ const save = () => {
   justify-content: center;
   z-index: 50;
 }
+
 .modal-content {
   background-color: #f9fafb;
   border-radius: 0.5rem;
@@ -316,19 +297,23 @@ const save = () => {
   position: relative;
   animation: slideDown 0.3s ease-out;
 }
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
+
 @keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

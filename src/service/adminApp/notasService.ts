@@ -19,6 +19,15 @@ class NotasService {
             throw error;
         }
     }
+
+    async addNota(nota:any){
+        try {
+          const res = await this.axios.post(`${this.serverip}/notas`, nota);
+          console.log("Nota guardada:", res.data);
+        } catch (err) {
+          console.error("Error al guardar nota:", err);
+        }
+      };
 }
 
 export default NotasService;

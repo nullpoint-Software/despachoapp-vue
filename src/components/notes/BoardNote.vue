@@ -156,10 +156,11 @@ import { ns } from "@/service/adminApp/client";
   };
   
   // Función para agregar la nueva nota
-  const addNote = () => {
+  const addNote = async () => {
     const newId =
       notes.value.length > 0 ? Math.max(...notes.value.map((n) => n.id)) + 1 : 1;
     notes.value.push({ id: newId, ...newNote.value });
+    await ns.addNota(newNote.value)
     closeAddModal();
   };
   </script>

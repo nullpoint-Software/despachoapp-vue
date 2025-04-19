@@ -9,6 +9,19 @@ class TareasService {
     this.axios = axios;
   }
 
+  async addTarea(tarea: any, id_usuario?: any): Promise<any> {
+    try {
+      if (id_usuario) {
+        tarea.id_usuario = id_usuario;
+      }
+      const response = await this.axios.post(`${this.serverip}/tareas`, tarea);
+      return response.data;
+    } catch (err) {
+      console.error("Error al agregar tarea:", err);
+      throw err;
+    }
+  }
+
   async getTareas(): Promise<any> {
     try {
       const response = await this.axios.get(`${this.serverip}/tareas`);
@@ -31,21 +44,30 @@ class TareasService {
     }
   }
 
-  async updateTareaEstado(id_tarea: String, estado:any, fecha_vencimiento:any): Promise<any> {
+  async updateTarea(id_tarea: string, id_usuario: any, estado: any, fecha_vencimiento: any): Promise<any> {
     try {
-        console.log("try update tarea",id_tarea+" est: "+estado);
-      if(!fecha_vencimiento){ //si no terminado
-        const response = await this.axios.put(`${this.serverip}/tareas/${id_tarea}`,{estado: estado, id_usuario: localStorage.getItem("userid")});
-        return response.data;
-      }else{ // si terminado
-        const response = await this.axios.put(`${this.serverip}/tareas/${id_tarea}`,{estado: estado, id_usuario: localStorage.getItem("userid"), fecha_vencimiento: fecha_vencimiento});
-        return response.data;
+      console.log("try update tarea", id_tarea + " est: " + estado);
+  
+      const usuario = id_usuario || localStorage.getItem("userid");
+  
+      const payload: any = {
+        estado: estado,
+        id_usuario: usuario
+      };
+  
+      if (fecha_vencimiento && estado === "Terminado") {
+        payload.fecha_vencimiento = fecha_vencimiento;
       }
+  
+      const response = await this.axios.put(`${this.serverip}/tareas/${id_tarea}`, payload);
+      return response.data;
     } catch (error) {
       console.error("error update tarea", error);
       throw error;
     }
   }
+
+
 
 }
 

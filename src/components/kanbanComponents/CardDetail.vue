@@ -46,12 +46,12 @@
             </tr>
 
             <!-- Cliente -->
-            <tr class="border-b border-gray-200">
+            <!-- <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Cliente</td>
               <td class="px-4 py-2 text-gray-600 text-center">
                 {{ card.ClientName || 'Cliente no disponible' }}
               </td>
-            </tr>
+            </tr> -->
 
             <!-- Descripción -->
             <tr class="border-b border-gray-200">
@@ -78,18 +78,18 @@
             <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha Finalizacion</td>
               <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.fechaFinalizacion ? card.fechaFinalizacion : 'No disponible' }}
+                {{ card.fecha_vencimiento ? formatFechaHoraFullSQL(card.fecha_vencimiento) : 'No disponible' }}
               </td>
             </tr>
 
             <!-- Horario -->
-            <tr>
+            <!-- <tr>
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Horario</td>
               <td class="px-4 py-2 text-gray-600 text-center">
                 <div>Inicio: {{ card.startTime ? card.startTime : 'No disponible' }}</div>
                 <div>Fin: {{ card.endTime ? card.endTime : 'No disponible' }}</div>
               </td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
 
@@ -98,6 +98,7 @@
           <!-- Botón Modificar -->
           <button
             @click="editTask"
+            
             class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none"
           >
             <i class="pi pi-pencil"></i>
@@ -107,11 +108,11 @@
           <!-- Botón Estado -->
           <button
             @click="advanceState"
-            :style="{ backgroundColor: getStatusColor(card.status) }"
+            :style="{ backgroundColor: getStatusColor(card.estado) }"
             class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold shadow hover:opacity-90 transition transform hover:scale-105 focus:outline-none border border-gray-300"
           >
-            <i :class="getStateIcon(card.status)"></i>
-            <span>{{ card.status }}</span>
+            <i :class="getStateIcon(card.estado)"></i>
+            <span>{{ card.estado }}</span>
           </button>
         </div>
       </div>
@@ -123,7 +124,9 @@
 import { defineProps, defineEmits } from 'vue';
 import 'primeicons/primeicons.css';
 import { formatFechaHoraFullSQL } from '@/service/adminApp/client';
-
+import { hasPermission } from '@/service/adminApp/permissionsService';
+import { Toast, useToast } from 'primevue';
+const toast = useToast();
 const props = defineProps({
   card: {
     type: Object,
@@ -134,8 +137,19 @@ const props = defineProps({
 const emit = defineEmits(['advanceState', 'close', 'edit']);
 
 // Función para emitir el evento 'edit' con la tarea (card) como argumento
-const editTask = () => {
-  emit('edit', props.card);
+const editTask = async () => {
+  if(await hasPermission('canEditCard')){
+    emit('edit', props.card);
+  }else{
+    console.log("no permission de mover!!");
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "No tienes permiso para editar esta tarea!",
+      life: 2000,
+    });
+  }
+  
 };
 
 const advanceState = () => {
@@ -146,9 +160,9 @@ const getStatusColor = (status) => {
   switch (status) {
     case 'Disponible':
       return '#A7F3D0';
-    case 'Por Hacer':
+    case 'Pendiente':
       return '#FCD34D';
-    case 'En progreso':
+    case 'En Progreso':
       return '#93C5FD';
     case 'Terminado':
       return '#D1D5DB';

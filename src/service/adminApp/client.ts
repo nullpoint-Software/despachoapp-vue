@@ -6,6 +6,7 @@ import authService from "./authService";
 import PagosService from "./pagosService";
 import NotasService from "./notasService";
 import EstadisticaService from "./estadisticaService";
+import UsuarioService from "./usuariosService";
 
 export const cs = new ClienteService(serverip, axios);
 export const ts = new TareasService(serverip, axios);
@@ -13,6 +14,7 @@ export const as = new authService(serverip, axios);
 export const ps = new PagosService(serverip, axios);
 export const ns = new NotasService(serverip, axios);
 export const es = new EstadisticaService(serverip, axios);
+export const us = new UsuarioService(serverip, axios);
 
 export const formatFechaSQL = (dateStr: string): string => {
     const date = new Date(dateStr);
