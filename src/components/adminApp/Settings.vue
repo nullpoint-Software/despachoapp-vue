@@ -297,7 +297,7 @@ function openFromSearch(u) {
   showSearchModal.value = false
 }
 async function verPassword() {
-  const entrada = prompt('Ingresa la contraseña maestra:')
+  // const entrada = prompt('Ingresa la contraseña maestra:')
   // if (entrada === MASTER_PASSWORD) {
     const userbd = await us.getUsuarioPS(usuarioSeleccionado.value.id_usuario)
     usuarioSeleccionado.value.password = userbd.password
