@@ -115,7 +115,6 @@ import Toast from "primevue/toast";
 import CardDetailPagoConcepto from "./CardDetailPagoConcepto.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import PrintPagoConcepto from "./PrintPagoConcepto.vue";
-
 const toast = useToast();
 
 // Datos de ejemplo
