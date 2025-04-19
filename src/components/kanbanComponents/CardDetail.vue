@@ -175,9 +175,9 @@ const getStateIcon = (status) => {
   switch (status) {
     case 'Disponible':
       return 'pi pi-check-circle';
-    case 'Por Hacer':
+    case 'Pendiente':
       return 'pi pi-folder-open';
-    case 'En progreso':
+    case 'En Progreso':
       return 'pi pi-spinner pi-spin';
     case 'Terminado':
       return 'pi pi-check';
