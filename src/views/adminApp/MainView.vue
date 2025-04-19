@@ -21,7 +21,7 @@
         <!-- Nombre del perfil del usuario -->
         <div class="flex flex-col">
           <span class="font-bold">{{ ProfileName }}</span>
-          <span class="text-xs text-gray-300">{{ProfileType}}</span>
+          <span class="text-xs text-gray-300">{{ ProfileType }}</span>
         </div>
 
         <!-- Separador vertical -->
@@ -40,9 +40,15 @@
     <transition name="slide-fade">
       <div v-if="menuOpen" class="lg:hidden fixed inset-0 z-50" @click.self="toggleMenu">
         <div class="w-64 h-full bg-gray-800 text-white p-4" @click.stop>
-          <div class="flex items-center space-x-2 mb-4">
+          <div class="flex items-start">
+            <div class="flex flex-col mt-1">
             <Avatar :image="profilePicture" shape="circle" />
-            <span class="font-bold">{{ ProfileName }}</span>
+          </div>
+            <div class="flex flex-col ml-3">
+              <span class="font-bold">{{ ProfileName }}</span>
+              <span class="text-xs text-gray-300">{{ ProfileType }}</span>
+            </div>
+
           </div>
           <Divider />
           <ul class="mt-4">
@@ -57,7 +63,9 @@
           </ul>
 
           <div class="flex flex-col space-y-4 mt-4">
-            <Button label="Cuenta" icon="pi pi-user" class="w-full text-white bg-black hover:bg-gray-800" outlined />
+            <router-link to="/app/settings">
+              <Button label="Cuenta" icon="pi pi-user" class="w-full text-white bg-black hover:bg-gray-800" outlined />
+            </router-link>
             <Button label="Cerrar sesión" icon="pi pi-sign-out" class="w-full bg-black hover:bg-gray-800"
               severity="danger" text :onclick="logOut" />
           </div>
