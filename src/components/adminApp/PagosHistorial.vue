@@ -16,7 +16,7 @@
               </span>
             </div>
             <div class="relative w-full sm:w-auto">
-              <InputText v-model="filters.global.value" placeholder="Buscar..."
+              <InputText v-model="filters.global.value" autocomplete="new-password" placeholder="Buscar..."
                 class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <!-- Botones -->
