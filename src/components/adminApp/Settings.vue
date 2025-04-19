@@ -16,9 +16,10 @@
           <input id="file-input" type="file" accept="image/*" @change="onFileChange" class="hidden" />
         </div>
         <div class="text-center lg:text-left flex-1">
-          <input type="text" v-model="userName" @blur="updateName(userName)"
+          <input type="text" v-model="userFullName" @blur="updateName(userFullName)"
             class="w-full text-2xl font-semibold border-b border-gray-300 focus:outline-none focus:border-black" />
           <p class="text-sm text-gray-500 mt-1">Haz clic para editar tu nombre</p>
+          <p class="font-semibold">Tu nombre de usuario es: {{ userName }}</p>
         </div>
       </div>
 
@@ -59,7 +60,7 @@
               <img :src="user.imagen ? 'data:image/png;base64,' + user.imagen : defaultAvatar"
                 class="w-10 h-10 rounded-full object-cover" />
               <div class="flex-1 cursor-pointer" @click="abrirModal(user)">
-                <p class="font-semibold">{{ user.nombre }}</p>
+                <p class="font-semibold">{{ user.nombre + " ("+user.username+")" }}</p>
                 <p class="text-sm text-gray-500">{{ user.puesto }}</p>
               </div>
               <button @click.stop="deleteUser(user)" class="text-red-500 hover:text-red-700 px-2">
@@ -205,11 +206,17 @@
             </button>
           </div>
           <!-- USER INFO -->
-          <div class="flex flex-col items-center mb-6">
+          <div class="flex flex-col items-center mb-4">
             <img :src="'data:image/png;base64,' + usuarioSeleccionado.imagen"
               class="w-28 h-28 rounded-full border-4 border-gray-200 shadow-lg mb-4 object-cover" />
             <h4 class="text-xl font-semibold">{{ usuarioSeleccionado.nombre }}</h4>
             <p class="text-sm text-gray-500">{{ usuarioSeleccionado.puesto }}</p>
+          </div>
+          <div class="mb-3 w-full text-center">
+            <p class="font-medium mb-2">Nombre de usuario:</p>
+            <div class="flex items-center justify-center">
+              <span class="mr-2 text-lg">{{ usuarioSeleccionado.username }}</span>
+            </div>
           </div>
           <!-- PASSWORD -->
           <div class="mb-6 w-full text-center">
@@ -252,7 +259,8 @@ import { getPermissions,hasPermission,updatePermissions,updateUserPermissions } 
 const toast = useToast();
 // PERFIL
 const isAdmin = localStorage.getItem('level') === 'Administrador'
-const userName = ref(localStorage.getItem("fullname"))
+const userFullName = ref(localStorage.getItem("fullname"))
+const userName = ref(localStorage.getItem("username"));
 const profileImage = ref(localStorage.getItem("userphoto"))
 function onFileChange(e) {
   const f = e.target.files[0]
