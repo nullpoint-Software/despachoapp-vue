@@ -13,20 +13,24 @@
         <!-- Logo de la empresa: La fuente de la imagen se define de manera reactiva -->
         <img :src="mainImageSrc" alt="Logo de la Empresa" class="w-20 lg:w-20" />
       </div>
-      
+
       <!-- Sección derecha del navbar: Muestra la información del usuario y los botones -->
       <div class="hidden lg:flex text-white space-x-3 items-center mr-4">
         <!-- Avatar del usuario con tooltip que muestra el nombre del perfil -->
         <Avatar v-tooltip.bottom="ProfileName" :image="profilePicture" shape="circle" />
         <!-- Nombre del perfil del usuario -->
-        <span class="font-bold">{{ ProfileName }}</span>
+        <div class="flex flex-col">
+          <span class="font-bold">{{ ProfileName }}</span>
+          <span class="text-xs text-gray-300">{{ProfileType}}</span>
+        </div>
+
         <!-- Separador vertical -->
         <Divider layout="vertical" />
         <!-- Botón para abrir el modal con el Tablero de Notas -->
         <Button icon="pi pi-book" class="p-button-rounded bg-yellow-500 hover:bg-yellow-600" @click="openNotesModal"
           aria-label="Abrir Tablero de Notas" />
         <!-- Botón para cerrar sesión -->
-        
+
         <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text
           :onclick="logOut" />
       </div>
@@ -48,10 +52,10 @@
                 <span>{{ item.name }}</span>
               </router-link>
             </li>
-            
-            
+
+
           </ul>
-          
+
           <div class="flex flex-col space-y-4 mt-4">
             <Button label="Cuenta" icon="pi pi-user" class="w-full text-white bg-black hover:bg-gray-800" outlined />
             <Button label="Cerrar sesión" icon="pi pi-sign-out" class="w-full bg-black hover:bg-gray-800"
@@ -97,9 +101,9 @@
         </div>
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
-        <Suspense>
-          <RouterView />
-        </Suspense>
+      <Suspense>
+        <RouterView />
+      </Suspense>
 
 
     </div>
@@ -142,6 +146,7 @@ export default {
     const menuOpen = ref(false);
     const router = useRouter();
     const ProfileName = localStorage.getItem("fullname")
+    const ProfileType = localStorage.getItem("level")
     // Definir un ID de usuario de ejemplo
     const userId = ref(localStorage.getItem("userid"));
     const profilePicture = ref(localStorage.getItem("userphoto"));
@@ -192,6 +197,7 @@ export default {
       buildTime,
       menuOpen,
       profilePicture,
+      ProfileType,
       ProfileName,
       menuItems,
       toggleMenu,
