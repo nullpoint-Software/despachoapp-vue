@@ -185,7 +185,7 @@ const save = async () => {
   errors.value.descripcion = !localTask.value.descripcion;
   if (errors.value.titulo || errors.value.descripcion) return;
   if (localTask.value.id_usuario) {
-    window.location.reload();
+    
     console.log("edit!");
     console.log("current task: " + localTask.value.id_tarea);
    
@@ -198,8 +198,9 @@ const save = async () => {
       console.log("assignedEmployee value:", localTask.value.assignedEmployee);
       await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.estado)
     }
-  } else {
     window.location.reload();
+  } else {
+    
     console.log("new");
 
     localTask.value.estado = "Disponible";
@@ -208,7 +209,7 @@ const save = async () => {
     }else{ //si se le asigna usuario manualmente desde el dropdown cuando esta disponible
       await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, "Pendiente")
     }
-    
+    window.location.reload();
   }
   // Se emite la tarea sin archivos adjuntos
   emit("save", { ...localTask.value });

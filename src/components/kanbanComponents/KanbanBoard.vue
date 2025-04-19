@@ -207,15 +207,17 @@ const moveCard = async (cardId, newStatus) => {
 
         if (originalStatus === "Disponible") {
           cardsDisponible.value = cardsDisponible.value.filter(
-            (c) => c.id_tarea !== cardId
+            (c) => c.id_tarea !== card.id_tarea
           );
           cards.value.push(card);
         }
 
         if (newStatus === "Disponible") {
           card.image = null;
-          cards.value = cards.value.filter((c) => c.id_tarea !== cardId);
+          card.id_usuario = null;
+          cards.value = cards.value.filter((c) => c.id_tarea !== card.id_tarea);
           cardsDisponible.value.push(card);
+          // window.location.reload()
         }
         if (!(newStatus === "Terminado")) {
           card.fecha_vencimiento = null;
@@ -385,21 +387,21 @@ const saveTaskForm = (taskData) => {
   console.log("save taskform activated with task: " +taskData);
   console.log("mode is "+ taskFormMode.value);
   
-  if (taskFormMode.value === "add") {
-    const newId =
-      cards.value.length > 0
-        ? Math.max(...cards.value.map((c) => c.id_tarea)) + 1
-        : 1;
-    taskData.id_tarea = newId;
-    cards.value.push({ ...taskData });
-    // Resetear la página del estado del nueva tarea a 0
-    currentPage.value[taskData.status] = 0;
-  } else if (taskFormMode.value === "edit") {
-    const index = cards.value.findIndex((c) => c.id_tarea === taskData.id_tarea);
-    if (index !== -1) {
-      cards.value.splice(index, 1, { ...taskData });
-    }
-  }
+  // if (taskFormMode.value === "add") {
+  //   const newId =
+  //     cards.value.length > 0
+  //       ? Math.max(...cards.value.map((c) => c.id_tarea)) + 1
+  //       : 1;
+  //   taskData.id_tarea = newId;
+  //   cards.value.push({ ...taskData });
+  //   // Resetear la página del estado del nueva tarea a 0
+  //   currentPage.value[taskData.status] = 0;
+  // } else if (taskFormMode.value === "edit") {
+  //   const index = cards.value.findIndex((c) => c.id_tarea === taskData.id_tarea);
+  //   if (index !== -1) {
+  //     cards.value.splice(index, 1, { ...taskData });
+  //   }
+  // }
   searchQuery.value = ""; // limpiar búsqueda
   closeTaskForm();
 };
