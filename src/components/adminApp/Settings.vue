@@ -244,6 +244,7 @@
 <script setup>
 import { as, us } from '@/service/adminApp/client'
 import { ref, computed } from 'vue'
+import defaultAvatar from '@/assets/img/user.jpg'
 import { PrimeIcons } from '@primevue/core/api';
 import { Toast } from 'primevue';
 import { useToast } from 'primevue';
@@ -371,7 +372,6 @@ function traducirPermiso(k) {
 }
 
 // CREAR USUARIO
-const defaultAvatar = "/src/assets/img/user.jpg"
 const newUser = ref({
   nombre: '',
   email: '',
