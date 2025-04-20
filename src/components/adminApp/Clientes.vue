@@ -36,7 +36,7 @@
               <div class="flex space-x-2">
                 <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
                   class="p-2" @click="clearFilter" />
-                <Button icon="pi pi-plus" v-if="hasPermission('canAddCliente')"
+                <Button icon="pi pi-plus" v-if="canAddCliente"
                   :label="isMobile ? '' : 'Agregar Cliente'" class="p-button-success p-2" @click="openCard(null)" />
               </div>
             </div>
@@ -63,8 +63,8 @@
           <template #body="{ data }">
             <!-- Si la columna es de acciones, mostrar botones -->
             <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-              <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-              <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+              <Button v-if="canEditCliente" icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
+              <Button v-if="canDeleteCliente" icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
             </div>
             <!-- Sino, mostrar el contenido de la celda -->
             <div v-else class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
@@ -100,7 +100,15 @@ import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailCliente from "./CardDetailCliente.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import { cs } from "@/service/adminApp/client";
+const canAddCliente = ref(false)
+const canEditCliente = ref(false)
+const canDeleteCliente = ref(false)
 
+onMounted(async () => {
+  canAddCliente.value = await hasPermission('canAddCliente')
+  canEditCliente.value = await hasPermission('canEditCliente')
+  canDeleteCliente.value = await hasPermission('canDeleteCliente')
+})
 const toast = useToast();
 
 // Ejemplos de clientes
@@ -226,10 +234,16 @@ const maxPageIndex = computed(() => pages.value.length - 1);
 
 // Las columnas visibles siempre incluyen la página actual de baseColumns + la columna de acciones
 const visibleColumns = computed(() => {
+  const showActions = canEditCliente.value || canDeleteCliente.value;
+
   if (pages.value.length === 1) {
-    return [...baseColumns.value, actionsColumn];
+    return showActions
+      ? [...baseColumns.value, actionsColumn]
+      : [...baseColumns.value];
   } else {
-    return [...pages.value[currentPageIndex.value], actionsColumn];
+    return showActions
+      ? [...pages.value[currentPageIndex.value], actionsColumn]
+      : [...pages.value[currentPageIndex.value]];
   }
 });
 

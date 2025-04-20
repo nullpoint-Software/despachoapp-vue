@@ -2,7 +2,7 @@
 <template>
   <!-- Cambio: Se agregó el atributo id para identificar la tarjeta y permitir el scroll hacia ella -->
   <div
-    :id="`card-${card.id}`"
+    :id="`card-${card.id_tarea}`"
     class="kanban-card bg-white rounded-2xl shadow-lg p-4 mb-3 cursor-pointer border border-gray-300 hover:shadow-xl transition-all duration-300 flex items-start gap-3"
     :class="{ highlighted: card.highlight }"
     draggable="true"
@@ -10,7 +10,7 @@
   >
     <!-- Cambio: Se agrega un placeholder si card.image es nula -->
     <img
-      :src="card.image ? card.image : logo"
+      :src="card.image?.endsWith('null') && card.estado != 'Disponible' ? defaultProfilePicture : card.image || logo"
       alt="Miniatura"
       class="w-12 h-12 rounded-lg object-cover"
     />
@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import defaultProfilePicture from '@/assets/img/WorkerHome.png'
+import defaultProfilePicture from '@/assets/img/user.jpg'
 import { defineProps, computed } from "vue";
 import logo from '@/assets/img/logsymbolblack.png';
 import { formatFechaHoraSQL } from "@/service/adminApp/client";

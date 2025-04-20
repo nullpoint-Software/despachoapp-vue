@@ -23,7 +23,7 @@
             <div class="flex space-x-2">
               <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
                 class="p-2" @click="clearFilter" />
-              <Button icon="pi pi-plus" :label="isMobile ? '' : 'Agregar Pago Mensual'" class="p-button-success p-2"
+              <Button v-if="canAddPagoMensual" icon="pi pi-plus" :label="isMobile ? '' : 'Agregar Pago Mensual'" class="p-button-success p-2"
                 @click="openCard(null)" />
             </div>
           </div>
@@ -49,8 +49,8 @@
         <template #body="{ data }">
           <!-- Acciones -->
           <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-            <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+            <Button v-if="canEditPagoMensual" icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
+            <Button v-if="canDeletePagoMensual" icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
             <Button icon="pi pi-print" class="p-button-rounded p-button-info" @click="printTicket(data)" />
           </div>
           <div v-if="col.field === 'honorarios'"
@@ -93,12 +93,15 @@ import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
+import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailMensual from "./CardDetailMensual.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import TicketPrinter from "./TicketPrinter.vue"; // Importa el componente de impresión
 import { formatFechaMesAnoSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
 const toast = useToast();
-
+const canAddPagoMensual = ref(false);
+const canEditPagoMensual = ref(false);
+const canDeletePagoMensual = ref(false);
 // Datos de ejemplo
 const mensual = ref(await ps.getPagoMensual());
 
@@ -156,7 +159,10 @@ onUnmounted(() => window.removeEventListener("resize", handleResize));
 const containerRef = ref(null);
 const containerWidth = ref(0);
 let resizeObserver = null;
-onMounted(() => {
+onMounted(async() => {
+  canAddPagoMensual.value = await hasPermission('canAddPagoMensual')
+  canEditPagoMensual.value = await hasPermission('canEditPagoMensual')
+  canDeletePagoMensual.value = await hasPermission('canDeletePagoMensual')
   if (containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {

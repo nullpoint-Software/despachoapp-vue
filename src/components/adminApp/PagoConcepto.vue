@@ -33,7 +33,7 @@
             <div class="flex space-x-2">
               <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
                 class="p-2" @click="clearFilter" />
-              <Button icon="pi pi-plus" :label="isMobile ? '' : 'Agregar Pago Concepto'" class="p-button-success p-2"
+              <Button v-if="canAddPagoConcepto" icon="pi pi-plus" :label="isMobile ? '' : 'Agregar Pago Concepto'" class="p-button-success p-2"
                 @click="openCard(null)" />
             </div>
           </div>
@@ -59,8 +59,8 @@
         <template #body="{ data }">
           <!-- Acciones -->
           <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-            <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+            <Button v-if="canEditPagoConcepto" icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
+            <Button v-if="canDeletePagoConcepto" icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
             <!-- Botón Imprimir -->
             <Button icon="pi pi-print" class="p-button-rounded p-button-info" @click="openPrint(data)" />
           </div>
@@ -114,9 +114,13 @@ import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
+import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailPagoConcepto from "./CardDetailPagoConcepto.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import PrintPagoConcepto from "./PrintPagoConcepto.vue";
+const canAddPagoConcepto = ref(false);
+const canEditPagoConcepto = ref(false);
+const canDeletePagoConcepto = ref(false);
 const toast = useToast();
 
 // Datos de ejemplo
@@ -191,7 +195,10 @@ onUnmounted(() => window.removeEventListener("resize", handleResize));
 const containerRef = ref(null);
 const containerWidth = ref(0);
 let resizeObserver = null;
-onMounted(() => {
+onMounted(async () => {
+  canAddPagoConcepto.value = await hasPermission('canAddPagoConcepto')
+  canEditPagoConcepto.value = await hasPermission('canEditPagoConcepto')
+  canDeletePagoConcepto.value = await hasPermission('canDeletePagoConcepto')
   if (containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {

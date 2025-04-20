@@ -42,8 +42,8 @@
         <div class="w-64 h-full bg-gray-800 text-white p-4" @click.stop>
           <div class="flex items-start">
             <div class="flex flex-col mt-1">
-            <Avatar :image="profilePicture" shape="circle" />
-          </div>
+              <Avatar :image="profilePicture" shape="circle" />
+            </div>
             <div class="flex flex-col ml-3">
               <span class="font-bold">{{ ProfileName }}</span>
               <span class="text-xs text-gray-300">{{ ProfileType }}</span>
@@ -140,7 +140,7 @@ import Divider from "primevue/divider";
 import Avatar from "primevue/avatar";
 import { onMounted } from "vue";
 import { Suspense } from "vue";
-import defaultprofilePicture from "@/assets/img/havatar.jpg";
+import defaultprofilePicture from "@/assets/img/user.jpg";
 import { RouterView, RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
 // Cambio: Importación del componente BoardNote(Tablero de Notas)
@@ -157,7 +157,12 @@ export default {
     const ProfileType = localStorage.getItem("level")
     // Definir un ID de usuario de ejemplo
     const userId = ref(localStorage.getItem("userid"));
-    const profilePicture = ref(localStorage.getItem("userphoto"));
+    const storedPhoto = localStorage.getItem("userphoto");
+    const profilePicture = ref(
+      storedPhoto && storedPhoto !== "data:image/png;base64,null"
+        ? storedPhoto
+        : defaultprofilePicture
+    );
     const menuItems = ref([
       { name: "Inicio", icon: "pi pi-home" },
       { name: "Tareas", icon: "pi pi-th-large" },

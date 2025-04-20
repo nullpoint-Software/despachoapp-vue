@@ -11,7 +11,7 @@
           <div class="w-16 h-16">
             <template v-if="card.image">
               <img
-                :src="card.image"
+              :src="card.image?.endsWith('null') ? defaultprofilePicture : card.image || defaultprofilePicture"
                 alt="Foto del Usuario"
                 class="w-16 h-16 rounded-full object-cover"
               />
@@ -123,6 +123,7 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue';
 import 'primeicons/primeicons.css';
+import defaultprofilePicture from '@/assets/img/user.jpg'
 import { formatFechaHoraFullSQL } from '@/service/adminApp/client';
 import { hasPermission } from '@/service/adminApp/permissionsService';
 import { Toast, useToast } from 'primevue';

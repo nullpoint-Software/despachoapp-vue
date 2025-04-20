@@ -25,20 +25,24 @@ export async function hasPermission(permissionKey: string): Promise<boolean> {
       fetch(`${serverip}/permissions`),
       fetch(`${serverip}/user_permissions`)
     ]);
-
+    
+    
     perms = await globalRes.json();
     userPerms = await userRes.json();
+    console.log("got global perms ",perms);
   } catch (error) {
     console.error("Failed to load permissions:", error);
     return false;
   }
 
-  // First check user-level permissions
-  if (userPerms && userId && userPerms[userId] && userPerms[userId][permissionKey] !== undefined) {
-    return userPerms[userId][permissionKey] === true;
-  }
+  // // First check user-level permissions
+  // if (userPerms && userId && userPerms[userId] && userPerms[userId][permissionKey] !== undefined) {
+  //   return userPerms[userId][permissionKey] === true;
+  // }
 
   // Fallback to role-based permissions
+  console.log("key: "+permissionKey)
+  
   if (perms && userLevel && perms[userLevel]) {
     return perms[userLevel][permissionKey] === true;
   }

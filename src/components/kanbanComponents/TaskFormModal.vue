@@ -57,7 +57,7 @@
             <p v-if="errors.ClientName" class="text-red-500 text-sm">Este campo es obligatorio.</p>
           </div> -->
           <!-- Empleado Asignado (opcional) -->
-          <div v-if="isEdit">
+          <div>
             <label class="block font-semibold text-black">Empleado Asignado</label>
             <select v-model="localTask.assignedEmployee"
               class="w-full p-2 border border-gray-300 rounded bg-white text-black">
@@ -154,7 +154,7 @@ const clients = ref(await cs.getClientes())
 const isEdit = computed(() => !!props.task.id_tarea);
 
 // Se crea una copia reactiva local para editar la tarea
-const localTask = ref({ ...props.task });
+const localTask = ref({ ...props.task, assignedEmployee: null });
 watch(() => props.task, (newTask) => {
   localTask.value = { ...newTask };
 });
@@ -207,7 +207,12 @@ const save = async () => {
     if (!localTask.value.assignedEmployee) {
       await ts.addTarea(localTask.value);
     }else{ //si se le asigna usuario manualmente desde el dropdown cuando esta disponible
-      await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, "Pendiente")
+      if(!localTask.value.id_tarea){ //si la tarea es nueva
+        await ts.addTarea(localTask.value, localTask.value.assignedEmployee)
+      }else{ //si la tarea ya existe
+        await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, "Pendiente")
+      }
+      
     }
     window.location.reload();
   }
