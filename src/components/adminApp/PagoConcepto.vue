@@ -129,8 +129,9 @@ const payments = ref(await ps.getPagoConcepto());
 // Lectura del usuario desde localStorage
 const usuario = ref({
   id: localStorage.getItem("userId") || "",
-  nombre: localStorage.getItem("userName") || "",
-  foto: localStorage.getItem("userPhoto") || "",
+  nombre: localStorage.getItem("fullname") || "",
+  username: localStorage.getItem("username") || "",
+  foto: localStorage.getItem("userphoto") || "",
 });
 
 // Definición de columnas base
@@ -262,9 +263,9 @@ const openCard = (payment) => {
       id: "",
       cliente: "",
       asunto: "",
-      atendio: usuario.value.nombre,
-      cobramos: "",
-      pagamos: "",
+      atendio: usuario.value.username,
+      cobramos: 0,
+      pagamos: 0,
       fecha: "",
       saldo: "",
     };

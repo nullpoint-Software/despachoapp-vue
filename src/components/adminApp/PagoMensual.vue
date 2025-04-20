@@ -227,6 +227,7 @@ const openCard = (pago) => {
       id: "",
       cliente: "",
       atendio: usuario.value.nombre, // se asigna nombre del usuario
+      imagen: usuario.value.foto,
       honorarios: "",
       mes_ano: "",
     };

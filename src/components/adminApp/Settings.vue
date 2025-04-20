@@ -546,8 +546,10 @@ const updateLevel = async (level) => {
   const initialLevel = await usuarioSeleccionado.value.puesto;
   try {
     await us.editUsuario(usuarioSeleccionado.value.id_usuario,{puesto: level})
-    usuarioSeleccionado.value.puesto = level;
-    isDropdown.value = false;
+    usuarioSeleccionado.value.puesto = await level;
+    isDropdown.value = await false;
+    await localStorage.setItem("level", level)
+    window.location.reload();
   } catch (error) {
     modalAbierto.value = false;
     usuarioSeleccionado.value.puesto = initialLevel;

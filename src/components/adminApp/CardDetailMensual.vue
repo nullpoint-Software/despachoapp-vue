@@ -29,7 +29,7 @@
           <div class="flex flex-col">
             <label class="font-semibold text-black">Quien atendió</label>
             <div class="flex items-center">
-              <img v-if="usuario.foto" :src="usuario.foto" alt="Foto" class="w-8 h-8 rounded-full mr-2" />
+              <img v-if="pago.imagen || !userpic.endsWith('null') && !String(pago.imagen).endsWith('null') " :src="pago.imagen && !String(pago.imagen).endsWith('null') ? 'data:image/png;base64,'+ pago.imagen : userpic" alt="Foto" class="w-8 h-8 rounded-full mr-2" />
               <InputText v-model="pago.atendio" disabled class="p-2 border border-gray-300 rounded w-full"
                 placeholder="Nombre del usuario" />
             </div>
@@ -76,7 +76,9 @@
 import { ref, watch, defineProps, defineEmits, onMounted } from "vue";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
+import defaultProfilePicture from '@/assets/img/user.jpg'
 import { formatFechaMesAnoSQL, ps } from "@/service/adminApp/client";
+const userpic = localStorage.getItem("userphoto");
 const props = defineProps({
   pago: {
     type: Object,

@@ -35,7 +35,7 @@
           <div class="flex flex-col">
             <label class="font-semibold text-black">Quien atendio</label>
             <div class="flex items-center">
-              <img v-if="usuario.foto" :src="usuario.foto" alt="Foto" class="w-8 h-8 rounded-full mr-2" />
+              <img v-if="pago.imagen || !userpic.endsWith('null') && !String(pago.imagen).endsWith('null') " :src="pago.imagen && !String(pago.imagen).endsWith('null') ? 'data:image/png;base64,'+ pago.imagen : userpic" alt="Foto" class="w-8 h-8 rounded-full mr-2" />
               <InputText v-model="pago.atendio" disabled class="p-2 border border-gray-300 rounded w-full"
                 placeholder="Nombre del usuario" />
             </div>
@@ -108,8 +108,9 @@ import { ref, watch, defineProps, defineEmits, onMounted, computed } from "vue";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Calendar from "primevue/calendar";
+import defaultProfilePicture from '@/assets/img/user.jpg'
 import { formatFechaHoraFullSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
-
+const userpic = localStorage.getItem("userphoto");
 const props = defineProps({
   pago: {
     type: Object,
@@ -152,17 +153,19 @@ if (pago.value.atendio == "") { //por si es un registro nuevo se ocupa el nombre
   Usamos un ref para Calendar, ya que Calendar guarda Date.
   Luego lo convertimos a dd/mm/yyyy en save()
 */
-const fechaSeleccionada = ref(await formatoFecha(new Date()));
-
+const fechaSeleccionada = ref(await new Date());
+const imagen = new String(pago.value.imagen);
 onMounted(async () => {
   // Si no hay fecha en pago, la ponemos hoy
   if (!pago.value.fecha) {
     const hoy = new Date();
-    pago.value.fecha = await formatoFecha(hoy); // dd/mm/yyyy
-    fechaSeleccionada.value = pago.value.fecha
+    pago.value.fecha = await hoy; // dd/mm/yyyy
+    fechaSeleccionada.value = formatoFecha(hoy);
     console.log("current pago: ", pago.value);
     
   }
+  console.log(pago.value);
+  
   // Asignar atendio si está vacío
   if (!pago.value.atendio && props.usuario.nombre) {
     pago.value.atendio = props.usuario.nombre;
