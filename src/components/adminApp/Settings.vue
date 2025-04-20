@@ -441,6 +441,7 @@ function traducirPermiso(k) {
     canMoveAllCards: 'Puede mover todas las tareas',
     canMoveOwnCard: 'Puede mover sus tareas',
     canMoveAvailableCard: 'Puede mover tareas disponibles',
+    canAddCard: 'Puede crear tareas',
     canEditCard: 'Puede editar tarea',
     canDeleteCard: 'Puede eliminar tarea',
 
