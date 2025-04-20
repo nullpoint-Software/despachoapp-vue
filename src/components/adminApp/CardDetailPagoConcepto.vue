@@ -35,7 +35,9 @@
           <div class="flex flex-col">
             <label class="font-semibold text-black">Quien atendio</label>
             <div class="flex items-center">
-              <img v-if="pago.imagen || !userpic.endsWith('null') && !String(pago.imagen).endsWith('null') " :src="pago.imagen && !String(pago.imagen).endsWith('null') ? 'data:image/png;base64,'+ pago.imagen : userpic" alt="Foto" class="w-8 h-8 rounded-full mr-2" />
+              <img v-if="pago.imagen || !userpic.endsWith('null') && !String(pago.imagen).endsWith('null')"
+                :src="pago.imagen && !String(pago.imagen).endsWith('null') ? 'data:image/png;base64,' + pago.imagen : userpic"
+                alt="Foto" class="w-8 h-8 rounded-full mr-2" />
               <InputText v-model="pago.atendio" disabled class="p-2 border border-gray-300 rounded w-full"
                 placeholder="Nombre del usuario" />
             </div>
@@ -162,10 +164,10 @@ onMounted(async () => {
     pago.value.fecha = await hoy; // dd/mm/yyyy
     fechaSeleccionada.value = formatoFecha(hoy);
     console.log("current pago: ", pago.value);
-    
+
   }
   console.log(pago.value);
-  
+
   // Asignar atendio si está vacío
   if (!pago.value.atendio && props.usuario.nombre) {
     pago.value.atendio = props.usuario.nombre;
@@ -228,11 +230,11 @@ const validate = () => {
     errors.value.atendio = "El campo 'quien atendio' es obligatorio.";
     valid = false;
   }
-  if (!pago.value.cobramos) {
+  if (pago.value.cobramos === null || pago.value.cobramos === undefined || pago.value.cobramos === '') { //permitir que sea 0
     errors.value.cobramos = "El monto cobrado es obligatorio.";
     valid = false;
   }
-  if (!pago.value.pagamos) {
+  if (pago.value.pagamos === null || pago.value.pagamos === undefined || pago.value.pagamos === '') { //permitir que sea 0
     errors.value.pagamos = "El monto pagado es obligatorio.";
     valid = false;
   }
@@ -263,7 +265,7 @@ const save = async () => {
   if (validate()) {
     if (!pago.value.id) {
       console.log("new");
-      
+
       pago.value.id = "C-" + new Date()
         .toLocaleString("sv-SE")
         .replace('T', '')
@@ -272,7 +274,7 @@ const save = async () => {
       emit("save", { ...pago.value });
     } else {
       console.log("edit");
-      
+
       await ps.updatePagoConcepto(pago.value.id, pago.value);
       emit("save", { ...pago.value });
     }
