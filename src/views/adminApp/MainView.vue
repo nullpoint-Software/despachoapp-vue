@@ -3,7 +3,7 @@
   <div class="h-auto min-h-screen w-full bg-black text-white flex flex-col">
 
     <!-- Navbar: Barra superior de navegación -->
-    <nav class="flex justify-between items-center p-4 shadow-lg">
+    <nav class="flex justify-between items-center p-4 shadow-lg z-50 bg-black fixed w-full">
       <!-- Sección izquierda del navbar: Incluye el botón de menú (visible en móviles) y el logo -->
       <div class="flex items-center space-x-2">
         <!-- Botón para alternar la visibilidad del menú móvil -->
@@ -79,9 +79,11 @@
     <div class="flex flex-grow bg-gray-700">
       <!-- Menú lateral (Side Menu) para Escritorio -->
       <aside
-        class="hidden lg:flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 text-white w-20 hover:w-64 transition-all duration-700 ease-out relative group overflow-hidden shadow-lg pl-2 group-hover:pl-4">
-        <Divider class="my-2 border-gray-700" />
-        <nav class="flex-1 overflow-y-auto custom-scrollbar-hide">
+        class="hidden lg:flex fixed top-0 left-0 h-screen flex-col bg-gradient-to-b from-gray-900 to-gray-800 text-white 
+         w-20 hover:w-64 transition-all duration-700 ease-out group overflow-hidden shadow-lg pl-2 group-hover:pl-4 z-40">
+
+        <nav class="flex-1 mt-19 overflow-y-auto custom-scrollbar-hide">
+          <Divider class="my-2 border-gray-700" />
           <ul class="space-y-2">
             <li v-for="item in menuItems" :key="item.name">
               <router-link :to="`/app/${item.name.toLowerCase()}`"
@@ -110,8 +112,9 @@
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
       <Suspense>
-        <RouterView />
+        <RouterView class="lg:ml-20 mt-20" />
       </Suspense>
+
 
 
     </div>
@@ -172,12 +175,12 @@ export default {
     //checar si hay autenticacion
     onMounted(async () => {
       try {
-        if(localStorage.getItem("token")){
+        if (localStorage.getItem("token")) {
           await as.checkAuthRedirect(true);
-        }else{
+        } else {
           await as.checkAuthRedirect();
         }
-        
+
         // await this.getUserInfo()
         const res = await fetch('/build-time.txt')
         buildTime.value = await res.text()
