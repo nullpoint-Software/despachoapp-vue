@@ -4,7 +4,7 @@
   <div class="p-5 relative">
     <!-- Buscador -->
     <div class="relative w-full max-w-lg mx-auto">
-      <div class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
+      <div v-if="!mini" class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
         <input v-model="searchQuery" type="text" placeholder="Buscar tareas..."
           class="bg-transparent flex-1 outline-none px-2 py-1 text-lg" />
         <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-white transition">
@@ -23,24 +23,27 @@
 
     <!-- Kanban Board -->
     <div
-      class="kanban-board grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-6 bg-transparent min-h-screen overflow-x-auto">
-      <div v-if="cardsDisponible" class="flex flex-col">
+      :class="'kanban-board ' + (mini ? 'place-items-center' : 'lg:grid-cols-4 grid grid-cols-1 sm:grid-cols-2') + ' gap-2 p-6 bg-transparent ' + (mini ? 'min-h-2' : 'min-h-screen') + ' overflow-x-auto'">
+      <div v-if="cardsDisponible && showDisponible" class="flex flex-col">
         <!-- SEPARAR COLUMNA DISPONIBLE PARA MOSTRAR LAS TAREAS SIN USUARIO ASIGNADO -->
         <KanbanColumn :status="'Disponible'" :cards="getPaginatedCardsDisponible()"
           :color="getColumnColor('Disponible')" @moveCard="moveCard" @viewDetails="openCardDetail"
           :highlighted-card="highlightedCard" />
 
         <div class="flex justify-center items-center mt-2 space-x-2">
-          <button @click="changePageDisponible('Disponible', currentPage['Disponible']--)"
-            :disabled="currentPage['Disponible'] === 0"
+          <button @click="
+            changePageDisponible('Disponible', currentPage['Disponible']--)
+            " :disabled="currentPage['Disponible'] === 0"
             class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             &lt;
           </button>
           <span class="px-4 py-2 bg-blue-500 rounded shadow">
             {{ currentPage["Disponible"] + 1 }}
           </span>
-          <button @click="changePageDisponible('Disponible', currentPage['Disponible']++)"
-            :disabled="currentPage['Disponible'] >= pagesDisponible['Disponible'] - 1"
+          <button @click="
+            changePageDisponible('Disponible', currentPage['Disponible']++)
+            " :disabled="currentPage['Disponible'] >= pagesDisponible['Disponible'] - 1
+              "
             class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             &gt;
           </button>
@@ -48,8 +51,9 @@
       </div>
       <div v-if="cards" v-for="status in columnStatuses" :key="status" class="flex flex-col">
         <!-- Cada tarjeta tiene su id="card-{card.id}" para scroll -->
-        <KanbanColumn :status="status" :cards="getPaginatedCardsByStatus(status)" :color="getColumnColor(status)"
-          @moveCard="moveCard" @viewDetails="openCardDetail" :highlighted-card="highlightedCard" />
+        <KanbanColumn :mini="mini" :status="status" :cards="getPaginatedCardsByStatus(status)"
+          :color="getColumnColor(status)" @moveCard="moveCard" @viewDetails="openCardDetail"
+          :highlighted-card="highlightedCard" />
 
         <!-- Paginación -->
         <div class="flex justify-center items-center mt-2 space-x-2">
@@ -74,7 +78,7 @@
       @edit="openTaskForm('edit', $event)" />
 
     <!-- Botón flotante para añadir tarea -->
-    <FloatingTaskButton @click="openTaskForm('add')" />
+    <FloatingTaskButton v-if="!mini" @click="openTaskForm('add')" />
 
     <!-- Modal de Formulario para Añadir/Modificar Tarea -->
     <TaskFormModal v-if="showTaskForm" :mode="taskFormMode" :task="currentTaskForm" @close="closeTaskForm"
@@ -93,10 +97,26 @@ import { hasPermission } from "@/service/adminApp/permissionsService";
 import { cs, ts } from "@/service/adminApp/client";
 import { base64ToFile } from "@/service/adminApp/authService";
 const toast = useToast();
-const userId = ref(localStorage.getItem("userid"));
+const userId = ref(await localStorage.getItem("userid"));
 const userFullName = ref(localStorage.getItem("fullname"));
 const userName = ref(localStorage.getItem("username"));
 const userPhoto = ref(localStorage.getItem("userphoto"));
+let isOpeningTaskForm = false;
+const rawProps = defineProps([
+  'showOwn',
+  'showPendiente',
+  'showDisponible',
+  'showEnProgreso',
+  'showTerminado',
+  'mini' //argumento especial para Inicio.vue
+]);
+
+const mini = rawProps.mini ?? false;
+const showOwn = rawProps.showOwn ?? false;
+const showPendiente = rawProps.showPendiente ?? true;
+const showDisponible = rawProps.showDisponible ?? true;
+const showEnProgreso = rawProps.showEnProgreso ?? true;
+const showTerminado = rawProps.showTerminado ?? true;
 const cardsDisponible = ref(
   (await ts.getTareasDisponibles()).map((item) => ({
     ...item,
@@ -105,19 +125,30 @@ const cardsDisponible = ref(
 );
 console.log("cards disponibles", cardsDisponible);
 const cards = ref(
-  (await ts.getTareas()).map((item) => ({
-    ...item,
-    highlight: false,
-    image: URL.createObjectURL(
-      base64ToFile(item.usuario_imagen, "task-img.png")
-    ),
-  }))
+  (
+    (showOwn
+      ? (await ts.getTareas()).filter(
+        (item) => item.id_usuario == userId.value
+      )
+      : await ts.getTareas()
+    ).map((item) => ({
+      ...item,
+      highlight: false,
+      image: URL.createObjectURL(
+        base64ToFile(item.usuario_imagen, "task-img.png")
+      ),
+    }))
+  )
 );
 console.log("cards", cards);
 
-const columnStatuses = ["Pendiente", "En Progreso", "Terminado"];
+const columnStatuses = [
+  ...(showPendiente ? ["Pendiente"] : []),
+  ...(showEnProgreso ? ["En Progreso"] : []),
+  ...(showTerminado ? ["Terminado"] : [])
+];
 const statusOrder = ["Disponible", "Pendiente", "En Progreso", "Terminado"];
-const cardsPerPage = 4;
+const cardsPerPage = mini ? 2 : 4;
 
 const currentPage = ref({
   Disponible: 0,
@@ -187,10 +218,10 @@ const changePage = (status, newPage) => {
 };
 
 const changePageDisponible = (status, newPage) => {
-  console.log(status +" "+ newPage);
-  console.log("curr "+currentPage.value['Disponible']);
-  console.log("disp "+pagesDisponible.value["Disponible"]);
-  
+  console.log(status + " " + newPage);
+  console.log("curr " + currentPage.value["Disponible"]);
+  console.log("disp " + pagesDisponible.value["Disponible"]);
+
   if (newPage >= 0 && newPage < pagesDisponible["Disponible"]) {
     currentPage.value[status] = newPage;
   }
@@ -371,43 +402,59 @@ const currentTaskForm = ref({
 });
 
 // Cambio: Modificación de openTaskForm para eliminar la normalización de archivos adjuntos
-const openTaskForm = (mode, task = null) => {
+const openTaskForm = async (mode, task = null) => {
+  if (isOpeningTaskForm) return;
+  isOpeningTaskForm = true;
   taskFormMode.value = mode;
-  if (mode === "edit" && task) {
-    /* 
-    Cambio: Se comenta la normalización de archivos adjuntos debido a que se eliminan estos campos.
-    let normalizedAttachments = [];
-    if (task.attachmentName) {
-      if (Array.isArray(task.attachmentName)) {
-        if (task.attachmentName.length > 0 && typeof task.attachmentName[0] === "object") {
-          normalizedAttachments = task.attachmentName;
+  const hasPerm = await hasPermission('canAddCard');
+  if (hasPerm) {
+    if (mode === "edit" && task) {
+      /* 
+      Cambio: Se comenta la normalización de archivos adjuntos debido a que se eliminan estos campos.
+      let normalizedAttachments = [];
+      if (task.attachmentName) {
+        if (Array.isArray(task.attachmentName)) {
+          if (task.attachmentName.length > 0 && typeof task.attachmentName[0] === "object") {
+            normalizedAttachments = task.attachmentName;
+          } else {
+            normalizedAttachments = task.attachmentName.map(fileName => ({ name: fileName, file: null }));
+          }
         } else {
-          normalizedAttachments = task.attachmentName.map(fileName => ({ name: fileName, file: null }));
+          normalizedAttachments = [{ name: task.attachmentName, file: null }];
         }
-      } else {
-        normalizedAttachments = [{ name: task.attachmentName, file: null }];
       }
+      */
+      // Se asigna attachmentName como array vacío
+      currentTaskForm.value = { ...task };
+      // Cambio: Cerrar el CardDetail después de modificar
+      selectedCard.value = null;
+    } else {
+      currentTaskForm.value = {
+        id: null,
+        title: "",
+        description: "",
+        ClientName: "",
+        startDate: "",
+        startTime: "",
+        status: "Disponible",
+        image: null,
+        userName: "",
+        attachmentName: [], // Inicialización de archivos vacía
+      };
     }
-    */
-    // Se asigna attachmentName como array vacío
-    currentTaskForm.value = { ...task };
-    // Cambio: Cerrar el CardDetail después de modificar
-    selectedCard.value = null;
+    showTaskForm.value = true;
   } else {
-    currentTaskForm.value = {
-      id: null,
-      title: "",
-      description: "",
-      ClientName: "",
-      startDate: "",
-      startTime: "",
-      status: "Disponible",
-      image: null,
-      userName: "",
-      attachmentName: [], // Inicialización de archivos vacía
-    };
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "No tienes permiso de crear tareas!",
+      life: 2000,
+    });
   }
-  showTaskForm.value = true;
+  setTimeout(() => {
+    isOpeningTaskForm = false; // no se pero sin esto se crean 2 toasts y me molesta
+  }, 200);
+
 };
 
 const closeTaskForm = () => {

@@ -7,39 +7,40 @@
     </header>
 
     <!-- Contenedor principal para selector, gráfico y resumen -->
+
     <main class="flex-grow overflow-auto p-4 bg-transparent">
       <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 flex flex-col gap-6">
         <!-- Selector de período -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
           <div class="period-control flex-row">
             <label for="periodo" class="mr-4 font-bold text-lg text-gray-700">Ver por:</label>
-          <select v-model="periodo" id="periodo"
-            class="p-2 rounded-md border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-blue-400">
-            <option value="dia">Día</option>
-            <option value="mes">Mes</option>
-            <option value="anio">Año</option>
-            <option value="anios">Años</option>
-          </select>
+            <select v-model="periodo" id="periodo"
+              class="p-2 rounded-md border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-blue-400">
+              <option value="dia">Día</option>
+              <option value="mes">Mes</option>
+              <option value="anio">Año</option>
+              <option value="anios">Años</option>
+            </select>
           </div>
-          
+
           <div class="flex sm:inline-flex flex-row sm:items-center sm:gap-4 chart-controls">
             <label class="mr-2 items-center space-x-2 text-gray-800 cursor-pointer">
-            <input type="checkbox" class="form-checkbox text-blue-600" :checked="chartOptions.scales.y.stacked"
-              @change="toggleStacked" />
-            <span>Agrupar barras</span>
-          </label>
-          <label class="items-center space-x-2 text-gray-800 cursor-pointer">
-            <input type="checkbox" class="form-checkbox text-blue-600" :checked="chartOptions.plugins.zoom.pan.enabled"
-              @change="toggleZoom" />
-            <span>Activar zoom</span>
-          </label>
+              <input type="checkbox" class="form-checkbox text-blue-600" :checked="chartOptions.scales.y.stacked"
+                @change="toggleStacked" />
+              <span>Agrupar barras</span>
+            </label>
+            <label class="items-center space-x-2 text-gray-800 cursor-pointer">
+              <input type="checkbox" class="form-checkbox text-blue-600"
+                :checked="chartOptions.plugins.zoom.pan.enabled" @change="toggleZoom" />
+              <span>Activar zoom</span>
+            </label>
           </div>
-          
+
         </div>
         <div class="info m-0 text-center -mb-7 -mt-4" v-if="chartOptions.plugins.zoom.pan.enabled">
-            <p class="font-semibold italic px-0 text-gray-600">Ajustar zoom con rueda del mouse o deslizar con 2
-              dedos</p>
-          </div>
+          <p class="font-semibold italic px-0 text-gray-600">Ajustar zoom con rueda del mouse o deslizar con 2
+            dedos</p>
+        </div>
         <!-- Contenedor del gráfico: se adapta según el tamaño del contenedor -->
         <div class="relative w-full" :class="chartContainerClass">
           <Bar :data="chartData" :options="chartOptions" :key="chartKey" :ref="chartRef" />
@@ -68,13 +69,24 @@
         </div>
       </div>
     </main>
+    <main class="flex-grow overflow-auto p-4 bg-transparent">
+      <header class="w-full py-6 px-4 bg-transparent text-white text-center">
+        <h1 class="font-extrabold text-3xl sm:text-4xl">Mis tareas pendientes</h1>
+      </header>
+      <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-2 flex flex-col gap-6">
+        <KanbanBoard :showDisponible="false" :showTerminado="false" :showOwn="true" :mini="true" :showEnProgreso="false"></KanbanBoard>
+      </div>
+    </main>
   </div>
+
+
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { Bar } from 'vue-chartjs'
 import { es } from '@/service/adminApp/client'
+import KanbanBoard from '../kanbanComponents/KanbanBoard.vue'
 import {
   Chart as ChartJS,
   Title,
