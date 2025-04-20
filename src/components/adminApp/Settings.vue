@@ -548,7 +548,7 @@ const updateLevel = async (level) => {
     await us.editUsuario(usuarioSeleccionado.value.id_usuario,{puesto: level})
     usuarioSeleccionado.value.puesto = await level;
     isDropdown.value = await false;
-    if(usuarioSeleccionado.value.id_usuario === localStorage.getItem("userid")){
+    if(usuarioSeleccionado.id_usuario === localStorage.getItem("userid")){
       await localStorage.setItem("level", level)
     }
     window.location.reload();
