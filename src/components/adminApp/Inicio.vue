@@ -71,9 +71,9 @@
     </main>
     <main class="flex-grow overflow-auto p-4 bg-transparent">
       <header class="w-full py-6 px-4 bg-transparent text-white text-center">
-        <h1 class="font-extrabold text-3xl sm:text-4xl">Mis tareas pendientes</h1>
+        <h1 class="font-extrabold text-3xl sm:text-4xl">Tareas pendientes</h1>
       </header>
-      <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-2 flex flex-col gap-6">
+      <div class="max-w-6xl mx-auto place-items-center bg-transparent rounded-xl p-2 flex flex-col gap-6">
         <KanbanBoard :showDisponible="false" :showTerminado="false" :showOwn="true" :mini="true" :showEnProgreso="false"></KanbanBoard>
       </div>
     </main>
