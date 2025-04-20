@@ -80,11 +80,11 @@
             @click="copyToClipboard('$' + data[col.field])">
             {{ "$" + data[col.field] }}
           </div>
-          <div v-if="col.field === 'saldo'"
+          <!-- <div v-if="col.field === 'saldo'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
             @click="copyToClipboard('$' + data[col.field])">
             {{ "$" + data[col.field] }}
-          </div>
+          </div> -->
           <div
             v-else-if="col.field !== 'cobramos' && col.field !== 'pagamos' && col.field !== 'saldo' && col.field !== 'fecha'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
@@ -142,7 +142,7 @@ const columns = ref([
   { field: "cobramos", header: "Cobramos" },
   { field: "pagamos", header: "Pagamos" },
   { field: "fecha", header: "Fecha" },
-  { field: "saldo", header: "Saldo" },
+  // { field: "saldo", header: "Saldo" },
 ]);
 const actionsColumn = { field: "actions", header: "Acciones" };
 const baseColumns = computed(() => columns.value);
