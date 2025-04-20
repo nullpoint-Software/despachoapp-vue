@@ -261,10 +261,10 @@
           <div class="grid grid-cols-2 gap-6 mb-4">
             <div v-for="(value, key) in permissions[usuarioSeleccionado.puesto]" :key="key"
               class="flex items-center justify-between">
-              <span class="capitalize text-sm">{{ traducirPermiso(key) }}</span>
+              <span class="capitalize max-w-42 w-fit text-sm">{{ traducirPermiso(key) }}</span>
               <button @click="togglePermission(usuarioSeleccionado.puesto, key)"
-                :class="value ? 'bg-blue-600' : 'bg-gray-300'" class="w-10 h-5 rounded-full relative transition-colors">
-                <span class="block w- 5 h-5 bg-white rounded-full transform transition-transform duration-200"
+                :class="value ? 'bg-blue-600' : 'bg-gray-300'" class="w-10 h-5 rounded-full relative transition-colors translate-x-0">
+                <span class="block w-5 h-5 bg-white drop-shadow-lg outline-2 outline-white -outline-offset-1 rounded-full transform transition-transform duration-200"
                   :class="value ? 'translate-x-5' : 'translate-x-0'"></span>
               </button>
             </div>
@@ -548,7 +548,7 @@ const updateLevel = async (level) => {
     await us.editUsuario(usuarioSeleccionado.value.id_usuario,{puesto: level})
     usuarioSeleccionado.value.puesto = await level;
     isDropdown.value = await false;
-    if(usuarioSeleccionado.id_usuario == localStorage.getItem("userid")){
+    if(usuarioSeleccionado.value.id_usuario == localStorage.getItem("userid")){
       await localStorage.setItem("level", level)
     }
     window.location.reload();
