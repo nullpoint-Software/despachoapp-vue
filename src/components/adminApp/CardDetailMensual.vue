@@ -27,7 +27,7 @@
 
           <!-- Quien atendio -->
           <div class="flex flex-col">
-            <label class="font-semibold text-black">Quien atendio</label>
+            <label class="font-semibold text-black">Quien atendió</label>
             <div class="flex items-center">
               <img v-if="usuario.foto" :src="usuario.foto" alt="Foto" class="w-8 h-8 rounded-full mr-2" />
               <InputText v-model="pago.atendio" disabled class="p-2 border border-gray-300 rounded w-full"

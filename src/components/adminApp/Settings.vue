@@ -63,7 +63,7 @@
                 <p class="font-semibold">{{ user.nombre + " (" + user.username + ")" }}</p>
                 <p class="text-sm text-gray-500">{{ user.puesto }}</p>
               </div>
-              <button @click.stop="deleteUser(user)" class="text-red-500 hover:text-red-700 px-2">
+              <button @click.stop="confirmDialogVisible = true; userToDelete = user" class="text-red-500 hover:text-red-700 px-2">
                 <i class="pi pi-trash text-lg"></i>
               </button>
               <i class="pi pi-chevron-right text-gray-400 cursor-pointer" @click="abrirModal(user)"></i>
@@ -248,6 +248,8 @@
     </transition>
     <Toast />
   </div>
+  <!-- Confirmación para eliminación -->
+  <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'usuario'" @confirm="confirmDelete(userToDelete)" @cancel="cancelDelete" />
 </template>
 
 <script setup>
@@ -257,7 +259,20 @@ import defaultAvatar from '@/assets/img/user.jpg'
 import { PrimeIcons } from '@primevue/core/api';
 import { Toast } from 'primevue';
 import { useToast } from 'primevue';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog.vue';
 import { getPermissions, hasPermission, updatePermissions, updateUserPermissions } from '@/service/adminApp/permissionsService';
+import router from '@/router';
+const confirmDialogVisible = ref(false);
+const userToDelete = ref();
+async function confirmDelete(u){
+  await deleteUser(u)
+  confirmDialogVisible.value = false;  
+  userToDelete.value = null;
+}
+async function cancelDelete() {
+  confirmDialogVisible.value = false;  
+  userToDelete.value = null;
+}
 const toast = useToast();
 // PERFIL
 const isAdmin = await localStorage.getItem('level') === 'Administrador'
@@ -321,8 +336,17 @@ async function verPassword() {
 async function deleteUser(u) {
   try {
     usuarios.value = usuarios.value.filter(x => x.id_usuario !== u.id_usuario)
-    await us.deleteUsuario(u.id_usuario)
-    window.location.reload();
+    if(u.id_usuario == localStorage.getItem("userid")){ //si se intenta eliminar a uno mismo xd
+      console.log("deleting user: ",u);
+      
+      await us.deleteUsuario(u.id_usuario)
+      localStorage.clear()
+      router.push("/")
+    }else{
+      await us.deleteUsuario(u.id_usuario)
+      window.location.reload();
+    }
+    
   } catch (error) {
     console.log(error);
 
@@ -486,23 +510,18 @@ const canCreateUser = computed(
 
 async function createUser() {
   if (!canCreateUser.value) return
-  usuarios.value.push({
-    ...newUser.value,
-    id_usuario: crypto.randomUUID(),
-    fecha_registro: new Date().toISOString(),
-    imagen: newUser.value.imagen || null
-  })
+  // usuarios.value.push({
+  //   ...newUser.value,
+  //   id_usuario: crypto.randomUUID(),
+  //   fecha_registro: new Date().toISOString(),
+  //   imagen: newUser.value.imagen || null
+  // })
   console.log("trying to create user: ", newUser.value);
   try {
     const userInfo = await as.getUserInfo() //actualiza la informacion del usuario para actualizar localstorage
     if (localStorage.getItem('level') == "Administrador" && userInfo) {
       await us.addUsuario(newUser.value)
-      toast.add({
-        severity: "success",
-        summary: "Agregado",
-        detail: "Usuario agregado correctamente",
-        life: 3000,
-      });
+      window.location.reload();
     }else{
       toast.add({
         severity: "error",

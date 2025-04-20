@@ -42,7 +42,7 @@
             <span v-if="errors.fiel" class="text-red-500 text-sm">{{ errors.fiel }}</span>
           </div>
           <div class="flex flex-col">
-            <label class="font-semibold text-black">Contraseña ciecf</label>
+            <label class="font-semibold text-black">Contraseña CIECF</label>
             <InputText
               v-model="customer.ciecf"
               class="p-2 border border-gray-300 rounded"
@@ -51,7 +51,7 @@
             <span v-if="errors.ciecf" class="text-red-500 text-sm">{{ errors.ciecf }}</span>
           </div>
           <div class="flex flex-col">
-            <label class="font-semibold text-black">telefono</label>
+            <label class="font-semibold text-black">Teléfono</label>
             <InputText
               v-model="customer.telefono"
               type="tel"
@@ -61,7 +61,7 @@
             <span v-if="errors.telefono" class="text-red-500 text-sm">{{ errors.telefono }}</span>
           </div>
           <div class="flex flex-col">
-            <label class="font-semibold text-black">email Electrónico</label>
+            <label class="font-semibold text-black">Email</label>
             <InputText
               v-model="customer.email"
               type="email"
