@@ -152,20 +152,23 @@ if (pago.value.atendio == "") { //por si es un registro nuevo se ocupa el nombre
   Usamos un ref para Calendar, ya que Calendar guarda Date.
   Luego lo convertimos a dd/mm/yyyy en save()
 */
-const fechaSeleccionada = ref(null);
+const fechaSeleccionada = ref(await formatoFecha(new Date()));
 
-onMounted(() => {
+onMounted(async () => {
   // Si no hay fecha en pago, la ponemos hoy
   if (!pago.value.fecha) {
     const hoy = new Date();
-    pago.value.fecha = formatoFecha(hoy); // dd/mm/yyyy
+    pago.value.fecha = await formatoFecha(hoy); // dd/mm/yyyy
+    fechaSeleccionada.value = pago.value.fecha
+    console.log("current pago: ", pago.value);
+    
   }
   // Asignar atendio si está vacío
   if (!pago.value.atendio && props.usuario.nombre) {
     pago.value.atendio = props.usuario.nombre;
   }
   // Convertir la cadena a Date para el Calendar
-  fechaSeleccionada.value = aDate(pago.value.fecha);
+  fechaSeleccionada.value = pago.value.fecha;
 });
 
 // Cada vez que cambie props.pago, reseteamos

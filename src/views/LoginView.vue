@@ -76,6 +76,8 @@ import mainImageSrc from "@/assets/img/logsymbolblack.png";
 import { RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
 import { as } from "@/service/adminApp/client";
+import { Toast, useToast } from "primevue";
+import { useRoute } from "vue-router";
 
 
 export default {
@@ -87,15 +89,32 @@ export default {
     const showPassword = ref(false);
     const waves = ref([]);
     const router = useRouter();
+    const route = useRoute();
     const showError = ref(false);
     // Alternar visibilidad de la contraseña
     const togglePassword = () => {
       showPassword.value = !showPassword.value;
     };
-
+    const toast = useToast();
     //checar si hay autenticacion
     onMounted(() => {
       as.checkAuthRedirect(true);
+      const errorType = route.query.error;
+      if (errorType === 'server') {
+        toast.add({
+          severity: 'error',
+          summary: 'Error del servidor',
+          detail: 'No se pudo obtener la información del usuario.',
+          life: 4000,
+        });
+      } else if (errorType === 'token') {
+        toast.add({
+          severity: 'warn',
+          summary: 'Sesión caducada o no válida',
+          detail: 'Por favor, inicia sesión nuevamente.',
+          life: 4000,
+        });
+      }
     });
     // Crear onda en posiciones aleatorias dentro del fondo
     const createWave = () => {

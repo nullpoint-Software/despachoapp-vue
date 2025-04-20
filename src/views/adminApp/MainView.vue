@@ -172,7 +172,12 @@ export default {
     //checar si hay autenticacion
     onMounted(async () => {
       try {
-        await as.checkAuthRedirect();
+        if(localStorage.getItem("token")){
+          await as.checkAuthRedirect(true);
+        }else{
+          await as.checkAuthRedirect();
+        }
+        
         // await this.getUserInfo()
         const res = await fetch('/build-time.txt')
         buildTime.value = await res.text()

@@ -63,7 +63,8 @@
                 <p class="font-semibold">{{ user.nombre + " (" + user.username + ")" }}</p>
                 <p class="text-sm text-gray-500">{{ user.puesto }}</p>
               </div>
-              <button @click.stop="confirmDialogVisible = true; userToDelete = user" class="text-red-500 hover:text-red-700 px-2">
+              <button @click.stop="confirmDialogVisible = true; userToDelete = user"
+                class="text-red-500 hover:text-red-700 px-2">
                 <i class="pi pi-trash text-lg"></i>
               </button>
               <i class="pi pi-chevron-right text-gray-400 cursor-pointer" @click="abrirModal(user)"></i>
@@ -191,10 +192,10 @@
 
     <!-- USER DETAILS MODAL -->
     <transition name="fade-scale">
-      <div v-if="modalAbierto" @click.self="modalAbierto = false"
+      <div v-if="modalAbierto" @click.self="modalAbierto = false; isDropdown = false"
         class="fixed inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4">
         <div
-          class="bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl p-8 overflow-auto relative">
+          class="bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[92vh] p-8 overflow-y-auto relative">
           <!-- HEADER with delete + close -->
           <div class="flex justify-between items-center border-b pb-4 mb-6 space-x-4">
             <div class="flex-1">
@@ -206,29 +207,54 @@
             </button>
           </div>
           <!-- USER INFO -->
-          <div class="flex flex-col items-center mb-4">
-            <img
-              :src="usuarioSeleccionado.imagen ? 'data:image/png;base64,' + usuarioSeleccionado.imagen : defaultAvatar"
-              class="w-28 h-28 rounded-full border-4 border-gray-200 shadow-lg mb-4 object-cover" />
+          <div class="flex flex-col items-center mb-2">
+            <img :src="usuarioSeleccionado.imagen && usuarioSeleccionado.imagen !== 'null'
+              ? 'data:image/png;base64,' + usuarioSeleccionado.imagen
+              : defaultAvatar" class="w-28 h-28 rounded-full border-4 border-gray-200 shadow-lg mb-4 object-cover" />
             <h4 class="text-xl font-semibold">{{ usuarioSeleccionado.nombre }}</h4>
-            <p class="text-sm text-gray-500">{{ usuarioSeleccionado.puesto }}</p>
-          </div>
-          <div class="mb-3 w-full text-center">
-            <p class="font-medium mb-2">Nombre de usuario:</p>
-            <div class="flex items-center justify-center">
-              <span class="mr-2 text-lg">{{ usuarioSeleccionado.username }}</span>
+            <p v-if="!isDropdown" class="text-sm text-gray-500 cursor-pointer" @click="isDropdown = true" >
+              {{ usuarioSeleccionado.puesto }}
+              <i class="pi pi-chevron-down ml-1 translate-y-0.75 transform text-gray-500 pointer-events-none"></i>
+            </p>
+            
+            <!-- Dropdown cuando isDropdown es true -->
+            <div v-else class="relative">
+              <select v-model="selectedLevel" @blur="isDropdown = false" @change="updateLevel(selectedLevel)"
+                class="w-full p-2 border text-sm border-gray-300 rounded bg-white text-black">
+                <option value="Administrador">Administrador</option>
+                <option value="Empleado">Empleado</option>
+              </select>
             </div>
           </div>
-          <!-- PASSWORD -->
-          <div class="mb-6 w-full text-center">
-            <p class="font-medium mb-2">Password:</p>
-            <div class="flex items-center justify-center">
-              <span class="mr-2 text-lg">{{ passwordVisible ? usuarioSeleccionado.password : '••••••••' }}</span>
-              <button @click="verPassword" class="text-blue-600 hover:underline text-sm focus:outline-none">
-                Ver
-              </button>
+
+          <!-- Sección en dos columnas -->
+          <div class="flex flex-wrap justify-center gap-12 mb-6">
+            <!-- Columna izquierda -->
+            <div class="text-center">
+              <p class="font-medium mb-2">Nombre de usuario:</p>
+              <span class="text-lg block mb-4">{{ usuarioSeleccionado.username }}</span>
+
+              <p class="font-medium mb-2">Password:</p>
+              <div class="flex items-center justify-center">
+                <span class="mr-2 text-lg">
+                  {{ passwordVisible ? usuarioSeleccionado.password : '••••••••' }}
+                </span>
+                <button @click="verPassword" class="text-blue-600 hover:underline text-sm focus:outline-none">
+                  Ver
+                </button>
+              </div>
+            </div>
+
+            <!-- Columna derecha -->
+            <div class="text-center">
+              <p class="font-medium mb-2">Correo electrónico:</p>
+              <span class="text-lg block mb-4">{{ usuarioSeleccionado.email }}</span>
+
+              <p class="font-medium mb-2">Teléfono:</p>
+              <span class="text-lg">{{ usuarioSeleccionado.telefono }}</span>
             </div>
           </div>
+
           <!-- PERMISOS in two columns -->
           <p class="text-xl font-semibold mb-4"><i class="pi pi-shield mr-2"></i>Permisos para el rol "{{
             usuarioSeleccionado.puesto }}"</p>
@@ -249,7 +275,8 @@
     <Toast />
   </div>
   <!-- Confirmación para eliminación -->
-  <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'usuario'" @confirm="confirmDelete(userToDelete)" @cancel="cancelDelete" />
+  <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'usuario'" @confirm="confirmDelete(userToDelete)"
+    @cancel="cancelDelete" />
 </template>
 
 <script setup>
@@ -262,15 +289,25 @@ import { useToast } from 'primevue';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog.vue';
 import { getPermissions, hasPermission, updatePermissions, updateUserPermissions } from '@/service/adminApp/permissionsService';
 import router from '@/router';
+// SEARCH MODAL STATE
+const showSearchModal = ref(false)
+
+// USER DETAILS MODAL
+const modalAbierto = ref(false)
+const usuarioSeleccionado = ref()
+const passwordVisible = ref(false)
+
 const confirmDialogVisible = ref(false);
 const userToDelete = ref();
-async function confirmDelete(u){
+const isDropdown = ref(false);
+const selectedLevel = ref();
+async function confirmDelete(u) {
   await deleteUser(u)
-  confirmDialogVisible.value = false;  
+  confirmDialogVisible.value = false;
   userToDelete.value = null;
 }
 async function cancelDelete() {
-  confirmDialogVisible.value = false;  
+  confirmDialogVisible.value = false;
   userToDelete.value = null;
 }
 const toast = useToast();
@@ -294,13 +331,7 @@ const filteredUsers = computed(() =>
     u.nombre.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 )
-// SEARCH MODAL STATE
-const showSearchModal = ref(false)
 
-// USER DETAILS MODAL
-const modalAbierto = ref(false)
-const usuarioSeleccionado = ref({})
-const passwordVisible = ref(false)
 // -------------- CONTRASEÑA MAESTRA --------------
 const MASTER_PASSWORD = 'Hanekawa'
 // -------------- FIN CONTRASEÑA MAESTRA --------------
@@ -309,6 +340,7 @@ function abrirModal(u) {
   usuarioSeleccionado.value = u
   passwordVisible.value = false
   modalAbierto.value = true
+  selectedLevel.value = u.puesto;
 }
 function openFromSearch(u) {
   abrirModal(u)
@@ -336,17 +368,17 @@ async function verPassword() {
 async function deleteUser(u) {
   try {
     usuarios.value = usuarios.value.filter(x => x.id_usuario !== u.id_usuario)
-    if(u.id_usuario == localStorage.getItem("userid")){ //si se intenta eliminar a uno mismo xd
-      console.log("deleting user: ",u);
-      
+    if (u.id_usuario == localStorage.getItem("userid")) { //si se intenta eliminar a uno mismo xd
+      console.log("deleting user: ", u);
+
       await us.deleteUsuario(u.id_usuario)
       localStorage.clear()
       router.push("/")
-    }else{
+    } else {
       await us.deleteUsuario(u.id_usuario)
       window.location.reload();
     }
-    
+
   } catch (error) {
     console.log(error);
 
@@ -508,6 +540,31 @@ const canCreateUser = computed(
     isPasswordMatch.value
 )
 
+const updateLevel = async (level) => {
+  // Tu lógica para actualizar el nivel
+  console.log("Nivel seleccionado:", level);
+  const initialLevel = await usuarioSeleccionado.value.puesto;
+  try {
+    await us.editUsuario(usuarioSeleccionado.value.id_usuario,{puesto: level})
+    usuarioSeleccionado.value.puesto = level;
+    isDropdown.value = false;
+  } catch (error) {
+    modalAbierto.value = false;
+    usuarioSeleccionado.value.puesto = initialLevel;
+    isDropdown.value = false;
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "No se pudo realizar la operacion",
+        life: 3000,
+      });
+    console.error(error);
+    
+  }
+  
+  // Aquí puedes hacer la lógica para actualizar el valor de 'puesto' en el backend o estado
+};
+
 async function createUser() {
   if (!canCreateUser.value) return
   // usuarios.value.push({
@@ -522,7 +579,7 @@ async function createUser() {
     if (localStorage.getItem('level') == "Administrador" && userInfo) {
       await us.addUsuario(newUser.value)
       window.location.reload();
-    }else{
+    } else {
       toast.add({
         severity: "error",
         summary: "Error",
