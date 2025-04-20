@@ -161,21 +161,22 @@ const chartOptions = ref({
   scales: {
     y: {
       beginAtZero: true,
-      stacked: true,
+      stacked: false,
       ticks: {
-        color: '#333',
+        color: 'null',
         callback: function (value) {
           return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
             maximumFractionDigits: 0
           }).format(value);
-        }
+        },
+        display: true
       },
       grid: { color: '#e5e7eb' }
     },
     x: {
-      stacked: true,
+      stacked: false,
       ticks: { color: '#333' },
       grid: { display: false }
     }
@@ -215,6 +216,7 @@ const chartOptions = ref({
 const toggleStacked = () => {
   const stackedd = !chartOptions.value.scales.y.stacked;
   chartOptions.value.scales.y.stacked = stackedd;
+  chartOptions.value.scales.y.ticks.display = !stackedd;
   chartOptions.value.scales.x.stacked = stackedd;
   chartKey.value++;
 };
