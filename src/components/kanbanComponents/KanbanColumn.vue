@@ -20,7 +20,9 @@
         @click="handleCardClick(card)" :id="`card-${card.id}`">
         <KanbanCard :card="card"
       />
+      
       </div>
+      <p v-if="cards.length == 0" class="font-semibold text-gray-600 text-center ">No hay tareas para visualizar</p>
     </div>
   </div>
 </template>
