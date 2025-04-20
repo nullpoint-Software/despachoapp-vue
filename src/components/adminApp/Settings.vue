@@ -193,9 +193,9 @@
     <!-- USER DETAILS MODAL -->
     <transition name="fade-scale">
       <div v-if="modalAbierto" @click.self="modalAbierto = false; isDropdown = false"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4">
+        class="fixed user-detail-modal inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4">
         <div
-          class="bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[92vh] p-8 overflow-y-auto relative">
+          class="bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[92vh] p-8 overflow-y-auto  relative">
           <!-- HEADER with delete + close -->
           <div class="flex justify-between items-center border-b pb-4 mb-6 space-x-4">
             <div class="flex-1">
@@ -613,6 +613,14 @@ async function createUser() {
 </script>
 
 <style scoped>
+::-webkit-scrollbar {
+    width: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 100, 100, 0.5);
+  border-radius: 10px;
+}
 .fade-scale-enter-active,
 .fade-scale-leave-active {
   transition: all 0.3s ease;
