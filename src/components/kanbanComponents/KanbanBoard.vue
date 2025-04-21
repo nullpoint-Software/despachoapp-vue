@@ -1,7 +1,7 @@
 <!-- KanbanBoard.vue -->
 <template>
   <Toast />
-  <div class="p-5 relative">
+  <div class="relative">
     <!-- Buscador -->
     <div class="relative w-full max-w-lg mx-auto">
       <div v-if="!mini" class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">

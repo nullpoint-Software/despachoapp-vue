@@ -112,7 +112,19 @@
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
       <Suspense>
-        <RouterView class="lg:ml-30 lg:mr-20 mt-20" />
+        <template #default>
+          <RouterView class="lg:ml-30 lg:mr-20 mt-20" />
+        </template>
+
+        <template #fallback>
+          <!-- Your custom loading screen -->
+          <div class="place-content-center w-screen bg-white opacity-40 z-50">
+            <div class="spin text-center place-items-center">
+              <div class="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+
+          </div>
+        </template>
       </Suspense>
 
 
@@ -139,6 +151,7 @@ import { ref } from "vue";
 import mainImageSrc from "@/assets/img/logsymbolwhite.png";
 import "primeicons/primeicons.css";
 import Button from "primevue/button";
+import { ProgressSpinner } from "primevue";
 import Divider from "primevue/divider";
 import Avatar from "primevue/avatar";
 import { onMounted } from "vue";
@@ -151,7 +164,7 @@ import BoardNote from "@/components/notes/BoardNote.vue";
 import { as } from "@/service/adminApp/client";
 
 export default {
-  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote },
+  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote, ProgressSpinner },
   setup() {
     const buildTime = ref('')
     const menuOpen = ref(false);
@@ -232,7 +245,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 footer {
   position: relative;
   width: 100%;
