@@ -112,7 +112,7 @@
   
   function row(label, val) {
     const lab = label.padEnd(leftCol).slice(0, leftCol);
-    const vals = wrapText(val, rightCol);
+    const vals = wrapText(String(val), rightCol);
     const first = `| ${lab} | ${vals[0].padEnd(rightCol)} |`;
     const rest = vals.slice(1).map(l => `| ${" ".repeat(leftCol)} | ${l.padEnd(rightCol)} |`);
     return [first, ...rest].join("\n");
