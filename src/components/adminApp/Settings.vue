@@ -51,7 +51,7 @@
             <div class="flex flex-col items-center lg:hidden cursor-pointer mb-4" @click="abrirModal(user)">
               <img :src="user.imagen ? 'data:image/png;base64,' + user.imagen : defaultAvatar"
                 class="w-12 h-12 rounded-full object-cover" />
-              <p class="text-sm mt-2 font-semibold">{{ user.nombre }}</p>
+              <p class="text-sm mt-2 font-semibold text-center">{{ user.nombre + (!user.activo ? " (INACTIVO)" : "")}}</p>
               <p class="text-xs text-gray-500">{{ user.puesto }}</p>
             </div>
             <!-- DESKTOP: full card with delete -->
