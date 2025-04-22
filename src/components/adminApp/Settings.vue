@@ -63,8 +63,9 @@
                 <p class="font-semibold">{{ user.nombre + " (" + user.username + ")" }}</p>
                 <p class="text-sm text-gray-500">{{ user.puesto }}</p>
               </div>
+              <span class="font-semibold" v-if="!user.activo">INACTIVO</span>
               <button @click.stop="confirmDialogVisible = true; userToDelete = user"
-                class="text-red-500 hover:text-red-700 px-2">
+                class="text-red-500 hover:text-red-700 px-2 cursor-pointer">
                 <i class="pi pi-trash text-lg"></i>
               </button>
               <i class="pi pi-chevron-right text-gray-400 cursor-pointer" @click="abrirModal(user)"></i>
@@ -181,7 +182,7 @@
               <img :src="user.imagen ? 'data:image/png;base64,' + user.imagen : defaultAvatar"
                 class="w-8 h-8 rounded-full object-cover" />
               <div>
-                <p class="font-semibold text-sm text-black">{{ user.nombre }}</p>
+                <p class="font-semibold text-sm text-black">{{ user.nombre + (!user.activo ? " (INACTIVO)" : "")}} </p>
                 <p class="text-xs text-gray-500">{{ user.puesto }}</p>
               </div>
             </div>
@@ -201,8 +202,8 @@
             <div class="flex-1">
               <h3 class="text-2xl font-bold">Detalles del usuario</h3>
             </div>
-            <button @click="deleteUser(usuarioSeleccionado); modalAbierto = false"
-              class="text-red-600 hover:text-red-800 mr-4" title="Eliminar usuario">
+            <button @click.stop="confirmDialogVisible = true; userToDelete = user"
+              class="text-red-600 hover:text-red-800 mr-4 cursor-pointer" title="Eliminar usuario">
               <i class="pi pi-trash text-2xl"></i>
             </button>
           </div>
@@ -212,11 +213,11 @@
               ? 'data:image/png;base64,' + usuarioSeleccionado.imagen
               : defaultAvatar" class="w-28 h-28 rounded-full border-4 border-gray-200 shadow-lg mb-4 object-cover" />
             <h4 class="text-xl font-semibold">{{ usuarioSeleccionado.nombre }}</h4>
-            <p v-if="!isDropdown" class="text-sm text-gray-500 cursor-pointer" @click="isDropdown = true" >
+            <p v-if="!isDropdown" class="text-sm text-gray-500 cursor-pointer" @click="isDropdown = true">
               {{ usuarioSeleccionado.puesto }}
               <i class="pi pi-chevron-down ml-1 translate-y-0.75 transform text-gray-500 pointer-events-none"></i>
             </p>
-            
+
             <!-- Dropdown cuando isDropdown es true -->
             <div v-else class="relative">
               <select v-model="selectedLevel" @blur="isDropdown = false" @change="updateLevel(selectedLevel)"
@@ -226,7 +227,17 @@
               </select>
             </div>
           </div>
-
+          <div class="text-center mb-4">
+            <span class="font-semibold block mb-2">Activo</span>
+            <button @click="usuarioSeleccionado.activo = !usuarioSeleccionado.activo; updateUserStatus(usuarioSeleccionado)"
+              :class="usuarioSeleccionado.activo ? 'bg-blue-600' : 'bg-gray-300'"
+              class="w-10 h-5 rounded-full relative transition-colors duration-200">
+              <span
+                class="cursor-pointer block w-5 h-5 bg-white drop-shadow-lg outline-2 outline-white -outline-offset-1 rounded-full transform transition-transform duration-200"
+                :class="usuarioSeleccionado.activo ? 'translate-x-5' : 'translate-x-0'">
+              </span>
+            </button>
+          </div>
           <!-- Sección en dos columnas -->
           <div class="flex flex-wrap justify-center gap-12 mb-6">
             <!-- Columna izquierda -->
@@ -239,11 +250,13 @@
                 <span class="mr-2 text-lg">
                   {{ passwordVisible ? usuarioSeleccionado.password : '••••••••' }}
                 </span>
-                <button @click="verPassword" class="text-blue-600 hover:underline text-sm focus:outline-none">
+                <button @click="verPassword" class="text-blue-600 hover:underline text-sm focus:outline-none cursor-pointer">
                   Ver
                 </button>
               </div>
+
             </div>
+
 
             <!-- Columna derecha -->
             <div class="text-center">
@@ -254,7 +267,6 @@
               <span class="text-lg">{{ usuarioSeleccionado.telefono }}</span>
             </div>
           </div>
-
           <!-- PERMISOS in two columns -->
           <p class="text-xl font-semibold mb-4"><i class="pi pi-shield mr-2"></i>Permisos para el rol "{{
             usuarioSeleccionado.puesto }}"</p>
@@ -263,8 +275,10 @@
               class="flex items-center justify-between">
               <span class="capitalize max-w-42 w-fit text-sm">{{ traducirPermiso(key) }}</span>
               <button @click="togglePermission(usuarioSeleccionado.puesto, key)"
-                :class="value ? 'bg-blue-600' : 'bg-gray-300'" class="w-10 h-5 rounded-full relative transition-colors translate-x-0">
-                <span class="block w-5 h-5 bg-white drop-shadow-lg outline-2 outline-white -outline-offset-1 rounded-full transform transition-transform duration-200"
+                :class="value ? 'bg-blue-600' : 'bg-gray-300'"
+                class="w-10 h-5 rounded-full relative transition-colors translate-x-0">
+                <span
+                  class="cursor-pointer block w-5 h-5 bg-white drop-shadow-lg outline-2 outline-white -outline-offset-1 rounded-full transform transition-transform duration-200"
                   :class="value ? 'translate-x-5' : 'translate-x-0'"></span>
               </button>
             </div>
@@ -275,7 +289,7 @@
     <Toast />
   </div>
   <!-- Confirmación para eliminación -->
-  <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'usuario'" @confirm="confirmDelete(userToDelete)"
+  <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'¿Estás seguro de eliminar este usuario de forma permanente? Se eliminaran los datos de este usuario y las tareas que se le hayan asignado seran regresadas a estado Disponible.'" @confirm="confirmDelete(userToDelete)"
     @cancel="cancelDelete" />
 </template>
 
@@ -407,6 +421,14 @@ async function updateName(u) {
     });
   }
 
+}
+
+async function updateUserStatus(u){
+  try {
+    await us.editUsuario(u.id_usuario,{activo: u.activo})
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function updateImage(u) {
@@ -546,10 +568,10 @@ const updateLevel = async (level) => {
   console.log("Nivel seleccionado:", level);
   const initialLevel = await usuarioSeleccionado.value.puesto;
   try {
-    await us.editUsuario(usuarioSeleccionado.value.id_usuario,{puesto: level})
+    await us.editUsuario(usuarioSeleccionado.value.id_usuario, { puesto: level })
     usuarioSeleccionado.value.puesto = await level;
     isDropdown.value = await false;
-    if(usuarioSeleccionado.value.id_usuario == localStorage.getItem("userid")){
+    if (usuarioSeleccionado.value.id_usuario == localStorage.getItem("userid")) {
       await localStorage.setItem("level", level)
     }
     window.location.reload();
@@ -557,16 +579,16 @@ const updateLevel = async (level) => {
     modalAbierto.value = false;
     usuarioSeleccionado.value.puesto = initialLevel;
     isDropdown.value = false;
-      toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: "No se pudo realizar la operacion",
-        life: 3000,
-      });
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "No se pudo realizar la operacion",
+      life: 3000,
+    });
     console.error(error);
-    
+
   }
-  
+
   // Aquí puedes hacer la lógica para actualizar el valor de 'puesto' en el backend o estado
 };
 
@@ -614,13 +636,14 @@ async function createUser() {
 
 <style scoped>
 ::-webkit-scrollbar {
-    width: 3px;
+  width: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: rgba(100, 100, 100, 0.5);
   border-radius: 10px;
 }
+
 .fade-scale-enter-active,
 .fade-scale-leave-active {
   transition: all 0.3s ease;

@@ -45,7 +45,7 @@
         class="notes-grid gap-6"
         :style="{'display': 'grid', 'grid-template-columns': `repeat(${gridColumns}, minmax(0, 1fr))`}"
       >
-        <Note v-for="note in filteredNotes" :key="note.id" :note="note" />
+        <Note v-for="note in filteredNotes" :key="note.id" :note="note" @delete="deleteNote" />
       </div>
   
       <!-- Modal para agregar una nueva nota -->

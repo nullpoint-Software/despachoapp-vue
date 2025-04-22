@@ -52,7 +52,7 @@
           </div>
           <Divider />
           <ul class="mt-4">
-            <li v-for="item in menuItems" :key="item.name" class="flex items-center p-2 space-x-2">
+            <li v-for="item in menuItems" :key="item.name" @click="toggleMenu" class="flex items-center p-2 space-x-2">
               <router-link :to="`/app/${item.name.toLowerCase()}`" class="flex items-center space-x-2 w-full">
                 <i :class="item.icon"></i>
                 <span>{{ item.name }}</span>
