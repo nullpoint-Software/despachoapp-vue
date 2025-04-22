@@ -62,7 +62,7 @@
 
           </ul>
 
-          <div class="flex flex-col space-y-4 mt-4">
+          <div class="flex flex-col space-y-4 mt-4" @click="toggleMenu">
             <router-link to="/app/settings">
               <Button label="Cuenta" icon="pi pi-user" class="w-full text-white bg-black hover:bg-gray-800" outlined />
             </router-link>
@@ -147,7 +147,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import mainImageSrc from "@/assets/img/logsymbolwhite.png";
 import "primeicons/primeicons.css";
 import Button from "primevue/button";
@@ -166,10 +166,11 @@ import { as } from "@/service/adminApp/client";
 export default {
   components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote, ProgressSpinner },
   setup() {
+
     const buildTime = ref('')
     const menuOpen = ref(false);
     const router = useRouter();
-    const ProfileName = localStorage.getItem("fullname")
+    const ProfileName = ref(localStorage.getItem("fullname"))
     const ProfileType = localStorage.getItem("level")
     // Definir un ID de usuario de ejemplo
     const userId = ref(localStorage.getItem("userid"));
@@ -179,6 +180,9 @@ export default {
         ? storedPhoto
         : defaultprofilePicture
     );
+    watch(ProfileName, (newVal) => {
+      console.log('Immediate update:', newVal);
+    }, { immediate: true });
     const menuItems = ref([
       { name: "Inicio", icon: "pi pi-home" },
       { name: "Tareas", icon: "pi pi-th-large" },

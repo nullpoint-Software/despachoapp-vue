@@ -335,7 +335,18 @@ const profileImage = ref(
     ? storedPhoto
     : defaultAvatar
 );
-
+onMounted(() => {
+    const showToast = localStorage.getItem("showToast");
+    if (showToast === "nameSuccess") {
+      toast.add({
+        severity: "success",
+        summary: "Agregado",
+        detail: "Nombre actualizado correctamente",
+        life: 3000,
+      });
+      localStorage.removeItem("showToast"); // clear flag
+    }
+  });
 
 // USUARIOS
 const usuarios = ref(await us.getUsuarios())
@@ -405,12 +416,9 @@ async function updateName(u) {
     console.log("new name: ", u);
     await localStorage.setItem("fullname", u);
     await us.editUsuario(localStorage.getItem("userid"), { nombre: u })
-    toast.add({
-      severity: "success",
-      summary: "Agregado",
-      detail: "Nombre actualizado correctamente",
-      life: 3000,
-    });
+    localStorage.setItem("showToast", "nameSuccess");
+    window.location.reload()
+    
   } catch (error) {
     console.error(error);
     toast.add({
