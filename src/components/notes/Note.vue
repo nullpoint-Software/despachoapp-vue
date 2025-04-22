@@ -31,10 +31,12 @@ const props = defineProps({
 
 
 async function confirmDelete(id) {
+  const deleted = await ns.deleteNota(id);
   try {
-    await ns.deleteNota(id)
-    confirmDialogVisible.value = false;
-    window.location.reload()
+    if(deleted){
+      confirmDialogVisible.value = false;
+      window.location.reload()
+    }
   } catch (error) {
     console.error(error);
     
