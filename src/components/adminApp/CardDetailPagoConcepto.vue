@@ -72,7 +72,7 @@
           <!-- Fecha (con Calendar) -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Fecha</label>
-            <Calendar v-model="fechaSeleccionada" dateFormat="dd/mm/yy" showIcon placeholder="Selecciona la fecha"
+            <Calendar v-model="fechaSeleccionada" showIcon showTime showSeconds="true" hourFormat="24" placeholder="Selecciona la fecha"
               class="w-full border border-gray-300 rounded focus:outline-none" />
             <span v-if="errors.fecha" class="text-red-500 text-sm">{{ errors.fecha }}</span>
           </div>
@@ -111,7 +111,7 @@ import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Calendar from "primevue/calendar";
 import defaultProfilePicture from '@/assets/img/user.jpg'
-import { formatFechaHoraFullSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
+import { formatFechaHoraFullSQL, formatFechaSQL, ps, formatFechaHoraFullPagoSQL } from "@/service/adminApp/client";
 const userpic = localStorage.getItem("userphoto");
 const props = defineProps({
   pago: {
@@ -155,16 +155,20 @@ if (pago.value.atendio == "") { //por si es un registro nuevo se ocupa el nombre
   Usamos un ref para Calendar, ya que Calendar guarda Date.
   Luego lo convertimos a dd/mm/yyyy en save()
 */
-const fechaSeleccionada = ref(await new Date());
+const fechaSeleccionada = ref();
 const imagen = new String(pago.value.imagen);
 onMounted(async () => {
   // Si no hay fecha en pago, la ponemos hoy
   if (!pago.value.fecha) {
     const hoy = new Date();
     pago.value.fecha = await hoy; // dd/mm/yyyy
-    fechaSeleccionada.value = formatoFecha(hoy);
+    fechaSeleccionada.value = formatFechaHoraFullPagoSQL(hoy);
     console.log("current pago: ", pago.value);
 
+  }else{
+    fechaSeleccionada.value = new Date(formatFechaHoraFullPagoSQL(pago.value.fecha))
+    console.log(formatFechaHoraFullPagoSQL(pago.value.fecha));
+    
   }
   console.log(pago.value);
 
@@ -173,7 +177,7 @@ onMounted(async () => {
     pago.value.atendio = props.usuario.nombre;
   }
   // Convertir la cadena a Date para el Calendar
-  fechaSeleccionada.value = pago.value.fecha;
+  // fechaSeleccionada.value = new Date();
 });
 
 // Cada vez que cambie props.pago, reseteamos
@@ -188,7 +192,7 @@ watch(() => props.pago, (newVal) => {
     fecha: "",
     saldo: "",
   };
-  fechaSeleccionada.value = aDate(newVal.fecha);
+  // fechaSeleccionada.value = aDate(newVal.fecha);
 });
 
 /* Funciones auxiliares para formatear fecha */
@@ -260,7 +264,7 @@ const addDollarPrefix = (value) => {
 
 const save = async () => {
   if (fechaSeleccionada.value) {
-    pago.value.fecha = formatFechaSQL(fechaSeleccionada.value);
+    pago.value.fecha = formatFechaHoraFullSQL(fechaSeleccionada.value);
   }
   if (validate()) {
     if (!pago.value.id) {
@@ -270,6 +274,7 @@ const save = async () => {
         .toLocaleString("sv-SE")
         .replace('T', '')
         .replace(/[-: ]/g, '');
+      pago.value.isnew = true;
       await ps.addPagoConcepto(pago.value);
       emit("save", { ...pago.value });
     } else {

@@ -192,7 +192,7 @@ const save = async () => {
           .toLocaleString("sv-SE")
           .replace('T', '')
           .replace(/[-: ]/g, '');
-
+        pago.value.isnew = true
         await ps.addPagoMensual(pago.value);
         emit("save", { ...pago.value });
       } catch (error) {

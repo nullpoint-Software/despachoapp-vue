@@ -68,7 +68,7 @@
           <div v-if="col.field === 'fecha'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
             @click="copyToClipboard(formatFechaSQL(data[col.field]))">
-            {{ formatFechaSQL(data[col.field]) }}
+            {{ formatFechaHoraFullSQL(data[col.field]) }}
           </div>
           <div v-if="col.field === 'cobramos'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
@@ -107,7 +107,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { ps, formatFechaSQL } from "@/service/adminApp/client"
+import { ps, formatFechaSQL, formatFechaHoraFullSQL } from "@/service/adminApp/client"
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -273,6 +273,8 @@ const openCard = (payment) => {
   cardVisible.value = true;
 };
 const savePayment = (payment) => {
+  console.log("recieve save pay", payment);
+  
   if (payment.id) {
     const index = payments.value.findIndex((p) => p.id === payment.id);
     if (index !== -1) {
@@ -284,8 +286,9 @@ const savePayment = (payment) => {
         life: 2000,
       });
     }
-  } else {
-    payments.value.push(payment);
+  }
+  if(payment.isnew) {
+    payments.value.unshift(payment);
     toast.add({
       severity: "success",
       summary: "Agregado",

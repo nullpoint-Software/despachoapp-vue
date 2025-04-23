@@ -235,6 +235,8 @@ const openCard = (pago) => {
   cardVisible.value = true;
 };
 const saveMensual = (pago) => {
+  console.log("new mens ", pago);
+  
   if (pago.id) {
     const index = mensual.value.findIndex((m) => m.id === pago.id);
     if (index !== -1) {
@@ -246,8 +248,9 @@ const saveMensual = (pago) => {
         life: 2000,
       });
     }
-  } else {
-    mensual.value.push(pago);
+  } 
+  if(pago.isnew){
+    mensual.value.unshift(pago);
     toast.add({
       severity: "success",
       summary: "Agregado",
