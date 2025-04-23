@@ -139,19 +139,7 @@ const emit = defineEmits(['advanceState', 'close', 'edit']);
 
 // Función para emitir el evento 'edit' con la tarea (card) como argumento
 const editTask = async () => {
-  const hasPerm = await hasPermission("canEditCard")
-  if(hasPerm){
     emit('edit', props.card);
-  }else{
-    console.log("no permission de mover!!");
-    toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: "No tienes permiso para editar esta tarea!",
-      life: 2000,
-    });
-  }
-  
 };
 
 const advanceState = () => {

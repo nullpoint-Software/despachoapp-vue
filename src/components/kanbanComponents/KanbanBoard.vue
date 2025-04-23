@@ -406,27 +406,13 @@ const openTaskForm = async (mode, task = null) => {
   if (isOpeningTaskForm) return;
   isOpeningTaskForm = true;
   taskFormMode.value = mode;
-  const hasPerm = await hasPermission('canAddCard');
-  if (hasPerm) {
+
+  const canEdit = await hasPermission('canEditCard');
+  const canAdd = await hasPermission('canAddCard');
+
+  if ((mode === "edit" && canEdit) || (canAdd)) {
     if (mode === "edit" && task) {
-      /* 
-      Cambio: Se comenta la normalización de archivos adjuntos debido a que se eliminan estos campos.
-      let normalizedAttachments = [];
-      if (task.attachmentName) {
-        if (Array.isArray(task.attachmentName)) {
-          if (task.attachmentName.length > 0 && typeof task.attachmentName[0] === "object") {
-            normalizedAttachments = task.attachmentName;
-          } else {
-            normalizedAttachments = task.attachmentName.map(fileName => ({ name: fileName, file: null }));
-          }
-        } else {
-          normalizedAttachments = [{ name: task.attachmentName, file: null }];
-        }
-      }
-      */
-      // Se asigna attachmentName como array vacío
       currentTaskForm.value = { ...task };
-      // Cambio: Cerrar el CardDetail después de modificar
       selectedCard.value = null;
     } else {
       currentTaskForm.value = {
@@ -439,23 +425,28 @@ const openTaskForm = async (mode, task = null) => {
         status: "Disponible",
         image: null,
         userName: "",
-        attachmentName: [], // Inicialización de archivos vacía
+        attachmentName: [],
       };
     }
+
     showTaskForm.value = true;
   } else {
     toast.add({
       severity: "error",
-      summary: "Error",
-      detail: "No tienes permiso de crear tareas!",
+      summary: "Permiso denegado",
+      detail:
+        mode === "edit"
+          ? "No tienes permiso de editar tareas!"
+          : "No tienes permiso de crear tareas!",
       life: 2000,
     });
   }
-  setTimeout(() => {
-    isOpeningTaskForm = false; // no se pero sin esto se crean 2 toasts y me molesta
-  }, 200);
 
+  setTimeout(() => {
+    isOpeningTaskForm = false;
+  }, 200);
 };
+
 
 const closeTaskForm = () => {
   showTaskForm.value = false;

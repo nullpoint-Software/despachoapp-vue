@@ -126,8 +126,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, defineProps, defineEmits } from "vue";
-import { cs } from "@/service/adminApp/client";
+import { ref, computed, watch, defineProps, defineEmits, onMounted } from "vue";
+import { cs, formatFechaHoraFullSQL } from "@/service/adminApp/client";
 import { us } from "@/service/adminApp/client";
 import { ts } from "@/service/adminApp/client";
 
@@ -154,7 +154,7 @@ const clients = ref(await cs.getClientes())
 const isEdit = computed(() => !!props.task.id_tarea);
 
 // Se crea una copia reactiva local para editar la tarea
-const localTask = ref({ ...props.task, assignedEmployee: null });
+const localTask = ref({ ...props.task, assignedEmployee: props.task.id_usuario ?? null });
 watch(() => props.task, (newTask) => {
   localTask.value = { ...newTask };
 });
@@ -194,9 +194,13 @@ const save = async () => {
     // const emp = employees.value.find(e => e.value.id_usuario === localTask.assignedEmployee.id_usuario);
     if (!localTask.value.assignedEmployee) {
       await ts.updateTarea(localTask.value.id_tarea, null, "Disponible")
-    }else {
+    } if(localTask.value.estado == "Terminado"){
+      console.log("had finished");
+      await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.estado,formatFechaHoraFullSQL(localTask.value.fecha_vencimiento),localTask.value.titulo,localTask.value.descripcion)
+    }
+    else {
       console.log("assignedEmployee value:", localTask.value.assignedEmployee);
-      await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.estado)
+      await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.estado,null,localTask.value.titulo,localTask.value.descripcion)
     }
     window.location.reload();
   } else {

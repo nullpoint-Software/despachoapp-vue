@@ -44,31 +44,41 @@ class TareasService {
     }
   }
 
-  async updateTarea(id_tarea: string, id_usuario: any, estado: any, fecha_vencimiento: any): Promise<any> {
+  async updateTarea(
+    id_tarea: string,
+    id_usuario: any,
+    estado: any,
+    fecha_vencimiento: any,
+    titulo?: string,
+    descripcion?: string
+  ): Promise<any> {
     try {
       console.log("try update tarea", id_tarea + " est: " + estado);
-  
+
       const usuario = id_usuario || localStorage.getItem("userid");
-  
+
       const payload: any = {
-        estado: estado,
-        id_usuario: usuario
+        estado,
+        id_usuario: usuario,
       };
-  
+
       if (fecha_vencimiento && estado === "Terminado") {
         payload.fecha_vencimiento = fecha_vencimiento;
       }
-  
-      const response = await this.axios.put(`${this.serverip}/tareas/${id_tarea}`, payload);
+
+      if (titulo !== undefined) payload.titulo = titulo;
+      if (descripcion !== undefined) payload.descripcion = descripcion;
+
+      const response = await this.axios.put(
+        `${this.serverip}/tareas/${id_tarea}`,
+        payload
+      );
       return response.data;
     } catch (error) {
       console.error("error update tarea", error);
       throw error;
     }
   }
-
-
-
 }
 
 export default TareasService;
