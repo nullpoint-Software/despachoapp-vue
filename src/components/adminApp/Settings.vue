@@ -326,7 +326,9 @@ async function cancelDelete() {
 }
 const toast = useToast();
 // PERFIL
-const isAdmin = await localStorage.getItem('level') === 'Administrador'
+const userInfo = await as.getUserInfo();
+const isAdmin = userInfo && userInfo.level === 'Administrador';
+
 const userFullName = ref(localStorage.getItem("fullname"))
 const userName = ref(localStorage.getItem("username"));
 const storedPhoto = localStorage.getItem("userphoto");

@@ -46,16 +46,16 @@ class authService {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      localStorage.setItem("fullname", response.data.fullName);
-      localStorage.setItem("username", response.data.username);
-      localStorage.setItem("userid", response.data.userid);
+      await localStorage.setItem("fullname", response.data.fullName);
+      await localStorage.setItem("username", response.data.username);
+      await localStorage.setItem("userid", response.data.userid);
 
-      localStorage.setItem("level", response.data.level);
-      localStorage.setItem(
+      await localStorage.setItem("level", response.data.level);
+      await localStorage.setItem(
         "userphoto",
         "data:image/png;base64," + response.data.userphoto
       );
-      return true;
+      return response.data;
     } catch (error) {
       console.error(error);
       return false;
