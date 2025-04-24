@@ -43,7 +43,7 @@
         </div>
         <!-- Contenedor del gráfico: se adapta según el tamaño del contenedor -->
         <div class="relative w-full" :class="chartContainerClass">
-          <Bar :data="chartData" :options="chartOptions" :key="chartKey" :ref="chartRef" />
+          <Bar :data="chartData" :options="chartOptions" :key="chartKey" :ref="chartRef" :plugins="[emptyDataPlugin]" />
         </div>
 
 
@@ -74,7 +74,8 @@
         <h1 class="font-extrabold text-3xl sm:text-4xl">Tareas pendientes</h1>
       </header>
       <div class="max-w-6xl mx-auto place-items-center bg-transparent rounded-xl p-2 flex flex-col gap-6">
-        <KanbanBoard :showDisponible="false" :showTerminado="false" :showOwn="true" :mini="true" :showEnProgreso="false"></KanbanBoard>
+        <KanbanBoard :showDisponible="false" :showTerminado="false" :showOwn="true" :mini="true"
+          :showEnProgreso="false"></KanbanBoard>
       </div>
     </main>
   </div>
@@ -120,7 +121,7 @@ const colores = ['#4ade80', '#ff4757', '#1e90ff']
 
 // Configuración del chart (datos y opciones)
 const chartData = ref(computed(() => {
-  const d = datos[periodo.value]
+  const d = datos[periodo.value] || []
   return {
     labels: d.map(x => x.nombre),
     datasets: [
@@ -154,6 +155,33 @@ const chartData = ref(computed(() => {
     ]
   }
 }))
+
+const emptyDataPlugin = {
+  id: 'emptyData',
+  beforeDraw(chart) {
+    const datasetsEmpty = chart.data.datasets.every(
+      (dataset) =>
+        !dataset.data || dataset.data.length === 0 || dataset.data.every(v => v === 0)
+    );
+
+    if (datasetsEmpty) {
+      const { width, height } = chart;
+      const ctx = chart.ctx;
+      
+      if (!ctx) return;
+
+      ctx.save()
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '16px sans-serif';
+      ctx.fillStyle = '#888';
+      ctx.fillText('No hay información para este periodo', width / 2, height / 2);
+      ctx.restore();
+    }
+  }
+};
+
+
 
 const chartOptions = ref({
   responsive: true,
@@ -208,10 +236,10 @@ const chartOptions = ref({
         pinch: { enabled: true },
         mode: 'x'
       }
-    }
+    },
+    emptyData: {}
   }
 });
-
 // Toggle the stacked option
 const toggleStacked = () => {
   const stackedd = !chartOptions.value.scales.y.stacked;
