@@ -182,7 +182,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 import mainImageSrc from "@/assets/img/logsymbolwhite.png";
@@ -195,6 +195,7 @@ import markdownImg from "@/assets/img/Notes.svg";
 import valorImg from "@/assets/img/valores.svg";
 import visionImg from "@/assets/img/vision.svg";
 import misionImg from "@/assets/img/Mision.svg";
+
 import { as } from "@/service/adminApp/client";
 
 export default {
@@ -207,34 +208,11 @@ export default {
     if (token){
       isLogged.value = true;
     }
-    // Definición de los items de "Nuestros Servicios"
-    const serviceItems = ref([
-      {
-        image: carr1,
-        title: "Consultoría Contable",
-        description:
-          "Asesoría experta y personalizada para la gestión contable de tu negocio.",
-      },
-      {
-        image: carr2,
-        title: "Declaraciones Fiscales",
-        description:
-          "Cumple con tus obligaciones fiscales de manera eficiente y segura.",
-      },
-      {
-        image: carr3,
-        title: "Auditoría y Finanzas",
-        description:
-          "Optimiza tu estrategia financiera con análisis y auditorías de precisión.",
-      },
-    ]);
 
-    const scrollToFooter = () => {
-      const footer = document.getElementById("footer");
-      if (footer) {
-        footer.scrollIntoView({ behavior: "smooth" });
-      }
-    };
+    const scrollToFooter = () =>
+      document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" });
+    const scrollToValores = () =>
+      document.getElementById("valores")?.scrollIntoView({ behavior: "smooth" });
 
     const goLogin = () => {
       router.push("/login");
@@ -248,27 +226,27 @@ export default {
       currentSlide.value = index;
     };
 
-    onMounted(() => {
-      const fadeEls = document.querySelectorAll(".fade-section");
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("visible");
-            } else {
-              entry.target.classList.remove("visible");
-            }
-          });
-        },
-        { threshold: 0.4 }
-      );
-      fadeEls.forEach((el) => observer.observe(el));
+    // onMounted(() => {
+    //   const fadeEls = document.querySelectorAll(".fade-section");
+    //   const observer = new IntersectionObserver(
+    //     (entries) => {
+    //       entries.forEach((entry) => {
+    //         if (entry.isIntersecting) {
+    //           entry.target.classList.add("visible");
+    //         } else {
+    //           entry.target.classList.remove("visible");
+    //         }
+    //       });
+    //     },
+    //     { threshold: 0.4 }
+    //   );
+    //   fadeEls.forEach((el) => observer.observe(el));
 
-      setInterval(() => {
-        currentSlide.value =
-          (currentSlide.value + 1) % serviceItems.value.length;
-      }, 3000);
-    });
+    //   setInterval(() => {
+    //     currentSlide.value =
+    //       (currentSlide.value + 1) % serviceItems.value.length;
+    //   }, 3000);
+    // });
 
     return {
       isLogged,

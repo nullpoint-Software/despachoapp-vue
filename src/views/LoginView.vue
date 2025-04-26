@@ -7,17 +7,12 @@
 
     <!-- Capa de ondas -->
     <div class="absolute inset-0 z-10 bg-transparent overflow-hidden">
-      <div
-        class="wave-container"
-        v-for="wave in waves"
-        :key="wave.id"
-        :style="{
-          top: wave.y + 'px',
-          left: wave.x + 'px',
-          width: wave.size + 'px',
-          height: wave.size + 'px'
-        }"
-      ></div>
+      <div class="wave-container" v-for="wave in waves" :key="wave.id" :style="{
+        top: wave.y + 'px',
+        left: wave.x + 'px',
+        width: wave.size + 'px',
+        height: wave.size + 'px'
+      }"></div>
     </div>
 
     <!-- Contenido de login -->
@@ -112,22 +107,28 @@ export default {
     const toast = useToast();
     //checar si hay autenticacion
     onMounted(() => {
-      as.checkAuthRedirect(true);
+      const token = localStorage.getItem("token")
+      if (token) {
+        as.checkAuthRedirect(true);
+      }
+
       const errorType = route.query.error;
       if (errorType === 'server') {
         toast.add({
           severity: 'error',
           summary: 'Error del servidor',
           detail: 'No se pudo obtener la información del usuario.',
-          life: 4000,
+          life: 6000,
         });
+        router.push("/login")
       } else if (errorType === 'token') {
         toast.add({
           severity: 'warn',
           summary: 'Sesión caducada o no válida',
           detail: 'Por favor, inicia sesión nuevamente.',
-          life: 4000,
+          life: 6000,
         });
+        router.push("/login")
       }
     });
     // Crear onda en posiciones aleatorias dentro del fondo
@@ -158,15 +159,16 @@ export default {
         password: password.value,
       });
       showError.value = false;
-      const isLoggedIn = await as.loginUser({ username: email.value, password: password.value });
 
-      if (isLoggedIn) {
-        // If loginUser is successful, run goLogin
-        goLogin();
-      } else {
-        console.log("Login failed");
-        showError.value = true;
-      }
+        const isLoggedIn = await as.loginUser({ username: email.value, password: password.value });
+        if (isLoggedIn) {
+          // If loginUser is successful, run goLogin
+          goLogin();
+        } else {
+          console.log("Login failed");
+          showError.value = true;
+        }
+      
     };
 
 
@@ -195,17 +197,22 @@ export default {
 <!-- Estilos globales para el fondo de partículas -->
 <style>
 @keyframes move {
-  100% { transform: translate3d(0,0,1px) rotate(360deg); }
+  100% {
+    transform: translate3d(0, 0, 1px) rotate(360deg);
+  }
 }
+
 .background {
   position: fixed;
   width: 100vw;
   height: 100vh;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   background: #1c1c1c;
   overflow: hidden;
   z-index: 0;
 }
+
 .background span {
   position: absolute;
   width: 20vmin;
@@ -217,14 +224,22 @@ export default {
   opacity: 0.2;
   transition: opacity 0.3s ease;
 }
+
 /* Reacción al escribir */
 .background.react span {
   opacity: 0.6;
 }
 
 /* Ocultar scrollbar */
-::-webkit-scrollbar { width: 0; height: 0; }
-html { -ms-overflow-style: none; scrollbar-width: none; }
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+html {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 </style>
 
 <!-- Estilos scoped para las ondas -->
@@ -237,6 +252,7 @@ html { -ms-overflow-style: none; scrollbar-width: none; }
   animation: ripple 0.8s linear;
   pointer-events: none;
 }
+
 @keyframes ripple {
   to {
     transform: scale(6);

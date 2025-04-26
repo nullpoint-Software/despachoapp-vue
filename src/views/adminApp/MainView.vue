@@ -112,20 +112,9 @@
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
       <Suspense>
-        <template #default>
-          <RouterView class="lg:ml-30 lg:mr-20 mt-20" />
-        </template>
-
-        <template #fallback>
-          <!-- Your custom loading screen -->
-          <div class="place-content-center w-screen bg-white opacity-40 z-50">
-            <div class="spin text-center place-items-center">
-              <div class="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-
-          </div>
-        </template>
+        <SuspenseWrapper></SuspenseWrapper>
       </Suspense>
+      
 
 
 
@@ -154,6 +143,7 @@ import Button from "primevue/button";
 import { ProgressSpinner } from "primevue";
 import Divider from "primevue/divider";
 import Avatar from "primevue/avatar";
+import Loader from "@/components/adminApp/Loader.vue"
 import { onMounted } from "vue";
 import { Suspense } from "vue";
 import defaultprofilePicture from "@/assets/img/user.jpg";
@@ -162,9 +152,10 @@ import { useRouter } from "vue-router";
 // Cambio: Importación del componente BoardNote(Tablero de Notas)
 import BoardNote from "@/components/notes/BoardNote.vue";
 import { as } from "@/service/adminApp/client";
+import SuspenseWrapper from "@/components/adminApp/SuspenseWrapper.vue";
 
 export default {
-  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote, ProgressSpinner },
+  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote, ProgressSpinner, Loader, SuspenseWrapper },
   setup() {
 
     const buildTime = ref('')
@@ -195,7 +186,7 @@ export default {
         if (localStorage.getItem("token")) {
           await as.checkAuthRedirect(true);
         } else {
-          await as.checkAuthRedirect();
+          await as.checkAuthRedirect(false);
         }
 
         // await this.getUserInfo()
