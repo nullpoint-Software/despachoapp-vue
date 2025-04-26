@@ -1,9 +1,6 @@
 <template>
   <!-- Contenedor principal -->
-  <div v-if="!loaded">
-    <Loader></Loader>
-  </div>
-  <div v-else class="flex flex-col h-full w-full">
+  <div class="flex flex-col h-full w-full">
     <!-- Encabezado responsivo con degradado de fondo -->
     <header class="w-full py-6 px-4 bg-transparent text-white text-center">
       <h1 class="font-extrabold text-3xl sm:text-4xl">Inicio</h1>
@@ -88,6 +85,7 @@
 </template>
 
 <script setup>
+
 import { nextTick } from 'vue'
 import { ref, computed } from 'vue'
 import { Bar } from 'vue-chartjs'
@@ -113,11 +111,18 @@ const periodo = ref('mes')
 const chartKey = ref(0);
 // Datos de ejemplo para cada período
 loaded.value = false;
-const datos = await es.getDatos()
-if (datos) {
-  await nextTick(); // Wait for DOM update
-  loaded.value = true;
-}
+const datos = await new Promise(async (resolve, reject) => {
+  // Simulate additional waiting time (e.g., for loading screen)
+  setTimeout(() => {
+    es.getDatos()
+      .then(response => {
+        resolve(response); // Once data is loaded, resolve the promise
+      })
+      .catch(error => {
+        reject(error); // Handle error if data fetch fails
+      });
+  }, 0); // Wait an extra 2 seconds before fetching datos
+});
 // Chart reference to get instance for zoom control
 const chartRef = ref(null);
 // Resumen de ganancias totales

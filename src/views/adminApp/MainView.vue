@@ -112,9 +112,14 @@
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
       <Suspense>
-        <RouterView class="lg:ml-30 lg:mr-20 mt-20" />
+        <template #default>
+          <RouterView class="lg:ml-30 lg:mr-20 mt-20" />
+        </template>
+        <template #fallback>
+          <Loader />
+        </template>
       </Suspense>
-      
+
 
 
 
