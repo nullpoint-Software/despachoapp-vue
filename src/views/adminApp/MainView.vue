@@ -157,10 +157,8 @@ import { useRouter } from "vue-router";
 // Cambio: Importación del componente BoardNote(Tablero de Notas)
 import BoardNote from "@/components/notes/BoardNote.vue";
 import { as } from "@/service/adminApp/client";
-import SuspenseWrapper from "@/components/adminApp/SuspenseWrapper.vue";
-
 export default {
-  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote, ProgressSpinner, Loader, SuspenseWrapper },
+  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote, ProgressSpinner, Loader },
   setup() {
 
     const buildTime = ref('')
