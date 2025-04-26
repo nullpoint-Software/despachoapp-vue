@@ -16,7 +16,7 @@ watch(
     await nextTick()
 
     // Optionally wait for a longer chain of ticks
-    await new Promise(resolve => setTimeout(resolve, 200)); // Allow child async setup, extra delay
+    // await new Promise(resolve => setTimeout(resolve, 200)); // Allow child async setup, extra delay
 
     isLoading.value = false
   },

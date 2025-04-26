@@ -1,6 +1,6 @@
 <template>
   <!-- Contenedor principal -->
-  <div class="flex flex-col h-full w-full">
+  <div v-if="loaded" class="flex flex-col h-full w-full">
     <!-- Encabezado responsivo con degradado de fondo -->
     <header class="w-full py-6 px-4 bg-transparent text-white text-center">
       <h1 class="font-extrabold text-3xl sm:text-4xl">Inicio</h1>
@@ -79,11 +79,15 @@
       </div>
     </main>
   </div>
+  <div v-else>
+    <Loader></Loader>
+  </div>
 
 
 </template>
 
 <script setup>
+import { nextTick } from 'vue'
 import { ref, computed } from 'vue'
 import { Bar } from 'vue-chartjs'
 import { es } from '@/service/adminApp/client'
@@ -98,6 +102,8 @@ import {
   LinearScale,
 } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom';
+import Loader from './Loader.vue'
+const loaded = ref(false)
 // Registra los módulos de Chart.js
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, zoomPlugin)
 
@@ -105,7 +111,12 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale,
 const periodo = ref('mes')
 const chartKey = ref(0);
 // Datos de ejemplo para cada período
+loaded.value = false;
 const datos = await es.getDatos()
+if (datos) {
+  await nextTick(); // Wait for DOM update
+  loaded.value = true;
+}
 // Chart reference to get instance for zoom control
 const chartRef = ref(null);
 // Resumen de ganancias totales

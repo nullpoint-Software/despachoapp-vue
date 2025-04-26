@@ -112,7 +112,7 @@
       </aside>
       <!-- Área principal para el contenido de cada ruta -->
       <Suspense>
-        <SuspenseWrapper></SuspenseWrapper>
+        <RouterView class="lg:ml-30 lg:mr-20 mt-20" />
       </Suspense>
       
 
