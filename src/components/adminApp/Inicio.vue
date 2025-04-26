@@ -111,18 +111,7 @@ const periodo = ref('mes')
 const chartKey = ref(0);
 // Datos de ejemplo para cada período
 loaded.value = false;
-const datos = await new Promise(async (resolve, reject) => {
-  // Simulate additional waiting time (e.g., for loading screen)
-  setTimeout(() => {
-    es.getDatos()
-      .then(response => {
-        resolve(response); // Once data is loaded, resolve the promise
-      })
-      .catch(error => {
-        reject(error); // Handle error if data fetch fails
-      });
-  }, 0); // Wait an extra 2 seconds before fetching datos
-});
+const datos = await es.getDatos()
 // Chart reference to get instance for zoom control
 const chartRef = ref(null);
 // Resumen de ganancias totales
