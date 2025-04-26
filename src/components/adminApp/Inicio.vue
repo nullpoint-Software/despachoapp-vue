@@ -1,6 +1,9 @@
 <template>
   <!-- Contenedor principal -->
-  <div v-if="loaded" class="flex flex-col h-full w-full">
+  <div v-if="!loaded">
+    <Loader></Loader>
+  </div>
+  <div v-else class="flex flex-col h-full w-full">
     <!-- Encabezado responsivo con degradado de fondo -->
     <header class="w-full py-6 px-4 bg-transparent text-white text-center">
       <h1 class="font-extrabold text-3xl sm:text-4xl">Inicio</h1>
@@ -79,9 +82,7 @@
       </div>
     </main>
   </div>
-  <div v-else>
-    <Loader></Loader>
-  </div>
+  
 
 
 </template>
