@@ -79,11 +79,14 @@
       </div>
     </main>
   </div>
+  
 
 
 </template>
 
 <script setup>
+
+import { nextTick } from 'vue'
 import { ref, computed } from 'vue'
 import { Bar } from 'vue-chartjs'
 import { es } from '@/service/adminApp/client'
@@ -98,6 +101,8 @@ import {
   LinearScale,
 } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom';
+import Loader from './Loader.vue'
+const loaded = ref(false)
 // Registra los módulos de Chart.js
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, zoomPlugin)
 
@@ -105,6 +110,7 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale,
 const periodo = ref('mes')
 const chartKey = ref(0);
 // Datos de ejemplo para cada período
+loaded.value = false;
 const datos = await es.getDatos()
 // Chart reference to get instance for zoom control
 const chartRef = ref(null);

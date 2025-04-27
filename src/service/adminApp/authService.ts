@@ -71,15 +71,15 @@ class authService {
     if (!isLogin) {
       if (!(await this.getUserInfo())) {
         localStorage.clear();
-        await router.push({ path: "/login", query: { error: "server" } });
+        await router.push({ path: "/login", query: { error: "token" } });
         this.authStatus = false;
         return;
       }
     }
-    if (isLogin) {
+    if (isLogin && token) {
       if (!(await this.getUserInfo())) {
         localStorage.clear();
-        await router.push({ path: "/login", query: { error: "token" } });
+        await router.push({ path: "/login", query: { error: "server" } });
         this.authStatus = false;
         return;
       }

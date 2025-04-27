@@ -8,7 +8,7 @@ import { Toast } from 'primevue';
 <template>
 
 <Toast />
-  <RouterView />
+  <RouterView :key="$route.path" />
 </template>
 
 <style scoped>
