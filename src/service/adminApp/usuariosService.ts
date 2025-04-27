@@ -11,7 +11,11 @@ class UsuarioService {
 
   async getUsuarios(): Promise<any> {
     try {
-      const response = await this.axios.get(`${this.serverip}/usuarios`);
+      const response = await this.axios.get(`${this.serverip}/usuarios`,{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       console.log("usuarios", response.data);
       return response.data;
     } catch (error) {
@@ -25,7 +29,11 @@ class UsuarioService {
       const response = await this.axios.post(
         `${this.serverip}/usuarios`,
         usuario
-      );
+      ,{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       console.log("try insert usuario", usuario);
       return response.data;
     } catch (error) {
@@ -57,7 +65,12 @@ class UsuarioService {
     try {
       const response = await this.axios.put(
         `${this.serverip}/usuarios/${id_usuario}`,
-        usuario
+        usuario,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
       console.log("try edit usuario", usuario);
       return response.data;
@@ -70,7 +83,11 @@ class UsuarioService {
   async deleteUsuario(id_usuario: string) {
     try {
       const response = await this.axios.delete(
-        `${this.serverip}/usuarios/${id_usuario}`
+        `${this.serverip}/usuarios/${id_usuario}`,{
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
       console.log("try delete usuario", id_usuario);
       return response.data;
