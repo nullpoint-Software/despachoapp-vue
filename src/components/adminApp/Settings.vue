@@ -202,7 +202,7 @@
             <div class="flex-1">
               <h3 class="text-2xl font-bold">Detalles del usuario</h3>
             </div>
-            <button @click.stop="confirmDialogVisible = true; userToDelete = user"
+            <button @click.stop="confirmDialogVisible = true; userToDelete = usuarioSeleccionado"
               class="text-red-600 hover:text-red-800 mr-4 cursor-pointer" title="Eliminar usuario">
               <i class="pi pi-trash text-2xl"></i>
             </button>
@@ -352,6 +352,8 @@ onMounted(() => {
 
 // USUARIOS
 const usuarios = ref(await us.getUsuarios())
+console.log(usuarios);
+
 const searchQuery = ref('')
 const filteredUsers = computed(() =>
   usuarios.value.filter(u =>
