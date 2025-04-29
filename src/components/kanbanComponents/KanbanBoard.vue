@@ -283,10 +283,10 @@ const moveCard = async (cardId, newStatus) => {
       }
       card.estado = newStatus;
       if (originalStatus != newStatus) {
-        card.id_usuario = parseInt(userId.value); //tambien int por si es problema
-        card.username = userName.value;
-        card.image = userPhoto.value;
-        card.nombre = userFullName.value; //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
+        card.id_usuario = isAdmin && card.id_usuario ? card.id_usuario : parseInt(userId.value); //tambien int por si es problema
+        card.username = isAdmin && card.username ? card.id_usuario : userName.value;
+        card.image = isAdmin && card.image ? card.image : userPhoto.value;
+        card.nombre = isAdmin && card.nombre ? card.nombre : userFullName.value; //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
       } else if (newStatus !== "Disponible" && !card.username) {
         card.username = "Usuario Asignado";
       }
@@ -309,7 +309,7 @@ const moveCard = async (cardId, newStatus) => {
         card.fecha_vencimiento = null;
         console.log(
           "update estado",
-          await ts.updateTarea(card.id_tarea, null, newStatus)
+          await ts.updateTarea(card.id_tarea, isAdmin && card.id_usuario ? card.id_usuario : null, newStatus)
         );
       } else {
         card.fecha_vencimiento =

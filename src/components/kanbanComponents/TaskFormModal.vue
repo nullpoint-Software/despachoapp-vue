@@ -58,8 +58,8 @@
           </div> -->
           <!-- Empleado Asignado (opcional) -->
           <div>
-            <label class="block font-semibold text-black">Empleado Asignado</label>
-            <select v-model="localTask.assignedEmployee"
+            <label v-if="isAdmin" class="block font-semibold text-black">Empleado Asignado</label>
+            <select v-if="isAdmin" v-model="localTask.assignedEmployee"
               class="w-full p-2 border border-gray-300 rounded bg-white text-black">
               <option :value="null">Ninguno</option>
               <!-- Lista de empleados -->
@@ -130,6 +130,7 @@ import { ref, computed, watch, defineProps, defineEmits, onMounted } from "vue";
 import { cs, formatFechaHoraFullSQL } from "@/service/adminApp/client";
 import { us } from "@/service/adminApp/client";
 import { ts } from "@/service/adminApp/client";
+const isAdmin = await (localStorage.getItem("level") == 'Administrador')
 
 // Definición de propiedades con datos iniciales de la tarea
 const props = defineProps({
