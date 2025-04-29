@@ -35,7 +35,7 @@
       <!-- Formulario -->
       <form @submit.prevent="login">
         <div class="mb-4 relative">
-          <label class="block text-white font-medium mb-1">Correo Electrónico</label>
+          <label class="block text-white font-medium mb-1">Nombre de usuario o correo electrónico</label>
           <InputText v-model="email" type="text"
             class="w-full p-3 border border-white/50 rounded-md bg-white text-gray-900 focus:ring-2 focus:ring-blue-300"
             placeholder="joseramirez@gmail.com" @input="handleInput" />

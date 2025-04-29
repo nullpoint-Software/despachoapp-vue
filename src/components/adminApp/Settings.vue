@@ -451,6 +451,7 @@ async function updateImage(u) {
       detail: "Imagen de perfil actualizada correctamente",
       life: 3000,
     });
+    window.location.reload()
   } catch (error) {
     console.error(error);
     toast.add({

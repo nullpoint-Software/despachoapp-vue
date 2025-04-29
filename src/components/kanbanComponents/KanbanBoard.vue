@@ -137,9 +137,9 @@ const cards = ref(
     ).map((item) => ({
       ...item,
       highlight: false,
-      image: URL.createObjectURL(
-        base64ToFile(item.usuario_imagen, "task-img.png")
-      ),
+      image: item.usuario_imagen
+        ? URL.createObjectURL(base64ToFile(item.usuario_imagen, "task-img.png"))
+        : null,
     }))
   )
 );

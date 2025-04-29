@@ -10,7 +10,7 @@
   >
     <!-- Cambio: Se agrega un placeholder si card.image es nula -->
     <img
-      :src="card.image?.endsWith('null') && card.estado != 'Disponible' ? defaultProfilePicture : card.image || logo"
+      :src="!card.image && card.estado != 'Disponible' ? defaultProfilePicture : card.image || logo"
       alt="Miniatura"
       class="w-12 h-12 rounded-lg object-cover"
     />

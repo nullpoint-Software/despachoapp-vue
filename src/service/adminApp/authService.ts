@@ -103,7 +103,7 @@ export function base64ToFile(
   mimeType: string = "image/png"
 ): Blob {
   // Clean the base64 string to remove any whitespace characters
-  const cleanedBase64String = base64String.replace(/\s+/g, ""); // Remove all spaces, newlines, etc.
+  const cleanedBase64String = String(base64String).replace(/\s+/g, ""); // Remove all spaces, newlines, etc.
 
   // Split the base64 string into the MIME part and the actual base64 data
   const arr = cleanedBase64String.split(",");
