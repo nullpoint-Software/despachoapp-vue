@@ -193,16 +193,22 @@ const save = async () => {
 
     // const emp = employees.value.find(e => e.value.id_usuario === localTask.assignedEmployee.id_usuario);
     if (!localTask.value.assignedEmployee) {
+      console.log("cambiando a disp");
       await ts.updateTarea(localTask.value.id_tarea, null, "Disponible")
+      window.location.reload();
+      return
     } if(localTask.value.estado == "Terminado"){
       console.log("had finished");
       await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.estado,formatFechaHoraFullSQL(localTask.value.fecha_vencimiento),localTask.value.titulo,localTask.value.descripcion)
+      window.location.reload();
+      return
     }
     else {
       console.log("assignedEmployee value:", localTask.value.assignedEmployee);
       await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.estado,null,localTask.value.titulo,localTask.value.descripcion)
+      window.location.reload();
+      return
     }
-    window.location.reload();
   } else {
     
     console.log("new");

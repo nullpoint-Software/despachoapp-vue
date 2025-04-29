@@ -87,7 +87,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from "vue";
+import { ref, computed, nextTick, onMounted } from "vue";
 import KanbanColumn from "./KanbanColumn.vue";
 import { Toast, useToast } from "primevue";
 import CardDetail from "./CardDetail.vue";
@@ -111,12 +111,14 @@ const rawProps = defineProps([
   'mini' //argumento especial para Inicio.vue
 ]);
 
+
 const mini = rawProps.mini ?? false;
-const showOwn = rawProps.showOwn ?? false;
+const showOwn = ref(rawProps.showOwn ?? false);
 const showPendiente = rawProps.showPendiente ?? true;
 const showDisponible = rawProps.showDisponible ?? true;
 const showEnProgreso = rawProps.showEnProgreso ?? true;
 const showTerminado = rawProps.showTerminado ?? true;
+
 const cardsDisponible = ref(
   (await ts.getTareasDisponibles()).map((item) => ({
     ...item,
@@ -124,9 +126,10 @@ const cardsDisponible = ref(
   }))
 );
 console.log("cards disponibles", cardsDisponible);
+
 const cards = ref(
   (
-    (showOwn
+    (showOwn.value || localStorage.getItem("level") == 'Empleado'
       ? (await ts.getTareas()).filter(
         (item) => item.id_usuario == userId.value
       )
@@ -249,75 +252,95 @@ const moveCard = async (cardId, newStatus) => {
       const originalStatus = card.estado;
       const currentIndex = statusOrder.indexOf(originalStatus);
       const newIndex = statusOrder.indexOf(newStatus);
+
+      const isAdmin = await hasPermission("canMoveAllCards");
+      console.log("index ", newIndex);
+
+      const movingForwardOneStep = newIndex === currentIndex + 1;
+      const movingToStart = newIndex === 0;
+      const invalidBackFrom3 = currentIndex == 3 && (newIndex == 1 || newIndex == 2 || newIndex == 0);
+      console.log(movingForwardOneStep, movingToStart, invalidBackFrom3);
+
       if (
-        ((await hasPermission("canMoveAllCards")) &&
-          newIndex !== currentIndex) ||
-        (!(
-          (await hasPermission("canMoveAllCards")) && newIndex <= currentIndex
-        ) &&
-          newIndex === currentIndex + 1)
+        isAdmin ||
+        (
+          (movingForwardOneStep || movingToStart) &&
+          !invalidBackFrom3
+        )
       ) {
-        card.estado = newStatus;
-        if (originalStatus != newStatus) {
-          card.id_usuario = parseInt(userId.value); //tambien int por si es problema
-          card.username = userName.value;
-          card.image = userPhoto.value;
-          card.nombre = userFullName.value; //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
-        } else if (newStatus !== "Disponible" && !card.username) {
-          card.username = "Usuario Asignado";
-        }
-
-        if (originalStatus === "Disponible") {
-          cardsDisponible.value = cardsDisponible.value.filter(
-            (c) => c.id_tarea !== card.id_tarea
-          );
-          cards.value.push(card);
-        }
-
-        if (newStatus === "Disponible") {
-          card.image = null;
-          card.id_usuario = null;
-          cards.value = cards.value.filter((c) => c.id_tarea !== card.id_tarea);
-          cardsDisponible.value.push(card);
-          // window.location.reload()
-        }
-        if (!(newStatus === "Terminado")) {
-          card.fecha_vencimiento = null;
-          console.log(
-            "update estado",
-            await ts.updateTarea(card.id_tarea, null, newStatus)
-          );
-        } else {
-          card.fecha_vencimiento =
-            card.fecha_vencimiento ||
-            new Date().toLocaleString("sv-SE").replace("T", "");
-          console.log(
-            "update estado",
-            await ts.updateTarea(
-              card.id_tarea,
-              null,
-              newStatus,
-              card.fecha_vencimiento
-            )
-          );
-        }
-
-        currentPage.value[newStatus] = 0;
-        toast.add({
-          severity: "info",
-          summary: "Exito",
-          detail: "Tarea actualizada con exito",
-          life: 2000,
-        });
+        // ✅ Move the card
+        console.log("Moving card from", originalStatus, "to", newStatus);
+        // perform move logic here
       } else {
-        console.log("no permission de mover!!");
+        console.warn("Invalid move attempted");
         toast.add({
           severity: "error",
           summary: "Error",
-          detail: "Solo un administrador puede regresar esta tarea!",
+          detail: "No es posible mover esta tarea!",
           life: 2000,
         });
+        return
       }
+      card.estado = newStatus;
+      if (originalStatus != newStatus) {
+        card.id_usuario = parseInt(userId.value); //tambien int por si es problema
+        card.username = userName.value;
+        card.image = userPhoto.value;
+        card.nombre = userFullName.value; //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
+      } else if (newStatus !== "Disponible" && !card.username) {
+        card.username = "Usuario Asignado";
+      }
+
+      if (originalStatus === "Disponible") {
+        cardsDisponible.value = cardsDisponible.value.filter(
+          (c) => c.id_tarea !== card.id_tarea
+        );
+        cards.value.push(card);
+      }
+
+      if (newStatus === "Disponible") {
+        card.image = null;
+        card.id_usuario = null;
+        cards.value = cards.value.filter((c) => c.id_tarea !== card.id_tarea);
+        cardsDisponible.value.push(card);
+        // window.location.reload()
+      }
+      if (!(newStatus === "Terminado")) {
+        card.fecha_vencimiento = null;
+        console.log(
+          "update estado",
+          await ts.updateTarea(card.id_tarea, null, newStatus)
+        );
+      } else {
+        card.fecha_vencimiento =
+          card.fecha_vencimiento ||
+          new Date().toLocaleString("sv-SE").replace("T", "");
+        console.log(
+          "update estado",
+          await ts.updateTarea(
+            card.id_tarea,
+            null,
+            newStatus,
+            card.fecha_vencimiento
+          )
+        );
+      }
+
+      currentPage.value[newStatus] = 0;
+      toast.add({
+        severity: "info",
+        summary: "Exito",
+        detail: "Tarea actualizada con exito",
+        life: 2000,
+      });
+    } else {
+      console.log("no permission de mover!!");
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Solo un administrador puede regresar esta tarea!",
+        life: 2000,
+      });
     }
   } else {
     console.log("no permission de mover!!");
@@ -328,7 +351,7 @@ const moveCard = async (cardId, newStatus) => {
       life: 2000,
     });
   }
-};
+}
 
 const getColumnColor = (status) => {
   const colors = {
