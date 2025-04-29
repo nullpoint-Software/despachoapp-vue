@@ -206,7 +206,7 @@ const save = async () => {
     }
     else {
       console.log("assignedEmployee value:", localTask.value.assignedEmployee);
-      await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.estado,null,localTask.value.titulo,localTask.value.descripcion)
+      await ts.updateTarea(localTask.value.id_tarea, localTask.value.assignedEmployee, localTask.value.assignedEmployee && localTask.value.estado == "Disponible" ? "Pendiente" : localTask.value.estado,null,localTask.value.titulo,localTask.value.descripcion)
       window.location.reload();
       return
     }
