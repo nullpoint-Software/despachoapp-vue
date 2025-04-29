@@ -185,7 +185,7 @@ const save = async () => {
   errors.value.titulo = !localTask.value.titulo;
   errors.value.descripcion = !localTask.value.descripcion;
   if (errors.value.titulo || errors.value.descripcion) return;
-  if (localTask.value.id_usuario) {
+  if (localTask.value.id_usuario||localTask.value.id_tarea) { //para tareas que EXISTEN en la BD(que tienen un usuario asignado o existen en la columna Disponible pero sin usuario asignado)
     
     console.log("edit!");
     console.log("current task: " + localTask.value.id_tarea);
@@ -195,7 +195,7 @@ const save = async () => {
     // const emp = employees.value.find(e => e.value.id_usuario === localTask.assignedEmployee.id_usuario);
     if (!localTask.value.assignedEmployee) {
       console.log("cambiando a disp");
-      await ts.updateTarea(localTask.value.id_tarea, null, "Disponible")
+      await ts.updateTarea(localTask.value.id_tarea, null, "Disponible",null,localTask.value.titulo, localTask.value.descripcion)
       window.location.reload();
       return
     } if(localTask.value.estado == "Terminado"){
