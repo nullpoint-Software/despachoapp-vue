@@ -70,7 +70,7 @@
               severity="danger" text :onclick="logOut" />
           </div>
           <br>
-          <p class="font-thin text-gray-400">Compilado el: {{ buildTime }}</p>
+          
         </div>
       </div>
     </transition>
@@ -97,7 +97,7 @@
             </li>
           </ul>
         </nav>
-        <p class="font-thin text-gray-400">Compilacion: {{ buildTime }}</p>
+        
         <Divider class="my-2 border-gray-700" />
         <div class="p-4 border-t border-gray-700">
           <router-link to="/app/settings"
@@ -119,10 +119,6 @@
           <Loader />
         </template>
       </Suspense>
-
-
-
-
     </div>
 
     <!-- Modal para abrir el Tablero de Notas -->
@@ -193,8 +189,7 @@ export default {
         }
 
         // await this.getUserInfo()
-        const res = await fetch('/build-time.txt')
-        buildTime.value = await res.text()
+
       } catch (error) {
         console.error("Auth check failed:", error);
         router.push("/login"); // Redirect to login if auth fails

@@ -163,6 +163,7 @@
           <i class="pi pi-plus-circle mr-2"></i> Crear usuario
         </button>
       </div>
+      <p class="font-thin text-gray-400">Compilacion: {{ buildTime ?? "test" }}</p>
     </div>
 
     <!-- SEARCH MODAL (MOBILE/TABLET) -->
@@ -337,8 +338,10 @@ const profileImage = ref(
     ? storedPhoto
     : defaultAvatar
 );
-onMounted(() => {
-    const showToast = localStorage.getItem("showToast");
+onMounted(async () => {
+    const showToast = await localStorage.getItem("showToast");
+    const res = await fetch('/build-time.txt')
+    buildTime.value = await res.text()
     if (showToast === "nameSuccess") {
       toast.add({
         severity: "success",
