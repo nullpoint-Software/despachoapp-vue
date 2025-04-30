@@ -309,6 +309,7 @@ const showSearchModal = ref(false)
 
 // USER DETAILS MODAL
 const modalAbierto = ref(false)
+const buildTime = ref();
 const usuarioSeleccionado = ref()
 const passwordVisible = ref(false)
 
