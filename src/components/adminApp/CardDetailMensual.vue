@@ -18,8 +18,11 @@
           <!-- Cliente -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Cliente</label>
-            <InputText v-model="pago.cliente" class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el nombre del cliente" />
+            <select v-model="pago.id_cliente" class="p-2 border border-gray-300 rounded text-black"
+              placeholder="Seleccione un cliente">
+              <option v-for="client in clientes" :key="client" :value="client.id_cliente">
+                {{ client.nombre }} </option>
+            </select>
             <span v-if="errors.cliente" class="text-red-500 text-sm">{{
               errors.cliente
             }}</span>
@@ -29,9 +32,14 @@
           <div class="flex flex-col">
             <label class="font-semibold text-black">Quien atendió</label>
             <div class="flex items-center">
-              <img v-if="pago.imagen || !userpic.endsWith('null') && !String(pago.imagen).endsWith('null') " :src="pago.imagen && !String(pago.imagen).endsWith('null') ? 'data:image/png;base64,'+ pago.imagen : userpic" alt="Foto" class="w-8 h-8 rounded-full mr-2" />
-              <InputText v-model="pago.atendio" disabled class="p-2 border border-gray-300 rounded w-full"
-                placeholder="Nombre del usuario" />
+              <img v-if="pago.imagen || !userpic.endsWith('null') && !String(pago.imagen).endsWith('null')"
+                :src="pago.imagen && !String(pago.imagen).endsWith('null') ? 'data:image/png;base64,' + pago.imagen : userpic"
+                alt="Foto" class="w-8 h-8 rounded-full mr-2" />
+              <select v-model="pago.id_atendio" class="text-black p-2 border border-gray-300 rounded w-full"
+                placeholder="Nombre del usuario">
+                <option v-for="employee in employees" :key="employee" :value="employee.id_usuario">
+                  {{ employee.nombre + " (" + employee.username + ")" }}</option>
+              </select>
             </div>
             <span v-if="errors.atendio" class="text-red-500 text-sm">{{
               errors.atendio
@@ -77,7 +85,9 @@ import { ref, watch, defineProps, defineEmits, onMounted } from "vue";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import defaultProfilePicture from '@/assets/img/user.jpg'
-import { formatFechaMesAnoSQL, ps } from "@/service/adminApp/client";
+import { cs, formatFechaMesAnoSQL, ps, us } from "@/service/adminApp/client";
+const clientes = await cs.getClientes();
+const employees = await us.getUsuarios();
 const userpic = localStorage.getItem("userphoto");
 const props = defineProps({
   pago: {
@@ -103,7 +113,7 @@ const emit = defineEmits(["close", "save"]);
 
 const pago = ref({ ...props.pago });
 if (pago.value.atendio == "") { //por si es un registro nuevo se ocupa el nombre de user
-  pago.value.atendio = localStorage.getItem("username");
+  pago.value.id_atendio = props.usuario.id;
   // pago.value.mes_ano = new Date().toLocaleString("sv-SE").replace('T', '')
   pago.value.mes_ano = formatFechaMesAnoSQL(new Date().toLocaleString("sv-SE").replace('T', ''))
 } else {
@@ -117,9 +127,11 @@ const errors = ref({
 });
 
 onMounted(() => {
-  if (!pago.value.atendio.trim() && props.usuario.nombre) {
-    pago.value.atendio = props.usuario.nombre;
+  if (!pago.value.id_atendio && props.usuario.id) {
+    pago.value.id_atendio = props.usuario.id;
   }
+  console.log(pago);
+
 });
 
 watch(
@@ -176,6 +188,8 @@ const addDollarPrefix = (value) => {
 };
 
 const save = async () => {
+  const selectedCliente = clientes.findIndex((c) => c.id_cliente === pago.value.id_cliente)
+  const selectedAtendio = employees.findIndex((e) => e.id_usuario === pago.value.id_atendio)
   if (validate()) {
     if (!pago.value.id) {
       console.log("nuevo regist");
@@ -188,6 +202,8 @@ const save = async () => {
         }
       }
       try {
+        pago.value.cliente = clientes[selectedCliente].nombre
+        pago.value.atendio = employees[selectedAtendio].nombre
         pago.value.id = "M-" + new Date()
           .toLocaleString("sv-SE")
           .replace('T', '')
@@ -198,7 +214,7 @@ const save = async () => {
       } catch (error) {
         console.log("error al guardar pago mensual", error);
       }
-    }else {
+    } else {
       console.log("edit!");
 
       // Convertir 'mes_ano' de "MM/YYYY" a "YYYY-MM-01 00:00:00"
@@ -210,8 +226,9 @@ const save = async () => {
           pago.value.mes_ano = `${anio}-${mesFormateado}-01 00:00:00`;
         }
       }
-
       try {
+        pago.value.cliente = clientes[selectedCliente].nombre
+        pago.value.atendio = employees[selectedAtendio].nombre
         await ps.updatePagoMensual(pago.value.id, pago.value);
         emit("save", { ...pago.value });
       } catch (error) {

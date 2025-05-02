@@ -107,9 +107,9 @@ const mensual = ref(await ps.getPagoMensual());
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
-  id: localStorage.getItem("userId") || "",
-  nombre: localStorage.getItem("userName") || "",
-  foto: localStorage.getItem("userPhoto") || "",
+  id: localStorage.getItem("userid") || "",
+  nombre: localStorage.getItem("username") || "",
+  foto: localStorage.getItem("userphoto") || "",
 });
 
 // Definición de columnas base
@@ -226,8 +226,9 @@ const openCard = (pago) => {
     selectedMensual.value = {
       id: "",
       cliente: "",
-      atendio: usuario.value.nombre, // se asigna nombre del usuario
-      imagen: usuario.value.foto,
+      atendio: "",
+      id_atendio: "", // se asigna nombre del usuario
+      imagen: "",
       honorarios: "",
       mes_ano: "",
     };

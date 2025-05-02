@@ -25,16 +25,16 @@
             </div>
             <div class="relative w-full sm:w-auto">
               <!-- no se porque pero solamente asi chrome le hace caso de no rellenar -->
-              <InputText v-model="filters.global.value" autocomplete="new-password" 
-              placeholder="Buscar..." aria-autocomplete="none"
+              <InputText v-model="filters.global.value" autocomplete="new-password" placeholder="Buscar..."
+                aria-autocomplete="none"
                 class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <!-- Botones -->
             <div class="flex space-x-2">
               <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
                 class="p-2" @click="clearFilter" />
-              <Button v-if="canAddPagoConcepto" icon="pi pi-plus" :label="isMobile ? '' : 'Agregar Pago Concepto'" class="p-button-success p-2"
-                @click="openCard(null)" />
+              <Button v-if="canAddPagoConcepto" icon="pi pi-plus" :label="isMobile ? '' : 'Agregar Pago Concepto'"
+                class="p-button-success p-2" @click="openCard(null)" />
             </div>
           </div>
         </div>
@@ -59,8 +59,10 @@
         <template #body="{ data }">
           <!-- Acciones -->
           <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-            <Button v-if="canEditPagoConcepto" icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-            <Button v-if="canDeletePagoConcepto" icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+            <Button v-if="canEditPagoConcepto" icon="pi pi-pencil" class="p-button-rounded p-button-warning"
+              @click="openCard(data)" />
+            <Button v-if="canDeletePagoConcepto" icon="pi pi-trash" class="p-button-rounded p-button-danger"
+              @click="openConfirmDialog(data)" />
             <!-- Botón Imprimir -->
             <Button icon="pi pi-print" class="p-button-rounded p-button-info" @click="openPrint(data)" />
           </div>
@@ -272,13 +274,17 @@ const openCard = (payment) => {
   }
   cardVisible.value = true;
 };
-const savePayment = (payment) => {
+const savePayment = async (payment) => {
   console.log("recieve save pay", payment);
-  
+
   if (payment.id) {
     const index = payments.value.findIndex((p) => p.id === payment.id);
     if (index !== -1) {
-      payments.value[index] = { ...payment };
+      console.log(index);
+      console.log("edit save");
+      
+      payments.value.splice(index, 1, { ...payment });
+      payments.value = [...payments.value];
       toast.add({
         severity: "success",
         summary: "Actualizado",
@@ -287,7 +293,7 @@ const savePayment = (payment) => {
       });
     }
   }
-  if(payment.isnew) {
+  if (payment.isnew) {
     payments.value.unshift(payment);
     toast.add({
       severity: "success",

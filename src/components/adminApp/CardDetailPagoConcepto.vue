@@ -18,8 +18,11 @@
           <!-- Cliente -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Cliente</label>
-            <InputText v-model="pago.cliente" class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el nombre del cliente" />
+            <select v-model="pago.id_cliente" class="p-2 border border-gray-300 rounded text-black"
+              placeholder="Seleccione un cliente">
+              <option v-for="client in clientes" :key="client" :value="client.id_cliente">
+                {{ client.nombre }} </option>
+            </select>
             <span v-if="errors.cliente" class="text-red-500 text-sm">{{ errors.cliente }}</span>
           </div>
 
@@ -38,8 +41,11 @@
               <img v-if="pago.imagen || !userpic.endsWith('null') && !String(pago.imagen).endsWith('null')"
                 :src="pago.imagen && !String(pago.imagen).endsWith('null') ? 'data:image/png;base64,' + pago.imagen : userpic"
                 alt="Foto" class="w-8 h-8 rounded-full mr-2" />
-              <InputText v-model="pago.atendio" disabled class="p-2 border border-gray-300 rounded w-full"
-                placeholder="Nombre del usuario" />
+              <select v-model="pago.id_atendio" class="text-black p-2 border border-gray-300 rounded w-full"
+                placeholder="Nombre del usuario">
+                <option v-for="employee in employees" :key="employee" :value="employee.id_usuario">
+                  {{ employee.nombre + " (" + employee.username + ")" }}</option>
+              </select>
             </div>
             <span v-if="errors.atendio" class="text-red-500 text-sm">{{ errors.atendio }}</span>
           </div>
@@ -72,8 +78,8 @@
           <!-- Fecha (con Calendar) -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Fecha</label>
-            <Calendar v-model="fechaSeleccionada" showIcon showTime showSeconds="true" hourFormat="24" placeholder="Selecciona la fecha"
-              class="w-full border border-gray-300 rounded focus:outline-none" />
+            <Calendar v-model="fechaSeleccionada" showIcon showTime showSeconds="true" hourFormat="24"
+              placeholder="Selecciona la fecha" class="w-full border border-gray-300 rounded focus:outline-none" />
             <span v-if="errors.fecha" class="text-red-500 text-sm">{{ errors.fecha }}</span>
           </div>
 
@@ -110,9 +116,14 @@ import { ref, watch, defineProps, defineEmits, onMounted, computed } from "vue";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Calendar from "primevue/calendar";
+import { Select } from "primevue";
 import defaultProfilePicture from '@/assets/img/user.jpg'
-import { formatFechaHoraFullSQL, formatFechaSQL, ps, formatFechaHoraFullPagoSQL } from "@/service/adminApp/client";
+import { formatFechaHoraFullSQL, formatFechaSQL, ps, formatFechaHoraFullPagoSQL, cs, us } from "@/service/adminApp/client";
 const userpic = localStorage.getItem("userphoto");
+const clientes = await cs.getClientes();
+const employees = await us.getUsuarios();
+console.log(employees);
+
 const props = defineProps({
   pago: {
     type: Object,
@@ -165,10 +176,10 @@ onMounted(async () => {
     fechaSeleccionada.value = formatFechaHoraFullPagoSQL(hoy);
     console.log("current pago: ", pago.value);
 
-  }else{
+  } else {
     fechaSeleccionada.value = new Date(formatFechaHoraFullPagoSQL(pago.value.fecha))
     console.log(formatFechaHoraFullPagoSQL(pago.value.fecha));
-    
+
   }
   console.log(pago.value);
 
@@ -222,7 +233,7 @@ const validate = () => {
     fecha: "",
     saldo: "",
   };
-  if (!pago.value.cliente.trim()) {
+  if (!pago.value.id_cliente) {
     errors.value.cliente = "El cliente es obligatorio.";
     valid = false;
   }
@@ -230,7 +241,7 @@ const validate = () => {
     errors.value.asunto = "El asunto es obligatorio.";
     valid = false;
   }
-  if (!pago.value.atendio.trim()) {
+  if (!pago.value.id_atendio) {
     errors.value.atendio = "El campo 'quien atendio' es obligatorio.";
     valid = false;
   }
@@ -263,13 +274,16 @@ const addDollarPrefix = (value) => {
 };
 
 const save = async () => {
+  const selectedCliente = clientes.findIndex((c) => c.id_cliente === pago.value.id_cliente)
+  const selectedAtendio = employees.findIndex((e) => e.id_usuario === pago.value.id_atendio)
   if (fechaSeleccionada.value) {
     pago.value.fecha = formatFechaHoraFullSQL(fechaSeleccionada.value);
   }
   if (validate()) {
     if (!pago.value.id) {
       console.log("new");
-
+      pago.value.cliente = clientes[selectedCliente].nombre
+      pago.value.atendio = employees[selectedAtendio].nombre
       pago.value.id = "C-" + new Date()
         .toLocaleString("sv-SE")
         .replace('T', '')
@@ -279,7 +293,8 @@ const save = async () => {
       emit("save", { ...pago.value });
     } else {
       console.log("edit");
-
+      pago.value.cliente = clientes[selectedCliente].nombre
+      pago.value.atendio = employees[selectedAtendio].nombre
       await ps.updatePagoConcepto(pago.value.id, pago.value);
       emit("save", { ...pago.value });
     }

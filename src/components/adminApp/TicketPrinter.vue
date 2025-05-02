@@ -60,6 +60,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import utc from "dayjs/plugin/utc";
+import { formatFechaMesAnoSQL } from "@/service/adminApp/client";
 
 dayjs.extend(advancedFormat);
 dayjs.extend(localizedFormat);
@@ -96,7 +97,7 @@ function centerText(txt) {
 function wrapText(text, width) {
   const lines = [];
   let rem = text;
-  while (rem.length > width) {
+  while (String(rem).length > width) {
     lines.push(rem.slice(0, width));
     rem = rem.slice(width);
   }
@@ -105,9 +106,9 @@ function wrapText(text, width) {
 }
 
 function row(label, val) {
-  const lab = label.padEnd(leftCol).slice(0, leftCol);
+  const lab = String(label).padEnd(leftCol).slice(0, leftCol);
   const vals = wrapText(val, rightCol);
-  const first = `| ${lab} | ${vals[0].padEnd(rightCol)} |`;
+  const first = `| ${lab} | ${String(vals[0]).padEnd(rightCol)} |`;
   const rest = vals.slice(1).map(l => `| ${" ".repeat(leftCol)} | ${l.padEnd(rightCol)} |`);
   return [first, ...rest].join("\n");
 }
@@ -120,11 +121,11 @@ const formattedTicket = computed(() => {
   lines.push(dashLine);
   lines.push(row("Cliente", t.cliente));
   lines.push(dashLine);
-  lines.push(row("Atendio", t.quienAtendio));
+  lines.push(row("Atendio", t.atendio));
   lines.push(dashLine);
   lines.push(row("Honorarios", t.honorarios));
   lines.push(dashLine);
-  lines.push(row("Mes y Ano", t.mesAno));
+  lines.push(row("Mes y Ano", formatFechaMesAnoSQL(t.mes_ano)));
   lines.push(dashLine);
   lines.push("");
   lines.push(eqLine);
