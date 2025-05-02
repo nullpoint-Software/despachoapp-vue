@@ -130,13 +130,13 @@
     lines.push(dashLine);
     lines.push(row("Atendio", t.atendio));
     lines.push(dashLine);
-    lines.push(row("Cobramos", t.cobramos));
+    lines.push(row("Cobramos", "$"+t.cobramos));
     lines.push(dashLine);
-    lines.push(row("Pagamos", t.pagamos));
+    lines.push(row("Pagamos","$"+t.pagamos));
     lines.push(dashLine);
     lines.push(row("Fecha", t.fecha));
     lines.push(dashLine);
-    lines.push(row("Saldo", t.saldo));
+    lines.push(row("Saldo", "$"+t.saldo));
     lines.push("");
     lines.push(eqLine);
     lines.push(centerText("Fecha de impresion:"));

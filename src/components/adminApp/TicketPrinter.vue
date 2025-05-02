@@ -123,7 +123,7 @@ const formattedTicket = computed(() => {
   lines.push(dashLine);
   lines.push(row("Atendio", t.atendio));
   lines.push(dashLine);
-  lines.push(row("Honorarios", t.honorarios));
+  lines.push(row("Honorarios", "$"+t.honorarios));
   lines.push(dashLine);
   lines.push(row("Mes y Ano", formatFechaMesAnoSQL(t.mes_ano)));
   lines.push(dashLine);
