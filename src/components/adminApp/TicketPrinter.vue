@@ -6,7 +6,7 @@
   >
     <div class="ticket-printer-modal">
       <!-- Seccion para seleccionar la impresora -->
-      <div class="printer-selection">
+      <div class="printer-selection" v-if="!showDownload">
         <select id="printerSelect" v-model="selectedPrinter">
           <option disabled value="">Seleccione una impresora</option>
           <option v-for="impresora in printers" :key="impresora" :value="impresora">
@@ -20,7 +20,13 @@
           class="p-button-secondary"
         />
       </div>
-
+      <Button
+        icon="pi pi-download"
+        v-if="showDownload"
+        label="Descargar plugin de impresión"
+          @click="downloadPlugin"
+          class="p-button-info"
+        />
       <!-- Vista previa del ticket -->
       <div class="ticket">
         <div class="logo">
@@ -49,6 +55,7 @@
 </template>
 
 <script setup>
+const serverip = import.meta.env.VITE_API_SERVER_IP;
 import { ref, computed, onMounted } from "vue";
 import Button from "primevue/button";
 import logoAsset from "@/assets/img/logsymbolblack.png";
@@ -76,7 +83,7 @@ const printers = ref([]);
 const selectedPrinter = ref("");
 const apiKey = "123456";
 const logo = logoAsset;
-
+const showDownload = ref(false)
 // props
 const props = defineProps({
   ticket: { type: Object, required: true }
@@ -149,10 +156,19 @@ const fetchPrinters = async () => {
     if (!list.includes(selectedPrinter.value)) selectedPrinter.value = "";
   } catch (e) {
     alert("Error al obtener impresoras: " + e.message);
+    showDownload.value = true;
   }
 };
 onMounted(fetchPrinters);
-
+const downloadPlugin = async () =>{
+  const url = `${serverip}/Plugin_Impresora_termica.exe`;
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Plugin_Impresora_termica.exe";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 // imprimir
 const doPrint = async () => {
   if (!selectedPrinter.value) {
@@ -162,7 +178,7 @@ const doPrint = async () => {
     const con = new connetor_plugin();
     // logo
     con.textaling("center");
-    con.img_url("https://www.hanekawa.online:444/api/sm.png");
+    con.img_url(`${serverip}/sm.png`);
     con.feed("1");
     // titulo
     con.fontsize("2");

@@ -167,20 +167,19 @@ const selectedCard = ref(null);
 const pages = computed(() => {
   const result = {};
 
-  // For each status, calculate pages
   columnStatuses.forEach((status) => {
     let allCards = [];
 
     if (status === "Disponible") {
-      // For "Disponible", consider both cards and cardsDisponible
+      // Considerar todas las cartas al buscar "Disponible"
       allCards = [...cards.value, ...cardsDisponible.value];
     } else {
-      // For other statuses, use just cards
+      // Cualquier otro estado, filtrar en las cargas regulares
       allCards = cards.value.filter((card) => card.estado === status);
     }
 
     const total = allCards.length;
-    result[status] = Math.max(1, Math.ceil(total / cardsPerPage)); // Ensure at least 1 page
+    result[status] = Math.max(1, Math.ceil(total / cardsPerPage)); 
   });
 
   return result;
@@ -268,9 +267,8 @@ const moveCard = async (cardId, newStatus) => {
           !invalidBackFrom3
         )
       ) {
-        // ✅ Move the card
+        // Mover la tarea
         console.log("Moving card from", originalStatus, "to", newStatus);
-        // perform move logic here
       } else {
         console.warn("Invalid move attempted");
         toast.add({
@@ -283,10 +281,10 @@ const moveCard = async (cardId, newStatus) => {
       }
       card.estado = newStatus;
       if (originalStatus != newStatus) {
-        card.id_usuario = isAdmin && card.id_usuario ? card.id_usuario : parseInt(userId.value); //tambien int por si es problema
+        card.id_usuario = isAdmin && card.id_usuario ? card.id_usuario : parseInt(userId.value);
         card.username = isAdmin && card.username ? card.id_usuario : userName.value;
         card.image = isAdmin && card.image ? card.image : userPhoto.value;
-        card.nombre = isAdmin && card.nombre ? card.nombre : userFullName.value; //son las 5AM y me dio flojera volver a llamar la base de datos, sorry
+        card.nombre = isAdmin && card.nombre ? card.nombre : userFullName.value;
       } else if (newStatus !== "Disponible" && !card.username) {
         card.username = "Usuario Asignado";
       }
@@ -478,22 +476,6 @@ const closeTaskForm = () => {
 const saveTaskForm = (taskData) => {
   console.log("save taskform activated with task: " + taskData);
   console.log("mode is " + taskFormMode.value);
-
-  // if (taskFormMode.value === "add") {
-  //   const newId =
-  //     cards.value.length > 0
-  //       ? Math.max(...cards.value.map((c) => c.id_tarea)) + 1
-  //       : 1;
-  //   taskData.id_tarea = newId;
-  //   cards.value.push({ ...taskData });
-  //   // Resetear la página del estado del nueva tarea a 0
-  //   currentPage.value[taskData.status] = 0;
-  // } else if (taskFormMode.value === "edit") {
-  //   const index = cards.value.findIndex((c) => c.id_tarea === taskData.id_tarea);
-  //   if (index !== -1) {
-  //     cards.value.splice(index, 1, { ...taskData });
-  //   }
-  // }
   searchQuery.value = ""; // limpiar búsqueda
   closeTaskForm();
 };
