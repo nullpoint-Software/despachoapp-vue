@@ -115,7 +115,7 @@
         <KanbanBoard
           :showDisponible="false"
           :showTerminado="false"
-          :showOwn="true"
+          :showOwn="!isAdmin"
           :mini="true"
           :showEnProgreso="false"
         ></KanbanBoard>
@@ -153,6 +153,7 @@ ChartJS.register(
 // Variable reactiva para el período seleccionado
 const periodo = ref("mes");
 const chartKey = ref(0);
+const isAdmin = (localStorage.getItem("level") == "Administrador")
 // Datos de ejemplo para cada período
 const datos = await es.getDatos();
 const chartRef = ref(null);
