@@ -195,7 +195,7 @@ watch(
 );
 
 function getEmployeeImage(id_atendio) {
-  const emp = this.employees.find((e) => e.id_usuario === id_atendio);
+  const emp = employees.find((e) => e.id_usuario === id_atendio);
   if (id_atendio == userid) {
     return userpic.value;
   }
