@@ -200,7 +200,6 @@ const pagesDisponible = computed(() => {
 const getPaginatedCardsByStatus = (status) => {
   const filtered = cards.value
     .filter((card) => card.estado === status)
-    .sort((a, b) => a.id_tarea - b.id_tarea);
   const start = currentPage.value[status] * cardsPerPage;
   return filtered.slice(start, start + cardsPerPage);
 };
@@ -209,7 +208,6 @@ const getPaginatedCardsDisponible = () => {
   const start = currentPage.value["Disponible"] * cardsPerPage;
   return [...cards.value, ...cardsDisponible.value]
     .filter((card) => card.estado === "Disponible")
-    .sort((a, b) => a.id_tarea - b.id_tarea)
     .slice(start, start + cardsPerPage);
 };
 
@@ -293,14 +291,14 @@ const moveCard = async (cardId, newStatus) => {
         cardsDisponible.value = cardsDisponible.value.filter(
           (c) => c.id_tarea !== card.id_tarea
         );
-        cards.value.push(card);
+        cards.value.unshift(card);
       }
 
       if (newStatus === "Disponible") {
         card.image = null;
         card.id_usuario = null;
         cards.value = cards.value.filter((c) => c.id_tarea !== card.id_tarea);
-        cardsDisponible.value.push(card);
+        cardsDisponible.value.unshift(card);
         // window.location.reload()
       }
       if (!(newStatus === "Terminado")) {
