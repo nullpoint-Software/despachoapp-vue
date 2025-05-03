@@ -68,6 +68,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import utc from "dayjs/plugin/utc";
+import { formatFechaHoraFullPagoSQL } from "@/service/adminApp/client";
 
 dayjs.extend(advancedFormat);
 dayjs.extend(localizedFormat);
@@ -155,7 +156,7 @@ const formattedTicket = computed(() => {
   lines.push(dashLine);
   lines.push(row("Pagamos", "$" + t.pagamos));
   lines.push(dashLine);
-  lines.push(row("Fecha", t.fecha));
+  lines.push(row("Fecha", formatFechaHoraFullPagoSQL(t.fecha)));
   lines.push(dashLine);
   lines.push(row("Saldo", "$" + t.saldo));
   lines.push("");
