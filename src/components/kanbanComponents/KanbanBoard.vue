@@ -375,9 +375,14 @@ const markCard = (cardId) => {
     highlightedCard.value = cardId;
     searchQuery.value = "";
     const status = card.estado;
-    const index = cards.value
+    let index = cards.value
       .filter((c) => c.estado === status)
       .findIndex((c) => c.id_tarea === cardId);
+    if(index == -1){
+      index = cardsDisponible.value
+      .filter((c) => c.estado === status)
+      .findIndex((c) => c.id_tarea === cardId);
+    }
     currentPage.value[status] = Math.floor(index / cardsPerPage);
     nextTick(() => {
       setTimeout(() => {
