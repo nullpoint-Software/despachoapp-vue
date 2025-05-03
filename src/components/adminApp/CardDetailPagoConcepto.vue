@@ -4,11 +4,13 @@
     <div class="modal-overlay" @click.self="close">
       <div class="modal-content relative bg-gray-50">
         <!-- Encabezado -->
-        <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+        <div
+          class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow"
+        >
           <div>
             <h3 class="text-2xl font-bold text-black">
               <i class="pi pi-receipt text-3xl text-blue-500"></i>
-              {{ pago.id ? 'Editar Pago Concepto' : 'Agregar Pago Concepto' }}
+              {{ pago.id ? "Editar Pago Concepto" : "Agregar Pago Concepto" }}
             </h3>
           </div>
         </div>
@@ -18,69 +20,128 @@
           <!-- Cliente -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Cliente</label>
-            <select v-model="pago.id_cliente" class="p-2 border border-gray-300 rounded text-black"
-              placeholder="Seleccione un cliente">
-              <option v-for="client in clientes" :key="client" :value="client.id_cliente">
-                {{ client.nombre }} </option>
+            <select
+              v-model="pago.id_cliente"
+              class="p-2 border border-gray-300 rounded text-black"
+              placeholder="Seleccione un cliente"
+            >
+              <option
+                v-for="client in clientes"
+                :key="client"
+                :value="client.id_cliente"
+              >
+                {{ client.nombre }}
+              </option>
             </select>
-            <span v-if="errors.cliente" class="text-red-500 text-sm">{{ errors.cliente }}</span>
+            <span v-if="errors.cliente" class="text-red-500 text-sm">{{
+              errors.cliente
+            }}</span>
           </div>
 
           <!-- Asunto -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Asunto</label>
-            <InputText v-model="pago.asunto" class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el asunto" />
-            <span v-if="errors.asunto" class="text-red-500 text-sm">{{ errors.asunto }}</span>
+            <InputText
+              v-model="pago.asunto"
+              class="p-2 border border-gray-300 rounded"
+              placeholder="Ingrese el asunto"
+            />
+            <span v-if="errors.asunto" class="text-red-500 text-sm">{{
+              errors.asunto
+            }}</span>
           </div>
 
           <!-- Quien atendio (deshabilitado) -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Quien atendio</label>
             <div class="flex items-center">
-              <img v-if="pago.imagen || !userpic.endsWith('null') && !String(pago.imagen).endsWith('null')"
-                :src="pago.imagen && !String(pago.imagen).endsWith('null') ? 'data:image/png;base64,' + pago.imagen : userpic"
-                alt="Foto" class="w-8 h-8 rounded-full mr-2" />
-              <select v-model="pago.id_atendio" class="text-black p-2 border border-gray-300 rounded w-full"
-                placeholder="Nombre del usuario">
-                <option v-for="employee in employees" :key="employee" :value="employee.id_usuario">
-                  {{ employee.nombre + " (" + employee.username + ")" }}</option>
+              <img
+                v-if="getEmployeeImage(pago.id_atendio)"
+                :src="
+                  getEmployeeImage(pago.id_atendio)
+                "
+                alt="Foto"
+                class="w-8 h-8 rounded-full mr-2"
+              />
+              <select
+                v-model="pago.id_atendio"
+                class="text-black p-2 border border-gray-300 rounded w-full"
+                placeholder="Nombre del usuario"
+              >
+                <option
+                  v-for="employee in employees"
+                  :key="employee"
+                  :value="employee.id_usuario"
+                >
+                  {{ employee.nombre + " (" + employee.username + ")" }}
+                </option>
               </select>
             </div>
-            <span v-if="errors.atendio" class="text-red-500 text-sm">{{ errors.atendio }}</span>
+            <span v-if="errors.atendio" class="text-red-500 text-sm">{{
+              errors.atendio
+            }}</span>
           </div>
 
           <!-- Cobramos -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Cobramos</label>
             <div class="flex">
-              <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+              <span
+                class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l"
+                >$</span
+              >
               <!-- type="number" con step="0.01" impide letras -->
-              <InputText type="number" step="0.01" min="0" v-model="pago.cobramos"
+              <InputText
+                type="number"
+                step="0.01"
+                min="0"
+                v-model="pago.cobramos"
                 class="p-2 border border-gray-300 rounded-r focus:outline-none w-full"
-                placeholder="Ingrese el monto cobrado" />
+                placeholder="Ingrese el monto cobrado"
+              />
             </div>
-            <span v-if="errors.cobramos" class="text-red-500 text-sm">{{ errors.cobramos }}</span>
+            <span v-if="errors.cobramos" class="text-red-500 text-sm">{{
+              errors.cobramos
+            }}</span>
           </div>
 
           <!-- Pagamos -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Pagamos</label>
             <div class="flex">
-              <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
-              <InputText type="number" step="0.01" min="0" v-model="pago.pagamos"
+              <span
+                class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l"
+                >$</span
+              >
+              <InputText
+                type="number"
+                step="0.01"
+                min="0"
+                v-model="pago.pagamos"
                 class="p-2 border border-gray-300 rounded-r focus:outline-none w-full"
-                placeholder="Ingrese el monto pagado" />
+                placeholder="Ingrese el monto pagado"
+              />
             </div>
-            <span v-if="errors.pagamos" class="text-red-500 text-sm">{{ errors.pagamos }}</span>
+            <span v-if="errors.pagamos" class="text-red-500 text-sm">{{
+              errors.pagamos
+            }}</span>
           </div>
 
           <!-- Fecha (con Calendar) -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Fecha</label>
-            <Calendar v-model="fechaSeleccionada" showIcon showTime showSeconds="true" hourFormat="24"
-              placeholder="Selecciona la fecha" class="w-full border border-gray-300 rounded focus:outline-none" />
-            <span v-if="errors.fecha" class="text-red-500 text-sm">{{ errors.fecha }}</span>
+            <Calendar
+              v-model="fechaSeleccionada"
+              showIcon
+              showTime
+              showSeconds="true"
+              hourFormat="24"
+              placeholder="Selecciona la fecha"
+              class="w-full border border-gray-300 rounded focus:outline-none"
+            />
+            <span v-if="errors.fecha" class="text-red-500 text-sm">{{
+              errors.fecha
+            }}</span>
           </div>
 
           <!-- Saldo
@@ -103,8 +164,18 @@
 
         <!-- Botones -->
         <div class="flex justify-end space-x-6 mt-6 px-4">
-          <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="close" />
-          <Button label="Guardar" icon="pi pi-check" class="p-button-primary" @click="save" />
+          <Button
+            label="Cancelar"
+            icon="pi pi-times"
+            class="p-button-text"
+            @click="close"
+          />
+          <Button
+            label="Guardar"
+            icon="pi pi-check"
+            class="p-button-primary"
+            @click="save"
+          />
         </div>
       </div>
     </div>
@@ -117,9 +188,17 @@ import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Calendar from "primevue/calendar";
 import { Select } from "primevue";
-import defaultProfilePicture from '@/assets/img/user.jpg'
-import { formatFechaHoraFullSQL, formatFechaSQL, ps, formatFechaHoraFullPagoSQL, cs, us } from "@/service/adminApp/client";
-const userpic = localStorage.getItem("userphoto");
+import defaultProfilePicture from "@/assets/img/user.jpg";
+import {
+  formatFechaHoraFullSQL,
+  formatFechaSQL,
+  ps,
+  formatFechaHoraFullPagoSQL,
+  cs,
+  us,
+} from "@/service/adminApp/client";
+const userpic = ref(localStorage.getItem("userphoto"));
+const userid = await localStorage.getItem("userid");
 const clientes = await cs.getClientes();
 const employees = await us.getUsuarios();
 console.log(employees);
@@ -159,9 +238,7 @@ const errors = ref({
   fecha: "",
   saldo: "",
 });
-if (pago.value.atendio == "") { //por si es un registro nuevo se ocupa el nombre de user
-  pago.value.atendio = localStorage.getItem("username");
-}
+
 /* 
   Usamos un ref para Calendar, ya que Calendar guarda Date.
   Luego lo convertimos a dd/mm/yyyy en save()
@@ -170,16 +247,20 @@ const fechaSeleccionada = ref();
 const imagen = new String(pago.value.imagen);
 onMounted(async () => {
   // Si no hay fecha en pago, la ponemos hoy
+  if (!pago.value.atendio) {
+    //por si es un registro nuevo se ocupa el nombre de user
+    pago.value.id_atendio = userid;
+  }
   if (!pago.value.fecha) {
     const hoy = new Date();
     pago.value.fecha = await hoy; // dd/mm/yyyy
     fechaSeleccionada.value = formatFechaHoraFullPagoSQL(hoy);
     console.log("current pago: ", pago.value);
-
   } else {
-    fechaSeleccionada.value = new Date(formatFechaHoraFullPagoSQL(pago.value.fecha))
+    fechaSeleccionada.value = new Date(
+      formatFechaHoraFullPagoSQL(pago.value.fecha)
+    );
     console.log(formatFechaHoraFullPagoSQL(pago.value.fecha));
-
   }
   console.log(pago.value);
 
@@ -192,19 +273,22 @@ onMounted(async () => {
 });
 
 // Cada vez que cambie props.pago, reseteamos
-watch(() => props.pago, (newVal) => {
-  pago.value = { ...newVal };
-  errors.value = {
-    cliente: "",
-    asunto: "",
-    atendio: "",
-    cobramos: "",
-    pagamos: "",
-    fecha: "",
-    saldo: "",
-  };
-  // fechaSeleccionada.value = aDate(newVal.fecha);
-});
+watch(
+  () => props.pago,
+  (newVal) => {
+    pago.value = { ...newVal };
+    errors.value = {
+      cliente: "",
+      asunto: "",
+      atendio: "",
+      cobramos: "",
+      pagamos: "",
+      fecha: "",
+      saldo: "",
+    };
+    // fechaSeleccionada.value = aDate(newVal.fecha);
+  }
+);
 
 /* Funciones auxiliares para formatear fecha */
 function formatoFecha(fecha) {
@@ -219,6 +303,17 @@ function aDate(cadena) {
   const [dia, mes, anio] = cadena.split("/");
   if (!dia || !mes || !anio) return null;
   return new Date(Number(anio), Number(mes) - 1, Number(dia));
+}
+
+function getEmployeeImage(id_atendio) {
+  const emp = this.employees.find((e) => e.id_usuario === id_atendio);
+  if (id_atendio == userid) {
+    return userpic.value;
+  }
+  if (emp && emp.imagen && !String(emp.imagen).endsWith("null")) {
+    return "data:image/png;base64," + emp.imagen;
+  }
+  return defaultProfilePicture;
 }
 
 /* VALIDACIÓN */
@@ -245,11 +340,21 @@ const validate = () => {
     errors.value.atendio = "El campo 'quien atendio' es obligatorio.";
     valid = false;
   }
-  if (pago.value.cobramos === null || pago.value.cobramos === undefined || pago.value.cobramos === '') { //permitir que sea 0
+  if (
+    pago.value.cobramos === null ||
+    pago.value.cobramos === undefined ||
+    pago.value.cobramos === ""
+  ) {
+    //permitir que sea 0
     errors.value.cobramos = "El monto cobrado es obligatorio.";
     valid = false;
   }
-  if (pago.value.pagamos === null || pago.value.pagamos === undefined || pago.value.pagamos === '') { //permitir que sea 0
+  if (
+    pago.value.pagamos === null ||
+    pago.value.pagamos === undefined ||
+    pago.value.pagamos === ""
+  ) {
+    //permitir que sea 0
     errors.value.pagamos = "El monto pagado es obligatorio.";
     valid = false;
   }
@@ -274,31 +379,36 @@ const addDollarPrefix = (value) => {
 };
 
 const save = async () => {
-  const selectedCliente = clientes.findIndex((c) => c.id_cliente === pago.value.id_cliente)
-  const selectedAtendio = employees.findIndex((e) => e.id_usuario === pago.value.id_atendio)
+  const selectedCliente = clientes.findIndex(
+    (c) => c.id_cliente === pago.value.id_cliente
+  );
+  const selectedAtendio = employees.findIndex(
+    (e) => e.id_usuario === pago.value.id_atendio
+  );
   if (fechaSeleccionada.value) {
     pago.value.fecha = formatFechaHoraFullSQL(fechaSeleccionada.value);
   }
   if (validate()) {
     if (!pago.value.id) {
       console.log("new");
-      pago.value.cliente = clientes[selectedCliente].nombre
-      pago.value.atendio = employees[selectedAtendio].nombre
-      pago.value.id = "C-" + new Date()
-        .toLocaleString("sv-SE")
-        .replace('T', '')
-        .replace(/[-: ]/g, '');
+      pago.value.cliente = clientes[selectedCliente].nombre;
+      pago.value.atendio = employees[selectedAtendio].nombre;
+      pago.value.id =
+        "C-" +
+        new Date()
+          .toLocaleString("sv-SE")
+          .replace("T", "")
+          .replace(/[-: ]/g, "");
       pago.value.isnew = true;
       await ps.addPagoConcepto(pago.value);
       emit("save", { ...pago.value });
     } else {
       console.log("edit");
-      pago.value.cliente = clientes[selectedCliente].nombre
-      pago.value.atendio = employees[selectedAtendio].nombre
+      pago.value.cliente = clientes[selectedCliente].nombre;
+      pago.value.atendio = employees[selectedAtendio].nombre;
       await ps.updatePagoConcepto(pago.value.id, pago.value);
       emit("save", { ...pago.value });
     }
-
   }
 };
 </script>

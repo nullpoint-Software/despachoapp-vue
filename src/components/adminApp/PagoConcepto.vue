@@ -265,7 +265,7 @@ const openCard = (payment) => {
       id: "",
       cliente: "",
       asunto: "",
-      atendio: usuario.value.username,
+      id_atendio: usuario.value.id,
       cobramos: 0,
       pagamos: 0,
       fecha: "",

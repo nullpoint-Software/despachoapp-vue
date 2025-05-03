@@ -98,6 +98,7 @@ import CardDetailMensual from "./CardDetailMensual.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import TicketPrinter from "./TicketPrinter.vue"; // Importa el componente de impresión
 import { formatFechaMesAnoSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
+
 const toast = useToast();
 const canAddPagoMensual = ref(false);
 const canEditPagoMensual = ref(false);
