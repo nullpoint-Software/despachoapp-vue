@@ -112,13 +112,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "save"]);
 
 const pago = ref({ ...props.pago });
-if (pago.value.atendio == "") { //por si es un registro nuevo se ocupa el nombre de user
-  pago.value.id_atendio = props.usuario.id;
-  // pago.value.mes_ano = new Date().toLocaleString("sv-SE").replace('T', '')
-  pago.value.mes_ano = formatFechaMesAnoSQL(new Date().toLocaleString("sv-SE").replace('T', ''))
-} else {
-  pago.value.mes_ano = formatFechaMesAnoSQL(pago.value.mes_ano);
-}
+
 const errors = ref({
   cliente: "",
   atendio: "",
@@ -127,9 +121,16 @@ const errors = ref({
 });
 
 onMounted(() => {
-  if (!pago.value.id_atendio && props.usuario.id) {
-    pago.value.id_atendio = props.usuario.id;
-  }
+  // if (!pago.value.id_atendio && props.usuario.id) {
+  //   pago.value.id_atendio = props.usuario.id;
+  // }
+  if (pago.value.atendio == "") { //por si es un registro nuevo se ocupa el nombre de user
+  pago.value.id_atendio = props.usuario.id;
+  // pago.value.mes_ano = new Date().toLocaleString("sv-SE").replace('T', '')
+  pago.value.mes_ano = formatFechaMesAnoSQL(new Date().toLocaleString("sv-SE").replace('T', ''))
+} else {
+  pago.value.mes_ano = formatFechaMesAnoSQL(pago.value.mes_ano);
+}
   console.log(pago);
 
 });
@@ -156,11 +157,11 @@ const validate = () => {
     honorarios: "",
     mes_ano: "",
   };
-  if (!pago.value.cliente.trim()) {
+  if (!pago.value.id_cliente) {
     errors.value.cliente = "El cliente es obligatorio.";
     valid = false;
   }
-  if (!pago.value.atendio.trim()) {
+  if (!pago.value.id_atendio) {
     errors.value.atendio = "El campo 'Quien atendio' es obligatorio.";
     valid = false;
   }
@@ -189,7 +190,10 @@ const addDollarPrefix = (value) => {
 
 const save = async () => {
   const selectedCliente = clientes.findIndex((c) => c.id_cliente === pago.value.id_cliente)
+  console.log('cliente '+selectedCliente);
   const selectedAtendio = employees.findIndex((e) => e.id_usuario === pago.value.id_atendio)
+  console.log('atend '+selectedAtendio);
+  
   if (validate()) {
     if (!pago.value.id) {
       console.log("nuevo regist");
@@ -203,17 +207,20 @@ const save = async () => {
       }
       try {
         pago.value.cliente = clientes[selectedCliente].nombre
-        pago.value.atendio = employees[selectedAtendio].nombre
+        selectedAtendio != -1 ? pago.value.atendio = employees[selectedAtendio].nombre : pago.value.atendio = props.usuario.nombre
         pago.value.id = "M-" + new Date()
           .toLocaleString("sv-SE")
           .replace('T', '')
           .replace(/[-: ]/g, '');
         pago.value.isnew = true
+        console.log(pago.value);
+        
         await ps.addPagoMensual(pago.value);
         emit("save", { ...pago.value });
       } catch (error) {
         console.log("error al guardar pago mensual", error);
       }
+      return
     } else {
       console.log("edit!");
 
@@ -234,6 +241,7 @@ const save = async () => {
       } catch (error) {
         console.log("error al guardar pago mensual", error);
       }
+      return
     }
   }
 };
