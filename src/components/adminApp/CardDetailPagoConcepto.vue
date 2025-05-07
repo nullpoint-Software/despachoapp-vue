@@ -57,13 +57,12 @@
             <div class="flex items-center">
               <img
                 v-if="getEmployeeImage(pago.id_atendio)"
-                :src="
-                  getEmployeeImage(pago.id_atendio)
-                "
+                :src="getEmployeeImage(pago.id_atendio)"
                 alt="Foto"
                 class="w-8 h-8 rounded-full mr-2"
               />
               <select
+                v-if="employees.length"
                 v-model="pago.id_atendio"
                 class="text-black p-2 border border-gray-300 rounded w-full"
                 placeholder="Nombre del usuario"
@@ -246,7 +245,6 @@ const errors = ref({
 const fechaSeleccionada = ref();
 const imagen = new String(pago.value.imagen);
 onMounted(async () => {
-  // Si no hay fecha en pago, la ponemos hoy
   if (!pago.value.atendio) {
     //por si es un registro nuevo se ocupa el nombre de user
     pago.value.id_atendio = userid;
@@ -289,21 +287,6 @@ watch(
     // fechaSeleccionada.value = aDate(newVal.fecha);
   }
 );
-
-/* Funciones auxiliares para formatear fecha */
-function formatoFecha(fecha) {
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
-  return `${dia}/${mes}/${anio}`;
-}
-function aDate(cadena) {
-  // cadena = "dd/mm/yyyy"
-  if (!cadena) return null;
-  const [dia, mes, anio] = cadena.split("/");
-  if (!dia || !mes || !anio) return null;
-  return new Date(Number(anio), Number(mes) - 1, Number(dia));
-}
 
 function getEmployeeImage(id_atendio) {
   const emp = employees.find((e) => e.id_usuario === id_atendio);
@@ -379,11 +362,13 @@ const addDollarPrefix = (value) => {
 };
 
 const save = async () => {
+  //   console.log("pago.value.id_atendio", pago.value.id_atendio);
+  // console.log("employees", employees);
   const selectedCliente = clientes.findIndex(
     (c) => c.id_cliente === pago.value.id_cliente
   );
   const selectedAtendio = employees.findIndex(
-    (e) => e.id_usuario === pago.value.id_atendio
+    (e) => String(e.id_usuario) === String(pago.value.id_atendio)
   );
   if (fechaSeleccionada.value) {
     pago.value.fecha = formatFechaHoraFullSQL(fechaSeleccionada.value);
@@ -400,6 +385,8 @@ const save = async () => {
           .replace("T", "")
           .replace(/[-: ]/g, "");
       pago.value.isnew = true;
+      console.log("trying to send, ", pago.value);
+
       await ps.addPagoConcepto(pago.value);
       emit("save", { ...pago.value });
     } else {

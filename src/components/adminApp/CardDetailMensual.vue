@@ -251,7 +251,7 @@ const save = async () => {
   );
   console.log("cliente " + selectedCliente);
   const selectedAtendio = employees.findIndex(
-    (e) => e.id_usuario === pago.value.id_atendio
+    (e) => String(e.id_usuario) === String(pago.value.id_atendio)
   );
   console.log("atend " + selectedAtendio);
 
