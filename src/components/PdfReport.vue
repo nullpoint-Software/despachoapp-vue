@@ -143,13 +143,10 @@ async function generateReport() {
         });
       },
     });
-   
+    window.open(URL.createObjectURL(doc.output("blob")), "_blank");
   } catch (error) {
     console.error(error)
   } finally {
-    // Abrir PDF en nueva pestaña
-    window.open(URL.createObjectURL(doc.output("blob")), "_blank");
-    await new Promise((r) => setTimeout(r, 300));
     isLoading.value = false;
     emit("done");
   }
