@@ -40,9 +40,6 @@
           @click="openLogs"
           aria-label="Ver Registros de Cambios"
         />
-        <Button icon="pi pi-book" class="p-button-rounded bg-yellow-500 hover:bg-yellow-600" @click="openNotesModal"
-          aria-label="Abrir Tablero de Notas" />
-        <!-- Botón para cerrar sesión -->
         <Button
           label="Cerrar sesión"
           icon="pi pi-sign-out"
@@ -51,9 +48,6 @@
           text
           @click="logOut"
         />
-
-        <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text
-          :onclick="logOut" />
       </div>
     </nav>
 

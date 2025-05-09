@@ -393,8 +393,6 @@ const markCard = (cardId) => {
           const rect = cardElement.getBoundingClientRect();
           const scrollTop =
             window.pageYOffset || document.documentElement.scrollTop;
-          const scrollTop =
-            window.pageYOffset || document.documentElement.scrollTop;
           const top = rect.top + scrollTop - 50;
           window.scrollTo({ top, behavior: "smooth" });
         }
