@@ -55,20 +55,19 @@
             <div class="flex justify-between items-center">
               <div>
                 <p class="font-semibold text-black">{{ humanizeType(log.type) }}</p>
-                <p class="text-sm text-gray-700">{{ formatDate(log.timestamp) }} | {{ log.aggregate_id ? 'ID: '+log.aggregate_id : 'Nuevo registro'}}</p>
+                <p class="text-sm text-gray-700">{{ formatDate(log.timestamp) }} | {{ log.aggregate_id ? 'ID:'+log.aggregate_id : 'Nuevo registro'}}</p>
               </div>
               <div class="flex items-center space-x-2">
                 <i class="pi pi-chevron-down text-xl text-gray-700"></i>
-                <Button icon="pi pi-undo"
-                  class="p-button-text p-button-sm text-gray-700 hover:text-gray-500" @click.stop="onUndo(log.id)"
-                  aria-label="Deshacer cambio" />
+                <Button icon="pi pi-undo" class="p-button-text p-button-sm text-gray-700 hover:text-gray-500"
+                  @click.stop="onUndo(log.id)" aria-label="Deshacer cambio" />
               </div>
             </div>
             <div v-if="detailsVisible[i]" class="mt-4 w-full text-black">
-              <p v-if="log.payload" class="text-2xl text-center">Datos actuales</p>  
+              <p v-if="log.payload" class="text-2xl text-center">Datos actuales</p>
               <table v-if="log.payload" class="min-w-full table-auto border-collapse">
-                <thead>  
-                <tr>
+                <thead>
+                  <tr>
                     <th class="px-4 py-2 border">Campo</th>
                     <th class="px-4 py-2 border">Valor</th>
                   </tr>
@@ -82,10 +81,10 @@
               </table>
             </div>
             <div v-if="detailsVisible[i]" class="mt-4 w-full text-black">
-              <p v-if="log.oldpayload" class="text-2xl text-center">Datos anteriores</p>  
+              <p v-if="log.oldpayload" class="text-2xl text-center">Datos anteriores</p>
               <table v-if="log.oldpayload" class="min-w-full table-auto border-collapse">
-                <thead>  
-                <tr>
+                <thead>
+                  <tr>
                     <th class="px-4 py-2 border">Campo</th>
                     <th class="px-4 py-2 border">Valor</th>
                   </tr>
@@ -181,7 +180,7 @@ export default {
     function onUndo(id) {
       const log = logs.value.find(l => l.id === id);
       console.log("undo");
-      
+
       emit('undo', id);
     }
     function humanizeType(type) {
@@ -190,8 +189,8 @@ export default {
           return "Cliente agregado";
         case "TareaUpdated":
           return "Tarea modificada";
-        case "userDeleted":
-          return "Usuario eliminado";
+        case "ClienteDeleted":
+          return "Cliente eliminado";
         case "PagoConceptoAdded":
           return "Pago concepto agregado";
         case "PagoConceptoDeleted":
@@ -200,6 +199,8 @@ export default {
           return "Pago concepto modificado";
         case "PagoMensualAdded":
           return "Pago mensual agregado";
+        case "PagoMensualUpdated":
+          return "Pago mensual modificado";
         case "PagoMensualDeleted":
           return "Pago mensual eliminado";
         default:
