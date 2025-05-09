@@ -16,6 +16,7 @@ const props = defineProps({
 })
 const today = new Date().toISOString().split("T")[0];
 const employeeName = localStorage.getItem("fullname")
+const userId = localStorage.getItem("userid")
 
 // Ejemplo de tareas con varias terminadas hoy
 const tasks = props.tasks
@@ -25,7 +26,7 @@ function generateReport() {
   // Filtrar solo tareas terminadas hoy
   const finished = tasks.filter(
     (t) =>
-      t.estado === "Terminado"
+      t.estado === "Terminado" && t.id_usuario == userId && t.fecha_vencimiento.split("T")[0] == today
   );
 
   if (!finished.length) {
