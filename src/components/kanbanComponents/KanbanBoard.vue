@@ -1,10 +1,8 @@
 <!-- KanbanBoard.vue -->
 <template>
   <div class="p-4 relative">
-    <!-- Buscador -->
-    <div
-      class="fixed left-1/2 top-37 transform -translate-x-1/2 w-full max-w-lg px-4"
-    >
+    <!-- Buscador + PDF button -->
+    <div class="sticky top-5 z-50 w-full max-w-lg mx-auto px-4 mb-4">
       <div
         class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md"
       >
@@ -20,6 +18,14 @@
           class="text-gray-400 hover:text-white transition"
         >
           ✕
+        </button>
+        <!-- Botón PDF personalizado -->
+        <button
+          @click="showPdf = true"
+          class="ml-2 p-2 rounded-full bg-white/10 hover:bg-white/20 transition flex items-center justify-center"
+          aria-label="Reporte PDF"
+        >
+          <i class="pi pi-file-pdf text-xl text-white"></i>
         </button>
       </div>
       <ul
@@ -100,6 +106,8 @@
       @save="saveTaskForm"
     />
   </div>
+  <!-- Renderiza el reporte solo cuando showPdf sea true -->
+  <PdfReport v-if="showPdf" @done="showPdf = false" />
 </template>
 
 <script setup>
@@ -110,6 +118,7 @@ import FloatingTaskButton from "./FloatingTaskButton.vue";
 import TaskFormModal from "./TaskFormModal.vue";
 import profilePicture from "@/assets/img/havatar.jpg";
 import logo from "@/assets/img/logsymbolblack.png";
+import PdfReport from "../PdfReport.vue";
 
 // Datos del usuario
 const userName = ref(localStorage.getItem("userName") || "Usuario Desconocido");
@@ -119,6 +128,7 @@ const userId = ref(localStorage.getItem("userId") || null);
 const columnStatuses = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
 const statusOrder = ["Disponible", "Por Hacer", "En progreso", "Terminado"];
 const cardsPerPage = 5;
+const showPdf = ref(null);
 
 const currentPage = ref({
   Disponible: 0,
