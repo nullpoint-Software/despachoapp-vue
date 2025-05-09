@@ -5,30 +5,19 @@
     <div class="modal-overlay" @click.self="$emit('close')">
       <!-- Contenedor del Modal con fondo gris bajito -->
       <div class="modal-content relative bg-gray-50">
-        
+
         <!-- Encabezado: Foto del usuario y nombre -->
         <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
-          <div class="w-16 h-16">
-            <template v-if="card.image">
-              <img
-              :src="card.image?.endsWith('null') ? defaultprofilePicture : card.image || defaultprofilePicture"
-                alt="Foto del Usuario"
-                class="w-16 h-16 rounded-full object-cover"
-              />
-            </template>
-            <template v-else>
-              <!-- Cambio: Se aumenta el tamaño del icono cambiando text-6xl a text-7xl -->
-              <i
-                :class="card.userIcon || ''"
-                class="w-16 h-16 text-gray-400 items-center justify-center"
-              ></i>
-            </template>
+          <div class="w-16 h-16" v-if="card.image || card.id_usuario">
+            <img :src="!card.image ? defaultprofilePicture : card.image" alt="Foto del Usuario"
+              class="w-16 h-16 rounded-full object-cover" />
           </div>
           <div>
             <h3 class="text-2xl font-bold text-gray-800">
               {{ card.username && card.status !== 'Disponible' ? card.nombre : 'No asignado' }}
             </h3>
-            <h2 class="text-1xl font-bold text-gray-600">{{card.username +" (ID: "+card.id_usuario+")"}}</h2>
+            <h2 class="text-1xl font-bold text-gray-600">{{ card.nombre ? card.username +" (ID: "+card.id_usuario+")" :
+              ""}}</h2>
           </div>
         </div>
 
@@ -36,10 +25,7 @@
         <table class="w-full text-sm border border-gray-200 rounded-md overflow-hidden mb-6">
           <tbody>
             <!-- Título de la tarea -->
-            <tr
-              class="border-b border-gray-200"
-              :style="{ backgroundColor: getStatusColor(card.status) }"
-            >
+            <tr class="border-b border-gray-200" :style="{ backgroundColor: getStatusColor(card.status) }">
               <th colspan="2" class="px-4 py-2 text-center font-semibold text-black">
                 {{ card.title }}
               </th>
@@ -96,21 +82,15 @@
         <!-- Botones -->
         <div class="flex space-x-4">
           <!-- Botón Modificar -->
-          <button
-            @click="editTask"
-            
-            class="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none"
-          >
+          <button @click="editTask"
+            class="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none">
             <i class="pi pi-pencil"></i>
             <span>Modificar</span>
           </button>
 
           <!-- Botón Estado -->
-          <button
-            @click="advanceState"
-            :style="{ backgroundColor: getStatusColor(card.estado) }"
-            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold shadow hover:opacity-90 transition transform hover:scale-105 focus:outline-none border border-gray-300"
-          >
+          <button @click="advanceState" :style="{ backgroundColor: getStatusColor(card.estado) }"
+            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold shadow hover:opacity-90 transition transform hover:scale-105 focus:outline-none border border-gray-300">
             <i :class="getStateIcon(card.estado)"></i>
             <span>{{ card.estado }}</span>
           </button>
@@ -139,7 +119,7 @@ const emit = defineEmits(['advanceState', 'close', 'edit']);
 
 // Función para emitir el evento 'edit' con la tarea (card) como argumento
 const editTask = async () => {
-    emit('edit', props.card);
+  emit('edit', props.card);
 };
 
 const advanceState = () => {
@@ -190,7 +170,8 @@ const getStateIcon = (status) => {
 }
 
 .modal-content {
-  background-color: #f9fafb; /* Fondo gris bajito */
+  background-color: #f9fafb;
+  /* Fondo gris bajito */
   border-radius: 0.5rem;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   width: 100%;
@@ -206,6 +187,7 @@ const getStateIcon = (status) => {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -217,6 +199,7 @@ const getStateIcon = (status) => {
 .fade-leave-active {
   transition: opacity 0.3s;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
@@ -232,6 +215,7 @@ const getStateIcon = (status) => {
     opacity: 1;
     transform: translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateY(-20px);

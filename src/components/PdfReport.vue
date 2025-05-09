@@ -4,59 +4,28 @@
 </template>
 
 <script setup>
+import {formatFechaHoraSQL} from '../service/adminApp/client' 
 import { onMounted, defineEmits } from "vue";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "@/assets/img/logsymbolblack.png";
 
 const emit = defineEmits(["done"]);
+const props = defineProps({
+  tasks: Array
+})
 const today = new Date().toISOString().split("T")[0];
-const employeeName = "Juan Pérez"; // Puedes parametrizarlo si lo recibes por props
+const employeeName = localStorage.getItem("fullname")
 
 // Ejemplo de tareas con varias terminadas hoy
-const tasks = [
-  {
-    id_tarea: 45,
-    descripcion: "Revisión de pólizas contables",
-    estado: "Terminado",
-    fecha_creacion: `${today} 09:00:00`,
-    fecha_vencimiento: `${today} 11:30:00`,
-  },
-  {
-    id_tarea: 46,
-    descripcion: "Registro de facturas emitidas",
-    estado: "Terminado",
-    fecha_creacion: `${today} 10:15:00`,
-    fecha_vencimiento: `${today} 12:00:00`,
-  },
-  {
-    id_tarea: 47,
-    descripcion: "Conciliación de cuentas por pagar",
-    estado: "Terminado",
-    fecha_creacion: `${today} 08:45:00`,
-    fecha_vencimiento: `${today} 14:20:00`,
-  },
-  {
-    id_tarea: 48,
-    descripcion: "Validación de recibos de nómina",
-    estado: "Pendiente",
-    fecha_creacion: `${today} 07:30:00`,
-    fecha_vencimiento: null,
-  },
-  {
-    id_tarea: 50,
-    descripcion: "Informe financiero trimestral",
-    estado: "Terminado",
-    fecha_creacion: "2025-04-28 15:00:00",
-    fecha_vencimiento: `${today} 16:45:00`,
-  },
-];
+const tasks = props.tasks
+console.log(tasks);
 
 function generateReport() {
   // Filtrar solo tareas terminadas hoy
   const finished = tasks.filter(
     (t) =>
-      t.estado === "Terminado" && t.fecha_vencimiento?.split(" ")[0] === today
+      t.estado === "Terminado"
   );
 
   if (!finished.length) {
@@ -124,14 +93,17 @@ function generateReport() {
     startY: 30 + imgH + 160,
     margin: { left: 60, right: 60 },
     head: [
-      ["ID", "Descripción", "Fecha creación", "Fecha vencimiento", "Estado"],
+      ["ID", "Titulo", "Descripción", "Fecha creación", "Fecha vencimiento"
+      // , "Estado"
+    ],
     ],
     body: finished.map((t) => [
       t.id_tarea,
+      t.titulo,
       t.descripcion,
-      t.fecha_creacion,
-      t.fecha_vencimiento,
-      t.estado,
+      formatFechaHoraSQL(t.fecha_creacion),
+      formatFechaHoraSQL(t.fecha_vencimiento),
+      // t.estado, no se ocupa si ya esta terminado
     ]),
     styles: {
       font: "helvetica",

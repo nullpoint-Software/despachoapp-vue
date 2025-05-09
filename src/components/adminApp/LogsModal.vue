@@ -59,21 +59,39 @@
               </div>
               <div class="flex items-center space-x-2">
                 <i class="pi pi-chevron-down text-xl text-gray-700"></i>
-                <Button v-if="!log.payload.modificado" icon="pi pi-undo"
+                <Button icon="pi pi-undo"
                   class="p-button-text p-button-sm text-gray-700 hover:text-gray-500" @click.stop="onUndo(log.id)"
                   aria-label="Deshacer cambio" />
               </div>
             </div>
             <div v-if="detailsVisible[i]" class="mt-4 w-full text-black">
-              <table class="min-w-full table-auto border-collapse">
-                <thead>
-                  <tr>
+              <p v-if="log.payload" class="text-2xl text-center">Datos actuales</p>  
+              <table v-if="log.payload" class="min-w-full table-auto border-collapse">
+                <thead>  
+                <tr>
                     <th class="px-4 py-2 border">Campo</th>
                     <th class="px-4 py-2 border">Valor</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(val, key) in log.payload" :key="key">
+                    <td class="px-4 py-2 border">{{ key }}</td>
+                    <td class="px-4 py-2 border">{{ val }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-if="detailsVisible[i]" class="mt-4 w-full text-black">
+              <p v-if="log.oldpayload" class="text-2xl text-center">Datos anteriores</p>  
+              <table v-if="log.oldpayload" class="min-w-full table-auto border-collapse">
+                <thead>  
+                <tr>
+                    <th class="px-4 py-2 border">Campo</th>
+                    <th class="px-4 py-2 border">Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(val, key) in log.oldpayload" :key="key">
                     <td class="px-4 py-2 border">{{ key }}</td>
                     <td class="px-4 py-2 border">{{ val }}</td>
                   </tr>
@@ -109,6 +127,7 @@ export default {
     const logs = ref(rawLogs.map(log => ({
       ...log,
       payload: typeof log.payload === 'string' ? JSON.parse(log.payload) : log.payload,
+      oldpayload: typeof log.oldpayload === 'string' ? JSON.parse(log.oldpayload) : log.oldpayload,
       timestamp: new Date(log.timestamp).toISOString()
     })));
     console.log(logs);
@@ -161,7 +180,8 @@ export default {
     function closeModal() { emit('close'); dropdownOpen.value = false; }
     function onUndo(id) {
       const log = logs.value.find(l => l.id === id);
-      log.payload.modificado = true;
+      console.log("undo");
+      
       emit('undo', id);
     }
     function humanizeType(type) {
@@ -189,9 +209,6 @@ export default {
 
     function formatDate(ts) { return new Date(ts).toLocaleString(); }
     function cardClasses(log) {
-      if (log.payload.modificado) {
-        return "bg-gray-400 border-gray-500 text-black";  // modificado usa gray-400
-      }
       if (log.type.endsWith("Added")) return "bg-blue-100 border-blue-500 text-black";
       if (log.type.endsWith("Updated")) return "bg-yellow-100 border-yellow-500 text-black";
       if (log.type.endsWith("Deleted")) return "bg-red-100 border-red-500 text-black";
