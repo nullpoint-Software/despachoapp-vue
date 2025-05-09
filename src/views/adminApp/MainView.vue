@@ -27,9 +27,30 @@
         <!-- Separador vertical -->
         <Divider layout="vertical" />
         <!-- Botón para abrir el modal con el Tablero de Notas -->
+        <Button
+          icon="pi pi-book"
+          class="p-button-rounded bg-yellow-500 hover:bg-yellow-600"
+          @click="openNotesModal"
+          aria-label="Abrir Tablero de Notas"
+        />
+        <!-- Botón para abrir LogsModal -->
+        <Button
+          icon="pi pi-list"
+          class="p-button-rounded bg-green-500 hover:bg-green-600"
+          @click="openLogs"
+          aria-label="Ver Registros de Cambios"
+        />
         <Button icon="pi pi-book" class="p-button-rounded bg-yellow-500 hover:bg-yellow-600" @click="openNotesModal"
           aria-label="Abrir Tablero de Notas" />
         <!-- Botón para cerrar sesión -->
+        <Button
+          label="Cerrar sesión"
+          icon="pi pi-sign-out"
+          class="flex-auto cursor-pointer"
+          severity="danger"
+          text
+          @click="logOut"
+        />
 
         <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text
           :onclick="logOut" />
@@ -67,7 +88,7 @@
               <Button label="Cuenta" icon="pi pi-user" class="w-full text-white bg-black hover:bg-gray-800" outlined />
             </router-link>
             <Button label="Cerrar sesión" icon="pi pi-sign-out" class="w-full bg-black hover:bg-gray-800"
-              severity="danger" text :onclick="logOut" />
+              severity="danger" text @click="logOut" />
           </div>
           <br>
           
@@ -132,6 +153,13 @@
         </div>
       </div>
     </transition>
+
+    <!-- LogsModal: Componente aparte para registros de cambios -->
+    <LogsModal
+      :visible="showLogs"        
+      @close="closeLogs"         
+    />
+    
   </div>
 
 </template>
@@ -150,11 +178,12 @@ import { Suspense } from "vue";
 import defaultprofilePicture from "@/assets/img/user.jpg";
 import { RouterView, RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
-// Cambio: Importación del componente BoardNote(Tablero de Notas)
+// Cambio: Importación del componente BoardNote (Tablero de Notas)
 import BoardNote from "@/components/notes/BoardNote.vue";
 import { as } from "@/service/adminApp/client";
+import LogsModal from "@/components/adminApp/LogsModal.vue";
 export default {
-  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote, ProgressSpinner, Loader },
+  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote, ProgressSpinner, Loader, LogsModal },
   setup() {
 
     const buildTime = ref('')
@@ -208,15 +237,21 @@ export default {
 
     // Al iniciar, almacenar los datos del usuario en localStorage
 
-    // Cambio: Variable para controlar la apertura del modal del Tablero de Notas
+    // Notas modal
     const showNotesModal = ref(false);
-    // Función para abrir el modal
     const openNotesModal = () => {
       showNotesModal.value = true;
     };
-    // Función para cerrar el modal
     const closeNotesModal = () => {
       showNotesModal.value = false;
+    };
+    // Cambio: Estado y funciones para LogsModal
+    const showLogs = ref(false);       // controla visibilidad de LogsModal
+    const openLogs = () => {           // abre LogsModal
+      showLogs.value = true;
+    };
+    const closeLogs = () => {          // cierra LogsModal
+      showLogs.value = false;
     };
 
     return {
@@ -232,7 +267,10 @@ export default {
       userId,
       showNotesModal,
       openNotesModal,
-      closeNotesModal
+      closeNotesModal,
+      showLogs,       // Cambio: retorna showLogs
+      openLogs,       // Cambio: retorna openLogs
+      closeLogs       // Cambio: retorna closeLogs
     };
   },
 };
@@ -263,7 +301,7 @@ footer {
   scrollbar-width: none;
 }
 
-/* Estilos para el modal de Tablero de Notas */
+/* Estilos para el modal de Tablero de Notas y LogsModal */
 .modal-overlay {
   backdrop-filter: blur(4px);
   background-color: rgba(255, 255, 255, 0.5);

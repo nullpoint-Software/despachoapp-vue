@@ -3,8 +3,12 @@
   <Toast />
   <div class="relative">
     <!-- Buscador -->
-    <div class="relative w-full max-w-lg mx-auto">
-      <div v-if="!mini" class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
+    <div
+      class="fixed left-1/2 top-37 transform -translate-x-1/2 w-full max-w-lg px-4"
+    >
+      <div
+        v-if="!mini" class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md"
+      >
         <input v-model="searchQuery" type="text" placeholder="Buscar tareas..."
           class="bg-transparent flex-1 outline-none px-2 py-1 text-lg" />
         <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-white transition">
@@ -389,6 +393,8 @@ const markCard = (cardId) => {
           const rect = cardElement.getBoundingClientRect();
           const scrollTop =
             window.pageYOffset || document.documentElement.scrollTop;
+          const scrollTop =
+            window.pageYOffset || document.documentElement.scrollTop;
           const top = rect.top + scrollTop - 50;
           window.scrollTo({ top, behavior: "smooth" });
         }
@@ -422,6 +428,7 @@ const currentTaskForm = ref({
   status: "Disponible",
   image: null,
   userName: "",
+  attachmentName: [], // Se mantiene la propiedad, pero se inicializa vacía
   attachmentName: [], // Se mantiene la propiedad, pero se inicializa vacía
 });
 
