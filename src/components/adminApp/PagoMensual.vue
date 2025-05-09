@@ -63,9 +63,14 @@
             @click="copyToClipboard(formatFechaMesAnoSQL(data[col.field]))">
             {{ formatFechaMesAnoSQL(data[col.field]) }}
           </div>
+          <div v-if="col.field === 'fechapago'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(formatFechaHoraFullPagoSQL(data[col.field]))">
+            {{ formatFechaHoraFullPagoSQL(data[col.field]) }}
+          </div>
 
           <!-- Celdas normales -->
-          <div v-else-if="col.field !== 'actions' && col.field !== 'honorarios' && col.field !== 'mes_ano'"
+          <div v-else-if="col.field !== 'actions' && col.field !== 'honorarios' && col.field !== 'mes_ano' && col.field !== 'fechapago'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
             @click="copyToClipboard(data[col.field])">
             {{ data[col.field] }}
@@ -97,7 +102,7 @@ import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailMensual from "./CardDetailMensual.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import TicketPrinter from "./TicketPrinter.vue"; // Importa el componente de impresión
-import { formatFechaMesAnoSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
+import { formatFechaHoraFullPagoSQL, formatFechaMesAnoSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
 
 const toast = useToast();
 const canAddPagoMensual = ref(false);
@@ -117,9 +122,11 @@ const usuario = ref({
 const columns = ref([
   { field: "id", header: "ID" },
   { field: "cliente", header: "Cliente" },
+  { field: "concepto", header: "Concepto" },
   { field: "atendio", header: "Atendió" },
   { field: "honorarios", header: "Honorarios" },
   { field: "mes_ano", header: "Mes y Año" },
+  { field: "fechapago", header: "Fecha de pago" },
 ]);
 const actionsColumn = { field: "actions", header: "Acciones" };
 const baseColumns = computed(() => columns.value);

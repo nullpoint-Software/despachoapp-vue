@@ -116,6 +116,7 @@ const customers = ref(await cs.getClientes());
 
 // Definición de columnas base (sin la columna de acciones)
 const columns = ref([
+{ field: "id_cliente", header: "ID" },
   { field: "nombre", header: "Nombre Cliente" },
   { field: "rfc", header: "RFC" },
   { field: "fiel", header: "Contraseña FIEL" },
