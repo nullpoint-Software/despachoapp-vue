@@ -136,7 +136,7 @@
 
     <!-- LogsModal: Componente aparte para registros de cambios -->
     <Suspense>
-      <LogsModal :visible="showLogs" @close="closeLogs" />
+      <LogsModal :key="logsKey" :visible="showLogs" @close="closeLogs" />
     </Suspense>
   </div>
 
@@ -166,7 +166,9 @@ export default {
 
     const buildTime = ref('')
     const menuOpen = ref(false);
+    const showLogs = ref(false);       // controla visibilidad de LogsModal
     const router = useRouter();
+    const logsKey = ref(0);
     const ProfileName = ref(localStorage.getItem("fullname"))
     const ProfileType = localStorage.getItem("level")
     // Definir un ID de usuario de ejemplo
@@ -180,6 +182,11 @@ export default {
     watch(ProfileName, (newVal) => {
       console.log('Immediate update:', newVal);
     }, { immediate: true });
+    watch(showLogs, (val) => {
+      if (val) {
+        logsKey.value++;  // Triggers re-render of LogsModal
+      }
+    });
     const menuItems = ref([
       { name: "Inicio", icon: "pi pi-home" },
       { name: "Tareas", icon: "pi pi-th-large" },
@@ -224,7 +231,7 @@ export default {
       showNotesModal.value = false;
     };
     // Cambio: Estado y funciones para LogsModal
-    const showLogs = ref(false);       // controla visibilidad de LogsModal
+    
     const openLogs = () => {           // abre LogsModal
       showLogs.value = true;
     };
@@ -246,7 +253,8 @@ export default {
       showNotesModal,
       openNotesModal,
       closeNotesModal,
-      showLogs,       // Cambio: retorna showLogs
+      showLogs,
+      logsKey,       // Cambio: retorna showLogs
       openLogs,       // Cambio: retorna openLogs
       closeLogs       // Cambio: retorna closeLogs
     };
