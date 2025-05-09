@@ -7,6 +7,7 @@ import PagosService from "./pagosService";
 import NotasService from "./notasService";
 import EstadisticaService from "./estadisticaService";
 import UsuarioService from "./usuariosService";
+import LogsService from "./logsService";
 
 const instance = axios.create();
 instance.interceptors.request.use((config) => {
@@ -25,6 +26,7 @@ export const ps = new PagosService(serverip, instance);
 export const ns = new NotasService(serverip, instance);
 export const es = new EstadisticaService(serverip, instance);
 export const us = new UsuarioService(serverip, instance);
+export const ls = new LogsService(serverip, instance);
 export const formatFechaSQL = (dateStr: string): string => {
   const date = new Date(dateStr);
 

@@ -27,27 +27,13 @@
         <!-- Separador vertical -->
         <Divider layout="vertical" />
         <!-- Botón para abrir el modal con el Tablero de Notas -->
-        <Button
-          icon="pi pi-book"
-          class="p-button-rounded bg-yellow-500 hover:bg-yellow-600"
-          @click="openNotesModal"
-          aria-label="Abrir Tablero de Notas"
-        />
+        <Button icon="pi pi-book" class="p-button-rounded bg-yellow-500 hover:bg-yellow-600" @click="openNotesModal"
+          aria-label="Abrir Tablero de Notas" />
         <!-- Botón para abrir LogsModal -->
-        <Button
-          icon="pi pi-list"
-          class="p-button-rounded bg-green-500 hover:bg-green-600"
-          @click="openLogs"
-          aria-label="Ver Registros de Cambios"
-        />
-        <Button
-          label="Cerrar sesión"
-          icon="pi pi-sign-out"
-          class="flex-auto cursor-pointer"
-          severity="danger"
-          text
-          @click="logOut"
-        />
+        <Button icon="pi pi-list" class="p-button-rounded bg-green-500 hover:bg-green-600" @click="openLogs"
+          aria-label="Ver Registros de Cambios" />
+        <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text
+          @click="logOut" />
       </div>
     </nav>
 
@@ -85,7 +71,7 @@
               severity="danger" text @click="logOut" />
           </div>
           <br>
-          
+
         </div>
       </div>
     </transition>
@@ -112,7 +98,7 @@
             </li>
           </ul>
         </nav>
-        
+
         <Divider class="my-2 border-gray-700" />
         <div class="p-4 border-t border-gray-700">
           <router-link to="/app/settings"
@@ -149,11 +135,9 @@
     </transition>
 
     <!-- LogsModal: Componente aparte para registros de cambios -->
-    <LogsModal
-      :visible="showLogs"        
-      @close="closeLogs"         
-    />
-    
+    <Suspense>
+      <LogsModal :visible="showLogs" @close="closeLogs" />
+    </Suspense>
   </div>
 
 </template>
