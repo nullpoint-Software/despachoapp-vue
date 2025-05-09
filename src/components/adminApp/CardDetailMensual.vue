@@ -38,6 +38,19 @@
             }}</span>
           </div>
 
+          <!-- Asunto-->
+          <div class="flex flex-col">
+            <label class="font-semibold text-black">Asunto</label>
+            <InputText
+              v-model="pago.asunto"
+              class="p-2 border border-gray-300 rounded"
+              placeholder="Ingrese el asunto"
+            />
+            <span v-if="errors.asunto" class="text-red-500 text-sm">{{
+              errors.asunto
+            }}</span>
+          </div>
+
           <!-- Quien atendio -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Quien atendió</label>
@@ -139,6 +152,7 @@ const props = defineProps({
     default: () => ({
       id: "",
       cliente: "",
+      asunto: "",
       atendio: "",
       honorarios: "",
       mes_ano: "",
@@ -188,6 +202,7 @@ watch(
     errors.value = {
       cliente: "",
       atendio: "",
+      asunto: "",
       honorarios: "",
       mes_ano: "",
     };
@@ -211,6 +226,7 @@ const validate = () => {
   errors.value = {
     cliente: "",
     atendio: "",
+    asunto: "",
     honorarios: "",
     mes_ano: "",
   };

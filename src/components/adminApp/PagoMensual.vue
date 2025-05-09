@@ -122,7 +122,7 @@ const usuario = ref({
 const columns = ref([
   { field: "id", header: "ID" },
   { field: "cliente", header: "Cliente" },
-  { field: "concepto", header: "Concepto" },
+  { field: "asunto", header: "Asunto" },
   { field: "atendio", header: "Atendió" },
   { field: "honorarios", header: "Honorarios" },
   { field: "mes_ano", header: "Mes y Año" },
@@ -259,6 +259,7 @@ const saveMensual = (pago) => {
     }
   } 
   if(pago.isnew){
+    pago.fechapago = new Date().toISOString()
     mensual.value.unshift(pago);
     toast.add({
       severity: "success",
