@@ -2,8 +2,12 @@
 <template>
   <div class="p-4 relative">
     <!-- Buscador -->
-    <div class="relative w-full max-w-lg mx-auto">
-      <div class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
+    <div
+      class="fixed left-1/2 top-37 transform -translate-x-1/2 w-full max-w-lg px-4"
+    >
+      <div
+        class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md"
+      >
         <input
           v-model="searchQuery"
           type="text"
@@ -382,7 +386,8 @@ const moveCard = (cardId, newStatus) => {
         card.userName = "Usuario Asignado";
       }
       if (newStatus === "Terminado") {
-        card.fechaFinalizacion = card.fechaFinalizacion || new Date().toISOString().split("T")[0];
+        card.fechaFinalizacion =
+          card.fechaFinalizacion || new Date().toISOString().split("T")[0];
         card.endTime = card.endTime || getCurrentTimeFormatted();
       }
       currentPage.value[newStatus] = 0;
@@ -411,14 +416,17 @@ const markCard = (cardId) => {
     highlightedCard.value = cardId;
     searchQuery.value = "";
     const status = card.status;
-    const index = cards.value.filter((c) => c.status === status).findIndex((c) => c.id === cardId);
+    const index = cards.value
+      .filter((c) => c.status === status)
+      .findIndex((c) => c.id === cardId);
     currentPage.value[status] = Math.floor(index / cardsPerPage);
     nextTick(() => {
       setTimeout(() => {
         const cardElement = document.getElementById(`card-${cardId}`);
         if (cardElement) {
           const rect = cardElement.getBoundingClientRect();
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const scrollTop =
+            window.pageYOffset || document.documentElement.scrollTop;
           const top = rect.top + scrollTop - 50;
           window.scrollTo({ top, behavior: "smooth" });
         }
@@ -452,7 +460,7 @@ const currentTaskForm = ref({
   status: "Disponible",
   image: null,
   userName: "",
-  attachmentName: [] // Se mantiene la propiedad, pero se inicializa vacía
+  attachmentName: [], // Se mantiene la propiedad, pero se inicializa vacía
 });
 
 // Cambio: Modificación de openTaskForm para eliminar la normalización de archivos adjuntos
@@ -489,7 +497,7 @@ const openTaskForm = (mode, task = null) => {
       status: "Disponible",
       image: null,
       userName: "",
-      attachmentName: [] // Inicialización de archivos vacía
+      attachmentName: [], // Inicialización de archivos vacía
     };
   }
   showTaskForm.value = true;
@@ -501,7 +509,10 @@ const closeTaskForm = () => {
 
 const saveTaskForm = (taskData) => {
   if (taskFormMode.value === "add") {
-    const newId = cards.value.length > 0 ? Math.max(...cards.value.map((c) => c.id)) + 1 : 1;
+    const newId =
+      cards.value.length > 0
+        ? Math.max(...cards.value.map((c) => c.id)) + 1
+        : 1;
     taskData.id = newId;
     cards.value.push({ ...taskData });
     // Resetear la página del estado del nueva tarea a 0

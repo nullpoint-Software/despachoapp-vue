@@ -32,6 +32,13 @@
           @click="openNotesModal"
           aria-label="Abrir Tablero de Notas"
         />
+        <!-- Botón para abrir LogsModal -->
+        <Button
+          icon="pi pi-list"
+          class="p-button-rounded bg-green-500 hover:bg-green-600"
+          @click="openLogs"
+          aria-label="Ver Registros de Cambios"
+        />
         <!-- Botón para cerrar sesión -->
         <Button
           label="Cerrar sesión"
@@ -39,7 +46,7 @@
           class="flex-auto cursor-pointer"
           severity="danger"
           text
-          :onclick="logOut"
+          @click="logOut"
         />
       </div>
     </nav>
@@ -82,7 +89,7 @@
               class="w-full bg-black hover:bg-gray-800"
               severity="danger"
               text
-              :onclick="logOut"
+              @click="logOut"
             />
           </div>
         </div>
@@ -136,6 +143,13 @@
         </div>
       </div>
     </transition>
+
+    <!-- LogsModal: Componente aparte para registros de cambios -->
+    <LogsModal
+      :visible="showLogs"        
+      @close="closeLogs"         
+    />
+    
   </div>
 </template>
 
@@ -149,61 +163,84 @@ import Avatar from "primevue/avatar";
 import profilePicture from "@/assets/img/havatar.jpg";
 import { RouterView, RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
-// Cambio: Importación del componente BoardNote(Tablero de Notas)
+// Cambio: Importación del componente BoardNote (Tablero de Notas)
 import BoardNote from "@/components/notes/BoardNote.vue";
+// Cambio: Importación del componente LogsModal para mostrar registros
+import LogsModal from "@/components/adminApp/LogsModal.vue";
 
 export default {
-  components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote},
+  components: {
+    Button,
+    Avatar,
+    Divider,
+    RouterView,
+    RouterLink,
+    BoardNote,
+    LogsModal,                // Cambio: registro del componente LogsModal
+  },
   setup() {
-    const menuOpen = ref(false);
     const router = useRouter();
+
+    // Estado menú
+    const menuOpen = ref(false);
+    const toggleMenu = () => {
+      menuOpen.value = !menuOpen.value;
+    };
+
+    // Perfil
     const ProfileName = ref("Hachikuji Mayoi");
-    // Definir un ID de usuario de ejemplo
-    const userId = ref("HM-001");
+    const profilePictureRef = profilePicture;
     
+    // Items del menú lateral
     const menuItems = ref([
       { name: "Inicio", icon: "pi pi-home" },
       { name: "Tareas", icon: "pi pi-th-large" },
       { name: "Clientes", icon: "pi pi-id-card" },
       { name: "Pagos", icon: "pi pi-wallet" },
     ]);
-    
-    const toggleMenu = () => {
-      menuOpen.value = !menuOpen.value;
-    };
-    
+
+    // Logout
     function logOut() {
       router.push("/");
     }
-    
-    // Al iniciar, almacenar los datos del usuario en localStorage
-    localStorage.setItem("userName", ProfileName.value);
-    localStorage.setItem("userPhoto", profilePicture);
-    localStorage.setItem("userId", userId.value);
 
-    // Cambio: Variable para controlar la apertura del modal del Tablero de Notas
+    // Notas modal
     const showNotesModal = ref(false);
-    // Función para abrir el modal
     const openNotesModal = () => {
       showNotesModal.value = true;
     };
-    // Función para cerrar el modal
     const closeNotesModal = () => {
       showNotesModal.value = false;
     };
-    
-    return { 
-      mainImageSrc, 
-      menuOpen, 
-      profilePicture, 
-      ProfileName, 
-      menuItems, 
-      toggleMenu, 
-      logOut, 
-      userId,
+
+    // Cambio: Estado y funciones para LogsModal
+    const showLogs = ref(false);       // controla visibilidad de LogsModal
+    const openLogs = () => {           // abre LogsModal
+      showLogs.value = true;
+    };
+    const closeLogs = () => {          // cierra LogsModal
+      showLogs.value = false;
+    };
+
+    // Al iniciar, almacenar datos del usuario en localStorage
+    localStorage.setItem("userName", ProfileName.value);
+    localStorage.setItem("userPhoto", profilePictureRef);
+    // userId no se utiliza aquí, se omite
+
+    return {
+      mainImageSrc,
+      profilePicture: profilePictureRef,
+      menuOpen,
+      toggleMenu,
+      ProfileName,
+      menuItems,
+      logOut,
       showNotesModal,
       openNotesModal,
-      closeNotesModal
+      closeNotesModal,
+      showLogs,       // Cambio: retorna showLogs
+      openLogs,       // Cambio: retorna openLogs
+      closeLogs       // Cambio: retorna closeLogs
     };
   },
 };
@@ -226,7 +263,7 @@ export default {
   scrollbar-width: none;
 }
 
-/* Estilos para el modal de Tablero de Notas */
+/* Estilos para el modal de Tablero de Notas y LogsModal */
 .modal-overlay {
   backdrop-filter: blur(4px);
   background-color: rgba(255, 255, 255, 0.5);
