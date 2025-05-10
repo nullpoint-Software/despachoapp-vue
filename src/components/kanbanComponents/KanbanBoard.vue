@@ -1,7 +1,7 @@
 <!-- KanbanBoard.vue -->
 <template>
   <Toast />
-  <div class="relative">
+  1<div class="relative">
     <!-- Buscador -->
     <div class="sticky top-5 z-50 w-full max-w-lg mx-auto px-4 mb-4">
       <div
@@ -352,12 +352,13 @@ const moveCard = async (cardId, newStatus) => {
       }
       card.estado = newStatus;
       if (originalStatus != newStatus) {
-        card.id_usuario =
-          isAdmin && card.id_usuario ? card.id_usuario : parseInt(userId.value);
+        
         card.username =
-          isAdmin && card.username ? card.id_usuario : userName.value;
+          isAdmin && card.id_usuario ? card.username : userName.value;
         card.image = isAdmin && card.id_usuario ? card.image : userPhoto.value;
         card.nombre = isAdmin && card.id_usuario ? card.nombre : userFullName.value;
+        card.id_usuario =
+          isAdmin && card.id_usuario ? card.id_usuario : parseInt(userId.value);
       } else if (newStatus !== "Disponible" && !card.username) {
         card.username = "Usuario Asignado";
       }
@@ -366,15 +367,20 @@ const moveCard = async (cardId, newStatus) => {
         cardsDisponible.value = cardsDisponible.value.filter(
           (c) => c.id_tarea !== card.id_tarea
         );
-        cards.value.unshift(card);
+        
       }
 
       if (newStatus === "Disponible") {
         card.image = null;
         card.id_usuario = null;
+        card.username = null;
+        card.nombre = null;
         cards.value = cards.value.filter((c) => c.id_tarea !== card.id_tarea);
         cardsDisponible.value.unshift(card);
         // window.location.reload()
+      }else{
+        cards.value = cards.value.filter((c) => c.id_tarea !== card.id_tarea);
+      cards.value.unshift(card);
       }
       if (!(newStatus === "Terminado")) {
         card.fecha_vencimiento = null;
@@ -386,6 +392,7 @@ const moveCard = async (cardId, newStatus) => {
             newStatus
           )
         );
+        
       } else {
         card.fecha_vencimiento =
           card.fecha_vencimiento ||
@@ -400,7 +407,7 @@ const moveCard = async (cardId, newStatus) => {
           )
         );
       }
-
+      
       currentPage.value[newStatus] = 0;
       toast.add({
         severity: "info",
