@@ -67,7 +67,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import utc from "dayjs/plugin/utc";
-import { formatFechaMesAnoSQL } from "@/service/adminApp/client";
+import { formatFechaHoraFullPagoSQL, formatFechaMesAnoSQL } from "@/service/adminApp/client";
 
 dayjs.extend(advancedFormat);
 dayjs.extend(localizedFormat);
@@ -128,11 +128,15 @@ const formattedTicket = computed(() => {
   lines.push(dashLine);
   lines.push(row("Cliente", t.cliente));
   lines.push(dashLine);
+  lines.push(row("Asunto", t.asunto));
+  lines.push(dashLine);
   lines.push(row("Atendio", t.atendio));
   lines.push(dashLine);
   lines.push(row("Honorarios", "$"+t.honorarios));
   lines.push(dashLine);
   lines.push(row("Mes y Ano", formatFechaMesAnoSQL(t.mes_ano)));
+  lines.push(dashLine);
+  lines.push(row("Fecha de pago", formatFechaHoraFullPagoSQL(t.fechapago)));
   lines.push(dashLine);
   lines.push("");
   lines.push(eqLine);

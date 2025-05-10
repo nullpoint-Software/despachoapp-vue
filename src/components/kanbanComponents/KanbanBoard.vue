@@ -4,81 +4,134 @@
   <div class="relative">
     <!-- Buscador -->
     <div class="sticky top-5 z-50 w-full max-w-lg mx-auto px-4 mb-4">
-      <div v-if="!mini" class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md">
-        <input v-model="searchQuery" type="text" placeholder="Buscar tareas..."
-          class="bg-transparent flex-1 outline-none px-2 py-1 text-lg" />
-        <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-white transition">
+      <div
+        v-if="!mini"
+        class="flex items-center bg-gray-900 text-white rounded-full px-4 py-2 shadow-md"
+      >
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Buscar tareas..."
+          class="bg-transparent flex-1 outline-none px-2 py-1 text-lg"
+        />
+        <button
+          v-if="searchQuery"
+          @click="searchQuery = ''"
+          class="text-gray-400 hover:text-white transition"
+        >
           ✕
         </button>
         <!-- Botón PDF personalizado -->
-        <button @click="showPdf = true"
+        <button
+          @click="showPdf = true"
           class="ml-2 p-2 rounded-full cursor-pointer bg-white/10 hover:bg-white/20 transition flex items-center justify-center"
-          aria-label="Reporte PDF">
+          aria-label="Reporte PDF"
+        >
           <i class="pi pi-file-pdf text-xl text-white"></i>
         </button>
       </div>
-      <ul v-if="searchQuery"
-        class="absolute top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white">
-        <li v-for="card in filteredCards" :key="card.id_tarea" @click="markCard(card.id_tarea)"
-          class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition">
-          <span class="w-5 h-5 rounded-full mr-3" :style="{ backgroundColor: getColumnColor(card.estado) }"></span>
+      <ul
+        v-if="searchQuery"
+        class="absolute top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white"
+      >
+        <li
+          v-for="card in filteredCards"
+          :key="card.id_tarea"
+          @click="markCard(card.id_tarea)"
+          class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition"
+        >
+          <span
+            class="w-5 h-5 rounded-full mr-3"
+            :style="{ backgroundColor: getColumnColor(card.estado) }"
+          ></span>
           <span class="flex-1">{{ card.titulo }}</span>
         </li>
       </ul>
     </div>
 
     <!-- Kanban Board -->
-    <div :class="'kanban-board ' +
-      (mini
-        ? 'place-items-center'
-        : 'lg:grid-cols-4 grid grid-cols-1 sm:grid-cols-2') +
-      ' gap-2 p-6 bg-transparent ' +
-      (mini ? 'min-h-2' : 'min-h-screen') +
-      ' overflow-x-auto'
-      ">
+    <div
+      :class="
+        'kanban-board ' +
+        (mini
+          ? 'place-items-center'
+          : 'lg:grid-cols-4 grid grid-cols-1 sm:grid-cols-2') +
+        ' gap-2 p-6 bg-transparent ' +
+        (mini ? 'min-h-2' : 'min-h-screen') +
+        ' overflow-x-auto'
+      "
+    >
       <div v-if="cardsDisponible && showDisponible" class="flex flex-col">
         <!-- SEPARAR COLUMNA DISPONIBLE PARA MOSTRAR LAS TAREAS SIN USUARIO ASIGNADO -->
-        <KanbanColumn :status="'Disponible'" :cards="getPaginatedCardsDisponible()"
-          :color="getColumnColor('Disponible')" @moveCard="moveCard" @viewDetails="openCardDetail"
-          :highlighted-card="highlightedCard" />
+        <KanbanColumn
+          :status="'Disponible'"
+          :cards="getPaginatedCardsDisponible()"
+          :color="getColumnColor('Disponible')"
+          @moveCard="moveCard"
+          @viewDetails="openCardDetail"
+          :highlighted-card="highlightedCard"
+        />
 
         <div class="flex justify-center items-center mt-2 space-x-2">
-          <button @click="
-            changePageDisponible('Disponible', currentPage['Disponible']--)
-            " :disabled="currentPage['Disponible'] === 0"
-            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button
+            @click="
+              changePageDisponible('Disponible', currentPage['Disponible']--)
+            "
+            :disabled="currentPage['Disponible'] === 0"
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             &lt;
           </button>
           <span class="px-4 py-2 bg-blue-500 rounded shadow">
             {{ currentPage["Disponible"] + 1 }}
           </span>
-          <button @click="
-            changePageDisponible('Disponible', currentPage['Disponible']++)
-            " :disabled="currentPage['Disponible'] >= pagesDisponible['Disponible'] - 1
-              "
-            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button
+            @click="
+              changePageDisponible('Disponible', currentPage['Disponible']++)
+            "
+            :disabled="
+              currentPage['Disponible'] >= pagesDisponible['Disponible'] - 1
+            "
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             &gt;
           </button>
         </div>
       </div>
-      <div v-if="cards" v-for="status in columnStatuses" :key="status" class="flex flex-col">
+      <div
+        v-if="cards"
+        v-for="status in columnStatuses"
+        :key="status"
+        class="flex flex-col"
+      >
         <!-- Cada tarjeta tiene su id="card-{card.id}" para scroll -->
-        <KanbanColumn :mini="mini" :status="status" :cards="getPaginatedCardsByStatus(status)"
-          :color="getColumnColor(status)" @moveCard="moveCard" @viewDetails="openCardDetail"
-          :highlighted-card="highlightedCard" />
+        <KanbanColumn
+          :mini="mini"
+          :status="status"
+          :cards="getPaginatedCardsByStatus(status)"
+          :color="getColumnColor(status)"
+          @moveCard="moveCard"
+          @viewDetails="openCardDetail"
+          :highlighted-card="highlightedCard"
+        />
 
         <!-- Paginación -->
         <div class="flex justify-center items-center mt-2 space-x-2">
-          <button @click="changePage(status, currentPage[status] - 1)" :disabled="currentPage[status] === 0"
-            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button
+            @click="changePage(status, currentPage[status] - 1)"
+            :disabled="currentPage[status] === 0"
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             &lt;
           </button>
           <span class="px-4 py-2 bg-blue-500 rounded shadow">
             {{ currentPage[status] + 1 }}
           </span>
-          <button @click="changePage(status, currentPage[status] + 1)"
+          <button
+            @click="changePage(status, currentPage[status] + 1)"
             :disabled="currentPage[status] >= pages[status] - 1"
-            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             &gt;
           </button>
         </div>
@@ -86,20 +139,29 @@
     </div>
 
     <!-- Modal de Detalle -->
-    <CardDetail v-if="selectedCard" :card="selectedCard" @close="selectedCard = null" @advanceState="advanceState"
-      @edit="openTaskForm('edit', $event)" />
+    <CardDetail
+      v-if="selectedCard"
+      :card="selectedCard"
+      @close="selectedCard = null"
+      @advanceState="advanceState"
+      @edit="openTaskForm('edit', $event)"
+    />
 
     <!-- Botón flotante para añadir tarea -->
     <FloatingTaskButton v-if="!mini" @click="openTaskForm('add')" />
 
     <!-- Modal de Formulario para Añadir/Modificar Tarea -->
-    <TaskFormModal v-if="showTaskForm" :mode="taskFormMode" :task="currentTaskForm" @close="closeTaskForm"
-      @save="saveTaskForm" />
+    <TaskFormModal
+      v-if="showTaskForm"
+      :mode="taskFormMode"
+      :task="currentTaskForm"
+      @close="closeTaskForm"
+      @save="saveTaskForm"
+    />
   </div>
   <Suspense>
     <PdfReport v-if="showPdf" @done="showPdf = false" :tasks="cards" />
   </Suspense>
-
 </template>
 
 <script setup>
@@ -107,7 +169,7 @@ import { ref, computed, nextTick, onMounted } from "vue";
 import KanbanColumn from "./KanbanColumn.vue";
 import { Toast, useToast } from "primevue";
 import CardDetail from "./CardDetail.vue";
-import PdfReport from "../PdfReport.vue"
+import PdfReport from "../PdfReport.vue";
 import FloatingTaskButton from "./FloatingTaskButton.vue";
 import Loader from "../adminApp/Loader.vue";
 import TaskFormModal from "./TaskFormModal.vue";
@@ -251,9 +313,9 @@ const moveCard = async (cardId, newStatus) => {
   //JERARQUIA DE OPERACION, solo puede mover carta, si: eres admin, la card tiene tu id de usuario asignado, la card no tiene id usuario asignado (status = disponible)
   const permission =
     (await hasPermission("canMoveAllCards")) ||
-      (card.id_usuario == localStorage.getItem("userid") &&
-        (await hasPermission("canMoveOwnCard"))) ||
-      (!card.id_usuario && (await hasPermission("canMoveAvailableCard")))
+    (card.id_usuario == localStorage.getItem("userid") &&
+      (await hasPermission("canMoveOwnCard"))) ||
+    (!card.id_usuario && (await hasPermission("canMoveAvailableCard")))
       ? true
       : false;
   console.log("card moving", card);
@@ -332,7 +394,7 @@ const moveCard = async (cardId, newStatus) => {
           "update estado",
           await ts.updateTarea(
             card.id_tarea,
-            null,
+            isAdmin && card.id_usuario ? card.id_usuario : null,
             newStatus,
             card.fecha_vencimiento
           )

@@ -122,11 +122,13 @@ async function generateReport() {
         textColor: 33,
         lineColor: [200, 200, 200],
         lineWidth: 0.3,
+        halign: 'center'
       },
       headStyles: {
         fillColor: [255, 255, 255],
         textColor: 33,
         fontStyle: "bold",
+        halign: 'center',
         lineColor: [180, 180, 180],
         lineWidth: 0.5,
       },

@@ -82,11 +82,6 @@
             @click="copyToClipboard('$' + data[col.field])">
             {{ "$" + data[col.field] }}
           </div>
-          <!-- <div v-if="col.field === 'saldo'"
-            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard('$' + data[col.field])">
-            {{ "$" + data[col.field] }}
-          </div> -->
           <div
             v-else-if="col.field !== 'cobramos' && col.field !== 'pagamos' && col.field !== 'saldo' && col.field !== 'fecha'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
@@ -97,7 +92,6 @@
       </Column>
     </DataTable>
   </div>
-
   <!-- Toast y modales -->
   <Toast />
   <CardDetailPagoConcepto v-if="cardVisible" :pago="selectedPayment" :usuario="usuario" @close="cardVisible = false"
@@ -105,8 +99,8 @@
   <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
   <!-- Modal de impresión -->
   <PrintPagoConcepto v-if="printVisible" :payment="paymentToPrint" @close="printVisible = false" />
+  <PrintDialog v-if="printDialogVisible" @close="printDialogVisible = false" @ok="openPrint(payments[0]);printDialogVisible=false"/>
 </template>
-
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { ps, formatFechaSQL, formatFechaHoraFullSQL } from "@/service/adminApp/client"
@@ -120,6 +114,8 @@ import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailPagoConcepto from "./CardDetailPagoConcepto.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import PrintPagoConcepto from "./PrintPagoConcepto.vue";
+import PrintDialog from "./PrintDialog.vue";
+const printDialogVisible = ref(false);
 const canAddPagoConcepto = ref(false);
 const canEditPagoConcepto = ref(false);
 const canDeletePagoConcepto = ref(false);
@@ -301,6 +297,7 @@ const savePayment = async (payment) => {
       detail: "Pago concepto agregado correctamente",
       life: 2000,
     });
+    printDialogVisible.value = true;
   }
   cardVisible.value = false;
 };
