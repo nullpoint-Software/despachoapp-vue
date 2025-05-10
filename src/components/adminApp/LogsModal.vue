@@ -54,8 +54,8 @@
             class="flex flex-col p-4 mb-4 rounded border-l-4 cursor-pointer relative" :class="cardClasses(log)">
             <div class="flex justify-between items-center">
               <div>
-                <p class="font-semibold text-black">{{ humanizeType(log.type) }}</p>
-                <p class="text-sm text-gray-700">{{ formatDate(log.timestamp) }} | {{ log.aggregate_id ? 'ID:'+log.aggregate_id : 'Nuevo registro'}}</p>
+                <p class="font-semibold text-black">{{ humanizeType(log.type) + " por " +getUser(log)}}</p>
+                <p class="text-sm text-gray-700">{{ formatDate(log.timestamp) }} | {{ "ID de evento: " + log.id }}</p>
               </div>
               <div class="flex items-center space-x-2">
                 <i class="pi pi-chevron-down text-xl text-gray-700"></i>
@@ -113,7 +113,7 @@
 <script>
 import { ref, computed } from 'vue';
 import Button from 'primevue/button';
-import { ls } from '@/service/adminApp/client';
+import { ls, us } from '@/service/adminApp/client';
 export default {
   name: 'LogsModal',
   components: { Button },
@@ -128,13 +128,15 @@ export default {
       payload: typeof log.payload === 'string' ? JSON.parse(log.payload) : log.payload,
       oldpayload: typeof log.oldpayload === 'string' ? JSON.parse(log.oldpayload) : log.oldpayload,
       timestamp: new Date(log.timestamp).toISOString()
-    })));
+    }))
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
     console.log(logs);
 
     const detailsVisible = ref({});
     const searchId = ref('');
     const selectedTypes = ref([]);
     const dropdownOpen = ref(false);
+    const users = await us.getUsuarios();
     const showAll = ref(false);
     const typeOptions = [
       { label: 'Agregar', value: 'Added' },
@@ -150,7 +152,7 @@ export default {
         }
 
         const search = searchId.value.toLowerCase();
-        const id = log.aggregate_id?.toLowerCase() || '';
+        const id = String(log.id)?.toLowerCase() || '';
 
         // Solo filtra por ID si se escribió algo en el buscador
         if (search && !id.includes(search)) return false;
@@ -182,6 +184,12 @@ export default {
       console.log("undo");
 
       emit('undo', id);
+    }
+    function getUser(log) {
+      const index = users.findIndex(
+        (u) => u.id_usuario == log.userid);
+      const userfind = users[index].nombre + " ("+users[index].username+")"
+      return userfind
     }
     function humanizeType(type) {
       switch (type) {
@@ -225,6 +233,8 @@ export default {
       showAll,
       filteredLogs,
       detailsVisible,
+      users,
+      getUser,
       toggleType,
       selectAll,
       toggleDetails,
