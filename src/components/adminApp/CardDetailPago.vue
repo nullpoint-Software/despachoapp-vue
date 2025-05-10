@@ -1,255 +1,289 @@
 <!-- CardDetail.vue -->
 <template>
-  <!-- Contenedor Principal (Modal Overlay) con efecto blur y animación -->
-  <transition name="fade">
-    <div class="modal-overlay" @click.self="$emit('close')">
-      <!-- Contenedor del Modal con fondo gris bajito -->
-      <div class="modal-content relative bg-gray-50">
-        
-        <!-- Encabezado: Foto del usuario y nombre -->
-        <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
-          <div class="w-16 h-16">
-            <template v-if="card.image">
-              <img
-                :src="card.image"
-                alt="Foto del Usuario"
-                class="w-16 h-16 rounded-full object-cover"
+    <transition name="fade">
+      <div class="modal-overlay" @click.self="close">
+        <div class="modal-content relative bg-gray-50">
+          <!-- Encabezado, mostrando datos del usuario -->
+          <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+            <div>
+              <h3 class="text-2xl font-bold text-black">
+                <i class="pi pi-receipt text-3xl text-blue-500"></i>
+                {{ pago.nombreCompleto ? 'Editar pago' : 'Agregar pago' }}
+              </h3>
+            </div>
+          </div>
+  
+          <!-- Formulario -->
+          <div class="space-y-4 px-4">
+            <!-- Nombre completo -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Nombre completo</label>
+              <InputText
+                v-model="pago.nombreCompleto"
+                class="p-2 border border-gray-300 rounded"
+                placeholder="Ingrese el nombre completo"
               />
-            </template>
-            <template v-else>
-              <!-- Cambio: Se aumenta el tamaño del icono cambiando text-6xl a text-7xl -->
-              <i
-                :class="card.userIcon || ''"
-                class="w-16 h-16 text-gray-400 items-center justify-center"
-              ></i>
-            </template>
+              <span v-if="errors.nombreCompleto" class="text-red-500 text-sm">{{ errors.nombreCompleto }}</span>
+            </div>
+            <!-- Asunto o trámite -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Asunto o trámite</label>
+              <InputText
+                v-model="pago.asunto"
+                class="p-2 border border-gray-300 rounded"
+                placeholder="Ingrese el asunto o trámite"
+              />
+              <span v-if="errors.asunto" class="text-red-500 text-sm">{{ errors.asunto }}</span>
+            </div>
+            <!-- Quien atendió (deshabilitado, con imagen del usuario al inicio) -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Quien atendió</label>
+              <div class="flex items-center">
+                <img
+                  v-if="usuario.foto"
+                  :src="usuario.foto"
+                  alt="Foto"
+                  class="w-8 h-8 rounded-full mr-2"
+                />
+                <InputText
+                  v-model="pago.atendio"
+                  disabled
+                  class="p-2 border border-gray-300 rounded w-full"
+                  placeholder="Nombre del usuario"
+                />
+              </div>
+              <span v-if="errors.atendio" class="text-red-500 text-sm">{{ errors.atendio }}</span>
+            </div>
+            <!-- Campo 'cobramos' con prefijo "$" -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Cobramos</label>
+              <div class="flex">
+                <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+                <InputText
+                  v-model="pago.cobramos"
+                  @input="onMoneyInput('cobramos')"
+                  @blur="onMoneyBlur('cobramos')"
+                  class="p-2 border border-gray-300 rounded-r focus:outline-none"
+                  placeholder="Ingrese el monto cobrado"
+                />
+              </div>
+              <span v-if="errors.cobramos" class="text-red-500 text-sm">{{ errors.cobramos }}</span>
+            </div>
+            <!-- Campo 'pagamos' con prefijo "$" -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Pagamos</label>
+              <div class="flex">
+                <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+                <InputText
+                  v-model="pago.pagamos"
+                  @input="onMoneyInput('pagamos')"
+                  @blur="onMoneyBlur('pagamos')"
+                  class="p-2 border border-gray-300 rounded-r focus:outline-none"
+                  placeholder="Ingrese el monto pagado"
+                />
+              </div>
+              <span v-if="errors.pagamos" class="text-red-500 text-sm">{{ errors.pagamos }}</span>
+            </div>
+            <!-- Campo 'saldo' con prefijo "$" -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Saldo</label>
+              <div class="flex">
+                <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+                <InputText
+                  v-model="pago.saldo"
+                  @input="onMoneyInput('saldo')"
+                  @blur="onMoneyBlur('saldo')"
+                  class="p-2 border border-gray-300 rounded-r focus:outline-none"
+                  placeholder="Ingrese el saldo"
+                />
+              </div>
+              <span v-if="errors.saldo" class="text-red-500 text-sm">{{ errors.saldo }}</span>
+            </div>
           </div>
-          <div>
-            <h3 class="text-2xl font-bold text-gray-800">
-              <!-- Cambio: Si la tarea está asignada se muestra el nombre, de lo contrario se indica 'No asignado' -->
-              {{ card.userName && card.status !== 'Disponible' ? card.userName : 'No asignado' }}
-            </h3>
+  
+          <!-- Botones -->
+          <div class="flex justify-end space-x-6 mt-6 px-4">
+            <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="close" />
+            <Button label="Guardar" icon="pi pi-check" class="p-button-primary" @click="save" />
           </div>
-        </div>
-
-        <!-- Tabla de Información -->
-        <table class="w-full text-sm border border-gray-200 rounded-md overflow-hidden mb-6">
-          <tbody>
-            <!-- Título de la tarea -->
-            <tr
-              class="border-b border-gray-200"
-              :style="{ backgroundColor: getStatusColor(card.status) }"
-            >
-              <th colspan="2" class="px-4 py-2 text-center font-semibold text-black">
-                {{ card.title }}
-              </th>
-            </tr>
-
-            <!-- Cliente -->
-            <tr class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Cliente</td>
-              <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.ClientName || 'Cliente no disponible' }}
-              </td>
-            </tr>
-
-            <!-- Descripción -->
-            <tr class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Descripción</td>
-              <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.description }}
-              </td>
-            </tr>
-
-            <!-- 
-            Cambio: Se eliminan los archivos adjuntos comentando el bloque correspondiente.
-            <tr v-if="card.attachmentName" class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Archivo</td>
-              <td class="px-4 py-2 text-blue-600 text-center">
-                <template v-if="Array.isArray(card.attachmentName)">
-                  <div v-for="(file, index) in card.attachmentName" :key="index" class="flex items-center justify-center">
-                    <i class="pi pi-file mr-1"></i>
-                    <span class="underline hover:text-blue-500 cursor-pointer">{{ file }}</span>
-                  </div>
-                </template>
-                <template v-else>
-                  <i class="pi pi-file mr-1"></i>
-                  <span class="underline hover:text-blue-500 cursor-pointer">{{ card.attachmentName }}</span>
-                </template>
-              </td>
-            </tr>
-            -->
-
-            <!-- Fecha -->
-            <tr class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha</td>
-              <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.date ? card.date : 'No disponible' }}
-              </td>
-            </tr>
-
-            <!-- Agregado: Fila para mostrar la fecha de finalización -->
-            <tr class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha Finalizacion</td>
-              <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.fechaFinalizacion ? card.fechaFinalizacion : 'No disponible' }}
-              </td>
-            </tr>
-
-            <!-- Horario -->
-            <tr>
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Horario</td>
-              <td class="px-4 py-2 text-gray-600 text-center">
-                <div>Inicio: {{ card.startTime ? card.startTime : 'No disponible' }}</div>
-                <div>Fin: {{ card.endTime ? card.endTime : 'No disponible' }}</div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Botones -->
-        <div class="flex space-x-4">
-          <!-- Botón Modificar -->
-          <button
-            @click="editTask"
-            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none"
-          >
-            <i class="pi pi-pencil"></i>
-            <span>Modificar</span>
-          </button>
-
-          <!-- Botón Estado -->
-          <button
-            @click="advanceState"
-            :style="{ backgroundColor: getStatusColor(card.status) }"
-            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold shadow hover:opacity-90 transition transform hover:scale-105 focus:outline-none border border-gray-300"
-          >
-            <i :class="getStateIcon(card.status)"></i>
-            <span>{{ card.status }}</span>
-          </button>
         </div>
       </div>
-    </div>
-  </transition>
-</template>
-
-<script setup>
-import { defineProps, defineEmits } from 'vue';
-import 'primeicons/primeicons.css';
-
-const props = defineProps({
-  card: {
-    type: Object,
-    required: true,
-  },
-});
-// Cambio: Se agrega el evento 'edit' para que el botón Modificar pueda emitirlo
-const emit = defineEmits(['advanceState', 'close', 'edit']);
-
-// Cambio: Función para emitir el evento 'edit' con la tarea (card) como argumento
-const editTask = () => {
-  emit('edit', props.card);
-};
-
-const advanceState = () => {
-  emit('advanceState', props.card.id);
-};
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'Disponible':
-      return '#A7F3D0';
-    case 'Por Hacer':
-      return '#FCD34D';
-    case 'En progreso':
-      return '#93C5FD';
-    case 'Terminado':
-      return '#D1D5DB';
-    default:
-      return '#CCCCCC';
+    </transition>
+  </template>
+  
+  <script setup>
+  import { ref, watch, defineProps, defineEmits } from "vue";
+  import InputText from "primevue/inputtext";
+  import Button from "primevue/button";
+  
+  const props = defineProps({
+    pago: {
+      type: Object,
+      default: () => ({
+        id: "",
+        nombreCompleto: "",
+        asunto: "",
+        atendio: "",
+        cobramos: "",
+        pagamos: "",
+        saldo: "",
+      }),
+    },
+    usuario: {
+      type: Object,
+      default: () => ({
+        id: "",
+        nombre: "",
+        foto: "",
+      }),
+    },
+  });
+  const emit = defineEmits(["close", "save"]);
+  
+  const pago = ref({ ...props.pago });
+  const errors = ref({
+    nombreCompleto: "",
+    asunto: "",
+    atendio: "",
+    cobramos: "",
+    pagamos: "",
+    saldo: "",
+  });
+  
+  watch(() => props.pago, (newVal) => {
+    pago.value = { ...newVal };
+    errors.value = {
+      nombreCompleto: "",
+      asunto: "",
+      atendio: "",
+      cobramos: "",
+      pagamos: "",
+      saldo: "",
+    };
+  });
+  
+  /* VALIDACIÓN */
+  const validate = () => {
+    let valid = true;
+    errors.value = {
+      nombreCompleto: "",
+      asunto: "",
+      atendio: "",
+      cobramos: "",
+      pagamos: "",
+      saldo: "",
+    };
+  
+    if (!pago.value.nombreCompleto.trim()) {
+      errors.value.nombreCompleto = "El nombre completo es obligatorio.";
+      valid = false;
+    }
+    if (!pago.value.asunto.trim()) {
+      errors.value.asunto = "El asunto o trámite es obligatorio.";
+      valid = false;
+    }
+    if (!pago.value.atendio.trim()) {
+      errors.value.atendio = "El campo 'quien atendió' es obligatorio.";
+      valid = false;
+    }
+    if (!pago.value.cobramos.trim()) {
+      errors.value.cobramos = "El monto cobrado es obligatorio.";
+      valid = false;
+    }
+    if (!pago.value.pagamos.trim()) {
+      errors.value.pagamos = "El monto pagado es obligatorio.";
+      valid = false;
+    }
+    if (!pago.value.saldo.trim()) {
+      errors.value.saldo = "El saldo es obligatorio.";
+      valid = false;
+    }
+    return valid;
+  };
+  
+  /* FORMATEO DE MONTO (SOLO NÚMEROS Y DECIMALES) */
+  const onMoneyInput = (field) => {
+    pago.value[field] = pago.value[field].replace(/[^0-9.]/g, '');
+    const parts = pago.value[field].split('.');
+    if (parts.length > 2) {
+      pago.value[field] = parts[0] + '.' + parts.slice(1).join('');
+    }
+  };
+  
+  const onMoneyBlur = (field) => {
+    const num = parseFloat(pago.value[field]);
+    if (!isNaN(num)) {
+      // Formatea con separador de miles y hasta 2 decimales
+      pago.value[field] = num.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      });
+    }
+  };
+  
+  /* AGREGA EL SIGNO DE $ SOLO AL INICIO (SI NO EXISTE) */
+  const addDollarPrefix = (value) => {
+    if (typeof value === 'string' && !value.startsWith('$')) {
+      return '$' + value;
+    }
+    return value;
+  };
+  
+  /* CIERRE DEL MODAL */
+  const close = () => {
+    emit("close");
+  };
+  
+  /* GUARDAR */
+  const save = () => {
+    if (validate()) {
+      // Al guardar, se asegura que los campos monetarios tengan $ al inicio
+      pago.value.cobramos = addDollarPrefix(pago.value.cobramos);
+      pago.value.pagamos = addDollarPrefix(pago.value.pagamos);
+      pago.value.saldo = addDollarPrefix(pago.value.saldo);
+      emit("save", { ...pago.value });
+    }
+  };
+  </script>
+  
+  <style scoped>
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    backdrop-filter: blur(4px);
+    background-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
   }
-};
-
-const getStateIcon = (status) => {
-  switch (status) {
-    case 'Disponible':
-      return 'pi pi-check-circle';
-    case 'Por Hacer':
-      return 'pi pi-folder-open';
-    case 'En progreso':
-      return 'pi pi-spinner pi-spin';
-    case 'Terminado':
-      return 'pi pi-check';
-    default:
-      return 'pi pi-question-circle';
+  .modal-content {
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 26rem;
+    padding: 1.5rem;
+    position: relative;
+    animation: slideDown 0.3s ease-out;
   }
-};
-</script>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(4px);
-  background-color: rgba(255, 255, 255, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modal-content {
-  background-color: #f9fafb; /* Fondo gris bajito */
-  border-radius: 0.5rem;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 26rem;
-  padding: 1.5rem;
-  position: relative;
-  animation: slideDown 0.3s ease-out;
-}
-
-/* Animación de aparición */
-@keyframes slideDown {
-  from {
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.3s;
+  }
+  .fade-enter-from,
+  .fade-leave-to {
     opacity: 0;
-    transform: translateY(-20px);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-}
-
-/* Transición fade para entrada y salida */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Animación de salida */
-.fade-leave-active {
-  animation: slideUp 0.3s ease-out forwards;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-}
-
-/* Centrar el contenido de todas las celdas de la tabla */
-table td,
-table th {
-  text-align: center;
-}
-</style>
+  </style>
+  

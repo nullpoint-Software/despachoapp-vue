@@ -1,21 +1,13 @@
 <template>
   <!-- Contenedor de la tabla -->
   <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
-    <DataTable
-      :value="mensual"
-      :filters="filters"
-      :globalFilterFields="['cliente', 'quienAtendio', 'honorarios', 'mesAno']"
-      paginator
-      sortMode="multiple"
-      removableSort
-      :rows="5"
-      :rowsPerPageOptions="[5, 10, 20, 50]"
-      :rowClass="rowClass"
-      class="w-full rounded-lg p-5"
-    >
+    <DataTable :value="mensual" :filters="filters" :globalFilterFields="['cliente', 'atendio', 'honorarios', 'mes_ano']"
+      paginator sortMode="multiple" removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass"
+      class="w-full rounded-lg p-5">
       <!-- Encabezado de la tabla -->
       <template #header>
-        <div class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
             <!-- Buscador -->
             <div class="flex space-x-2 border-2 border-solid">
@@ -24,58 +16,31 @@
               </span>
             </div>
             <div class="relative w-full sm:w-auto">
-              <InputText
-                v-model="filters.global.value"
-                placeholder="Buscar..."
-                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <InputText v-model="filters.global.value" autocomplete="new-password" placeholder="Buscar..."
+                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <!-- Botones -->
             <div class="flex space-x-2">
-              <Button
-                type="button"
-                icon="pi pi-filter-slash"
-                :label="isMobile ? '' : 'Limpiar Filtros'"
-                outlined
-                class="p-2"
-                @click="clearFilter"
-              />
-              <Button
-                icon="pi pi-plus"
-                :label="isMobile ? '' : 'Agregar Pago Mensual'"
-                class="p-button-success p-2"
-                @click="openCard(null)"
-              />
+              <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
+                class="p-2" @click="clearFilter" />
+              <Button v-if="canAddPagoMensual" icon="pi pi-plus" :label="isMobile ? '' : 'Agregar Pago Mensual'" class="p-button-success p-2"
+                @click="openCard(null)" />
             </div>
           </div>
         </div>
         <!-- Slider para columnas -->
-        <div
-          v-if="pages.length > 1"
-          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2"
-        >
-          <Button
-            icon="pi pi-chevron-left"
-            @click="prevPage"
-            :disabled="currentPageIndex === 0"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
-          <Button
-            icon="pi pi-chevron-right"
-            @click="nextPage"
-            :disabled="currentPageIndex === maxPageIndex"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
+        <div v-if="pages.length > 1"
+          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2">
+          <Button icon="pi pi-chevron-left" @click="prevPage" :disabled="currentPageIndex === 0"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
+          <Button icon="pi pi-chevron-right" @click="nextPage" :disabled="currentPageIndex === maxPageIndex"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
         </div>
       </template>
 
       <!-- Renderizado dinámico de columnas -->
-      <Column
-        v-for="col in visibleColumns"
-        :key="col.field"
-        :sortable="col.field !== 'actions'"
-        :field="col.field !== 'actions' ? col.field : undefined"
-      >
+      <Column v-for="col in visibleColumns" :key="col.field" :sortable="col.field !== 'actions'"
+        :field="col.field !== 'actions' ? col.field : undefined">
         <template #header>
           <div class="p-1 text-black font-semibold text-center text-sm">
             {{ col.header }}
@@ -84,16 +49,30 @@
         <template #body="{ data }">
           <!-- Acciones -->
           <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-            <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+            <Button v-if="canEditPagoMensual" icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
+            <Button v-if="canDeletePagoMensual" icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
             <Button icon="pi pi-print" class="p-button-rounded p-button-info" @click="printTicket(data)" />
           </div>
-          <!-- Celdas normales -->
-          <div
-            v-else
+          <div v-if="col.field === 'honorarios'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard(data[col.field])"
-          >
+            @click="copyToClipboard(addDollarPrefix(data[col.field]))">
+            {{ "$" + data[col.field] }}
+          </div>
+          <div v-if="col.field === 'mes_ano'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(formatFechaMesAnoSQL(data[col.field]))">
+            {{ formatFechaMesAnoSQL(data[col.field]) }}
+          </div>
+          <div v-if="col.field === 'fechapago'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(formatFechaHoraFullPagoSQL(data[col.field]))">
+            {{ formatFechaHoraFullPagoSQL(data[col.field]) }}
+          </div>
+
+          <!-- Celdas normales -->
+          <div v-else-if="col.field !== 'actions' && col.field !== 'honorarios' && col.field !== 'mes_ano' && col.field !== 'fechapago'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(data[col.field])">
             {{ data[col.field] }}
           </div>
         </template>
@@ -103,25 +82,12 @@
 
   <!-- Toast y modales -->
   <Toast />
-  <CardDetailMensual
-    v-if="cardVisible"
-    :pago="selectedMensual"
-    :usuario="usuario"
-    @close="cardVisible = false"
-    @save="saveMensual"
-  />
-  <ConfirmDeleteDialog
-    v-if="confirmDialogVisible"
-    @confirm="confirmDelete"
-    @cancel="cancelDelete"
-  />
-  
+  <CardDetailMensual v-if="cardVisible" :pago="selectedMensual" :usuario="usuario" @close="cardVisible = false"
+    @save="saveMensual" />
+  <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
+
   <!-- Componente para impresión -->
-  <TicketPrinter
-    v-if="printDialogVisible"
-    :ticket="selectedTicket"
-    @close="printDialogVisible = false"
-  />
+  <TicketPrinter v-if="printDialogVisible" :ticket="selectedTicket" @close="printDialogVisible = false" />
 </template>
 
 <script setup>
@@ -132,31 +98,35 @@ import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
+import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailMensual from "./CardDetailMensual.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import TicketPrinter from "./TicketPrinter.vue"; // Importa el componente de impresión
+import { formatFechaHoraFullPagoSQL, formatFechaMesAnoSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
 
 const toast = useToast();
-
+const canAddPagoMensual = ref(false);
+const canEditPagoMensual = ref(false);
+const canDeletePagoMensual = ref(false);
 // Datos de ejemplo
-const mensual = ref([
-  { id: "M-1001", cliente: "Cliente 1", quienAtendio: "Usuario X", honorarios: "$1,000.00", mesAno: "04/2025" },
-  { id: "M-1002", cliente: "Cliente 2", quienAtendio: "Usuario Y", honorarios: "$1,500.00", mesAno: "05/2025" },
-]);
+const mensual = ref(await ps.getPagoMensual());
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
-  id: localStorage.getItem("userId") || "",
-  nombre: localStorage.getItem("userName") || "",
-  foto: localStorage.getItem("userPhoto") || "",
+  id: localStorage.getItem("userid") || "",
+  nombre: localStorage.getItem("username") || "",
+  foto: localStorage.getItem("userphoto") || "",
 });
 
 // Definición de columnas base
 const columns = ref([
+  { field: "id", header: "ID" },
   { field: "cliente", header: "Cliente" },
-  { field: "quienAtendio", header: "Atendió" },
+  { field: "asunto", header: "Asunto" },
+  { field: "atendio", header: "Atendió" },
   { field: "honorarios", header: "Honorarios" },
-  { field: "mesAno", header: "Mes y Año" },
+  { field: "mes_ano", header: "Mes y Año" },
+  { field: "fechapago", header: "Fecha de pago" },
 ]);
 const actionsColumn = { field: "actions", header: "Acciones" };
 const baseColumns = computed(() => columns.value);
@@ -197,7 +167,10 @@ onUnmounted(() => window.removeEventListener("resize", handleResize));
 const containerRef = ref(null);
 const containerWidth = ref(0);
 let resizeObserver = null;
-onMounted(() => {
+onMounted(async() => {
+  canAddPagoMensual.value = await hasPermission('canAddPagoMensual')
+  canEditPagoMensual.value = await hasPermission('canEditPagoMensual')
+  canDeletePagoMensual.value = await hasPermission('canDeletePagoMensual')
   if (containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -261,14 +234,18 @@ const openCard = (pago) => {
     selectedMensual.value = {
       id: "",
       cliente: "",
-      quienAtendio: usuario.value.nombre, // se asigna nombre del usuario
+      atendio: "",
+      id_atendio: "", // se asigna nombre del usuario
+      imagen: "",
       honorarios: "",
-      mesAno: "",
+      mes_ano: "",
     };
   }
   cardVisible.value = true;
 };
 const saveMensual = (pago) => {
+  console.log("new mens ", pago);
+  
   if (pago.id) {
     const index = mensual.value.findIndex((m) => m.id === pago.id);
     if (index !== -1) {
@@ -280,9 +257,10 @@ const saveMensual = (pago) => {
         life: 2000,
       });
     }
-  } else {
-    pago.id = "M-" + Date.now().toString();
-    mensual.value.push(pago);
+  } 
+  if(pago.isnew){
+    pago.fechapago = new Date().toISOString()
+    mensual.value.unshift(pago);
     toast.add({
       severity: "success",
       summary: "Agregado",
@@ -299,8 +277,9 @@ const openConfirmDialog = (pago) => {
   candidateToDelete.value = { ...pago };
   confirmDialogVisible.value = true;
 };
-const confirmDelete = () => {
+const confirmDelete = async () => {
   if (candidateToDelete.value) {
+    await ps.deletePagoMensual(candidateToDelete.value.id)
     mensual.value = mensual.value.filter((m) => m.id !== candidateToDelete.value.id);
     toast.add({
       severity: "warn",

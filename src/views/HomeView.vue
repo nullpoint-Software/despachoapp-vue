@@ -62,9 +62,10 @@
         </p>
         <button
           class="bg-blue-600 hover:bg-blue-700 text-white text-2xl font-semibold px-8 py-4 rounded"
-          @click="goLogin"
-        >
-          Iniciar Sesión
+          :class="isLogged ? 'bg-green-600' : 'bg-blue-600'"
+            @click="goLogin"
+          >
+            {{ isLogged ? "Ingresar" : "Iniciar Sesión"}}
         </button>
       </div>
     </section>
@@ -181,7 +182,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 import mainImageSrc from "@/assets/img/logsymbolwhite.png";
@@ -195,19 +196,60 @@ import valorImg from "@/assets/img/valores.svg";
 import visionImg from "@/assets/img/vision.svg";
 import misionImg from "@/assets/img/Mision.svg";
 
+import { as } from "@/service/adminApp/client";
+
 export default {
   setup() {
     const router = useRouter();
     const menuOpen = ref(false);
+    const currentSlide = ref(0);
+    const token = localStorage.getItem("token");
+    const isLogged = ref(false);
+    if (token){
+      isLogged.value = true;
+    }
 
     const scrollToFooter = () =>
       document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" });
     const scrollToValores = () =>
       document.getElementById("valores")?.scrollIntoView({ behavior: "smooth" });
-    const goLogin = () => router.push("/login");
-    const toggleMenu = () => (menuOpen.value = !menuOpen.value);
+
+    const goLogin = () => {
+      router.push("/login");
+    };
+
+    const toggleMenu = () => {
+      menuOpen.value = !menuOpen.value;
+    };
+
+    const goToSlide = (index) => {
+      currentSlide.value = index;
+    };
+
+    // onMounted(() => {
+    //   const fadeEls = document.querySelectorAll(".fade-section");
+    //   const observer = new IntersectionObserver(
+    //     (entries) => {
+    //       entries.forEach((entry) => {
+    //         if (entry.isIntersecting) {
+    //           entry.target.classList.add("visible");
+    //         } else {
+    //           entry.target.classList.remove("visible");
+    //         }
+    //       });
+    //     },
+    //     { threshold: 0.4 }
+    //   );
+    //   fadeEls.forEach((el) => observer.observe(el));
+
+    //   setInterval(() => {
+    //     currentSlide.value =
+    //       (currentSlide.value + 1) % serviceItems.value.length;
+    //   }, 3000);
+    // });
 
     return {
+      isLogged,
       mainImageSrc,
       kanbanImg,
       clientesImg,

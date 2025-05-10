@@ -3,7 +3,6 @@
   <div class="pagos-container">
     <!-- Título -->
     <div class="pagos-title">
-      <br />
       Pagos
     </div>
 

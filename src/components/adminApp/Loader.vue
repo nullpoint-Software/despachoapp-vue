@@ -40,7 +40,7 @@
   .dot {
     width: 40px;
     height: 40px;
-    background: #ffff00;      /* color único */
+    background: #0b61ff;      /* color único */
     border-radius: 8px;       /* esquinas suaves */
     position: absolute;
     animation: move 2s infinite ease-in-out;

@@ -9,7 +9,7 @@
         <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
           <i class="pi pi-user-edit text-3xl text-blue-500"></i>
           <h3 class="text-2xl font-bold text-black">
-            {{ customer.nombre ? 'Editar Cliente' : 'Agregar Cliente' }}
+            {{ customer.id_cliente ? 'Editar Cliente' : 'Agregar Cliente' }}
           </h3>
         </div>
         <!-- Formulario -->
@@ -42,33 +42,33 @@
             <span v-if="errors.fiel" class="text-red-500 text-sm">{{ errors.fiel }}</span>
           </div>
           <div class="flex flex-col">
-            <label class="font-semibold text-black">Contraseña CLECF</label>
+            <label class="font-semibold text-black">Contraseña CIECF</label>
             <InputText
-              v-model="customer.clecf"
+              v-model="customer.ciecf"
               class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese la contraseña CLECF"
+              placeholder="Ingrese la contraseña ciecf"
             />
-            <span v-if="errors.clecf" class="text-red-500 text-sm">{{ errors.clecf }}</span>
+            <span v-if="errors.ciecf" class="text-red-500 text-sm">{{ errors.ciecf }}</span>
           </div>
           <div class="flex flex-col">
-            <label class="font-semibold text-black">Celular</label>
+            <label class="font-semibold text-black">Teléfono</label>
             <InputText
-              v-model="customer.celular"
+              v-model="customer.telefono"
               type="tel"
               class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el celular"
+              placeholder="Ingrese el telefono"
             />
-            <span v-if="errors.celular" class="text-red-500 text-sm">{{ errors.celular }}</span>
+            <span v-if="errors.telefono" class="text-red-500 text-sm">{{ errors.telefono }}</span>
           </div>
           <div class="flex flex-col">
-            <label class="font-semibold text-black">Correo Electrónico</label>
+            <label class="font-semibold text-black">Email</label>
             <InputText
-              v-model="customer.correo"
+              v-model="customer.email"
               type="email"
               class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el correo"
+              placeholder="Ingrese el email"
             />
-            <span v-if="errors.correo" class="text-red-500 text-sm">{{ errors.correo }}</span>
+            <span v-if="errors.email" class="text-red-500 text-sm">{{ errors.email }}</span>
           </div>
         </div>
         <!-- Footer: botones -->
@@ -90,13 +90,13 @@ const props = defineProps({
   customer: {
     type: Object,
     default: () => ({
-      id: "",
+      id_cliente: "",
       nombre: "",
       rfc: "",
       fiel: "",
-      clecf: "",
-      celular: "",
-      correo: "",
+      ciecf: "",
+      telefono: "",
+      email: "",
     }),
   },
 });
@@ -107,19 +107,19 @@ const errors = ref({
   nombre: "",
   rfc: "",
   fiel: "",
-  clecf: "",
-  celular: "",
-  correo: "",
+  ciecf: "",
+  telefono: "",
+  email: "",
 });
 
 watch(() => props.customer, (newVal) => {
   customer.value = { ...newVal };
-  errors.value = { nombre: "", rfc: "", fiel: "", clecf: "", celular: "", correo: "" };
+  errors.value = { nombre: "", rfc: "", fiel: "", ciecf: "", telefono: "", email: "" };
 });
 
 const validate = () => {
   let valid = true;
-  errors.value = { nombre: "", rfc: "", fiel: "", clecf: "", celular: "", correo: "" };
+  errors.value = { nombre: "", rfc: "", fiel: "", ciecf: "", telefono: "", email: "" };
 
   if (!customer.value.nombre.trim()) {
     errors.value.nombre = "El nombre es obligatorio.";
@@ -133,18 +133,18 @@ const validate = () => {
     errors.value.fiel = "La contraseña FIEL es obligatoria.";
     valid = false;
   }
-  if (!customer.value.clecf.trim()) {
-    errors.value.clecf = "La contraseña CLECF es obligatoria.";
+  if (!customer.value.ciecf.trim()) {
+    errors.value.ciecf = "La contraseña CIECF es obligatoria.";
     valid = false;
   }
-  const celularPattern = /^[0-9\s\-\(\)]+$/;
-  if (!customer.value.celular.trim() || !celularPattern.test(customer.value.celular)) {
-    errors.value.celular = "Celular inválido.";
+  const telefonoPattern = /^[0-9\s\-\(\)]+$/;
+  if (!customer.value.telefono.trim() || !telefonoPattern.test(customer.value.telefono)) {
+    errors.value.telefono = "telefono inválido.";
     valid = false;
   }
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!customer.value.correo.trim() || !emailPattern.test(customer.value.correo)) {
-    errors.value.correo = "Correo electrónico inválido.";
+  if (!customer.value.email.trim() || !emailPattern.test(customer.value.email)) {
+    errors.value.email = "email electrónico inválido.";
     valid = false;
   }
   return valid;

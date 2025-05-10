@@ -4,11 +4,13 @@
     <div class="modal-overlay" @click.self="close">
       <div class="modal-content relative bg-gray-50">
         <!-- Encabezado -->
-        <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+        <div
+          class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow"
+        >
           <div>
             <h3 class="text-2xl font-bold text-black">
               <i class="pi pi-receipt text-3xl text-blue-500"></i>
-              {{ pago.cliente ? 'Editar Pago Concepto' : 'Agregar Pago Concepto' }}
+              {{ pago.id ? "Editar Pago Concepto" : "Agregar Pago Concepto" }}
             </h3>
           </div>
         </div>
@@ -18,12 +20,22 @@
           <!-- Cliente -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Cliente</label>
-            <InputText
-              v-model="pago.cliente"
-              class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el nombre del cliente"
-            />
-            <span v-if="errors.cliente" class="text-red-500 text-sm">{{ errors.cliente }}</span>
+            <select
+              v-model="pago.id_cliente"
+              class="p-2 border border-gray-300 rounded text-black"
+              placeholder="Seleccione un cliente"
+            >
+              <option
+                v-for="client in clientes"
+                :key="client"
+                :value="client.id_cliente"
+              >
+                {{ client.nombre }}
+              </option>
+            </select>
+            <span v-if="errors.cliente" class="text-red-500 text-sm">{{
+              errors.cliente
+            }}</span>
           </div>
 
           <!-- Asunto -->
@@ -34,7 +46,9 @@
               class="p-2 border border-gray-300 rounded"
               placeholder="Ingrese el asunto"
             />
-            <span v-if="errors.asunto" class="text-red-500 text-sm">{{ errors.asunto }}</span>
+            <span v-if="errors.asunto" class="text-red-500 text-sm">{{
+              errors.asunto
+            }}</span>
           </div>
 
           <!-- Quien atendio (deshabilitado) -->
@@ -42,26 +56,39 @@
             <label class="font-semibold text-black">Quien atendio</label>
             <div class="flex items-center">
               <img
-                v-if="usuario.foto"
-                :src="usuario.foto"
+                v-if="getEmployeeImage(pago.id_atendio)"
+                :src="getEmployeeImage(pago.id_atendio)"
                 alt="Foto"
                 class="w-8 h-8 rounded-full mr-2"
               />
-              <InputText
-                v-model="pago.quienAtendio"
-                disabled
-                class="p-2 border border-gray-300 rounded w-full"
+              <select
+                v-if="employees.length"
+                v-model="pago.id_atendio"
+                class="text-black p-2 border border-gray-300 rounded w-full"
                 placeholder="Nombre del usuario"
-              />
+              >
+                <option
+                  v-for="employee in employees"
+                  :key="employee"
+                  :value="employee.id_usuario"
+                >
+                  {{ employee.nombre + " (" + employee.username + ")" }}
+                </option>
+              </select>
             </div>
-            <span v-if="errors.quienAtendio" class="text-red-500 text-sm">{{ errors.quienAtendio }}</span>
+            <span v-if="errors.atendio" class="text-red-500 text-sm">{{
+              errors.atendio
+            }}</span>
           </div>
 
           <!-- Cobramos -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Cobramos</label>
             <div class="flex">
-              <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+              <span
+                class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l"
+                >$</span
+              >
               <!-- type="number" con step="0.01" impide letras -->
               <InputText
                 type="number"
@@ -72,14 +99,19 @@
                 placeholder="Ingrese el monto cobrado"
               />
             </div>
-            <span v-if="errors.cobramos" class="text-red-500 text-sm">{{ errors.cobramos }}</span>
+            <span v-if="errors.cobramos" class="text-red-500 text-sm">{{
+              errors.cobramos
+            }}</span>
           </div>
 
           <!-- Pagamos -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Pagamos</label>
             <div class="flex">
-              <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+              <span
+                class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l"
+                >$</span
+              >
               <InputText
                 type="number"
                 step="0.01"
@@ -89,7 +121,9 @@
                 placeholder="Ingrese el monto pagado"
               />
             </div>
-            <span v-if="errors.pagamos" class="text-red-500 text-sm">{{ errors.pagamos }}</span>
+            <span v-if="errors.pagamos" class="text-red-500 text-sm">{{
+              errors.pagamos
+            }}</span>
           </div>
 
           <!-- Fecha (con Calendar) -->
@@ -97,15 +131,19 @@
             <label class="font-semibold text-black">Fecha</label>
             <Calendar
               v-model="fechaSeleccionada"
-              dateFormat="dd/mm/yy"
               showIcon
+              showTime
+              showSeconds="true"
+              hourFormat="24"
               placeholder="Selecciona la fecha"
               class="w-full border border-gray-300 rounded focus:outline-none"
             />
-            <span v-if="errors.fecha" class="text-red-500 text-sm">{{ errors.fecha }}</span>
+            <span v-if="errors.fecha" class="text-red-500 text-sm">{{
+              errors.fecha
+            }}</span>
           </div>
 
-          <!-- Saldo -->
+          <!-- Saldo
           <div class="flex flex-col">
             <label class="font-semibold text-black">Saldo</label>
             <div class="flex">
@@ -120,13 +158,23 @@
               />
             </div>
             <span v-if="errors.saldo" class="text-red-500 text-sm">{{ errors.saldo }}</span>
-          </div>
+          </div> -->
         </div>
 
         <!-- Botones -->
         <div class="flex justify-end space-x-6 mt-6 px-4">
-          <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="close" />
-          <Button label="Guardar" icon="pi pi-check" class="p-button-primary" @click="save" />
+          <Button
+            label="Cancelar"
+            icon="pi pi-times"
+            class="p-button-text"
+            @click="close"
+          />
+          <Button
+            label="Guardar"
+            icon="pi pi-check"
+            class="p-button-primary"
+            @click="save"
+          />
         </div>
       </div>
     </div>
@@ -138,6 +186,21 @@ import { ref, watch, defineProps, defineEmits, onMounted, computed } from "vue";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Calendar from "primevue/calendar";
+import { Select } from "primevue";
+import defaultProfilePicture from "@/assets/img/user.jpg";
+import {
+  formatFechaHoraFullSQL,
+  formatFechaSQL,
+  ps,
+  formatFechaHoraFullPagoSQL,
+  cs,
+  us,
+} from "@/service/adminApp/client";
+const userpic = ref(localStorage.getItem("userphoto"));
+const userid = await localStorage.getItem("userid");
+const clientes = await cs.getClientes();
+const employees = await us.getUsuarios();
+console.log(employees);
 
 const props = defineProps({
   pago: {
@@ -146,7 +209,7 @@ const props = defineProps({
       id: "",
       cliente: "",
       asunto: "",
-      quienAtendio: "",
+      atendio: "",
       cobramos: "",
       pagamos: "",
       fecha: "",
@@ -168,7 +231,7 @@ const pago = ref({ ...props.pago });
 const errors = ref({
   cliente: "",
   asunto: "",
-  quienAtendio: "",
+  atendio: "",
   cobramos: "",
   pagamos: "",
   fecha: "",
@@ -179,50 +242,61 @@ const errors = ref({
   Usamos un ref para Calendar, ya que Calendar guarda Date.
   Luego lo convertimos a dd/mm/yyyy en save()
 */
-const fechaSeleccionada = ref(null);
-
-onMounted(() => {
-  // Si no hay fecha en pago, la ponemos hoy
+const fechaSeleccionada = ref();
+const imagen = new String(pago.value.imagen);
+onMounted(async () => {
+  if (!pago.value.atendio) {
+    //por si es un registro nuevo se ocupa el nombre de user
+    pago.value.id_atendio = userid;
+  }
   if (!pago.value.fecha) {
     const hoy = new Date();
-    pago.value.fecha = formatoFecha(hoy); // dd/mm/yyyy
+    pago.value.fecha = await hoy; // dd/mm/yyyy
+    fechaSeleccionada.value = formatFechaHoraFullPagoSQL(hoy);
+    console.log("current pago: ", pago.value);
+  } else {
+    fechaSeleccionada.value = new Date(
+      formatFechaHoraFullPagoSQL(pago.value.fecha)
+    );
+    console.log(formatFechaHoraFullPagoSQL(pago.value.fecha));
   }
-  // Asignar quienAtendio si está vacío
-  if (!pago.value.quienAtendio.trim() && props.usuario.nombre) {
-    pago.value.quienAtendio = props.usuario.nombre;
+  console.log(pago.value);
+
+  // Asignar atendio si está vacío
+  if (!pago.value.atendio && props.usuario.nombre) {
+    pago.value.atendio = props.usuario.nombre;
   }
   // Convertir la cadena a Date para el Calendar
-  fechaSeleccionada.value = aDate(pago.value.fecha);
+  // fechaSeleccionada.value = new Date();
 });
 
 // Cada vez que cambie props.pago, reseteamos
-watch(() => props.pago, (newVal) => {
-  pago.value = { ...newVal };
-  errors.value = {
-    cliente: "",
-    asunto: "",
-    quienAtendio: "",
-    cobramos: "",
-    pagamos: "",
-    fecha: "",
-    saldo: "",
-  };
-  fechaSeleccionada.value = aDate(newVal.fecha);
-});
+watch(
+  () => props.pago,
+  (newVal) => {
+    pago.value = { ...newVal };
+    errors.value = {
+      cliente: "",
+      asunto: "",
+      atendio: "",
+      cobramos: "",
+      pagamos: "",
+      fecha: "",
+      saldo: "",
+    };
+    // fechaSeleccionada.value = aDate(newVal.fecha);
+  }
+);
 
-/* Funciones auxiliares para formatear fecha */
-function formatoFecha(fecha) {
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
-  return `${dia}/${mes}/${anio}`;
-}
-function aDate(cadena) {
-  // cadena = "dd/mm/yyyy"
-  if (!cadena) return null;
-  const [dia, mes, anio] = cadena.split("/");
-  if (!dia || !mes || !anio) return null;
-  return new Date(Number(anio), Number(mes) - 1, Number(dia));
+function getEmployeeImage(id_atendio) {
+  const emp = employees.find((e) => e.id_usuario === id_atendio);
+  if (id_atendio == userid) {
+    return userpic.value;
+  }
+  if (emp && emp.imagen && !String(emp.imagen).endsWith("null")) {
+    return "data:image/png;base64," + emp.imagen;
+  }
+  return defaultProfilePicture;
 }
 
 /* VALIDACIÓN */
@@ -231,13 +305,13 @@ const validate = () => {
   errors.value = {
     cliente: "",
     asunto: "",
-    quienAtendio: "",
+    atendio: "",
     cobramos: "",
     pagamos: "",
     fecha: "",
     saldo: "",
   };
-  if (!pago.value.cliente.trim()) {
+  if (!pago.value.id_cliente) {
     errors.value.cliente = "El cliente es obligatorio.";
     valid = false;
   }
@@ -245,24 +319,30 @@ const validate = () => {
     errors.value.asunto = "El asunto es obligatorio.";
     valid = false;
   }
-  if (!pago.value.quienAtendio.trim()) {
-    errors.value.quienAtendio = "El campo 'quien atendio' es obligatorio.";
+  if (!pago.value.id_atendio) {
+    errors.value.atendio = "El campo 'quien atendio' es obligatorio.";
     valid = false;
   }
-  if (!pago.value.cobramos) {
+  if (
+    pago.value.cobramos === null ||
+    pago.value.cobramos === undefined ||
+    pago.value.cobramos === ""
+  ) {
+    //permitir que sea 0
     errors.value.cobramos = "El monto cobrado es obligatorio.";
     valid = false;
   }
-  if (!pago.value.pagamos) {
+  if (
+    pago.value.pagamos === null ||
+    pago.value.pagamos === undefined ||
+    pago.value.pagamos === ""
+  ) {
+    //permitir que sea 0
     errors.value.pagamos = "El monto pagado es obligatorio.";
     valid = false;
   }
   if (!pago.value.fecha.trim()) {
     errors.value.fecha = "La fecha es obligatoria.";
-    valid = false;
-  }
-  if (!pago.value.saldo) {
-    errors.value.saldo = "El saldo es obligatorio.";
     valid = false;
   }
   return valid;
@@ -281,16 +361,41 @@ const addDollarPrefix = (value) => {
   return value;
 };
 
-const save = () => {
+const save = async () => {
+  //   console.log("pago.value.id_atendio", pago.value.id_atendio);
+  // console.log("employees", employees);
+  const selectedCliente = clientes.findIndex(
+    (c) => c.id_cliente === pago.value.id_cliente
+  );
+  const selectedAtendio = employees.findIndex(
+    (e) => String(e.id_usuario) === String(pago.value.id_atendio)
+  );
   if (fechaSeleccionada.value) {
-    pago.value.fecha = formatoFecha(fechaSeleccionada.value);
+    pago.value.fecha = formatFechaHoraFullSQL(fechaSeleccionada.value);
   }
   if (validate()) {
-    // Preparamos los campos monetarios con "$"
-    pago.value.cobramos = addDollarPrefix(pago.value.cobramos);
-    pago.value.pagamos = addDollarPrefix(pago.value.pagamos);
-    pago.value.saldo = addDollarPrefix(pago.value.saldo);
-    emit("save", { ...pago.value });
+    if (!pago.value.id) {
+      console.log("new");
+      pago.value.cliente = clientes[selectedCliente].nombre;
+      pago.value.atendio = employees[selectedAtendio].nombre;
+      pago.value.id =
+        "C-" +
+        new Date()
+          .toLocaleString("sv-SE")
+          .replace("T", "")
+          .replace(/[-: ]/g, "");
+      pago.value.isnew = true;
+      console.log("trying to send, ", pago.value);
+
+      await ps.addPagoConcepto(pago.value);
+      emit("save", { ...pago.value });
+    } else {
+      console.log("edit");
+      pago.value.cliente = clientes[selectedCliente].nombre;
+      pago.value.atendio = employees[selectedAtendio].nombre;
+      await ps.updatePagoConcepto(pago.value.id, pago.value);
+      emit("save", { ...pago.value });
+    }
   }
 };
 </script>
@@ -306,6 +411,7 @@ const save = () => {
   justify-content: center;
   z-index: 50;
 }
+
 .modal-content {
   background-color: #f9fafb;
   border-radius: 0.5rem;
@@ -316,19 +422,23 @@ const save = () => {
   position: relative;
   animation: slideDown 0.3s ease-out;
 }
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
+
 @keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
