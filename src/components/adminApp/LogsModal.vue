@@ -91,8 +91,8 @@
                 </thead>
                 <tbody>
                   <tr v-for="(val, key) in log.oldpayload" :key="key">
-                    <td class="px-4 py-2 border">{{ key }}</td>
-                    <td class="px-4 py-2 border">{{ val }}</td>
+                    <td v-if="log.payload ?log.payload[key] : true" class="px-4 py-2 border">{{ key }}</td>
+                    <td v-if="log.payload ?log.payload[key] :true" class="px-4 py-2 border">{{ val }}</td>
                   </tr>
                 </tbody>
               </table>
