@@ -3,13 +3,13 @@
   <!-- Contenedor de la tabla -->
   <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
     <DataTable :value="payments" :filters="filters" :globalFilterFields="[
+      'id',
       'cliente',
       'asunto',
       'atendio',
       'cobramos',
       'pagamos',
-      'fecha',
-      'saldo',
+      'fecha_legible',
     ]" paginator sortMode="multiple" removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass"
       class="w-full rounded-lg p-5">
       <!-- Encabezado de la tabla -->
@@ -69,8 +69,8 @@
           <!-- Celdas normales -->
           <div v-if="col.field === 'fecha'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard(formatFechaSQL(data[col.field]))">
-            {{ formatFechaHoraFullSQL(data[col.field]) }}
+            @click="copyToClipboard(formatFechaHoraFullPagoSQL(data[col.field]))">
+            {{ formatFechaHoraFullPagoSQL(data[col.field]) }}
           </div>
           <div v-if="col.field === 'cobramos'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
@@ -103,7 +103,7 @@
 </template>
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { ps, formatFechaSQL, formatFechaHoraFullSQL } from "@/service/adminApp/client"
+import { ps, formatFechaSQL, formatFechaHoraFullSQL, formatFechaHoraFullPagoSQL } from "@/service/adminApp/client"
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -206,6 +206,10 @@ onMounted(async () => {
     });
     resizeObserver.observe(containerRef.value);
   }
+  payments.value = payments.value.map(item => ({
+    ...item,
+    fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
+  }));
 });
 onUnmounted(() => {
   if (resizeObserver && containerRef.value) {

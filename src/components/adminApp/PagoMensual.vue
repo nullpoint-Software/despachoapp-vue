@@ -1,7 +1,7 @@
 <template>
   <!-- Contenedor de la tabla -->
   <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
-    <DataTable :value="mensual" :filters="filters" :globalFilterFields="['cliente', 'atendio', 'honorarios', 'mes_ano']"
+    <DataTable :value="mensual" :filters="filters" :globalFilterFields="['id','cliente', 'asunto', 'atendio', 'honorarios', 'mes_ano_legible', 'fechapago_legible']"
       paginator sortMode="multiple" removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass"
       class="w-full rounded-lg p-5">
       <!-- Encabezado de la tabla -->
@@ -179,6 +179,11 @@ onMounted(async() => {
     });
     resizeObserver.observe(containerRef.value);
   }
+  mensual.value = mensual.value.map(item => ({
+    ...item,
+    mes_ano_legible: formatFechaMesAnoSQL(item.mes_ano),
+    fechapago_legible: formatFechaHoraFullPagoSQL(item.fechapago),
+  }));
 });
 onUnmounted(() => {
   if (resizeObserver && containerRef.value) {

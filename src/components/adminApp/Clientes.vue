@@ -9,6 +9,7 @@
     <!-- Contenedor de la tabla: se usa containerRef para medir el ancho asignado -->
     <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
       <DataTable :value="customers" :filters="filters" :globalFilterFields="[
+        'id_cliente',
         'nombre',
         'rfc',
         'fiel',
