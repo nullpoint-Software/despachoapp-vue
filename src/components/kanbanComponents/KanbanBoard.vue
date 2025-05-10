@@ -356,8 +356,8 @@ const moveCard = async (cardId, newStatus) => {
           isAdmin && card.id_usuario ? card.id_usuario : parseInt(userId.value);
         card.username =
           isAdmin && card.username ? card.id_usuario : userName.value;
-        card.image = isAdmin && card.image ? card.image : userPhoto.value;
-        card.nombre = isAdmin && card.nombre ? card.nombre : userFullName.value;
+        card.image = isAdmin && card.id_usuario ? card.image : userPhoto.value;
+        card.nombre = isAdmin && card.id_usuario ? card.nombre : userFullName.value;
       } else if (newStatus !== "Disponible" && !card.username) {
         card.username = "Usuario Asignado";
       }
