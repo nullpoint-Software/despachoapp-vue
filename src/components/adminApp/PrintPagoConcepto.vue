@@ -158,8 +158,6 @@ const formattedTicket = computed(() => {
   lines.push(dashLine);
   lines.push(row("Fecha", formatFechaHoraFullPagoSQL(t.fecha)));
   lines.push(dashLine);
-  lines.push(row("Saldo", "$" + t.saldo));
-  lines.push("");
   lines.push(eqLine);
   lines.push(centerText("Fecha de impresion:"));
   lines.push(centerText(dayjs().format("h:mm A, ddd MMM DD")));

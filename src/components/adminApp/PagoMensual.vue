@@ -87,7 +87,8 @@
   <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
 
   <!-- Componente para impresión -->
-  <TicketPrinter v-if="printDialogVisible" :ticket="selectedTicket" @close="printDialogVisible = false" />
+  <TicketPrinter v-if="printVisible" :ticket="selectedTicket" @close="printVisible = false" />
+  <PrintDialog v-if="printDialogVisible" @close="printDialogVisible = false" @ok="printTicket(mensual[0]);printDialogVisible=false"/>
 </template>
 
 <script setup>
@@ -102,15 +103,16 @@ import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailMensual from "./CardDetailMensual.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import TicketPrinter from "./TicketPrinter.vue"; // Importa el componente de impresión
+import PrintDialog from "./PrintDialog.vue";
 import { formatFechaHoraFullPagoSQL, formatFechaMesAnoSQL, formatFechaSQL, ps } from "@/service/adminApp/client";
-
 const toast = useToast();
 const canAddPagoMensual = ref(false);
 const canEditPagoMensual = ref(false);
 const canDeletePagoMensual = ref(false);
 // Datos de ejemplo
 const mensual = ref(await ps.getPagoMensual());
-
+const printDialogVisible = ref(false);
+const printVisible = ref(false);
 // Lectura del usuario desde localStorage
 const usuario = ref({
   id: localStorage.getItem("userid") || "",
@@ -264,6 +266,7 @@ const saveMensual = (pago) => {
     }
   } 
   if(pago.isnew){
+    printDialogVisible.value = true;
     pago.fechapago = new Date().toISOString()
     mensual.value.unshift(pago);
     toast.add({
@@ -302,10 +305,10 @@ const cancelDelete = () => {
 };
 
 // Lógica para impresión de tickets
-const printDialogVisible = ref(false);
+
 const selectedTicket = ref(null);
 const printTicket = (data) => {
   selectedTicket.value = data;
-  printDialogVisible.value = true;
+  printVisible.value = true;
 };
 </script>
