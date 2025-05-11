@@ -298,6 +298,7 @@
 import { as, ps, us } from '@/service/adminApp/client'
 import { ref, computed, onMounted } from 'vue'
 import defaultAvatar from '@/assets/img/user.jpg'
+import imageCompression from "browser-image-compression"; 
 import { PrimeIcons } from '@primevue/core/api';
 import { Toast } from 'primevue';
 import { useToast } from 'primevue';
@@ -516,6 +517,17 @@ const newUserPreview = ref('')
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 
+async function compressToBase64(file) {
+  const options = {
+    maxWidthOrHeight: 200,
+    useWebWorker: true,
+  };
+
+  const compressedFile = await imageCompression(file, options);
+  const base64 = await imageCompression.getDataUrlFromFile(compressedFile);
+  return base64.split(",")[1]; // Return base64 only
+}
+
 async function onFileChange(e) {
   const f = e.target.files[0];
   if (f) {
@@ -524,22 +536,17 @@ async function onFileChange(e) {
 
     if (f.size > maxSizeBytes) {
       alert(`La imagen no debe superar los ${maxSizeMB}MB.`);
-      e.target.value = ""; // Limpia el input
+      e.target.value = "";
       return;
     }
 
     profileImage.value = URL.createObjectURL(f);
-
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const fullDataUrl = reader.result; // data:image/png;base64,...
-      const base64Only = fullDataUrl.split(",")[1];
-      await updateImage(base64Only);
-    };
-    reader.readAsDataURL(f);
+    const base64Only = await compressToBase64(f);
+    await updateImage(base64Only);
   }
 }
-function onNewFileChange(e) {
+
+async function onNewFileChange(e) {
   const f = e.target.files[0];
   if (f) {
     const maxSizeMB = 5;
@@ -547,19 +554,15 @@ function onNewFileChange(e) {
 
     if (f.size > maxSizeBytes) {
       alert(`La imagen no debe superar los ${maxSizeMB}MB.`);
-      e.target.value = ""; // Limpia el input si la imagen es demasiado grande
+      e.target.value = "";
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const fullDataUrl = reader.result; // data:image/png;base64,...
-      const base64Only = fullDataUrl.split(",")[1];
-      newUserPreview.value = fullDataUrl;
-      newUser.value.imagen = base64Only;
-      console.log("Base64 only:", base64Only);
-    };
-    reader.readAsDataURL(f);
+    const fullDataUrl = await imageCompression.getDataUrlFromFile(f);
+    newUserPreview.value = fullDataUrl;
+
+    const base64Only = await compressToBase64(f);
+    newUser.value.imagen = base64Only;
   }
 }
 
