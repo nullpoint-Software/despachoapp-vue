@@ -42,7 +42,7 @@
       <Column v-for="col in visibleColumns" :key="col.field" :sortable="col.field !== 'actions'"
         :field="col.field !== 'actions' ? col.field : undefined">
         <template #header>
-          <div class="p-1 text-black font-semibold text-center text-sm">
+          <div class="p-1 text-black font-semibold text-center text-sm w-full">
             {{ col.header }}
           </div>
         </template>
@@ -95,6 +95,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
+import { useRoute } from "vue-router";
 import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
@@ -110,6 +111,7 @@ const canAddPagoMensual = ref(false);
 const canEditPagoMensual = ref(false);
 const canDeletePagoMensual = ref(false);
 // Datos de ejemplo
+const route = useRoute();
 const mensual = ref(await ps.getPagoMensual());
 const printDialogVisible = ref(false);
 const printVisible = ref(false);
@@ -170,6 +172,12 @@ const containerRef = ref(null);
 const containerWidth = ref(0);
 let resizeObserver = null;
 onMounted(async() => {
+  const searchParam = route.query.search;
+  console.log(searchParam);
+  
+  if (searchParam) {
+    filters.value.global.value = searchParam;
+  }
   canAddPagoMensual.value = await hasPermission('canAddPagoMensual')
   canEditPagoMensual.value = await hasPermission('canEditPagoMensual')
   canDeletePagoMensual.value = await hasPermission('canDeletePagoMensual')
@@ -216,6 +224,12 @@ const currentPageIndex = ref(0);
 watch(pages, () => {
   currentPageIndex.value = 0;
 });
+watch(
+  () => route.query.search,
+  (newSearch) => {
+    filters.value.global.value = newSearch || '';
+  }
+);
 const maxPageIndex = computed(() => pages.value.length - 1);
 const visibleColumns = computed(() => {
   if (pages.value.length === 1) {

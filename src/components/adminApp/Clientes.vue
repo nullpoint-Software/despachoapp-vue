@@ -57,7 +57,7 @@
           :field="col.field !== 'actions' ? col.field : undefined">
           <!-- Encabezado de columna: color negro -->
           <template #header>
-            <div class="p-1 text-black font-semibold text-center text-sm">
+            <div class="p-1 text-black font-semibold text-center text-sm w-full">
               {{ col.header }}
             </div>
           </template>

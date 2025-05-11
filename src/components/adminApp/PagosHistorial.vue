@@ -39,7 +39,7 @@
       <!-- Renderizado dinámico de columnas -->
       <Column v-for="col in visibleColumns" :key="col.field" :sortable="true" :field="col.field">
         <template #header>
-          <div class="p-1 text-black font-semibold text-center text-sm">
+          <div class="p-1 text-black font-semibold text-center text-sm w-full">
             {{ col.header }}
           </div>
         </template>
@@ -54,9 +54,12 @@
             @click="copyToClipboard('$'+data[col.field])">
             {{ '$'+data[col.field] }}
           </div>
-          <div v-else-if="col.field != 'fecha' && col.field != 'cantidad'" class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+          <div v-else-if="col.field != 'fecha' && col.field != 'cantidad' && col.field != 'actions'" class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
             @click="copyToClipboard(data[col.field])">
             {{ data[col.field] }} 
+          </div>
+          <div v-if="col.field === 'actions'" class="flex justify-center space-x-2 ">
+            <Button icon="pi pi-link" class="p-button-rounded p-button-info" title="Ir a pago" @click="linkToPayment(data)"/>
           </div>
         </template>
       </Column>
@@ -72,6 +75,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -83,7 +87,7 @@ import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import { formatFechaHoraFullSQL, formatFechaHoraSQL, formatFechaHoraFullPagoSQL, ps } from "@/service/adminApp/client";
 
 const toast = useToast();
-
+const router = useRouter();
 // Datos de ejemplo
 const historial = ref(await ps.getPagoHistorial());
 
@@ -102,6 +106,7 @@ const columns = ref([
   { field: "fecha", header: "Fecha" },
   { field: "cantidad", header: "Cantidad" },
   { field: "tipo", header: "Tipo" },
+  { field: "actions", header: "Acciones" },
 ]);
 const baseColumns = computed(() => columns.value);
 
@@ -169,6 +174,22 @@ onUnmounted(() => {
     resizeObserver.unobserve(containerRef.value);
   }
 });
+
+async function linkToPayment(data) {
+  if(data.id.startsWith("M-")){
+    router.push({
+    path: '/app/pagos/mensual',
+    query: { search: data.id }
+  });
+  }
+  if(data.id.startsWith("C-")){
+    router.push({
+    path: '/app/pagos/concepto',
+    query: { search: data.id }
+  });
+  }
+  
+}
 
 // CÁLCULO DEL SLIDER DE COLUMNAS
 const minColumnWidth = 150;

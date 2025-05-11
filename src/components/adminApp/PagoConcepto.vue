@@ -52,7 +52,7 @@
       <Column v-for="col in visibleColumns" :key="col.field" :sortable="col.field !== 'actions'"
         :field="col.field !== 'actions' ? col.field : undefined">
         <template #header>
-          <div class="p-1 text-black font-semibold text-center text-sm">
+          <div class="p-1 text-black font-semibold text-center text-sm w-full">
             {{ col.header }}
           </div>
         </template>
@@ -83,7 +83,7 @@
             {{ "$" + data[col.field] }}
           </div>
           <div
-            v-else-if="col.field !== 'cobramos' && col.field !== 'pagamos' && col.field !== 'saldo' && col.field !== 'fecha'"
+            v-else-if="col.field !== 'cobramos' && col.field !== 'pagamos' && col.field !== 'saldo' && col.field !== 'fecha' && col.field !== 'actions'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
             @click="copyToClipboard(data[col.field])">
             {{ data[col.field] }}
@@ -103,6 +103,7 @@
 </template>
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { useRoute } from 'vue-router';
 import { ps, formatFechaSQL, formatFechaHoraFullSQL, formatFechaHoraFullPagoSQL } from "@/service/adminApp/client"
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
@@ -120,7 +121,7 @@ const canAddPagoConcepto = ref(false);
 const canEditPagoConcepto = ref(false);
 const canDeletePagoConcepto = ref(false);
 const toast = useToast();
-
+const route = useRoute();
 // Datos de ejemplo
 const payments = ref(await ps.getPagoConcepto());
 
@@ -195,6 +196,12 @@ const containerRef = ref(null);
 const containerWidth = ref(0);
 let resizeObserver = null;
 onMounted(async () => {
+  const searchParam = route.query.search;
+  console.log(searchParam);
+  
+  if (searchParam) {
+    filters.value.global.value = searchParam;
+  }
   canAddPagoConcepto.value = await hasPermission('canAddPagoConcepto')
   canEditPagoConcepto.value = await hasPermission('canEditPagoConcepto')
   canDeletePagoConcepto.value = await hasPermission('canDeletePagoConcepto')
@@ -210,6 +217,7 @@ onMounted(async () => {
     ...item,
     fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
   }));
+  
 });
 onUnmounted(() => {
   if (resizeObserver && containerRef.value) {
@@ -239,6 +247,12 @@ const currentPageIndex = ref(0);
 watch(pages, () => {
   currentPageIndex.value = 0;
 });
+watch(
+  () => route.query.search,
+  (newSearch) => {
+    filters.value.global.value = newSearch || '';
+  }
+);
 const maxPageIndex = computed(() => pages.value.length - 1);
 const visibleColumns = computed(() => {
   if (pages.value.length === 1) {
