@@ -2,7 +2,7 @@
   <!-- Contenedor de la tabla -->
   <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
     <DataTable :value="historial" :filters="filters"
-      :globalFilterFields="['cliente', 'atendio', 'fecha', 'cantidad', 'tipo']" paginator sortMode="multiple"
+      :globalFilterFields="['id','cliente', 'atendio', 'fecha_legible', 'cantidad', 'tipo']" paginator sortMode="multiple"
       removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass" class="w-full rounded-lg p-5">
       <!-- Encabezado de la tabla -->
       <template #header>
@@ -96,6 +96,7 @@ const usuario = ref({
 
 // Definición de columnas base (sin columna de acciones)
 const columns = ref([
+  { field: "id", header: "ID" },
   { field: "cliente", header: "Cliente" },
   { field: "atendio", header: "Atendió" },
   { field: "fecha", header: "Fecha" },
@@ -158,6 +159,10 @@ onMounted(() => {
     });
     resizeObserver.observe(containerRef.value);
   }
+  historial.value = historial.value.map(item => ({
+    ...item,
+    fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
+  }));
 });
 onUnmounted(() => {
   if (resizeObserver && containerRef.value) {
