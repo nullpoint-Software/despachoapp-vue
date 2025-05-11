@@ -132,13 +132,13 @@
           <!-- Username -->
           <div class="relative">
             <i class="pi pi-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-            <input type="text" v-model="newUser.username" placeholder="Username"
+            <input type="text" v-model="newUser.username" placeholder="Nombre de usuario" autocomplete="new-password"
               class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2" />
           </div>
           <!-- Password -->
           <div class="relative flex items-center">
             <i class="pi pi-key absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-            <input :type="showNewPassword ? 'text' : 'password'" v-model="newUser.password" placeholder="Password"
+            <input :type="showNewPassword ? 'text' : 'password'" v-model="newUser.password" placeholder="Contraseña" autocomplete="new-password"
               class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2" />
             <button @click="showNewPassword = !showNewPassword"
               class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
