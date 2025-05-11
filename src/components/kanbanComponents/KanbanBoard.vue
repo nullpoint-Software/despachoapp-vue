@@ -163,6 +163,7 @@ const cardsDisponible = ref(
   (await ts.getTareasDisponibles()).map((item) => ({
     ...item,
     highlight: false,
+    fecha_creacion: new Date(item.fecha_creacion).toLocaleString()
   }))
 );
 console.log("cards disponibles", cardsDisponible);
@@ -174,6 +175,8 @@ const cards = ref(
   ).map((item) => ({
     ...item,
     highlight: false,
+    fecha_creacion: new Date(item.fecha_creacion).toLocaleString(),
+    fecha_vencimiento: item.fecha_vencimiento ? new Date(item.fecha_vencimiento).toLocaleString() : null,
     image: item.usuario_imagen
       ? URL.createObjectURL(base64ToFile(item.usuario_imagen, "task-img.png"))
       : null,

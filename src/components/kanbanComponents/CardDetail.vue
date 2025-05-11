@@ -31,6 +31,14 @@
               </th>
             </tr>
 
+            <!-- Descripción -->
+            <tr class="border-b border-gray-200">
+              <td class="px-4 py-2 font-medium text-gray-700 text-center">ID</td>
+              <td class="px-4 py-2 text-gray-600 text-center">
+                {{ card.id_tarea }}
+              </td>
+            </tr>
+
             <!-- Cliente -->
             <!-- <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Cliente</td>
@@ -54,7 +62,7 @@
 
             <!-- Fecha -->
             <tr class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha</td>
+              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha de creación</td>
               <td class="px-4 py-2 text-gray-600 text-center">
                 {{ card.fecha_creacion ? formatFechaHoraFullSQL(card.fecha_creacion) : 'No disponible' }}
               </td>
@@ -62,7 +70,7 @@
 
             <!-- Fecha Finalización -->
             <tr class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha Finalizacion</td>
+              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha de finalización</td>
               <td class="px-4 py-2 text-gray-600 text-center">
                 {{ card.fecha_vencimiento ? formatFechaHoraFullSQL(card.fecha_vencimiento) : 'No disponible' }}
               </td>
