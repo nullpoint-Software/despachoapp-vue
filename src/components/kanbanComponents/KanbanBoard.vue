@@ -1,16 +1,16 @@
 <!-- KanbanBoard.vue -->
 <template>
   <Toast />
-  <div class="relative">
+  <div class="relative" >
     <!-- Buscador -->
     <div class="sticky top-20 z-49 max-w-lg mx-auto mb-4">
       <div id="search-bar" v-if="!mini" :class="[
         'flex items-center bg-gray-900 text-white rounded-full px-4 py-2 transition-shadow duration-200',
         showShadow ? 'shadow-2xl shadow-neutral-900' : 'shadow-none'
       ]">
-        <input v-model="searchQuery" type="text" placeholder="Buscar tareas..."
+        <input v-model="searchQuery" ref="searchBarRef" @click="searchActive = true" type="text" placeholder="Buscar tareas..."
           class="bg-transparent flex-1 outline-none px-2 py-1 text-lg" />
-        <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-white transition">
+        <button v-if="searchQuery" @click="searchQuery = ''" @mousedown.stop class="text-gray-400 hover:text-white transition">
           ✕
         </button>
         <!-- Botón PDF personalizado -->
@@ -20,10 +20,10 @@
           <i class="pi pi-file-pdf text-xl text-white"></i>
         </button>
       </div>
-      <ul v-if="searchQuery"
-        class="absolute top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white">
-        <li v-for="card in filteredCards" :key="card.id_tarea" @click="markCard(card.id_tarea)"
-          class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition">
+      <ul v-if="searchActive"
+        class="absolute overflow-y-auto max-h-96 top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white">
+        <li v-for="card in filteredCards" :key="card.id_tarea" @click="markCard(card.id_tarea);searchActive=false" @mousedown.stop
+          class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition ">
           <span class="w-5 h-5 rounded-full mr-3" :style="{ backgroundColor: getColumnColor(card.estado) }"></span>
           <span class="flex-1">{{ card.titulo }}</span>
         </li>
@@ -105,7 +105,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
+import { ref, computed, nextTick, onMounted, onUnmounted, onBeforeUnmount } from "vue";
 import KanbanColumn from "./KanbanColumn.vue";
 import { Toast, useToast } from "primevue";
 import CardDetail from "./CardDetail.vue";
@@ -139,7 +139,8 @@ const showEnProgreso = rawProps.showEnProgreso ?? true;
 const showTerminado = rawProps.showTerminado ?? true;
 const showPdf = ref(null);
 const showShadow = ref(false);
-
+const searchActive = ref(false);
+const searchBarRef = ref(null);
 const handleScroll = () => {
   const searchBar = document.getElementById('search-bar');
   const kanbanBoard = document.querySelector('.kanban-board');
@@ -149,12 +150,19 @@ const handleScroll = () => {
   const boardRect = kanbanBoard.getBoundingClientRect();
   showShadow.value = barRect.bottom >= boardRect.top;
 };
-
+function handleClickOutside(event) {
+  if (searchBarRef.value && !searchBarRef.value.contains(event.target)) {
+    searchActive.value = false;
+  }
+}
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
+  document.addEventListener('mousedown', handleClickOutside);
   handleScroll();
 });
-
+onBeforeUnmount(()=>{
+  document.removeEventListener('mousedown', handleClickOutside);
+})
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
 });
@@ -438,7 +446,7 @@ const markCard = (cardId) => {
           const rect = cardElement.getBoundingClientRect();
           const scrollTop =
             window.pageYOffset || document.documentElement.scrollTop;
-          const top = rect.top + scrollTop - 50;
+          const top = rect.top + scrollTop - 180;
           window.scrollTo({ top, behavior: "smooth" });
         }
       }, 100);
@@ -450,9 +458,11 @@ const markCard = (cardId) => {
 };
 
 const searchQuery = ref("");
+const normalizedText = (text) =>
+  String(text).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 const filteredCards = computed(() =>
   [...cards.value, ...cardsDisponible.value].filter((card) =>
-    card.titulo.toLowerCase().includes(searchQuery.value.toLowerCase())
+    normalizedText(card.titulo.toLowerCase()).includes(normalizedText(searchQuery.value.toLowerCase()))
   )
 );
 
