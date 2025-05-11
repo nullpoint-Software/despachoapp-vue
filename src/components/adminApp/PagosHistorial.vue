@@ -80,7 +80,7 @@ import Button from "primevue/button";
 import Toast from "primevue/toast";
 import CardDetailHistorial from "./CardDetailHistorial.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
-import { formatFechaHoraFullSQL, formatFechaHoraSQL, ps } from "@/service/adminApp/client";
+import { formatFechaHoraFullSQL, formatFechaHoraSQL, formatFechaHoraFullPagoSQL, ps } from "@/service/adminApp/client";
 
 const toast = useToast();
 
