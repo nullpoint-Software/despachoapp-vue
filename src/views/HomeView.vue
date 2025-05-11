@@ -12,7 +12,7 @@
           <button @click="toggleMenu" class="lg:hidden text-3xl">
             <i class="pi pi-bars"></i>
           </button>
-          <img :src="mainImageSrc" alt="Logo" class="w-28" />
+          <img :src="mainImageSrc" alt="Logo" class="w-28 cursor-pointer" @click="window.scrollTo({top: 0, behavior: 'smooth'})" />
         </div>
         <div class="hidden md:flex space-x-8 text-xl">
           <router-link to="/" class="hover:text-blue-400">Inicio</router-link>
@@ -20,7 +20,7 @@
           <a href="#" @click.prevent="scrollToValores" class="hover:text-blue-400">Sobre Nosotros</a>
         </div>
         <button
-          class="hidden lg:block bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold px-6 py-2 rounded"
+          class="hidden lg:block bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold px-6 py-2 rounded cursor-pointer"
           @click="goLogin"
         >
           Iniciar Sesión
@@ -61,7 +61,7 @@
           Más de 25 años de experiencia y atención experta
         </p>
         <button
-          class="bg-blue-600 hover:bg-blue-700 text-white text-2xl font-semibold px-8 py-4 rounded"
+          class="bg-blue-600 hover:bg-blue-700 text-white text-2xl font-semibold px-8 py-4 rounded cursor-pointer"
           :class="isLogged ? 'bg-green-600' : 'bg-blue-600'"
             @click="goLogin"
           >
@@ -197,6 +197,7 @@ import visionImg from "@/assets/img/vision.svg";
 import misionImg from "@/assets/img/Mision.svg";
 
 import { as } from "@/service/adminApp/client";
+import router from "@/router";
 
 export default {
   setup() {
@@ -260,10 +261,12 @@ export default {
       valorImg,
       visionImg,
       misionImg,
+      router,
       scrollToFooter,
       scrollToValores,
       goLogin,
       toggleMenu,
+      window,
     };
   },
 };

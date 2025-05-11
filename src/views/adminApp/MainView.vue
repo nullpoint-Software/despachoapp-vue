@@ -11,18 +11,22 @@
           <i class="pi pi-bars"></i>
         </button>
         <!-- Logo de la empresa: La fuente de la imagen se define de manera reactiva -->
-        <img :src="mainImageSrc" alt="Logo de la Empresa" class="w-20 lg:w-20" />
+        <img :src="mainImageSrc" alt="Logo de la Empresa" class="w-20 lg:w-20 cursor-pointer"
+          @click="router.push('/app')" />
       </div>
 
       <!-- Sección derecha del navbar: Muestra la información del usuario y los botones -->
       <div class="hidden lg:flex text-white space-x-3 items-center mr-4">
         <!-- Avatar del usuario con tooltip que muestra el nombre del perfil -->
-        <Avatar v-tooltip.bottom="ProfileName" :image="profilePicture" shape="circle" />
-        <!-- Nombre del perfil del usuario -->
-        <div class="flex flex-col">
-          <span class="font-bold">{{ ProfileName }}</span>
-          <span class="text-xs text-gray-300">{{ ProfileType }}</span>
+        <div class="userInfo flex space-x-3 place-items-center cursor-pointer" @click="router.push('/app/settings')">
+          <Avatar v-tooltip.bottom="ProfileName" :image="profilePicture" shape="circle" />
+          <!-- Nombre del perfil del usuario -->
+          <div class="flex flex-col">
+            <span class="font-bold">{{ ProfileName }}</span>
+            <span class="text-xs text-gray-300">{{ ProfileType }}</span>
+          </div>
         </div>
+
 
         <!-- Separador vertical -->
         <Divider layout="vertical" />
@@ -30,8 +34,8 @@
         <Button icon="pi pi-book" class="p-button-rounded bg-yellow-500 hover:bg-yellow-600" @click="openNotesModal"
           aria-label="Abrir Tablero de Notas" />
         <!-- Botón para abrir LogsModal -->
-        <Button v-if="isAdmin" icon="pi pi-list" class="p-button-rounded bg-green-500 hover:bg-green-600" @click="openLogs"
-          aria-label="Ver Registros de Cambios" />
+        <Button v-if="isAdmin" icon="pi pi-list" class="p-button-rounded bg-green-500 hover:bg-green-600"
+          @click="openLogs" aria-label="Ver Registros de Cambios" />
         <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text
           @click="logOut" />
       </div>
@@ -160,6 +164,7 @@ import { useRouter } from "vue-router";
 import BoardNote from "@/components/notes/BoardNote.vue";
 import { as } from "@/service/adminApp/client";
 import LogsModal from "@/components/adminApp/LogsModal.vue";
+import router from "@/router";
 export default {
   components: { Button, Avatar, Divider, RouterView, RouterLink, BoardNote, ProgressSpinner, Loader, LogsModal },
   setup() {
@@ -231,7 +236,7 @@ export default {
       showNotesModal.value = false;
     };
     // Cambio: Estado y funciones para LogsModal
-    
+
     const openLogs = () => {           // abre LogsModal
       showLogs.value = true;
     };
@@ -252,6 +257,7 @@ export default {
       userId,
       showNotesModal,
       openNotesModal,
+      router,
       closeNotesModal,
       isAdmin,
       showLogs,
