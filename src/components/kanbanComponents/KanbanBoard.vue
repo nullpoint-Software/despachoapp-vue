@@ -3,7 +3,7 @@
   <Toast />
   <div class="relative">
     <!-- Buscador -->
-    <div class="sticky top-20 z-50 max-w-lg mx-auto px-4 mb-4">
+    <div class="sticky top-20 z-50 max-w-lg mx-auto mb-4">
       <div id="search-bar" v-if="!mini" :class="[
         'flex items-center bg-gray-900 text-white rounded-full px-4 py-2 transition-shadow duration-200',
         showShadow ? 'shadow-2xl shadow-neutral-900' : 'shadow-none'
