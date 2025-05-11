@@ -1,6 +1,6 @@
 <template>
   <Loader v-if="isLoading"></Loader>
-  <div class="relative flex justify-center items-center min-h-screen overflow-hidden">
+  <div class="relative flex justify-center items-center min-h-screen overflow-hidden m-1">
     <!-- Partículas giratorias -->
     <div class="background" :class="{ react: reacting }">
       <span v-for="i in 20" :key="i"></span>
@@ -55,8 +55,8 @@
             </button>
           </div>
         </div>
-
-        <div class="flex justify-between items-center mb-6">
+        <br>
+        <!-- <div class="flex justify-between items-center mb-6">
           <label for="remember" class="flex items-center cursor-pointer text-white">
             <input type="checkbox" id="remember" class="hidden" v-model="rememberMe" />
             <div
@@ -68,7 +68,7 @@
               Recuérdame
             </span>
           </label>
-        </div>
+        </div> -->
 
         <!-- Botón de inicio -->
         <button type="submit"
