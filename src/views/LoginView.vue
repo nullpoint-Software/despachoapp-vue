@@ -1,4 +1,5 @@
 <template>
+  <Loader v-if="isLoading"></Loader>
   <div class="relative flex justify-center items-center min-h-screen overflow-hidden">
     <!-- Partículas giratorias -->
     <div class="background" :class="{ react: reacting }">
@@ -87,9 +88,10 @@ import { useRouter } from "vue-router";
 import { as } from "@/service/adminApp/client";
 import { Toast, useToast } from "primevue";
 import { useRoute } from "vue-router";
+import Loader from "@/components/adminApp/Loader.vue";
 
 export default {
-  components: { InputText },
+  components: { InputText, Loader },
   setup() {
     const email = ref("");
     const password = ref("");
@@ -100,36 +102,49 @@ export default {
     const router = useRouter();
     const route = useRoute();
     const showError = ref(false);
+    const isLoading = ref(false);
     // Alternar visibilidad de la contraseña
     const togglePassword = () => {
       showPassword.value = !showPassword.value;
     };
     const toast = useToast();
     //checar si hay autenticacion
-    onMounted(() => {
-      const token = localStorage.getItem("token")
-      if (token) {
-        as.checkAuthRedirect(true);
+    onMounted(async () => {
+      isLoading.value = true
+
+      try {
+        const token = localStorage.getItem("token")
+        if (token) {
+          await as.checkAuthRedirect(true);
+        }
+
+        const errorType = route.query.error;
+        if (errorType === 'server') {
+
+          toast.add({
+            severity: 'error',
+            summary: 'Error del servidor',
+            detail: 'No se pudo obtener la información del usuario.',
+            life: 6000,
+          });
+          router.push("/login")
+        } else if (errorType === 'token') {
+          toast.add({
+            severity: 'warn',
+            summary: 'Sesión caducada o no válida',
+            detail: 'Por favor, inicia sesión nuevamente.',
+            life: 6000,
+          });
+          router.push("/login")
+        }
+      } catch (error) {
+        console.error(error);
+
+      } finally {
+        isLoading.value = false
       }
 
-      const errorType = route.query.error;
-      if (errorType === 'server') {
-        toast.add({
-          severity: 'error',
-          summary: 'Error del servidor',
-          detail: 'No se pudo obtener la información del usuario.',
-          life: 6000,
-        });
-        router.push("/login")
-      } else if (errorType === 'token') {
-        toast.add({
-          severity: 'warn',
-          summary: 'Sesión caducada o no válida',
-          detail: 'Por favor, inicia sesión nuevamente.',
-          life: 6000,
-        });
-        router.push("/login")
-      }
+
     });
     // Crear onda en posiciones aleatorias dentro del fondo
 
@@ -154,21 +169,22 @@ export default {
     };
 
     const login = async () => {
+      isLoading.value = true
       console.log("Iniciar sesión con:", {
         email: email.value,
         password: password.value,
       });
       showError.value = false;
 
-        const isLoggedIn = await as.loginUser({ username: email.value, password: password.value });
-        if (isLoggedIn) {
-          // If loginUser is successful, run goLogin
-          goLogin();
-        } else {
-          console.log("Login failed");
-          showError.value = true;
-        }
-      
+      const isLoggedIn = await as.loginUser({ username: email.value, password: password.value });
+      if (isLoggedIn) {
+        // If loginUser is successful, run goLogin
+        goLogin();
+      } else {
+        console.log("Login failed");
+        showError.value = true;
+      }
+
     };
 
 
@@ -178,6 +194,7 @@ export default {
 
     return {
       email,
+      isLoading,
       password,
       rememberMe,
       showPassword,

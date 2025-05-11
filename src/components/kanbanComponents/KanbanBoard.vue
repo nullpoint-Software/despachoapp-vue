@@ -99,9 +99,9 @@
     <TaskFormModal v-if="showTaskForm" :mode="taskFormMode" :task="currentTaskForm" @close="closeTaskForm"
       @save="saveTaskForm" />
   </div>
-  <Suspense>
+
     <PdfReport v-if="showPdf" @done="showPdf = false" :tasks="cards" />
-  </Suspense>
+
 </template>
 
 <script setup>
