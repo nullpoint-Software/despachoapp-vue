@@ -37,8 +37,8 @@
               <div class="flex space-x-2">
                 <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
                   class="p-2" @click="clearFilter" />
-                <Button icon="pi pi-plus" v-if="canAddCliente"
-                  :label="isMobile ? '' : 'Agregar Cliente'" class="p-button-success p-2" @click="openCard(null)" />
+                <Button icon="pi pi-plus" v-if="canAddCliente" :label="isMobile ? '' : 'Agregar Cliente'"
+                  class="p-button-success p-2" @click="openCard(null)" />
               </div>
             </div>
           </div>
@@ -64,8 +64,10 @@
           <template #body="{ data }">
             <!-- Si la columna es de acciones, mostrar botones -->
             <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-              <Button v-if="canEditCliente" icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-              <Button v-if="canDeleteCliente" icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+              <Button v-if="canEditCliente" icon="pi pi-pencil" class="p-button-rounded p-button-warning"
+                @click="openCard(data)" />
+              <Button v-if="canDeleteCliente" icon="pi pi-trash" class="p-button-rounded p-button-danger"
+                @click="openConfirmDialog(data)" />
             </div>
             <!-- Sino, mostrar el contenido de la celda -->
             <div v-else class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
@@ -117,7 +119,7 @@ const customers = ref(await cs.getClientes());
 
 // Definición de columnas base (sin la columna de acciones)
 const columns = ref([
-{ field: "id_cliente", header: "ID" },
+  { field: "id_cliente", header: "ID" },
   { field: "nombre", header: "Nombre Cliente" },
   { field: "rfc", header: "RFC" },
   { field: "fiel", header: "Contraseña FIEL" },
@@ -282,7 +284,7 @@ const saveCustomer = async (customer) => {
     const index = customers.value.findIndex((c) => c.id_cliente === customer.id_cliente);
     if (index !== -1) {
       customers.value[index] = { ...customer };
-      console.log("sending edit to id "+customer.id_cliente, await cs.editCliente(customer))
+      console.log("sending edit to id " + customer.id_cliente, await cs.editCliente(customer))
       toast.add({
         severity: "success",
         summary: "Actualizado",
@@ -290,7 +292,7 @@ const saveCustomer = async (customer) => {
         life: 2000,
       });
     } else {
-      customers.value.push(customer);
+      customers.value.unshift(customer);
       toast.add({
         severity: "success",
         summary: "Agregado",
@@ -298,6 +300,7 @@ const saveCustomer = async (customer) => {
         life: 2000,
       });
       console.log("sending", await cs.addCliente(customer));
+      window.location.reload()
     }
     cardVisible.value = false;
   }
@@ -312,7 +315,7 @@ const openConfirmDialog = (customer) => {
 };
 const confirmDelete = async () => {
   if (candidateToDelete.value) {
-    console.log("deleting cliente with id "+candidateToDelete.value.id, await cs.deleteCliente(candidateToDelete.value.id_cliente))
+    console.log("deleting cliente with id " + candidateToDelete.value.id, await cs.deleteCliente(candidateToDelete.value.id_cliente))
     customers.value = await customers.value.filter(
       (c) => c.id_cliente !== candidateToDelete.value.id_cliente
     );

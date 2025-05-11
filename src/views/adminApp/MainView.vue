@@ -30,7 +30,7 @@
         <Button icon="pi pi-book" class="p-button-rounded bg-yellow-500 hover:bg-yellow-600" @click="openNotesModal"
           aria-label="Abrir Tablero de Notas" />
         <!-- Botón para abrir LogsModal -->
-        <Button icon="pi pi-list" class="p-button-rounded bg-green-500 hover:bg-green-600" @click="openLogs"
+        <Button v-if="isAdmin" icon="pi pi-list" class="p-button-rounded bg-green-500 hover:bg-green-600" @click="openLogs"
           aria-label="Ver Registros de Cambios" />
         <Button label="Cerrar sesión" icon="pi pi-sign-out" class="flex-auto cursor-pointer" severity="danger" text
           @click="logOut" />
@@ -171,7 +171,7 @@ export default {
     const logsKey = ref(0);
     const ProfileName = ref(localStorage.getItem("fullname"))
     const ProfileType = localStorage.getItem("level")
-    // Definir un ID de usuario de ejemplo
+    const isAdmin = (localStorage.getItem("level") == "Administrador")
     const userId = ref(localStorage.getItem("userid"));
     const storedPhoto = localStorage.getItem("userphoto");
     const profilePicture = ref(
@@ -253,6 +253,7 @@ export default {
       showNotesModal,
       openNotesModal,
       closeNotesModal,
+      isAdmin,
       showLogs,
       logsKey,       // Cambio: retorna showLogs
       openLogs,       // Cambio: retorna openLogs

@@ -22,5 +22,20 @@ class LogsService {
       throw error;
     }
   }
+
+  async revertLog(log:any): Promise<any> {
+    try {
+      const response = await this.axios.post(`${this.serverip}/logs`, log,
+        {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+      throw error;
+    }
+  }
 }
 export default LogsService;
