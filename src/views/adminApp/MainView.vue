@@ -12,7 +12,7 @@
         </button>
         <!-- Logo de la empresa: La fuente de la imagen se define de manera reactiva -->
         <img :src="mainImageSrc" alt="Logo de la Empresa" class="w-20 lg:w-20 cursor-pointer"
-          @click="router.push('/app')" />
+          @click="window.scrollTo({top:0, behavior: 'smooth'})" />
       </div>
 
       <!-- Sección derecha del navbar: Muestra la información del usuario y los botones -->
@@ -263,7 +263,8 @@ export default {
       showLogs,
       logsKey,       // Cambio: retorna showLogs
       openLogs,       // Cambio: retorna openLogs
-      closeLogs       // Cambio: retorna closeLogs
+      closeLogs,       // Cambio: retorna closeLogs
+      window
     };
   },
 };
