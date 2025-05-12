@@ -183,6 +183,7 @@ export default {
       } else {
         console.log("Login failed");
         showError.value = true;
+        isLoading.value = false
       }
 
     };
