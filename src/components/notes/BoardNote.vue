@@ -45,7 +45,7 @@
         class="notes-grid gap-6"
         :style="{'display': 'grid', 'grid-template-columns': `repeat(${gridColumns}, minmax(0, 1fr))`}"
       >
-        <Note v-for="note in filteredNotes" :key="note.id" :note="note" />
+        <Note v-for="note in filteredNotes" :key="note.id" :note="note" @delete="deleteNote" />
       </div>
   
       <!-- Modal para agregar una nueva nota -->
@@ -68,10 +68,10 @@
             <!-- Formulario para la nueva nota -->
             <form @submit.prevent="addNote">
               <div class="mb-5">
-                <label class="block text-gray-700 font-semibold mb-2" for="noteTitle">Título</label>
+                <label class="block text-gray-700 font-semibold mb-2" for="notetitulo">Título</label>
                 <input
-                  id="noteTitle"
-                  v-model="newNote.title"
+                  id="notetitulo"
+                  v-model="newNote.titulo"
                   type="text"
                   placeholder="Ingresa el título"
                   class="w-full p-3 border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -79,10 +79,10 @@
                 />
               </div>
               <div class="mb-6">
-                <label class="block text-gray-700 font-semibold mb-2" for="noteDescription">Descripción (Markdown)</label>
+                <label class="block text-gray-700 font-semibold mb-2" for="notedescripcion">Descripción (Markdown)</label>
                 <textarea
-                  id="noteDescription"
-                  v-model="newNote.description"
+                  id="notedescripcion"
+                  v-model="newNote.descripcion"
                   rows="5"
                   placeholder="Ingresa la descripción en Markdown"
                   class="w-full p-3 border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -115,28 +115,10 @@
   <script setup>
   import { ref, computed } from "vue";
   import Note from "./Note.vue";
+import { ns } from "@/service/adminApp/client";
   
   // Array reactivo con las notas existentes
-  const notes = ref([
-    {
-      id: 1,
-      title: "Nota 1",
-      description:
-        "# Encabezado\n\nEste es el contenido de la **nota 1** usando _Markdown_."
-    },
-    {
-      id: 2,
-      title: "Nota 2",
-      description:
-        "Un texto simple con **negrita** y *cursiva*.\n\n- Elemento 1\n- Elemento 2"
-    },
-    {
-      id: 3,
-      title: "Nota 3",
-      description:
-        "Utiliza listas, [enlaces](https://example.com) y otros elementos de markdown."
-    }
-  ]);
+  const notes = ref(await ns.getNotas());
   
   // Ref para el buscador de notas
   const searchQuery = ref("");
@@ -145,8 +127,8 @@
   const filteredNotes = computed(() =>
     notes.value.filter(
       (note) =>
-        note.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        note.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+        note.titulo.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        note.descripcion.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   );
   
@@ -158,8 +140,8 @@
   
   // Ref para los datos del formulario de una nueva nota
   const newNote = ref({
-    title: "",
-    description: ""
+    titulo: "",
+    descripcion: ""
   });
   
   // Función para abrir el modal
@@ -170,14 +152,15 @@
   // Función para cerrar el modal y resetear el formulario
   const closeAddModal = () => {
     showAddModal.value = false;
-    newNote.value = { title: "", description: "" };
+    newNote.value = { titulo: "", descripcion: "" };
   };
   
   // Función para agregar la nueva nota
-  const addNote = () => {
+  const addNote = async () => {
     const newId =
       notes.value.length > 0 ? Math.max(...notes.value.map((n) => n.id)) + 1 : 1;
     notes.value.push({ id: newId, ...newNote.value });
+    await ns.addNota(newNote.value)
     closeAddModal();
   };
   </script>

@@ -2,27 +2,47 @@
 <template>
   <!-- Se asigna lang="es" para que el navegador utilice las reglas del español -->
   <div lang="es" class="note bg-gray-50 border border-gray-200 rounded-md shadow p-4">
+    
     <!-- Título de la nota con la clase "note-title" -->
-    <h2 class="note-title text-xl font-bold text-gray-800 mb-2">{{ note.title }}</h2>
+    <h2 class="note-title text-xl font-bold text-gray-800 mb-2">{{ note.titulo }}<button @click.stop="confirmDialogVisible = true; noteToDelete = note"
+                class="text-red-500 hover:text-red-700 cursor-pointer ml-2">
+                <i class="pi pi-trash text-lg"></i>
+              </button></h2>
     <!-- Contenido de la nota renderizado a HTML desde Markdown -->
     <div class="note-content text-gray-700" v-html="parsedMarkdown"></div>
   </div>
+  <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'¿Estás seguro de eliminar esta nota?'" @confirm="confirmDelete(noteToDelete.id)" @cancel="confirmDialogVisible = false"></ConfirmDeleteDialog>
 </template>
 
 <script setup>
-import { computed, defineProps } from 'vue'
+import { computed, defineProps, ref } from 'vue'
 import { marked } from 'marked'
-
+import ConfirmDeleteDialog from '../adminApp/ConfirmDeleteDialog.vue'
+import { ns } from '@/service/adminApp/client'
+const confirmDialogVisible = ref(false)
+const noteToDelete = ref();
 const props = defineProps({
   note: {
     type: Object,
     required: true
-    // Estructura: { id: Number, title: String, description: String (markdown) }
+    // Estructura: { id: Number, titulo: String, descripcion: String (markdown) }
   }
 })
 
-// Convertimos la descripción de Markdown a HTML
-const parsedMarkdown = computed(() => marked(props.note.description))
+
+async function confirmDelete(id) {
+  try {
+    await ns.deleteNota(id)
+    confirmDialogVisible.value = false;
+    window.location.reload()
+  } catch (error) {
+    console.error(error);
+    
+  }
+  
+}
+// Se convierte la descripción de la nota de markdown a HTML
+const parsedMarkdown = computed(() => marked(props.note.descripcion))
 </script>
 
 <style scoped>

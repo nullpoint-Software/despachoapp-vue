@@ -5,30 +5,19 @@
     <div class="modal-overlay" @click.self="$emit('close')">
       <!-- Contenedor del Modal con fondo gris bajito -->
       <div class="modal-content relative bg-gray-50">
-        
+
         <!-- Encabezado: Foto del usuario y nombre -->
         <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
-          <div class="w-16 h-16">
-            <template v-if="card.image">
-              <img
-                :src="card.image"
-                alt="Foto del Usuario"
-                class="w-16 h-16 rounded-full object-cover"
-              />
-            </template>
-            <template v-else>
-              <!-- Cambio: Se aumenta el tamaño del icono cambiando text-6xl a text-7xl -->
-              <i
-                :class="card.userIcon || ''"
-                class="w-16 h-16 text-gray-400 items-center justify-center"
-              ></i>
-            </template>
+          <div class="w-16 h-16" v-if="card.image || card.id_usuario">
+            <img :src="!card.image ? defaultprofilePicture : card.image" alt="Foto del Usuario"
+              class="w-16 h-16 rounded-full object-cover" />
           </div>
           <div>
             <h3 class="text-2xl font-bold text-gray-800">
-              <!-- Cambio: Si la tarea está asignada se muestra el nombre; de lo contrario se indica 'No asignado' -->
-              {{ card.userName && card.status !== 'Disponible' ? card.userName : 'No asignado' }}
+              {{ card.username && card.status !== 'Disponible' ? card.nombre : 'No asignado' }}
             </h3>
+            <h2 class="text-1xl font-bold text-gray-600">{{ card.nombre ? card.username +" (ID: "+card.id_usuario+")" :
+              ""}}</h2>
           </div>
         </div>
 
@@ -36,28 +25,33 @@
         <table class="w-full text-sm border border-gray-200 rounded-md overflow-hidden mb-6">
           <tbody>
             <!-- Título de la tarea -->
-            <tr
-              class="border-b border-gray-200"
-              :style="{ backgroundColor: getStatusColor(card.status) }"
-            >
+            <tr class="border-b border-gray-200" :style="{ backgroundColor: getStatusColor(card.status) }">
               <th colspan="2" class="px-4 py-2 text-center font-semibold text-black">
                 {{ card.title }}
               </th>
             </tr>
 
-            <!-- Cliente -->
+            <!-- Descripción -->
             <tr class="border-b border-gray-200">
+              <td class="px-4 py-2 font-medium text-gray-700 text-center">ID</td>
+              <td class="px-4 py-2 text-gray-600 text-center">
+                {{ card.id_tarea }}
+              </td>
+            </tr>
+
+            <!-- Cliente -->
+            <!-- <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Cliente</td>
               <td class="px-4 py-2 text-gray-600 text-center">
                 {{ card.ClientName || 'Cliente no disponible' }}
               </td>
-            </tr>
+            </tr> -->
 
             <!-- Descripción -->
             <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Descripción</td>
               <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.description }}
+                {{ card.descripcion }}
               </td>
             </tr>
 
@@ -68,50 +62,45 @@
 
             <!-- Fecha -->
             <tr class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha</td>
+              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha de creación</td>
               <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.date ? card.date : 'No disponible' }}
+                {{ card.fecha_creacion ? formatFechaHoraFullSQL(card.fecha_creacion) : 'No disponible' }}
               </td>
             </tr>
 
             <!-- Fecha Finalización -->
             <tr class="border-b border-gray-200">
-              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha Finalizacion</td>
+              <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha de finalización</td>
               <td class="px-4 py-2 text-gray-600 text-center">
-                {{ card.fechaFinalizacion ? card.fechaFinalizacion : 'No disponible' }}
+                {{ card.fecha_vencimiento ? formatFechaHoraFullSQL(card.fecha_vencimiento) : 'No disponible' }}
               </td>
             </tr>
 
             <!-- Horario -->
-            <tr>
+            <!-- <tr>
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Horario</td>
               <td class="px-4 py-2 text-gray-600 text-center">
                 <div>Inicio: {{ card.startTime ? card.startTime : 'No disponible' }}</div>
                 <div>Fin: {{ card.endTime ? card.endTime : 'No disponible' }}</div>
               </td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
 
         <!-- Botones -->
         <div class="flex space-x-4">
           <!-- Botón Modificar -->
-          <button
-            @click="editTask"
-            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none"
-          >
+          <button @click="editTask"
+            class="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none">
             <i class="pi pi-pencil"></i>
             <span>Modificar</span>
           </button>
 
           <!-- Botón Estado -->
-          <button
-            @click="advanceState"
-            :style="{ backgroundColor: getStatusColor(card.status) }"
-            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold shadow hover:opacity-90 transition transform hover:scale-105 focus:outline-none border border-gray-300"
-          >
-            <i :class="getStateIcon(card.status)"></i>
-            <span>{{ card.status }}</span>
+          <button @click="advanceState" :style="{ backgroundColor: getStatusColor(card.estado) }"
+            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold shadow hover:opacity-90 transition transform hover:scale-105 focus:outline-none border border-gray-300">
+            <i :class="getStateIcon(card.estado)"></i>
+            <span>{{ card.estado }}</span>
           </button>
         </div>
       </div>
@@ -122,7 +111,11 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue';
 import 'primeicons/primeicons.css';
-
+import defaultprofilePicture from '@/assets/img/user.jpg'
+import { formatFechaHoraFullSQL } from '@/service/adminApp/client';
+import { hasPermission } from '@/service/adminApp/permissionsService';
+import { Toast, useToast } from 'primevue';
+const toast = useToast();
 const props = defineProps({
   card: {
     type: Object,
@@ -133,7 +126,7 @@ const props = defineProps({
 const emit = defineEmits(['advanceState', 'close', 'edit']);
 
 // Función para emitir el evento 'edit' con la tarea (card) como argumento
-const editTask = () => {
+const editTask = async () => {
   emit('edit', props.card);
 };
 
@@ -145,9 +138,9 @@ const getStatusColor = (status) => {
   switch (status) {
     case 'Disponible':
       return '#A7F3D0';
-    case 'Por Hacer':
+    case 'Pendiente':
       return '#FCD34D';
-    case 'En progreso':
+    case 'En Progreso':
       return '#93C5FD';
     case 'Terminado':
       return '#D1D5DB';
@@ -160,9 +153,9 @@ const getStateIcon = (status) => {
   switch (status) {
     case 'Disponible':
       return 'pi pi-check-circle';
-    case 'Por Hacer':
+    case 'Pendiente':
       return 'pi pi-folder-open';
-    case 'En progreso':
+    case 'En Progreso':
       return 'pi pi-spinner pi-spin';
     case 'Terminado':
       return 'pi pi-check';
@@ -185,7 +178,8 @@ const getStateIcon = (status) => {
 }
 
 .modal-content {
-  background-color: #f9fafb; /* Fondo gris bajito */
+  background-color: #f9fafb;
+  /* Fondo gris bajito */
   border-radius: 0.5rem;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   width: 100%;
@@ -201,6 +195,7 @@ const getStateIcon = (status) => {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -212,6 +207,7 @@ const getStateIcon = (status) => {
 .fade-leave-active {
   transition: opacity 0.3s;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
@@ -227,6 +223,7 @@ const getStateIcon = (status) => {
     opacity: 1;
     transform: translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateY(-20px);

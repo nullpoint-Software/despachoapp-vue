@@ -1,21 +1,13 @@
 <template>
   <!-- Contenedor de la tabla -->
   <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
-    <DataTable
-      :value="historial"
-      :filters="filters"
-      :globalFilterFields="['cliente', 'quienAtendio', 'fecha', 'cantidad', 'tipo']"
-      paginator
-      sortMode="multiple"
-      removableSort
-      :rows="5"
-      :rowsPerPageOptions="[5, 10, 20, 50]"
-      :rowClass="rowClass"
-      class="w-full rounded-lg p-5"
-    >
+    <DataTable :value="historial" :filters="filters"
+      :globalFilterFields="['id','cliente', 'atendio', 'fecha_legible', 'cantidad', 'tipo']" paginator sortMode="multiple"
+      removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass" class="w-full rounded-lg p-5">
       <!-- Encabezado de la tabla -->
       <template #header>
-        <div class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
             <!-- Buscador -->
             <div class="flex space-x-2 border-2 border-solid">
@@ -24,63 +16,50 @@
               </span>
             </div>
             <div class="relative w-full sm:w-auto">
-              <InputText
-                v-model="filters.global.value"
-                placeholder="Buscar..."
-                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <InputText v-model="filters.global.value" autocomplete="new-password" placeholder="Buscar..."
+                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <!-- Botones -->
             <div class="flex space-x-2">
-              <Button
-                type="button"
-                icon="pi pi-filter-slash"
-                :label="isMobile ? '' : 'Limpiar Filtros'"
-                outlined
-                class="p-2"
-                @click="clearFilter"
-              />
+              <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
+                class="p-2" @click="clearFilter" />
             </div>
           </div>
         </div>
         <!-- Slider para columnas -->
-        <div
-          v-if="pages.length > 1"
-          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2"
-        >
-          <Button
-            icon="pi pi-chevron-left"
-            @click="prevPage"
-            :disabled="currentPageIndex === 0"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
-          <Button
-            icon="pi pi-chevron-right"
-            @click="nextPage"
-            :disabled="currentPageIndex === maxPageIndex"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
+        <div v-if="pages.length > 1"
+          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2">
+          <Button icon="pi pi-chevron-left" @click="prevPage" :disabled="currentPageIndex === 0"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
+          <Button icon="pi pi-chevron-right" @click="nextPage" :disabled="currentPageIndex === maxPageIndex"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
         </div>
       </template>
 
       <!-- Renderizado dinámico de columnas -->
-      <Column
-        v-for="col in visibleColumns"
-        :key="col.field"
-        :sortable="true"
-        :field="col.field"
-      >
+      <Column v-for="col in visibleColumns" :key="col.field" :sortable="true" :field="col.field">
         <template #header>
-          <div class="p-1 text-black font-semibold text-center text-sm">
+          <div class="p-1 text-black font-semibold text-center text-sm w-full">
             {{ col.header }}
           </div>
         </template>
         <template #body="{ data }">
-          <div
+          <div v-if="col.field === 'fecha'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard(data[col.field])"
-          >
-            {{ data[col.field] }}
+            @click="copyToClipboard(formatFechaHoraFullSQL(data[col.field]))">
+            {{ formatFechaHoraFullSQL(data[col.field]) }}
+          </div>
+          <div v-if="col.field === 'cantidad'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard('$'+data[col.field])">
+            {{ '$'+data[col.field] }}
+          </div>
+          <div v-else-if="col.field != 'fecha' && col.field != 'cantidad' && col.field != 'actions'" class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(data[col.field])">
+            {{ data[col.field] }} 
+          </div>
+          <div v-if="col.field === 'actions'" class="flex justify-center space-x-2 ">
+            <Button icon="pi pi-link" class="p-button-rounded p-button-info" title="Ir a pago" @click="linkToPayment(data)"/>
           </div>
         </template>
       </Column>
@@ -89,22 +68,14 @@
 
   <!-- Toast y modales -->
   <Toast />
-  <CardDetailHistorial
-    v-if="cardVisible"
-    :registro="selectedHistorial"
-    :usuario="usuario"
-    @close="cardVisible = false"
-    @save="saveHistorial"
-  />
-  <ConfirmDeleteDialog
-    v-if="confirmDialogVisible"
-    @confirm="confirmDelete"
-    @cancel="cancelDelete"
-  />
+  <CardDetailHistorial v-if="cardVisible" :registro="selectedHistorial" :usuario="usuario" @close="cardVisible = false"
+    @save="saveHistorial" />
+  <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -113,14 +84,12 @@ import Button from "primevue/button";
 import Toast from "primevue/toast";
 import CardDetailHistorial from "./CardDetailHistorial.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
+import { formatFechaHoraFullSQL, formatFechaHoraSQL, formatFechaHoraFullPagoSQL, ps } from "@/service/adminApp/client";
 
 const toast = useToast();
-
+const router = useRouter();
 // Datos de ejemplo
-const historial = ref([
-  { id: "H-1001", cliente: "Cliente A", quienAtendio: "Usuario X", fecha: "01/05/2025", cantidad: "$500.00", tipo: "cobro" },
-  { id: "H-1002", cliente: "Cliente B", quienAtendio: "Usuario Y", fecha: "02/05/2025", cantidad: "$300.00", tipo: "pago" },
-]);
+const historial = ref(await ps.getPagoHistorial());
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
@@ -131,11 +100,13 @@ const usuario = ref({
 
 // Definición de columnas base (sin columna de acciones)
 const columns = ref([
+  { field: "id", header: "ID" },
   { field: "cliente", header: "Cliente" },
-  { field: "quienAtendio", header: "Atendió" },
+  { field: "atendio", header: "Atendió" },
   { field: "fecha", header: "Fecha" },
   { field: "cantidad", header: "Cantidad" },
   { field: "tipo", header: "Tipo" },
+  { field: "actions", header: "Acciones" },
 ]);
 const baseColumns = computed(() => columns.value);
 
@@ -161,6 +132,15 @@ const copyToClipboard = async (text) => {
   }
 };
 
+const addDollarPrefix = (value) => {
+  // Si está vacío o 0, no le agregamos nada
+  if (!value) return value;
+  if (typeof value === "string" && !value.startsWith("$")) {
+    return "$" + value;
+  }
+  return value;
+};
+
 // Detección de dispositivo móvil
 const isMobile = ref(window.innerWidth <= 640);
 const screenWidth = ref(window.innerWidth);
@@ -184,12 +164,32 @@ onMounted(() => {
     });
     resizeObserver.observe(containerRef.value);
   }
+  historial.value = historial.value.map(item => ({
+    ...item,
+    fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
+  }));
 });
 onUnmounted(() => {
   if (resizeObserver && containerRef.value) {
     resizeObserver.unobserve(containerRef.value);
   }
 });
+
+async function linkToPayment(data) {
+  if(data.id.startsWith("M-")){
+    router.push({
+    path: '/app/pagos/mensual',
+    query: { search: data.id }
+  });
+  }
+  if(data.id.startsWith("C-")){
+    router.push({
+    path: '/app/pagos/concepto',
+    query: { search: data.id }
+  });
+  }
+  
+}
 
 // CÁLCULO DEL SLIDER DE COLUMNAS
 const minColumnWidth = 150;
@@ -238,7 +238,7 @@ const openCard = (registro) => {
     selectedHistorial.value = {
       id: "",
       cliente: "",
-      quienAtendio: usuario.value.nombre, // se asigna nombre del usuario
+      atendio: usuario.value.nombre, // se asigna nombre del usuario
       fecha: "",
       cantidad: "",
       tipo: "",

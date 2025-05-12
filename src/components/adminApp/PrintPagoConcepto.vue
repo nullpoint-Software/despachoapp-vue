@@ -1,15 +1,16 @@
-<!-- PrintTicket.vue -->
+<!-- PrintPagoConcepto.vue -->
 <template>
-  <div
-    class="ticket-printer-overlay"
-    @mousedown.self="$emit('close')"
-  >
+  <div class="ticket-printer-overlay" @mousedown.self="$emit('close')">
     <div class="ticket-printer-modal">
       <!-- Seccion para seleccionar la impresora -->
       <div class="printer-selection" v-if="!showDownload">
         <select id="printerSelect" v-model="selectedPrinter">
           <option disabled value="">Seleccione una impresora</option>
-          <option v-for="impresora in printers" :key="impresora" :value="impresora">
+          <option
+            v-for="impresora in printers"
+            :key="impresora"
+            :value="impresora"
+          >
             {{ impresora }}
           </option>
         </select>
@@ -67,92 +68,24 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import utc from "dayjs/plugin/utc";
-import { formatFechaHoraFullPagoSQL, formatFechaMesAnoSQL } from "@/service/adminApp/client";
+import { formatFechaHoraFullPagoSQL } from "@/service/adminApp/client";
 
 dayjs.extend(advancedFormat);
 dayjs.extend(localizedFormat);
 dayjs.extend(customParseFormat);
 dayjs.extend(weekday);
 dayjs.extend(utc);
+const showDownload = ref(false);
+const emit = defineEmits(["close"]);
+const props = defineProps({
+  payment: { type: Object, required: true },
+});
 
-// permite emitir 'close'
-const emit = defineEmits(['close']);
-
-// estado
 const printers = ref([]);
 const selectedPrinter = ref("");
 const apiKey = "123456";
 const logo = logoAsset;
-const showDownload = ref(false)
-// props
-const props = defineProps({
-  ticket: { type: Object, required: true }
-});
 
-// ASCII params
-const totalWidth = 48;
-const leftCol = 14;
-const rightCol = totalWidth - 7 - leftCol;
-const dashLine = "-".repeat(totalWidth);
-const eqLine = "=".repeat(totalWidth);
-
-function centerText(txt) {
-  const pad = Math.max(0, Math.floor((totalWidth - txt.length) / 2));
-  return " ".repeat(pad) + txt + " ".repeat(totalWidth - txt.length - pad);
-}
-
-function wrapText(text, width) {
-  const lines = [];
-  let rem = text;
-  while (String(rem).length > width) {
-    lines.push(rem.slice(0, width));
-    rem = rem.slice(width);
-  }
-  lines.push(rem);
-  return lines;
-}
-
-function row(label, val) {
-  const lab = String(label).padEnd(leftCol).slice(0, leftCol);
-  const vals = wrapText(val, rightCol);
-  const first = `| ${lab} | ${String(vals[0]).padEnd(rightCol)} |`;
-  const rest = vals.slice(1).map(l => `| ${" ".repeat(leftCol)} | ${l.padEnd(rightCol)} |`);
-  return [first, ...rest].join("\n");
-}
-
-const formattedTicket = computed(() => {
-  const t = props.ticket;
-  const lines = [];
-  lines.push(dashLine);
-  lines.push(centerText("Ticket de Pago"));
-  lines.push(dashLine);
-  lines.push(row("Cliente", t.cliente));
-  lines.push(dashLine);
-  lines.push(row("Asunto", t.asunto));
-  lines.push(dashLine);
-  lines.push(row("Atendio", t.atendio));
-  lines.push(dashLine);
-  lines.push(row("Honorarios", "$"+t.honorarios));
-  lines.push(dashLine);
-  lines.push(row("Mes y Ano", formatFechaMesAnoSQL(t.mes_ano)));
-  lines.push(dashLine);
-  lines.push(row("Fecha de pago", formatFechaHoraFullPagoSQL(t.fechapago)));
-  lines.push(dashLine);
-  lines.push("");
-  lines.push(eqLine);
-  lines.push(centerText("Fecha de impresion:"));
-  const now = dayjs();
-  lines.push(centerText(now.format("h:mm A, ddd MMM DD")));
-  lines.push(eqLine);
-  lines.push(centerText("Despacho Contable Y Fiscal Sanchez"));
-  lines.push("");
-  lines.push(centerText("Gracias por su preferencia"));
-  lines.push(centerText(":)"));
-  lines.push("");
-  return lines.join("\n");
-});
-
-// cargar impresoras
 const fetchPrinters = async () => {
   try {
     const list = await connetor_plugin.obtenerImpresoras();
@@ -164,7 +97,14 @@ const fetchPrinters = async () => {
   }
 };
 onMounted(fetchPrinters);
-const downloadPlugin = async () =>{
+
+const totalWidth = 48;
+const leftCol = 14;
+const rightCol = totalWidth - 7 - leftCol;
+const dashLine = "-".repeat(totalWidth);
+const eqLine = "=".repeat(totalWidth);
+
+const downloadPlugin = async () => {
   const url = `${serverip}/Plugin_Impresora_termica.exe`;
   const a = document.createElement("a");
   a.href = url;
@@ -172,8 +112,64 @@ const downloadPlugin = async () =>{
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+};
+
+function centerText(txt) {
+  const pad = Math.max(0, Math.floor((totalWidth - txt.length) / 2));
+  return " ".repeat(pad) + txt + " ".repeat(totalWidth - txt.length - pad);
 }
-// imprimir
+
+function wrapText(text, width) {
+  const lines = [];
+  let rem = text;
+  while (rem.length > width) {
+    lines.push(rem.slice(0, width));
+    rem = rem.slice(width);
+  }
+  lines.push(rem);
+  return lines;
+}
+
+function row(label, val) {
+  const lab = label.padEnd(leftCol).slice(0, leftCol);
+  const vals = wrapText(String(val), rightCol);
+  const first = `| ${lab} | ${vals[0].padEnd(rightCol)} |`;
+  const rest = vals
+    .slice(1)
+    .map((l) => `| ${" ".repeat(leftCol)} | ${l.padEnd(rightCol)} |`);
+  return [first, ...rest].join("\n");
+}
+
+const formattedTicket = computed(() => {
+  const t = props.payment;
+  const lines = [];
+  lines.push(dashLine);
+  lines.push(centerText("Ticket de Pago"));
+  lines.push(dashLine);
+  lines.push(row("Cliente", t.cliente));
+  lines.push(dashLine);
+  lines.push(row("Asunto", t.asunto));
+  lines.push(dashLine);
+  lines.push(row("Atendio", t.atendio));
+  lines.push(dashLine);
+  lines.push(row("Cobramos", "$" + t.cobramos));
+  lines.push(dashLine);
+  lines.push(row("Pagamos", "$" + t.pagamos));
+  lines.push(dashLine);
+  lines.push(row("Fecha", formatFechaHoraFullPagoSQL(t.fecha)));
+  lines.push(dashLine);
+  lines.push(eqLine);
+  lines.push(centerText("Fecha de impresion:"));
+  lines.push(centerText(dayjs().format("h:mm A, ddd MMM DD")));
+  lines.push(eqLine);
+  lines.push(centerText("Despacho Contable Y Fiscal Sanchez"));
+  lines.push("");
+  lines.push(centerText("Gracias por su preferencia"));
+  lines.push(centerText(":)"));
+  lines.push("");
+  return lines.join("\n");
+});
+
 const doPrint = async () => {
   if (!selectedPrinter.value) {
     return alert("Por favor, seleccione una impresora.");
@@ -187,18 +183,18 @@ const doPrint = async () => {
     // titulo
     con.fontsize("2");
     con.textaling("center");
-    con.text("Ticket de Pago");
+    con.text("Detalle de pago");
     con.feed("1");
     // contenido ASCII
     con.fontsize("1");
     con.textaling("left");
-    formattedTicket.value.split("\n").forEach(line => con.text(line));
+    formattedTicket.value.split("\n").forEach((line) => con.text(line));
     // barcode
-    if (props.ticket.id) {
+    if (props.payment.id) {
       con.feed("1");
-      con.barcode_128(String(props.ticket.id));
+      con.barcode_128(String(props.payment.id));
       con.textaling("center");
-      con.text(props.ticket.id);
+      con.text(props.payment.id);
     }
     // cierre
     con.feed("5");
@@ -214,15 +210,21 @@ const doPrint = async () => {
 
 <style scoped>
 .ticket-printer-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 .ticket-printer-modal {
-  background: #fff; padding: 20px; border-radius: 8px;
-  width: 460px; text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 460px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   /* forzar texto negro */
   color: #000 !important;
 }
@@ -231,21 +233,40 @@ const doPrint = async () => {
 }
 .printer-selection {
   margin-bottom: 20px;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 .printer-selection select {
-  border: 1px solid #ccc; border-radius: 4px; padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px 10px;
 }
-.ticket { margin-bottom: 20px; }
-.logo img { width: 70px; margin: 0 auto 10px; display: block; }
+.ticket {
+  margin-bottom: 20px;
+}
+.logo img {
+  width: 70px;
+  margin: 0 auto 10px;
+  display: block;
+}
 .ticket-content {
-  font-family: monospace; font-size: 14px;
-  white-space: pre; line-height: 1.4;
-  background: #f9f9f9; padding: 10px;
-  border: 1px solid #ddd; border-radius: 4px; margin: 0;
-  text-align: left; overflow-x: auto;
+  font-family: monospace;
+  font-size: 14px;
+  white-space: pre;
+  line-height: 1.4;
+  background: #f9f9f9;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin: 0;
+  text-align: left;
+  overflow-x: auto;
 }
 .actions {
-  display: flex; justify-content: space-around; margin-top: 10px;
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
 }
 </style>

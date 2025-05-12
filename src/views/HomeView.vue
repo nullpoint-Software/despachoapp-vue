@@ -12,7 +12,7 @@
           <button @click="toggleMenu" class="lg:hidden text-3xl">
             <i class="pi pi-bars"></i>
           </button>
-          <img :src="mainImageSrc" alt="Logo" class="w-28" />
+          <img :src="mainImageSrc" alt="Logo" class="w-28 cursor-pointer" @click="window.scrollTo({top: 0, behavior: 'smooth'})" />
         </div>
         <div class="hidden md:flex space-x-8 text-xl">
           <router-link to="/" class="hover:text-blue-400">Inicio</router-link>
@@ -20,7 +20,7 @@
           <a href="#" @click.prevent="scrollToValores" class="hover:text-blue-400">Sobre Nosotros</a>
         </div>
         <button
-          class="hidden lg:block bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold px-6 py-2 rounded"
+          class="hidden lg:block bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold px-6 py-2 rounded cursor-pointer"
           @click="goLogin"
         >
           Iniciar Sesión
@@ -61,10 +61,11 @@
           Más de 25 años de experiencia y atención experta
         </p>
         <button
-          class="bg-blue-600 hover:bg-blue-700 text-white text-2xl font-semibold px-8 py-4 rounded"
-          @click="goLogin"
-        >
-          Iniciar Sesión
+          class="bg-blue-600 hover:bg-blue-700 text-white text-2xl font-semibold px-8 py-4 rounded cursor-pointer"
+          :class="isLogged ? 'bg-green-600' : 'bg-blue-600'"
+            @click="goLogin"
+          >
+            {{ isLogged ? "Ingresar" : "Iniciar Sesión"}}
         </button>
       </div>
     </section>
@@ -181,7 +182,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 import mainImageSrc from "@/assets/img/logsymbolwhite.png";
@@ -195,19 +196,61 @@ import valorImg from "@/assets/img/valores.svg";
 import visionImg from "@/assets/img/vision.svg";
 import misionImg from "@/assets/img/Mision.svg";
 
+import { as } from "@/service/adminApp/client";
+import router from "@/router";
+
 export default {
   setup() {
     const router = useRouter();
     const menuOpen = ref(false);
+    const currentSlide = ref(0);
+    const token = localStorage.getItem("token");
+    const isLogged = ref(false);
+    if (token){
+      isLogged.value = true;
+    }
 
     const scrollToFooter = () =>
       document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" });
     const scrollToValores = () =>
       document.getElementById("valores")?.scrollIntoView({ behavior: "smooth" });
-    const goLogin = () => router.push("/login");
-    const toggleMenu = () => (menuOpen.value = !menuOpen.value);
+
+    const goLogin = () => {
+      router.push("/login");
+    };
+
+    const toggleMenu = () => {
+      menuOpen.value = !menuOpen.value;
+    };
+
+    const goToSlide = (index) => {
+      currentSlide.value = index;
+    };
+
+    // onMounted(() => {
+    //   const fadeEls = document.querySelectorAll(".fade-section");
+    //   const observer = new IntersectionObserver(
+    //     (entries) => {
+    //       entries.forEach((entry) => {
+    //         if (entry.isIntersecting) {
+    //           entry.target.classList.add("visible");
+    //         } else {
+    //           entry.target.classList.remove("visible");
+    //         }
+    //       });
+    //     },
+    //     { threshold: 0.4 }
+    //   );
+    //   fadeEls.forEach((el) => observer.observe(el));
+
+    //   setInterval(() => {
+    //     currentSlide.value =
+    //       (currentSlide.value + 1) % serviceItems.value.length;
+    //   }, 3000);
+    // });
 
     return {
+      isLogged,
       mainImageSrc,
       kanbanImg,
       clientesImg,
@@ -218,10 +261,12 @@ export default {
       valorImg,
       visionImg,
       misionImg,
+      router,
       scrollToFooter,
       scrollToValores,
       goLogin,
       toggleMenu,
+      window,
     };
   },
 };

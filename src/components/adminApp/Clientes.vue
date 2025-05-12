@@ -6,24 +6,22 @@
       <br />
       Clientes
     </div>
-
     <!-- Contenedor de la tabla: se usa containerRef para medir el ancho asignado -->
     <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
-      <DataTable
-        :value="customers"
-        :filters="filters"
-        :globalFilterFields="['nombre', 'rfc', 'fiel', 'clecf', 'celular', 'correo']"
-        paginator
-        sortMode="multiple"
-        removableSort
-        :rows="5"
-        :rowsPerPageOptions="[5, 10, 20, 50]"
-        :rowClass="rowClass"
-        class="w-full rounded-lg p-5"
-      >
+      <DataTable :value="customers" :filters="filters" :globalFilterFields="[
+        'id_cliente',
+        'nombre',
+        'rfc',
+        'fiel',
+        'ciecf',
+        'telefono',
+        'correo',
+      ]" paginator sortMode="multiple" removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
+        :rowClass="rowClass" class="w-full rounded-lg p-5">
         <!-- Encabezado de la tabla -->
         <template #header>
-          <div class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
             <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
               <!-- Buscador con ícono -->
               <div class="flex space-x-2 border-2 border-solid">
@@ -32,76 +30,48 @@
                 </span>
               </div>
               <div class="relative w-full sm:w-auto">
-                <InputText
-                  v-model="filters.global.value"
-                  placeholder="Buscar..."
-                  class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <InputText v-model="filters.global.value" autocomplete="new-password" placeholder="Buscar..."
+                  class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <!-- Botones -->
               <div class="flex space-x-2">
-                <Button
-                  type="button"
-                  icon="pi pi-filter-slash"
-                  :label="isMobile ? '' : 'Limpiar Filtros'"
-                  outlined
-                  class="p-2"
-                  @click="clearFilter"
-                />
-                <Button
-                  icon="pi pi-plus"
-                  :label="isMobile ? '' : 'Agregar Cliente'"
-                  class="p-button-success p-2"
-                  @click="openCard(null)"
-                />
+                <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
+                  class="p-2" @click="clearFilter" />
+                <Button icon="pi pi-plus" v-if="canAddCliente" :label="isMobile ? '' : 'Agregar Cliente'"
+                  class="p-button-success p-2" @click="openCard(null)" />
               </div>
             </div>
           </div>
           <!-- Slider para columnas: se muestra cuando hay más de una página -->
-          <div
-            v-if="pages.length > 1"
-            class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2"
-          >
-            <Button
-              icon="pi pi-chevron-left"
-              @click="prevPage"
-              :disabled="currentPageIndex === 0"
-              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-            />
-            <Button
-              icon="pi pi-chevron-right"
-              @click="nextPage"
-              :disabled="currentPageIndex === maxPageIndex"
-              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-            />
+          <div v-if="pages.length > 1"
+            class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2">
+            <Button icon="pi pi-chevron-left" @click="prevPage" :disabled="currentPageIndex === 0"
+              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
+            <Button icon="pi pi-chevron-right" @click="nextPage" :disabled="currentPageIndex === maxPageIndex"
+              class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
           </div>
         </template>
 
         <!-- Renderizado dinámico de columnas usando la página actual -->
-        <Column
-          v-for="col in visibleColumns"
-          :key="col.field"
-          :sortable="col.field !== 'actions'"
-          :field="col.field !== 'actions' ? col.field : undefined"
-        >
+        <Column v-for="col in visibleColumns" :key="col.field" :sortable="col.field !== 'actions'"
+          :field="col.field !== 'actions' ? col.field : undefined">
           <!-- Encabezado de columna: color negro -->
           <template #header>
-            <div class="p-1 text-black font-semibold text-center text-sm">
+            <div class="p-1 text-black font-semibold text-center text-sm w-full">
               {{ col.header }}
             </div>
           </template>
           <template #body="{ data }">
             <!-- Si la columna es de acciones, mostrar botones -->
             <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-              <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning" @click="openCard(data)" />
-              <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="openConfirmDialog(data)" />
+              <Button v-if="canEditCliente" icon="pi pi-pencil" class="p-button-rounded p-button-warning"
+                @click="openCard(data)" />
+              <Button v-if="canDeleteCliente" icon="pi pi-trash" class="p-button-rounded p-button-danger"
+                @click="openConfirmDialog(data)" />
             </div>
             <!-- Sino, mostrar el contenido de la celda -->
-            <div
-              v-else
-              class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-              @click="copyToClipboard(data[col.field])"
-            >
+            <div v-else class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+              @click="copyToClipboard(data[col.field])">
               {{ data[col.field] }}
             </div>
           </template>
@@ -113,19 +83,11 @@
     <Toast />
 
     <!-- Card para agregar/editar clientes -->
-    <CardDetailCliente
-      v-if="cardVisible"
-      :customer="selectedCustomer"
-      @close="cardVisible = false"
-      @save="saveCustomer"
-    />
+    <CardDetailCliente v-if="cardVisible" :customer="selectedCustomer" @close="cardVisible = false"
+      @save="saveCustomer" />
 
     <!-- Confirmación para eliminación -->
-    <ConfirmDeleteDialog
-      v-if="confirmDialogVisible"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
-    />
+    <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
   </div>
 </template>
 
@@ -137,50 +99,33 @@ import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
+import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailCliente from "./CardDetailCliente.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
+import { cs } from "@/service/adminApp/client";
+const canAddCliente = ref(false)
+const canEditCliente = ref(false)
+const canDeleteCliente = ref(false)
 
+onMounted(async () => {
+  canAddCliente.value = await hasPermission('canAddCliente')
+  canEditCliente.value = await hasPermission('canEditCliente')
+  canDeleteCliente.value = await hasPermission('canDeleteCliente')
+})
 const toast = useToast();
 
-// Datos de ejemplo
-const customers = ref([
-  {
-    id: "1001",
-    nombre: "Juan Pérez",
-    rfc: "JUPE880101XYZ",
-    fiel: "claveFIEL123",
-    clecf: "claveCLECF123",
-    celular: "5566778899",
-    correo: "juan.perez@email.com",
-  },
-  {
-    id: "1002",
-    nombre: "María López",
-    rfc: "MALO900202ABC",
-    fiel: "claveFIEL456",
-    clecf: "claveCLECF456",
-    celular: "5544332211",
-    correo: "maria.lopez@email.com",
-  },
-  {
-    id: "1003",
-    nombre: "Carlos Ramírez",
-    rfc: "CARA920303DEF",
-    fiel: "claveFIEL789",
-    clecf: "claveCLECF789",
-    celular: "5511223344",
-    correo: "carlos.ramirez@email.com",
-  },
-]);
+// Ejemplos de clientes
+const customers = ref(await cs.getClientes());
 
 // Definición de columnas base (sin la columna de acciones)
 const columns = ref([
+  { field: "id_cliente", header: "ID" },
   { field: "nombre", header: "Nombre Cliente" },
   { field: "rfc", header: "RFC" },
   { field: "fiel", header: "Contraseña FIEL" },
-  { field: "clecf", header: "Contraseña CLECF" },
-  { field: "celular", header: "Celular" },
-  { field: "correo", header: "Correo Electrónico" },
+  { field: "ciecf", header: "Contraseña CLECF" },
+  { field: "telefono", header: "Celular" },
+  { field: "email", header: "Correo Electrónico" },
 ]);
 
 // Columna de acciones (siempre se mostrará)
@@ -199,15 +144,27 @@ const clearFilter = () => {
 
 // Clase para las filas
 const rowClass = (data, index) =>
-  index % 2 === 0 ? "bg-white hover:bg-gray-100" : "bg-gray-50 hover:bg-gray-100";
+  index % 2 === 0
+    ? "bg-white hover:bg-gray-100"
+    : "bg-gray-50 hover:bg-gray-100";
 
 // Función para copiar al portapapeles
 const copyToClipboard = async (text) => {
   try {
     await navigator.clipboard.writeText(text);
-    toast.add({ severity: "info", summary: "Copiado", detail: text, life: 2000 });
+    toast.add({
+      severity: "info",
+      summary: "Copiado",
+      detail: text,
+      life: 2000,
+    });
   } catch (err) {
-    toast.add({ severity: "error", summary: "Error", detail: "No se pudo copiar", life: 2000 });
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "No se pudo copiar",
+      life: 2000,
+    });
   }
 };
 
@@ -281,10 +238,16 @@ const maxPageIndex = computed(() => pages.value.length - 1);
 
 // Las columnas visibles siempre incluyen la página actual de baseColumns + la columna de acciones
 const visibleColumns = computed(() => {
+  const showActions = canEditCliente.value || canDeleteCliente.value;
+
   if (pages.value.length === 1) {
-    return [...baseColumns.value, actionsColumn];
+    return showActions
+      ? [...baseColumns.value, actionsColumn]
+      : [...baseColumns.value];
   } else {
-    return [...pages.value[currentPageIndex.value], actionsColumn];
+    return showActions
+      ? [...pages.value[currentPageIndex.value], actionsColumn]
+      : [...pages.value[currentPageIndex.value]];
   }
 });
 
@@ -305,41 +268,43 @@ const openCard = (customer) => {
     selectedCustomer.value = { ...customer };
   } else {
     selectedCustomer.value = {
-      id: "",
+      id_cliente: "",
       nombre: "",
       rfc: "",
       fiel: "",
-      clecf: "",
-      celular: "",
-      correo: "",
+      ciecf: "",
+      telefono: "",
+      email: "",
     };
   }
   cardVisible.value = true;
 };
-const saveCustomer = (customer) => {
-  if (customer.id) {
-    const index = customers.value.findIndex((c) => c.id === customer.id);
+const saveCustomer = async (customer) => {
+  if (customer) {
+    const index = customers.value.findIndex((c) => c.id_cliente === customer.id_cliente);
     if (index !== -1) {
       customers.value[index] = { ...customer };
+      console.log("sending edit to id " + customer.id_cliente, await cs.editCliente(customer))
       toast.add({
         severity: "success",
         summary: "Actualizado",
         detail: "Cliente actualizado correctamente",
         life: 2000,
       });
+    } else {
+      customers.value.unshift(customer);
+      toast.add({
+        severity: "success",
+        summary: "Agregado",
+        detail: "Cliente agregado correctamente",
+        life: 2000,
+      });
+      console.log("sending", await cs.addCliente(customer));
+      window.location.reload()
     }
-  } else {
-    customer.id = Date.now().toString();
-    customers.value.push(customer);
-    toast.add({
-      severity: "success",
-      summary: "Agregado",
-      detail: "Cliente agregado correctamente",
-      life: 2000,
-    });
+    cardVisible.value = false;
   }
-  cardVisible.value = false;
-};
+}
 
 // Variables para confirmación de eliminación
 const confirmDialogVisible = ref(false);
@@ -348,9 +313,12 @@ const openConfirmDialog = (customer) => {
   candidateToDelete.value = { ...customer };
   confirmDialogVisible.value = true;
 };
-const confirmDelete = () => {
+const confirmDelete = async () => {
   if (candidateToDelete.value) {
-    customers.value = customers.value.filter((c) => c.id !== candidateToDelete.value.id);
+    console.log("deleting cliente with id " + candidateToDelete.value.id, await cs.deleteCliente(candidateToDelete.value.id_cliente))
+    customers.value = await customers.value.filter(
+      (c) => c.id_cliente !== candidateToDelete.value.id_cliente
+    );
     toast.add({
       severity: "warn",
       summary: "Eliminado",
