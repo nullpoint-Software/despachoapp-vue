@@ -115,6 +115,7 @@
         <KanbanBoard
           :showDisponible="false"
           :showTerminado="false"
+          :showOwn="true"
           :mini="true"
           :showEnProgreso="false"
         ></KanbanBoard>
