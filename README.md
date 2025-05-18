@@ -1,4 +1,5 @@
 # despachoapp-vue
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nullpoint-Software/despachoapp-vue)
 para backend se crea un .env con variables:<br/>
 `VITE_API_SERVER_IP="http://localhost"`<br/>
 `VITE_API_SQL_IP="ipSQLvaAqui"`<br/>
