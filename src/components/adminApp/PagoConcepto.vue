@@ -64,6 +64,7 @@
                 class="p-button-success p-2"
                 @click="openCard(null)"
               />
+              <ExportExcelButton />
             </div>
           </div>
         </div>
@@ -214,6 +215,8 @@ import CardDetailPagoConcepto from "./CardDetailPagoConcepto.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import PrintPagoConcepto from "./PrintPagoConcepto.vue";
 import PrintDialog from "./PrintDialog.vue";
+import ExportExcelButton from "./ExportExcelButton.vue";
+
 const printDialogVisible = ref(false);
 const canAddPagoConcepto = ref(false);
 const canEditPagoConcepto = ref(false);
