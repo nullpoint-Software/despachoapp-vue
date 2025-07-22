@@ -1,3 +1,4 @@
+// oxlint-disable no-useless-catch
 import type { AxiosInstance } from "axios";
 
 class PagosService {
@@ -15,6 +16,7 @@ class PagosService {
     try {
       const response = await this.axios.get(`${this.serverip}/pagohistorial`);
       return response.data;
+// oxlint-disable-next-line no-useless-catch
     } catch (error) {
       throw error;
     }
@@ -24,6 +26,7 @@ class PagosService {
     try {
       const response = await this.axios.post(`${this.serverip}/pagohistorial`, data);
       return response.data;
+// oxlint-disable-next-line no-useless-catch
     } catch (error) {
       throw error;
     }

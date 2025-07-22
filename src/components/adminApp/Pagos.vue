@@ -22,13 +22,13 @@
       >
         Concepto
       </router-link>
-      <router-link
+      <!-- <router-link
         to="/app/pagos/mensual"
         class="tab"
         active-class="active-tab"
       >
         Mensual
-      </router-link>
+      </router-link> -->
     </div>
 
     <!-- Contenedor para cargar la tabla correspondiente -->

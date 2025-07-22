@@ -13,11 +13,13 @@ interface UserPermissions {
 }
 
 let perms: PermissionsService | null = null;
+// oxlint-disable-next-line no-unused-vars
 let userPerms: UserPermissions | null = null;
 
 export async function hasPermission(permissionKey: string): Promise<boolean> {
 
   const userLevel = localStorage.getItem("level");
+// oxlint-disable-next-line no-unused-vars
   const userId = localStorage.getItem("userid");
 
   try {

@@ -1,21 +1,35 @@
 <!-- PaymentsTable.vue -->
 <template>
   <!-- Contenedor de la tabla -->
-  <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
-    <DataTable :value="payments" :filters="filters" :globalFilterFields="[
-      'id',
-      'cliente',
-      'asunto',
-      'atendio',
-      'cobramos',
-      'pagamos',
-      'fecha_legible',
-    ]" paginator sortMode="multiple" removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass"
-      class="w-full rounded-lg p-5">
+  <div
+    ref="containerRef"
+    class="flex-grow w-full overflow-hidden rounded-xl shadow-lg"
+  >
+    <DataTable
+      :value="payments"
+      :filters="filters"
+      :globalFilterFields="[
+        'id',
+        'cliente',
+        'asunto',
+        'atendio',
+        'cobramos',
+        'pagamos',
+        'fecha_legible',
+      ]"
+      paginator
+      sortMode="multiple"
+      removableSort
+      :rows="5"
+      :rowsPerPageOptions="[5, 10, 20, 50]"
+      :rowClass="rowClass"
+      class="w-full rounded-lg p-5"
+    >
       <!-- Encabezado de la tabla -->
       <template #header>
         <div
-          class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+          class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
+        >
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
             <!-- Buscador -->
             <div class="flex space-x-2 border-2 border-solid">
@@ -25,32 +39,61 @@
             </div>
             <div class="relative w-full sm:w-auto">
               <!-- no se porque pero solamente asi chrome le hace caso de no rellenar -->
-              <InputText v-model="filters.global.value" autocomplete="new-password" placeholder="Buscar..."
+              <InputText
+                v-model="filters.global.value"
+                autocomplete="new-password"
+                placeholder="Buscar..."
                 aria-autocomplete="none"
-                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
             <!-- Botones -->
             <div class="flex space-x-2">
-              <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
-                class="p-2" @click="clearFilter" />
-              <Button v-if="canAddPagoConcepto" icon="pi pi-plus" :label="isMobile ? '' : 'Agregar Pago Concepto'"
-                class="p-button-success p-2" @click="openCard(null)" />
+              <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                :label="isMobile ? '' : 'Limpiar Filtros'"
+                outlined
+                class="p-2"
+                @click="clearFilter"
+              />
+              <Button
+                v-if="canAddPagoConcepto"
+                icon="pi pi-plus"
+                :label="isMobile ? '' : 'Agregar Pago Concepto'"
+                class="p-button-success p-2"
+                @click="openCard(null)"
+              />
             </div>
           </div>
         </div>
         <!-- Slider para columnas -->
-        <div v-if="pages.length > 1"
-          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2">
-          <Button icon="pi pi-chevron-left" @click="prevPage" :disabled="currentPageIndex === 0"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
-          <Button icon="pi pi-chevron-right" @click="nextPage" :disabled="currentPageIndex === maxPageIndex"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info" />
+        <div
+          v-if="pages.length > 1"
+          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2"
+        >
+          <Button
+            icon="pi pi-chevron-left"
+            @click="prevPage"
+            :disabled="currentPageIndex === 0"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
+          />
+          <Button
+            icon="pi pi-chevron-right"
+            @click="nextPage"
+            :disabled="currentPageIndex === maxPageIndex"
+            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
+          />
         </div>
       </template>
 
       <!-- Renderizado dinámico de columnas -->
-      <Column v-for="col in visibleColumns" :key="col.field" :sortable="col.field !== 'actions'"
-        :field="col.field !== 'actions' ? col.field : undefined">
+      <Column
+        v-for="col in visibleColumns"
+        :key="col.field"
+        :sortable="col.field !== 'actions'"
+        :field="col.field !== 'actions' ? col.field : undefined"
+      >
         <template #header>
           <div class="p-1 text-black font-semibold text-center text-sm w-full">
             {{ col.header }}
@@ -58,34 +101,64 @@
         </template>
         <template #body="{ data }">
           <!-- Acciones -->
-          <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
-            <Button v-if="canEditPagoConcepto" icon="pi pi-pencil" class="p-button-rounded p-button-warning"
-              @click="openCard(data)" />
-            <Button v-if="canDeletePagoConcepto" icon="pi pi-trash" class="p-button-rounded p-button-danger"
-              @click="openConfirmDialog(data)" />
+          <div
+            v-if="col.field === 'actions'"
+            class="flex justify-center space-x-2"
+          >
+            <Button
+              v-if="canEditPagoConcepto"
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-warning"
+              @click="openCard(data)"
+            />
+            <Button
+              v-if="canDeletePagoConcepto"
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-danger"
+              @click="openConfirmDialog(data)"
+            />
             <!-- Botón Imprimir -->
-            <Button icon="pi pi-print" class="p-button-rounded p-button-info" @click="openPrint(data)" />
+            <Button
+              icon="pi pi-print"
+              class="p-button-rounded p-button-info"
+              @click="openPrint(data)"
+            />
           </div>
           <!-- Celdas normales -->
-          <div v-if="col.field === 'fecha'"
+          <div
+            v-if="col.field === 'fecha'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard(formatFechaHoraFullPagoSQL(data[col.field]))">
+            @click="
+              copyToClipboard(formatFechaHoraFullPagoSQL(data[col.field]))
+            "
+          >
             {{ formatFechaHoraFullPagoSQL(data[col.field]) }}
           </div>
-          <div v-if="col.field === 'cobramos'"
+          <div
+            v-if="col.field === 'cobramos'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard('$' + data[col.field])">
-            {{ "$" + data[col.field] }}
-          </div>
-          <div v-if="col.field === 'pagamos'"
-            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard('$' + data[col.field])">
+            @click="copyToClipboard('$' + data[col.field])"
+          >
             {{ "$" + data[col.field] }}
           </div>
           <div
-            v-else-if="col.field !== 'cobramos' && col.field !== 'pagamos' && col.field !== 'saldo' && col.field !== 'fecha' && col.field !== 'actions'"
+            v-if="col.field === 'pagamos'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard(data[col.field])">
+            @click="copyToClipboard('$' + data[col.field])"
+          >
+            {{ "$" + data[col.field] }}
+          </div>
+          <div
+            v-else-if="
+              col.field !== 'cobramos' &&
+              col.field !== 'pagamos' &&
+              col.field !== 'saldo' &&
+              col.field !== 'fecha' &&
+              col.field !== 'actions'
+            "
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+            @click="copyToClipboard(data[col.field])"
+          >
             {{ data[col.field] }}
           </div>
         </template>
@@ -94,17 +167,42 @@
   </div>
   <!-- Toast y modales -->
   <Toast />
-  <CardDetailPagoConcepto v-if="cardVisible" :pago="selectedPayment" :usuario="usuario" @close="cardVisible = false"
-    @save="savePayment" />
-  <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
+  <CardDetailPagoConcepto
+    v-if="cardVisible"
+    :pago="selectedPayment"
+    :usuario="usuario"
+    @close="cardVisible = false"
+    @save="savePayment"
+  />
+  <ConfirmDeleteDialog
+    v-if="confirmDialogVisible"
+    @confirm="confirmDelete"
+    @cancel="cancelDelete"
+  />
   <!-- Modal de impresión -->
-  <PrintPagoConcepto v-if="printVisible" :payment="paymentToPrint" @close="printVisible = false" />
-  <PrintDialog v-if="printDialogVisible" @close="printDialogVisible = false" @ok="openPrint(payments[0]);printDialogVisible=false"/>
+  <PrintPagoConcepto
+    v-if="printVisible"
+    :payment="paymentToPrint"
+    @close="printVisible = false"
+  />
+  <PrintDialog
+    v-if="printDialogVisible"
+    @close="printDialogVisible = false"
+    @ok="
+      openPrint(payments[0]);
+      printDialogVisible = false;
+    "
+  />
 </template>
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { useRoute } from 'vue-router';
-import { ps, formatFechaSQL, formatFechaHoraFullSQL, formatFechaHoraFullPagoSQL } from "@/service/adminApp/client"
+import { useRoute } from "vue-router";
+import {
+  ps,
+  formatFechaSQL,
+  formatFechaHoraFullSQL,
+  formatFechaHoraFullPagoSQL,
+} from "@/service/adminApp/client";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -198,13 +296,13 @@ let resizeObserver = null;
 onMounted(async () => {
   const searchParam = route.query.search;
   console.log(searchParam);
-  
+
   if (searchParam) {
     filters.value.global.value = searchParam;
   }
-  canAddPagoConcepto.value = await hasPermission('canAddPagoConcepto')
-  canEditPagoConcepto.value = await hasPermission('canEditPagoConcepto')
-  canDeletePagoConcepto.value = await hasPermission('canDeletePagoConcepto')
+  canAddPagoConcepto.value = await hasPermission("canAddPagoConcepto");
+  canEditPagoConcepto.value = await hasPermission("canEditPagoConcepto");
+  canDeletePagoConcepto.value = await hasPermission("canDeletePagoConcepto");
   if (containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -213,11 +311,10 @@ onMounted(async () => {
     });
     resizeObserver.observe(containerRef.value);
   }
-  payments.value = payments.value.map(item => ({
+  payments.value = payments.value.map((item) => ({
     ...item,
     fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
   }));
-  
 });
 onUnmounted(() => {
   if (resizeObserver && containerRef.value) {
@@ -250,7 +347,7 @@ watch(pages, () => {
 watch(
   () => route.query.search,
   (newSearch) => {
-    filters.value.global.value = newSearch || '';
+    filters.value.global.value = newSearch || "";
   }
 );
 const maxPageIndex = computed(() => pages.value.length - 1);
@@ -296,7 +393,7 @@ const savePayment = async (payment) => {
     if (index !== -1) {
       console.log(index);
       console.log("edit save");
-      
+
       payments.value.splice(index, 1, { ...payment });
       payments.value = [...payments.value];
       toast.add({
@@ -331,7 +428,7 @@ const confirmDelete = () => {
     payments.value = payments.value.filter(
       (p) => p.id !== candidateToDelete.value.id
     );
-    ps.deletePagoConcepto(candidateToDelete.value.id)
+    ps.deletePagoConcepto(candidateToDelete.value.id);
     toast.add({
       severity: "warn",
       summary: "Eliminado",
