@@ -57,7 +57,7 @@ async function exportExcel() {
   wb.Props = {
     Title: 'Reporte de Pagos',
     Subject: 'Pagos',
-    Author: 'MiApp',
+    Author: 'Despacho Contable y Fiscal Sanchez',
     CreatedDate: new Date()
   }
 
