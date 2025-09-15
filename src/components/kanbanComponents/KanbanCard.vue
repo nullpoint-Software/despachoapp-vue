@@ -1,6 +1,4 @@
-<!-- KanbanCard.vue -->
 <template>
-  <!-- Cambio: Se agregó el atributo id para identificar la tarjeta y permitir el scroll hacia ella -->
   <div
     :id="`card-${card.id_tarea}`"
     class="kanban-card bg-white rounded-2xl shadow-lg p-4 mb-3 cursor-pointer border border-gray-300 hover:shadow-xl transition-all duration-300 flex items-start gap-3"
@@ -8,7 +6,6 @@
     draggable="true"
     @dragstart="dragStart($event, card)"
   >
-    <!-- Cambio: Se agrega un placeholder si card.image es nula -->
     <img
       :src="!card.image && card.estado != 'Disponible' ? defaultProfilePicture : card.image || logo"
       alt="Miniatura"
@@ -16,76 +13,141 @@
     />
 
     <div class="flex-1">
-      <!-- Título de la tarjeta -->
-      <h3 class="text-lg font-semibold text-gray-800">{{ card.titulo }}</h3>
+      <!-- Título (con guiones suaves para palabras largas y truncamiento visual a 5 líneas) -->
+      <h3 class="text-lg font-semibold text-gray-800 truncate-multiline" v-html="hyphenatedTitle"></h3>
 
-      <!-- Descripción -->
-      <p class="text-sm text-gray-600">{{ card.descripcion }}</p>
+      <!-- Descripción (con guiones suaves para palabras largas y truncamiento visual a 5 líneas) -->
+      <p class="text-sm text-gray-600 truncate-multiline" v-html="hyphenatedDescription"></p>
 
-      <!-- Fechas -->
-      <p class="text-xs text-gray-500 mt-1">Inicio: {{ formatFechaHoraSQL(card.fecha_creacion) }}</p>
-      <p class="text-xs text-gray-500">Fin: {{ (card.fecha_vencimiento) ? formatFechaHoraSQL(card.fecha_vencimiento) : "N/A" }}</p>
+      <p class="text-xs text-gray-500 mt-1 truncate-multiline">Inicio: {{ card.fecha_creacion }}</p>
+      <p class="text-xs text-gray-500 truncate-multiline">Fin: {{ card.fecha_vencimiento || "N/A" }}</p>
 
-      <!-- Estado e icono -->
       <div class="flex items-center mt-2">
         <span class="w-3 h-3 rounded-full" :class="statusColor"></span>
-        <span class="ml-2 text-sm text-gray-700">{{ card.estado }}</span>
+        <span class="ml-2 text-sm text-gray-700 truncate-multiline">{{ card.estado }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import defaultProfilePicture from '@/assets/img/user.jpg'
+/*
+  Componente KanbanCard (SFC)
+  - No elimines funciones/hyphenation si dependes de v-html: necesarias para evitar que palabras largas rompan el layout.
+  - La clase `truncate-multiline` limita visualmente a 5 renglones (CSS). El truncamiento es puramente visual.
+*/
+
 import { defineProps, computed } from "vue";
+import defaultProfilePicture from '@/assets/img/user.jpg';
 import logo from '@/assets/img/logsymbolblack.png';
-import { formatFechaHoraSQL } from "@/service/adminApp/client";
+
 const props = defineProps({
-  card: Object,
-  highlight: Boolean, // Se deja para no eliminar nada del código original
-  highlightedCard: {
-    type: [Number, null],
-    default: null,
-  },
+  card: { type: Object, required: true },
+  highlight: { type: Boolean, default: false },
 });
 
-// Función para iniciar el drag and drop
+/* Drag start: coloca el id de la tarea en dataTransfer */
 const dragStart = (event, card) => {
-  event.dataTransfer.setData("text/plain", card.id_tarea);
+  try {
+    event.dataTransfer.setData("text/plain", String(card.id_tarea));
+  } catch (e) {
+    // Si el navegador bloquea, no romper la app
+    console.warn("dragStart: ", e);
+  }
 };
 
-// Computa la clase del color según el status de la tarjeta
+/* Color de estado (clases utilitarias Tailwind-like) */
 const statusColor = computed(() => {
   switch (props.card.estado) {
-    case "Disponible":
-      return "bg-green-300";
-    case "Pendiente":
-      return "bg-yellow-300";
-    case "En Progreso":
-      return "bg-blue-300";
-    case "Terminado":
-      return "bg-gray-300";
-    default:
-      return "bg-gray-400";
+    case "Disponible": return "bg-green-300";
+    case "Pendiente": return "bg-yellow-300";
+    case "En Progreso": return "bg-blue-300";
+    case "Terminado": return "bg-gray-300";
+    default: return "bg-gray-400";
   }
 });
+
+/* ---------------------- Hyphenation + escape HTML ----------------------
+   Evita romper el layout con palabras sin espacios y permite usar v-html
+   con seguridad básica (escape). No elimines esto si usas v-html.
+------------------------------------------------------------------------- */
+function escapeHtml(str = "") {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function hyphenateText(raw = "", maxLen = 20) {
+  if (raw == null) return "";
+  const escaped = escapeHtml(String(raw));
+  const longWordRegex = new RegExp(`\\S{${maxLen},}`, "g");
+  return escaped.replace(longWordRegex, (word) => {
+    const parts = word.match(new RegExp(`.{1,${maxLen}}`, "g")) || [word];
+    return parts.join("\u00AD"); // soft hyphen
+  });
+}
+/* ---------------------------------------------------------------------- */
+
+const hyphenatedTitle = computed(() => hyphenateText(props.card?.titulo ?? "", 20));
+const hyphenatedDescription = computed(() => hyphenateText(props.card?.descripcion ?? "", 18));
 </script>
 
 <style scoped>
-@keyframes pulseGlow {
-  0% {
-    box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(0, 102, 255, 0.8);
-  }
-  100% {
-    box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
-  }
+/* Truncamiento multilinea: 5 renglones visuales + fallback ellipsis para navegadores sin -webkit-line-clamp */
+.truncate-multiline{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5; /* soporte WebKit/Blink */
+  line-clamp: 5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.4;
+  max-height: calc(1.4em * 5); /* fallback */
+  position: relative;
 }
 
-.highlighted {
-  animation: pulseGlow 1.5s infinite alternate; /* Animación para el resaltado */
-  border-color: rgba(0, 102, 255, 0.8); /* Color de borde cuando se resalta */
+/* Pseudo-ellipsis para navegadores que NO soportan -webkit-line-clamp */
+.truncate-multiline::after{
+  content: '...';
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0;
+  padding-left: 0.25rem;
+  background: linear-gradient(90deg, transparent, #ffffff 65%);
+  pointer-events: none;
+  display: none;
 }
+
+@supports not (-webkit-line-clamp: 5){
+  .truncate-multiline::after{ display: block; }
+}
+
+/* Mantener comportamiento de hyphen/word-break por si se usa fuera de la clase truncate */
+.kanban-card h3,
+.kanban-card p {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* Estilos del componente (ligeramente repetidos para asegurar consistencia) */
+.kanban-card{
+  /* ya aplicados como utilidades en template; aquí quedan estilos base por si se usan sin Tailwind */
+  background-color: #ffffff;
+  border-radius: 1rem;
+}
+
+/* animación destacada */
+@keyframes pulseGlow{0%{box-shadow:0 0 10px rgba(0,102,255,.5)}50%{box-shadow:0 0 20px rgba(0,102,255,.8)}100%{box-shadow:0 0 10px rgba(0,102,255,.5)}}
+.highlighted{animation:pulseGlow 1.5s infinite alternate;border-color:rgba(0,102,255,.8)}
 </style>
