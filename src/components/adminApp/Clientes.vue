@@ -71,8 +71,14 @@
             </div>
             <!-- Sino, mostrar el contenido de la celda -->
             <div v-else class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-              @click="copyToClipboard(data[col.field])">
-              {{ data[col.field] }}
+              @click="handleCellClick(data,col.field,col)">
+              <span v-if="col.visible || isFieldVisible(data, col.field)">
+                {{ data[col.field] }}
+              </span>
+              <!-- Caso contrario, mostrar enmascarado -->
+              <span v-else>
+                *****
+              </span>
             </div>
           </template>
         </Column>
@@ -91,7 +97,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
@@ -103,6 +109,7 @@ import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailCliente from "./CardDetailCliente.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import { cs } from "@/service/adminApp/client";
+import type { ColumnDef } from "@/types/ClientesTable";
 const canAddCliente = ref(false)
 const canEditCliente = ref(false)
 const canDeleteCliente = ref(false)
@@ -113,24 +120,21 @@ onMounted(async () => {
   canDeleteCliente.value = await hasPermission('canDeleteCliente')
 })
 const toast = useToast();
-
 // Ejemplos de clientes
 const customers = ref(await cs.getClientes());
-
 // Definición de columnas base (sin la columna de acciones)
-const columns = ref([
-  { field: "id_cliente", header: "ID" },
-  { field: "nombre", header: "Nombre Cliente" },
-  { field: "rfc", header: "RFC" },
-  { field: "fiel", header: "Contraseña FIEL" },
-  { field: "ciecf", header: "Contraseña CLECF" },
-  { field: "telefono", header: "Celular" },
-  { field: "email", header: "Correo Electrónico" },
+const columns = ref<ColumnDef[]>([
+  { field: "id_cliente", header: "ID", visible: true },
+  { field: "nombre", header: "Nombre Cliente", visible: true },
+  { field: "rfc", header: "RFC", visible: false },
+  { field: "fiel", header: "Contraseña FIEL", visible: false },
+  { field: "ciecf", header: "Contraseña CLECF", visible: false },
+  { field: "telefono", header: "Celular", visible: true },
+  { field: "email", header: "Correo Electrónico", visible: true },
 ]);
 
 // Columna de acciones (siempre se mostrará)
 const actionsColumn = { field: "actions", header: "Acciones" };
-
 // Base de columnas para el slider (excluyendo la columna de acciones)
 const baseColumns = computed(() => columns.value);
 
@@ -143,19 +147,20 @@ const clearFilter = () => {
 };
 
 // Clase para las filas
-const rowClass = (data, index) =>
+const rowClass = ((data: any, index: number) =>
   index % 2 === 0
     ? "bg-white hover:bg-gray-100"
-    : "bg-gray-50 hover:bg-gray-100";
+    : "bg-gray-50 hover:bg-gray-100") as any;
+
 
 // Función para copiar al portapapeles
-const copyToClipboard = async (text) => {
+const copyToClipboard = async (text:string, confidential?:boolean) => {
   try {
     await navigator.clipboard.writeText(text);
     toast.add({
       severity: "info",
       summary: "Copiado",
-      detail: text,
+      detail: confidential ? 'Dato protegido' : text,
       life: 2000,
     });
   } catch (err) {
@@ -182,7 +187,7 @@ onUnmounted(() => window.removeEventListener("resize", handleResize));
 // Uso de containerRef y ResizeObserver para medir el ancho asignado al componente
 const containerRef = ref(null);
 const containerWidth = ref(0);
-let resizeObserver = null;
+let resizeObserver: ResizeObserver;
 onMounted(() => {
   if (containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
@@ -237,7 +242,7 @@ watch(pages, () => {
 const maxPageIndex = computed(() => pages.value.length - 1);
 
 // Las columnas visibles siempre incluyen la página actual de baseColumns + la columna de acciones
-const visibleColumns = computed(() => {
+const visibleColumns = computed<ColumnDef[]>(() => {
   const showActions = canEditCliente.value || canDeleteCliente.value;
 
   if (pages.value.length === 1) {
@@ -263,7 +268,7 @@ const nextPage = () => {
 // Variables para el Card de agregar/editar clientes
 const cardVisible = ref(false);
 const selectedCustomer = ref({});
-const openCard = (customer) => {
+const openCard = (customer:any) => {
   if (customer) {
     selectedCustomer.value = { ...customer };
   } else {
@@ -279,9 +284,9 @@ const openCard = (customer) => {
   }
   cardVisible.value = true;
 };
-const saveCustomer = async (customer) => {
+const saveCustomer = async (customer:any) => {
   if (customer) {
-    const index = customers.value.findIndex((c) => c.id_cliente === customer.id_cliente);
+    const index = customers.value.findIndex((c:any) => c.id_cliente === customer.id_cliente);
     if (index !== -1) {
       customers.value[index] = { ...customer };
       console.log("sending edit to id " + customer.id_cliente, await cs.editCliente(customer))
@@ -308,8 +313,8 @@ const saveCustomer = async (customer) => {
 
 // Variables para confirmación de eliminación
 const confirmDialogVisible = ref(false);
-const candidateToDelete = ref(null);
-const openConfirmDialog = (customer) => {
+const candidateToDelete: any = ref(null);
+const openConfirmDialog = (customer:any) => {
   candidateToDelete.value = { ...customer };
   confirmDialogVisible.value = true;
 };
@@ -317,7 +322,7 @@ const confirmDelete = async () => {
   if (candidateToDelete.value) {
     console.log("deleting cliente with id " + candidateToDelete.value.id, await cs.deleteCliente(candidateToDelete.value.id_cliente))
     customers.value = await customers.value.filter(
-      (c) => c.id_cliente !== candidateToDelete.value.id_cliente
+      (c:any) => c.id_cliente !== candidateToDelete.value.id_cliente
     );
     toast.add({
       severity: "warn",
@@ -333,4 +338,28 @@ const cancelDelete = () => {
   confirmDialogVisible.value = false;
   candidateToDelete.value = null;
 };
+
+
+const revealed = ref<Record<string, Record<string, boolean>>>({});
+function isFieldVisible(row: any, field: string) {
+  return revealed.value[row.id_cliente]?.[field] ?? false;
+}
+
+// Toggle reveal
+function toggleField(row: any, field: string) {
+  if (!revealed.value[row.id_cliente]) {
+    revealed.value[row.id_cliente] = {};
+  }
+  revealed.value[row.id_cliente][field] =
+    !revealed.value[row.id_cliente][field];
+}
+
+function handleCellClick(row: any, field: string, col: ColumnDef) {
+  const isVisible = col.visible ?? true;
+  copyToClipboard(row[field], !col.visible);
+  // Toggle only if the column is sensitive (visible === false)
+  if (!isVisible) {
+    toggleField(row, field);
+  }
+}
 </script>
