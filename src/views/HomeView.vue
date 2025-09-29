@@ -189,7 +189,7 @@ import mainImageSrc from "@/assets/img/logsymbolwhite.png";
 import kanbanImg from "@/assets/img/Kanban.svg";
 import clientesImg from "@/assets/img/Clientes.svg";
 import pagosConceptoImg from "@/assets/img/Pay.svg";
-import ticketsImg from "@/assets/img/Ticket.svg";
+import ticketsImg from "@/assets/img/ticket.svg";
 import gananciasImg from "@/assets/img/Ganancias.svg";
 import markdownImg from "@/assets/img/Notes.svg";
 import valorImg from "@/assets/img/valores.svg";
