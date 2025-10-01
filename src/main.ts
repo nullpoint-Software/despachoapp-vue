@@ -16,6 +16,7 @@ app.use(PrimeVue, {
     theme: {
         preset: Aura,
         options: {
+// oxlint-disable-next-line no-constant-binary-expression
             darkModeSelector: false || 'none',
         }
     }
