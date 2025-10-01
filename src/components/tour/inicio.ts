@@ -15,11 +15,8 @@ const driverObjInicio = driver({
         },
         {
             element: '#periodo',
-            popover: { title: 'Selector de periodo', description: 'Aqui puedes seleccionar el periodo de tiempo que deseas visualizar en el gráfico', side: 'top', align: 'start' }
-        },
-        {
-            element: '#periodo',
-            popover: { title: 'Selector de periodo', description: 'Puedes observar los ingresos por hoy, mes actual, año actual, o todos los años', side: 'top', align: 'start' }
+            popover: { title: 'Selector de periodo', description: `Aqui puedes seleccionar el periodo de tiempo que deseas visualizar en el gráfico, 
+                <strong>Puedes observar los ingresos por hoy, mes actual, año actual, o todos los años</strong>`, side: 'top', align: 'start' }
         },
         { element: '#resumen-ganancias',
             popover: { title: 'Resumen de ganancias', description: 'Aqui puedes ver un resumen detallado de las ganancias del negocio en cada periodo', side: 'top', align: 'start' }
