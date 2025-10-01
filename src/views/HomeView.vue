@@ -50,7 +50,6 @@
     <!-- Hero Section -->
     <section
       class="relative z-10 bg-fixed bg-center bg-cover"
-      style="background-image: url('@/assets/img/despacho.jpg')"
     >
       <div class="bg-transparent py-32 px-4 text-center">
         <h1 class="text-6xl md:text-7xl font-bold mb-6">DESPACHO CONTABLE Y FISCAL SÁNCHEZ</h1>
