@@ -17,7 +17,7 @@ const driverObjClientes = driver({
         },
         {
             element:'#inner-info',
-            popover: { title: 'Clientes', description: 'Esta es la información de los clientes, la información sensible, como contraseñas, se oculta automaticamente. Para visualizar y copearla haz clic en la celda.', side:"over", align: "center" }
+            popover: { title: 'Clientes', description: 'Esta es la información de los clientes, la información sensible como contraseñas se oculta automaticamente. Para visualizar y copearla <strong>haz clic en la celda.</strong>', side:"over", align: "center" }
         }
     ],
     onDestroyed: () => {
