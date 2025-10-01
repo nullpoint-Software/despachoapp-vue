@@ -7,8 +7,8 @@
       Clientes
     </div>
     <!-- Contenedor de la tabla: se usa containerRef para medir el ancho asignado -->
-    <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
-      <DataTable :value="customers" :filters="filters" :globalFilterFields="[
+    <div ref="containerRef" id="clientes-table" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
+      <DataTable id="inner-info" :value="customers" :filters="filters" :globalFilterFields="[
         'id_cliente',
         'nombre',
         'rfc',
@@ -29,7 +29,7 @@
                   <i class="pi pi-search text-gray-400 text-xl"></i>
                 </span>
               </div>
-              <div class="relative w-full sm:w-auto">
+              <div id="search-bar" class="relative w-full sm:w-auto">
                 <InputText v-model="filters.global.value" autocomplete="new-password" placeholder="Buscar..."
                   class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
@@ -38,7 +38,7 @@
                 <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
                   class="p-2" @click="clearFilter" />
                 <Button icon="pi pi-plus" v-if="canAddCliente" :label="isMobile ? '' : 'Agregar Cliente'"
-                  class="p-button-success p-2" @click="openCard(null)" />
+                  class="p-button-success p-2" id="agregar-cliente-btn" @click="openCard(null)" />
               </div>
             </div>
           </div>
@@ -71,7 +71,7 @@
             </div>
             <!-- Sino, mostrar el contenido de la celda -->
             <div v-else class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-              @click="handleCellClick(data,col.field,col)">
+              @click="handleCellClick(data, col.field, col)">
               <span v-if="col.visible || isFieldVisible(data, col.field)">
                 {{ data[col.field] }}
               </span>
@@ -101,6 +101,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
+import { driverObjClientes } from "../tour/clientes";
 import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
@@ -154,7 +155,7 @@ const rowClass = ((data: any, index: number) =>
 
 
 // Función para copiar al portapapeles
-const copyToClipboard = async (text:string, confidential?:boolean) => {
+const copyToClipboard = async (text: string, confidential?: boolean) => {
   try {
     await navigator.clipboard.writeText(text);
     toast.add({
@@ -196,6 +197,11 @@ onMounted(() => {
       }
     });
     resizeObserver.observe(containerRef.value);
+    const done = localStorage.getItem('tourClientesDone');
+    if (!done) {
+      driverObjClientes.drive()
+    }
+    
   }
 });
 onUnmounted(() => {
@@ -268,7 +274,7 @@ const nextPage = () => {
 // Variables para el Card de agregar/editar clientes
 const cardVisible = ref(false);
 const selectedCustomer = ref({});
-const openCard = (customer:any) => {
+const openCard = (customer: any) => {
   if (customer) {
     selectedCustomer.value = { ...customer };
   } else {
@@ -284,9 +290,9 @@ const openCard = (customer:any) => {
   }
   cardVisible.value = true;
 };
-const saveCustomer = async (customer:any) => {
+const saveCustomer = async (customer: any) => {
   if (customer) {
-    const index = customers.value.findIndex((c:any) => c.id_cliente === customer.id_cliente);
+    const index = customers.value.findIndex((c: any) => c.id_cliente === customer.id_cliente);
     if (index !== -1) {
       customers.value[index] = { ...customer };
       console.log("sending edit to id " + customer.id_cliente, await cs.editCliente(customer))
@@ -314,7 +320,7 @@ const saveCustomer = async (customer:any) => {
 // Variables para confirmación de eliminación
 const confirmDialogVisible = ref(false);
 const candidateToDelete: any = ref(null);
-const openConfirmDialog = (customer:any) => {
+const openConfirmDialog = (customer: any) => {
   candidateToDelete.value = { ...customer };
   confirmDialogVisible.value = true;
 };
@@ -322,7 +328,7 @@ const confirmDelete = async () => {
   if (candidateToDelete.value) {
     console.log("deleting cliente with id " + candidateToDelete.value.id, await cs.deleteCliente(candidateToDelete.value.id_cliente))
     customers.value = await customers.value.filter(
-      (c:any) => c.id_cliente !== candidateToDelete.value.id_cliente
+      (c: any) => c.id_cliente !== candidateToDelete.value.id_cliente
     );
     toast.add({
       severity: "warn",
