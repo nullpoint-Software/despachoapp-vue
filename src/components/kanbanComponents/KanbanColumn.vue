@@ -1,7 +1,7 @@
 <!-- KanbanColumn.vue -->
 <template>
   <div
-    :class="'kanban-column bg-gray-100 shadow-lg rounded-xl p-4 flex-1 mx-2 '+ (mini ? 'min-w-[200px] sm:min-w-[250px] md:min-w-[560px] lg:min-w-[800px]' : 'min-w-[250px]')+' max-w-sm'"
+    :class="'kanban-column '+status.toLowerCase() +'-column bg-gray-100 shadow-lg rounded-xl p-4 flex-1 mx-2 '+ (mini ? 'min-w-[200px] sm:min-w-[250px] md:min-w-[560px] lg:min-w-[800px]' : 'min-w-[250px]')+' max-w-sm'"
     @dragover.prevent
     @drop="drop($event)"
   >

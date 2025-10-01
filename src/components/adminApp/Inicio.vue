@@ -8,23 +8,14 @@
 
     <!-- Contenedor principal para selector, gráfico y resumen -->
 
-    <main class="flex-grow overflow-auto p-4 bg-transparent">
-      <div
-        class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 flex flex-col gap-6"
-      >
+    <main class="flex-grow overflow-auto p-4 bg-transparent" v-if="isAdmin">
+      <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 flex flex-col gap-6 " id="chart-section">
         <!-- Selector de período -->
-        <div
-          class="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
           <div class="period-control flex-row">
-            <label for="periodo" class="mr-4 font-bold text-lg text-gray-700"
-              >Ver por:</label
-            >
-            <select
-              v-model="periodo"
-              id="periodo"
-              class="p-2 rounded-md border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-blue-400"
-            >
+            <label for="periodo" class="mr-4 font-bold text-lg text-gray-700">Ver por:</label>
+            <select v-model="periodo" id="periodo"
+              class="p-2 rounded-md border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-blue-400">
               <option value="dia">Día</option>
               <option value="mes">Mes</option>
               <option value="anio">Año</option>
@@ -32,73 +23,44 @@
             </select>
           </div>
 
-          <div
-            class="flex sm:inline-flex flex-row sm:items-center sm:gap-4 chart-controls"
-          >
-            <label
-              class="mr-2 items-center space-x-2 text-gray-800 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                class="form-checkbox text-blue-600"
-                :checked="chartOptions.scales.y.stacked"
-                @change="toggleStacked"
-              />
+          <div class="flex sm:inline-flex flex-row sm:items-center sm:gap-4 chart-controls">
+            <label class="mr-2 items-center space-x-2 text-gray-800 cursor-pointer" id="group-bars">
+              <input type="checkbox" class="form-checkbox text-blue-600" :checked="chartOptions.scales.y.stacked"
+                @change="toggleStacked" />
               <span>Agrupar barras</span>
             </label>
-            <label class="items-center space-x-2 text-gray-800 cursor-pointer">
-              <input
-                type="checkbox"
-                class="form-checkbox text-blue-600"
-                :checked="chartOptions.plugins.zoom.pan.enabled"
-                @change="toggleZoom"
-              />
+            <label class="items-center space-x-2 text-gray-800 cursor-pointer" id="enable-zoom">
+              <input type="checkbox" class="form-checkbox text-blue-600"
+                :checked="chartOptions.plugins.zoom.pan.enabled" @change="toggleZoom" />
               <span>Activar zoom</span>
             </label>
           </div>
         </div>
-        <div
-          class="info m-0 text-center -mb-7 -mt-4"
-          v-if="chartOptions.plugins.zoom.pan.enabled"
-        >
+        <div class="info m-0 text-center -mb-7 -mt-4" v-if="chartOptions.plugins.zoom.pan.enabled">
           <p class="font-semibold italic px-0 text-gray-600">
             Ajustar zoom con rueda del mouse o deslizar con 2 dedos
           </p>
         </div>
         <!-- Contenedor del gráfico: se adapta según el tamaño del contenedor -->
         <div class="relative w-full" :class="chartContainerClass">
-          <Bar
-            :data="chartData"
-            :options="chartOptions"
-            :key="chartKey"
-            :ref="chartRef"
-            :plugins="[emptyDataPlugin]"
-          />
+          <Bar :data="chartData" :options="chartOptions" :key="chartKey" :ref="chartRef" :plugins="[emptyDataPlugin]" />
         </div>
 
         <!-- Resumen de ganancias en tarjetas -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div
-            class="bg-blue-500 hover:bg-blue-600 transition duration-300 text-white p-4 rounded-xl shadow"
-          >
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="resumen-ganancias">
+          <div class="bg-blue-500 hover:bg-blue-600 transition duration-300 text-white p-4 rounded-xl shadow">
             <div class="font-bold text-lg">Hoy</div>
             <div class="text-2xl font-semibold mt-2">${{ resumen.dia }}</div>
           </div>
-          <div
-            class="bg-green-500 hover:bg-green-600 transition duration-300 text-white p-4 rounded-xl shadow"
-          >
+          <div class="bg-green-500 hover:bg-green-600 transition duration-300 text-white p-4 rounded-xl shadow">
             <div class="font-bold text-lg">Este mes</div>
             <div class="text-2xl font-semibold mt-2">${{ resumen.mes }}</div>
           </div>
-          <div
-            class="bg-yellow-500 hover:bg-yellow-600 transition duration-300 text-white p-4 rounded-xl shadow"
-          >
+          <div class="bg-yellow-500 hover:bg-yellow-600 transition duration-300 text-white p-4 rounded-xl shadow">
             <div class="font-bold text-lg">Este año</div>
             <div class="text-2xl font-semibold mt-2">${{ resumen.anio }}</div>
           </div>
-          <div
-            class="bg-purple-500 hover:bg-purple-600 transition duration-300 text-white p-4 rounded-xl shadow"
-          >
+          <div class="bg-purple-500 hover:bg-purple-600 transition duration-300 text-white p-4 rounded-xl shadow">
             <div class="font-bold text-lg">Histórico</div>
             <div class="text-2xl font-semibold mt-2">${{ resumen.anios }}</div>
           </div>
@@ -109,24 +71,19 @@
       <header class="w-full py-6 px-4 bg-transparent text-white text-center">
         <h1 class="font-extrabold text-3xl sm:text-4xl">Tareas pendientes</h1>
       </header>
-      <div
-        class="max-w-6xl mx-auto place-items-center bg-transparent rounded-xl p-2 flex flex-col gap-6"
-      >
-        <KanbanBoard
-          :showDisponible="false"
-          :showTerminado="false"
-          :showOwn="true"
-          :mini="true"
-          :showEnProgreso="false"
-        ></KanbanBoard>
+      <div class="max-w-6xl mx-auto place-items-center bg-transparent rounded-xl p-2 flex flex-col gap-6"
+        id="mini-kanban">
+        <KanbanBoard :showDisponible="false" :showTerminado="false" :showOwn="true" :mini="true"
+          :showEnProgreso="false"></KanbanBoard>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { Bar } from "vue-chartjs";
+import { driverObjInicio } from "@/components/tour/inicio"
 import { es } from "@/service/adminApp/client";
 import KanbanBoard from "../kanbanComponents/KanbanBoard.vue";
 import {
@@ -151,7 +108,7 @@ ChartJS.register(
 );
 
 // Variable reactiva para el período seleccionado
-const periodo = ref("mes");
+const periodo = ref("anio");
 const chartKey = ref(0);
 const isAdmin = (localStorage.getItem("level") == "Administrador")
 // Datos de ejemplo para cada período
@@ -323,6 +280,13 @@ const chartContainerClass = computed(() => {
   if (width >= 640 && width < 1024) return "h-80";
   return "h-96";
 });
+
+onMounted(() => {
+  const done = localStorage.getItem('tourInicioDone');
+  if (!done) {
+    driverObjInicio.drive()
+  }
+})
 </script>
 
 <style scoped></style>

@@ -2,8 +2,9 @@
   <!-- Contenedor de la tabla -->
   <div ref="containerRef" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
     <DataTable :value="historial" :filters="filters"
-      :globalFilterFields="['id','cliente', 'atendio', 'fecha_legible', 'cantidad', 'tipo']" paginator sortMode="multiple"
-      removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass" class="w-full rounded-lg p-5">
+      :globalFilterFields="['id', 'cliente', 'atendio', 'fecha_legible', 'cantidad', 'tipo']" paginator
+      sortMode="multiple" removableSort :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" :rowClass="rowClass"
+      class="w-full rounded-lg p-5">
       <!-- Encabezado de la tabla -->
       <template #header>
         <div
@@ -51,15 +52,17 @@
           </div>
           <div v-if="col.field === 'cantidad'"
             class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard('$'+data[col.field])">
-            {{ '$'+data[col.field] }}
+            @click="copyToClipboard('$' + data[col.field])">
+            {{ '$' + data[col.field] }}
           </div>
-          <div v-else-if="col.field != 'fecha' && col.field != 'cantidad' && col.field != 'actions'" class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+          <div v-else-if="col.field != 'fecha' && col.field != 'cantidad' && col.field != 'actions'"
+            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
             @click="copyToClipboard(data[col.field])">
-            {{ data[col.field] }} 
+            {{ data[col.field] }}
           </div>
           <div v-if="col.field === 'actions'" class="flex justify-center space-x-2 ">
-            <Button icon="pi pi-link" class="p-button-rounded p-button-info" title="Ir a pago" @click="linkToPayment(data)"/>
+            <Button id="link-btn" icon="pi pi-link" class="p-button-rounded p-button-info" title="Ir a pago"
+              @click="linkToPayment(data)" />
           </div>
         </template>
       </Column>
@@ -82,6 +85,7 @@ import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
+import { driverObjPagos } from "../tour/pagos";
 import CardDetailHistorial from "./CardDetailHistorial.vue";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
 import { formatFechaHoraFullSQL, formatFechaHoraSQL, formatFechaHoraFullPagoSQL, ps } from "@/service/adminApp/client";
@@ -164,31 +168,42 @@ onMounted(() => {
     });
     resizeObserver.observe(containerRef.value);
   }
+
   historial.value = historial.value.map(item => ({
     ...item,
     fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
   }));
+  startTour()
 });
+
 onUnmounted(() => {
   if (resizeObserver && containerRef.value) {
     resizeObserver.unobserve(containerRef.value);
   }
+  
 });
+async function startTour() {
+  const done = localStorage.getItem('tourPagosDone');
+  if (!done) {
+    currentPageIndex.value = maxPageIndex.value
+    driverObjPagos.drive(); // start the tour only if not done
+  }
+}
 
 async function linkToPayment(data) {
-  if(data.id.startsWith("M-")){
+  if (data.id.startsWith("M-")) {
     router.push({
-    path: '/app/pagos/mensual',
-    query: { search: data.id }
-  });
+      path: '/app/pagos/mensual',
+      query: { search: data.id }
+    });
   }
-  if(data.id.startsWith("C-")){
+  if (data.id.startsWith("C-")) {
     router.push({
-    path: '/app/pagos/concepto',
-    query: { search: data.id }
-  });
+      path: '/app/pagos/concepto',
+      query: { search: data.id }
+    });
   }
-  
+
 }
 
 // CÁLCULO DEL SLIDER DE COLUMNAS
@@ -210,10 +225,12 @@ const pages = computed(() => {
   return pagesArray;
 });
 const currentPageIndex = ref(0);
+const maxPageIndex = computed(() => pages.value.length - 1);
 watch(pages, () => {
   currentPageIndex.value = 0;
-});
-const maxPageIndex = computed(() => pages.value.length - 1);
+  
+}, { immediate: true });
+
 const visibleColumns = computed(() => {
   if (pages.value.length === 1) {
     return baseColumns.value;
