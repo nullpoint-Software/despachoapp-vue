@@ -21,7 +21,7 @@ const driverObjTareasMain = driver({
             element: '.disponible-column',
             popover: {
                 title: 'Tareas disponibles', description: `Las tareas disponibles para realizar se ubican en esta columna, 
-                cuando arrastres una tarjeta a la siguiente columna, se asignará automáticamente a tu . <img src='`+dragTareaGif+`'>`, side: 'right', align: 'center'
+                cuando arrastres una tarjeta a la siguiente columna, se asignará automáticamente a tu usuario. <img src='`+dragTareaGif+`'>`, side: 'right', align: 'center'
             }
         },
         {
