@@ -34,7 +34,7 @@ const router = createRouter({
         },
         { 
           path: "inicio", 
-          redirect: "/app" 
+          redirect: "/app"
         },
         { 
           path: "tareas", 

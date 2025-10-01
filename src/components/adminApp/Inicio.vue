@@ -8,9 +8,9 @@
 
     <!-- Contenedor principal para selector, gráfico y resumen -->
 
-    <main class="flex-grow overflow-auto p-4 bg-transparent">
+    <main class="flex-grow overflow-auto p-4 bg-transparent" v-if="isAdmin">
       <div
-        class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 flex flex-col gap-6"
+        class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 flex flex-col gap-6 " id="chart-section"
       >
         <!-- Selector de período -->
         <div
@@ -36,7 +36,7 @@
             class="flex sm:inline-flex flex-row sm:items-center sm:gap-4 chart-controls"
           >
             <label
-              class="mr-2 items-center space-x-2 text-gray-800 cursor-pointer"
+              class="mr-2 items-center space-x-2 text-gray-800 cursor-pointer" id="group-bars"
             >
               <input
                 type="checkbox"
@@ -46,7 +46,7 @@
               />
               <span>Agrupar barras</span>
             </label>
-            <label class="items-center space-x-2 text-gray-800 cursor-pointer">
+            <label class="items-center space-x-2 text-gray-800 cursor-pointer" id="enable-zoom">
               <input
                 type="checkbox"
                 class="form-checkbox text-blue-600"
@@ -77,7 +77,7 @@
         </div>
 
         <!-- Resumen de ganancias en tarjetas -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="resumen-ganancias">
           <div
             class="bg-blue-500 hover:bg-blue-600 transition duration-300 text-white p-4 rounded-xl shadow"
           >
@@ -110,7 +110,7 @@
         <h1 class="font-extrabold text-3xl sm:text-4xl">Tareas pendientes</h1>
       </header>
       <div
-        class="max-w-6xl mx-auto place-items-center bg-transparent rounded-xl p-2 flex flex-col gap-6"
+        class="max-w-6xl mx-auto place-items-center bg-transparent rounded-xl p-2 flex flex-col gap-6" id="mini-kanban"
       >
         <KanbanBoard
           :showDisponible="false"
@@ -125,8 +125,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { Bar } from "vue-chartjs";
+import {driverObjInicio} from "@/components/tour/inicio"
 import { es } from "@/service/adminApp/client";
 import KanbanBoard from "../kanbanComponents/KanbanBoard.vue";
 import {
@@ -151,7 +152,7 @@ ChartJS.register(
 );
 
 // Variable reactiva para el período seleccionado
-const periodo = ref("mes");
+const periodo = ref("anio");
 const chartKey = ref(0);
 const isAdmin = (localStorage.getItem("level") == "Administrador")
 // Datos de ejemplo para cada período
@@ -323,6 +324,10 @@ const chartContainerClass = computed(() => {
   if (width >= 640 && width < 1024) return "h-80";
   return "h-96";
 });
+
+onMounted(()=>{
+  driverObjInicio.drive()
+})
 </script>
 
 <style scoped></style>
