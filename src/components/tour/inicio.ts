@@ -41,7 +41,6 @@ const driverObjInicio = driver({
     onCloseClick: (el,step,{driver}) => {
         // User canceled the tour
         driver.destroy();
-        tourCompleted = false;
         // Set all other tours done except this one
 
     },
