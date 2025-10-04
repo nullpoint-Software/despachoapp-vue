@@ -15,7 +15,11 @@ import logo from "@/assets/img/logsymbolblack.png";
 const props = defineProps({ tasks: Array });
 const emit = defineEmits(["done"]);
 
-const today = new Date().toISOString().split("T")[0];
+const today = new Date().toLocaleString().split(",")[0];
+//la cosa con obtener ISOString de una fecha vacia es que obtiene la fecha actual en el meridiano UTC
+//y si estas en una zona horaria atrasada te da el dia siguiente y la comparacion falla
+//ENTONCES es mejor obtener la fecha local en string y partirla
+//luego, en finished convertir el ISOString que envia la bd a local string y partirla tambien
 const employeeName = localStorage.getItem("fullname");
 const userId = localStorage.getItem("userid");
 const isLoading = ref(true);
@@ -28,9 +32,8 @@ async function generateReport() {
       (t) =>
         t.estado === "Terminado" &&
         t.id_usuario == userId &&
-        t.fecha_vencimiento.split("T")[0] == today
+        new Date(t.fecha_vencimiento).toLocaleString().split(",")[0] == today
     );
-
     if (!finished.length) {
       alert("No hay tareas terminadas hoy.");
       emit("done");

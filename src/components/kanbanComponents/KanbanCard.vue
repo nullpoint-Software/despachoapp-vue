@@ -20,7 +20,8 @@
       <p class="text-sm text-gray-600 truncate-multiline" v-html="hyphenatedDescription"></p>
 
       <p class="text-xs text-gray-500 mt-1 truncate-multiline">Inicio: {{ card.fecha_creacion }}</p>
-      <p class="text-xs text-gray-500 truncate-multiline">Fin: {{ card.fecha_vencimiento || "N/A" }}</p>
+      <! -- toLocaleString es truthy, asegurar que exista fecha_vencimiento exista antes de formatear -- !>
+      <p class="text-xs text-gray-500 truncate-multiline">Fin: {{ card.fecha_vencimiento ? new Date(card.fecha_vencimiento).toLocaleString() : "N/A" }}</p>
 
       <div class="flex items-center mt-2">
         <span class="w-3 h-3 rounded-full" :class="statusColor"></span>
