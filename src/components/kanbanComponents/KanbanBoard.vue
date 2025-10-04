@@ -184,7 +184,7 @@ const cardsDisponible = ref(
     fecha_creacion: new Date(item.fecha_creacion).toLocaleString(),
   }))
 );
-console.log("cards disponibles", cardsDisponible);
+// console.log("cards disponibles", cardsDisponible);
 
 const cards = ref(
   (showOwn.value || localStorage.getItem("level") == "Empleado"
@@ -202,7 +202,7 @@ const cards = ref(
       : null,
   }))
 );
-console.log("cards", cards);
+// console.log("cards", cards);
 
 const columnStatuses = [
   ...(showPendiente ? ["Pendiente"] : []),
@@ -276,9 +276,9 @@ const changePage = (status, newPage) => {
 };
 
 const changePageDisponible = (status, newPage) => {
-  console.log(status + " " + newPage);
-  console.log("curr " + currentPage.value["Disponible"]);
-  console.log("disp " + pagesDisponible.value["Disponible"]);
+  // console.log(status + " " + newPage);
+  // console.log("curr " + currentPage.value["Disponible"]);
+  // console.log("disp " + pagesDisponible.value["Disponible"]);
 
   if (newPage >= 0 && newPage < pagesDisponible["Disponible"]) {
     currentPage.value[status] = newPage;
@@ -301,7 +301,7 @@ const moveCard = async (cardId, newStatus) => {
       (!card.id_usuario && (await hasPermission("canMoveAvailableCard")))
       ? true
       : false;
-  console.log("card moving", card);
+  // console.log("card moving", card);
   if (permission) {
     if (card) {
       const originalStatus = card.estado;
@@ -315,7 +315,7 @@ const moveCard = async (cardId, newStatus) => {
       const movingToStart = newIndex === 0;
       const invalidBackFrom3 =
         currentIndex == 3 && (newIndex == 1 || newIndex == 2 || newIndex == 0);
-      console.log(movingForwardOneStep, movingToStart, invalidBackFrom3);
+      // console.log(movingForwardOneStep, movingToStart, invalidBackFrom3);
 
       if (
         isAdmin ||
@@ -550,7 +550,7 @@ const closeTaskForm = () => {
 };
 
 const saveTaskForm = (taskData) => {
-  console.log("save taskform activated with task: " + taskData);
+  // console.log("save taskform activated with task: " + taskData);
   console.log("mode is " + taskFormMode.value);
   searchQuery.value = ""; // limpiar búsqueda
   closeTaskForm();

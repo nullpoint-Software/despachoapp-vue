@@ -27,11 +27,7 @@ const tasks = ref();
 
 async function generateReport() {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
-  console.log('today', today);
-  
   try {
-    console.log('tasks', tasks.value);
-    
     const finished = tasks.value.filter(
       (t) =>
         t.estado === "Terminado" &&
