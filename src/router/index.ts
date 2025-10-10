@@ -56,17 +56,12 @@ const router = createRouter({
             { 
               path: "historial", 
               name: "pagos-historial", 
-              component: () => import("@/components/adminApp/PagosHistorial.vue") 
+              component: () => import("@/components/adminApp/Tables/PagosHistorial.vue") 
             },
             { 
               path: "concepto", 
               name: "pagos-concepto", 
-              component: () => import("@/components/adminApp/PagoConcepto.vue") 
-            },
-            { 
-              path: "mensual", 
-              name: "pagos-mensual", 
-              component: () => import("@/components/adminApp/PagoMensual.vue") 
+              component: () => import("@/components/adminApp/Tables/PagoConcepto.vue") 
             },
           ],
         },
