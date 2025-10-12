@@ -8,7 +8,7 @@
 
     <!-- Contenedor principal para selector, gráfico y resumen -->
 
-    <main class="flex-grow overflow-auto p-4 bg-transparent" v-if="isAdmin">
+    <main class="flex-grow p-4 bg-transparent" v-if="isAdmin">
       <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 flex flex-col gap-6 " id="chart-section">
         <!-- Selector de período -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -67,7 +67,7 @@
         </div>
       </div>
     </main>
-    <main class="flex-grow overflow-auto p-4 bg-transparent">
+    <main class="flex-grow p-4 bg-transparent">
       <header class="w-full py-6 px-4 bg-transparent text-white text-center">
         <h1 class="font-extrabold text-3xl sm:text-4xl">Tareas pendientes</h1>
       </header>

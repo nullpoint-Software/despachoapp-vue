@@ -1,6 +1,6 @@
 <template>
   <div
-    class="h-auto min-h-screen w-full bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col"
+    class="h-auto min-h-full w-full bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col"
   >
     <GridBackground />
     <PinnedNotesWindow />
@@ -27,41 +27,51 @@
         @logout="logOut"
       />
     </template>
-    
-    <div class="flex flex-grow">
-      <main
-        class="relative z-30 w-full h-screen overflow-y-auto"
-        :class="{ 'pb-16': isMobile, 'lg:pl-20': !isMobile }"
-      >
-        <Suspense>
-          <template #default>
-            <RouterView class="p-4 lg:p-6" :class="{ 'mt-16': !isMobile }" />
-          </template>
-          <template #fallback>
-            <Loader />
-          </template>
-        </Suspense>
-      </main>
+
+    <div class="relative">
+      <div>
+        <main
+          class="z-30 w-full h-full"
+          :class="{ 'pb-16': isMobile, 'lg:pl-20': !isMobile }"
+        >
+          <Suspense>
+            <template #default>
+              <RouterView class="p-4 lg:p-6" :class="{ 'mt-16': !isMobile }" />
+            </template>
+            <template #fallback>
+              <Loader />
+            </template>
+          </Suspense>
+        </main>
+      </div>
+      <div>
+        <MobileBottomNav
+          v-if="isMobile"
+          :menu-items="mainNavItems"
+          @open-more-menu="toggleMoreMenu"
+        />
+      </div>
     </div>
 
-    <MobileBottomNav 
-      v-if="isMobile" 
-      :menu-items="mainNavItems" 
-      @open-more-menu="toggleMoreMenu"
-    />
-
     <transition name="slide-up">
-      <div 
+      <div
         v-if="isMobile && isMoreMenuOpen"
         class="fixed bottom-0 left-0 w-full pt-3 pb-8 bg-[var(--color-bg-secondary)] rounded-t-2xl z-50"
-      >
-        </div>
+      ></div>
     </transition>
-    
+
     <transition name="fade">
-       <div v-if="showNotesModal" class="modal-overlay fixed inset-0 z-50" @click.self="closeNotesModal">
-        <div class="modal-content relative bg-[var(--color-bg)] p-4 rounded-lg shadow-2xl border border-[var(--color-border)] max-w-4xl w-full mx-4">
-          <Suspense><BoardNote /></Suspense>
+      <div
+        v-if="showNotesModal"
+        class="modal-overlay fixed inset-0 z-50"
+        @click.self="closeNotesModal"
+      >
+        <div
+          class="modal-content relative bg-[var(--color-bg)] p-4 rounded-lg shadow-2xl border border-[var(--color-border)] max-w-4xl w-full mx-4"
+        >
+          <Suspense>
+            <BoardNote />
+          </Suspense>
         </div>
       </div>
     </transition>
@@ -74,7 +84,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed, Suspense } from "vue";
 import { RouterView, useRouter } from "vue-router";
-import { useEventListener } from '@vueuse/core';
+// import { useEventListener } from "@vueuse/core";
 import defaultprofilePicture from "@/assets/img/user.jpg";
 import { useMobileDetection } from "@/composables/useMobileDetection.ts";
 import { useNotesStore } from "@/composables/useNotesStore.ts";
@@ -103,7 +113,7 @@ const menuOpen = ref<boolean>(false);
 const toggleMenu = () => (menuOpen.value = !menuOpen.value);
 
 const isMoreMenuOpen = ref<boolean>(false);
-const toggleMoreMenu = () => isMoreMenuOpen.value = !isMoreMenuOpen.value;
+const toggleMoreMenu = () => (isMoreMenuOpen.value = !isMoreMenuOpen.value);
 
 const showLogs = ref<boolean>(false);
 const logsKey = ref<number>(0);
@@ -118,12 +128,16 @@ const profilePicture = ref<string>(
     : defaultprofilePicture
 );
 
-useEventListener(document, 'keydown', (e: KeyboardEvent) => {
-  if (e.key === '/' && (e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
-    e.preventDefault();
-    togglePinnedWindow();
-  }
-});
+// useEventListener(document, "keydown", (e: KeyboardEvent) => {
+//   if (
+//     e.key === "/" &&
+//     (e.target as HTMLElement).tagName !== "INPUT" &&
+//     (e.target as HTMLElement).tagName !== "TEXTAREA"
+//   ) {
+//     e.preventDefault();
+//     togglePinnedWindow();
+//   }
+// });
 
 watch(showLogs, (val) => {
   if (val) logsKey.value++;
