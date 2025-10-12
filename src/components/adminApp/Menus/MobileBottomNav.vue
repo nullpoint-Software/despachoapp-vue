@@ -1,5 +1,5 @@
 <template>
-  <nav class="fixed bottom-0 left-0 z-40 w-full h-16 bg-[var(--color-bg-secondary)] border-t border-[var(--color-border)]">
+  <nav class="fixed bottom-0 text-center left-0 z-40 w-full h-16 bg-[var(--color-bg-secondary)] border-t border-[var(--color-border)]">
     <div class="grid h-full max-w-lg grid-cols-4 mx-auto font-medium">
       <router-link
         v-for="item in menuItems"

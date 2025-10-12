@@ -3,7 +3,7 @@
   <Toast />
   <div class="relative">
     <!-- Buscador -->
-    <div class="sticky top-20 z-49 max-w-lg mx-auto mb-4">
+    <div class="sticky z-49 max-w-lg mx-auto mb-4" :class=" isMobile ? 'top-5' : 'top-20' ">
       <div id="search-bar" v-if="!mini" :class="[
         'flex items-center bg-gray-900 text-white rounded-full px-4 py-2 transition-shadow duration-200',
         showShadow ? 'shadow-2xl shadow-neutral-900' : 'shadow-none',
@@ -121,12 +121,14 @@ import { Toast, useToast } from "primevue";
 import CardDetail from "./CardDetail.vue";
 import PdfReport from "../PdfReport.vue";
 import FloatingTaskButton from "./FloatingTaskButton.vue";
+import { useMobileDetection } from "@/composables/useMobileDetection";
 import Loader from "@/components/adminApp/Menus/Loader.vue";
 import TaskFormModal from "./TaskFormModal.vue";
 import { hasPermission } from "@/service/adminApp/permissionsService";
 import { cs, ts } from "@/service/adminApp/client";
 import { base64ToFile } from "@/service/adminApp/authService";
 const toast = useToast();
+const isMobile = useMobileDetection();
 const userId = ref(await localStorage.getItem("userid"));
 const userFullName = ref(localStorage.getItem("fullname"));
 const userName = ref(localStorage.getItem("username"));
@@ -159,6 +161,7 @@ const handleScroll = () => {
   const barRect = searchBar.getBoundingClientRect();
   const boardRect = kanbanBoard.getBoundingClientRect();
   showShadow.value = barRect.bottom >= boardRect.top;
+  console.log("scrolling", showShadow.value, barRect, boardRect);
 };
 function handleClickOutside(event) {
   if (searchBarRef.value && !searchBarRef.value.contains(event.target)) {
