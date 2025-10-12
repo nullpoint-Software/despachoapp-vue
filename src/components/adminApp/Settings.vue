@@ -302,7 +302,7 @@ import imageCompression from "browser-image-compression";
 import { PrimeIcons } from '@primevue/core/api';
 import { Toast } from 'primevue';
 import { useToast } from 'primevue';
-import ConfirmDeleteDialog from './ConfirmDeleteDialog.vue';
+import ConfirmDeleteDialog from '@/components/adminApp/Dialogs/ConfirmDeleteDialog.vue';
 import { getPermissions, hasPermission, updatePermissions, updateUserPermissions } from '@/service/adminApp/permissionsService';
 import router from '@/router';
 // SEARCH MODAL STATE
@@ -590,7 +590,7 @@ const updateLevel = async (level) => {
   try {
     await us.editUsuario(usuarioSeleccionado.value.id_usuario, { puesto: level })
     usuarioSeleccionado.value.puesto = await level;
-    isDropdown.value = await false;
+    isDropdown.value =  false;
     if (usuarioSeleccionado.value.id_usuario == localStorage.getItem("userid")) {
       await localStorage.setItem("level", level)
     }

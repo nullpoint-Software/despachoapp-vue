@@ -88,7 +88,7 @@ import { useRouter } from "vue-router";
 import { as } from "@/service/adminApp/client";
 import { Toast, useToast } from "primevue";
 import { useRoute } from "vue-router";
-import Loader from "@/components/adminApp/Loader.vue";
+import Loader from "@/components/adminApp/Menus/Loader.vue";
 
 export default {
   components: { InputText, Loader },

@@ -85,9 +85,9 @@ import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
-import { driverObjPagos } from "../tour/pagos";
-import CardDetailHistorial from "./CardDetailHistorial.vue";
-import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
+import { driverObjPagos } from "../../tour/pagos";
+import CardDetailHistorial from "@/components/adminApp/CardDetail/CardDetailHistorial.vue";
+import ConfirmDeleteDialog from "@/components/adminApp/Dialogs/ConfirmDeleteDialog.vue";
 import { formatFechaHoraFullSQL, formatFechaHoraSQL, formatFechaHoraFullPagoSQL, ps } from "@/service/adminApp/client";
 
 const toast = useToast();

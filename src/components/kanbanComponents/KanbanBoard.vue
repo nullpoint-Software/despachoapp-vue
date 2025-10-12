@@ -121,7 +121,7 @@ import { Toast, useToast } from "primevue";
 import CardDetail from "./CardDetail.vue";
 import PdfReport from "../PdfReport.vue";
 import FloatingTaskButton from "./FloatingTaskButton.vue";
-import Loader from "../adminApp/Loader.vue";
+import Loader from "@/components/adminApp/Menus/Loader.vue";
 import TaskFormModal from "./TaskFormModal.vue";
 import { hasPermission } from "@/service/adminApp/permissionsService";
 import { cs, ts } from "@/service/adminApp/client";

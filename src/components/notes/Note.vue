@@ -1,79 +1,108 @@
-<!-- Note.vue -->
 <template>
-  <!-- Se asigna lang="es" para que el navegador utilice las reglas del español -->
-  <div lang="es" class="note bg-gray-50 border border-gray-200 rounded-md shadow p-4">
-    
-    <!-- Título de la nota con la clase "note-title" -->
-    <h2 class="note-title text-xl font-bold text-gray-800 mb-2">{{ note.titulo }}<button @click.stop="confirmDialogVisible = true; noteToDelete = note"
-                class="text-red-500 hover:text-red-700 cursor-pointer ml-2">
-                <i class="pi pi-trash text-lg"></i>
-              </button></h2>
-    <!-- Contenido de la nota renderizado a HTML desde Markdown -->
-    <div class="note-content text-gray-700" v-html="parsedMarkdown"></div>
+  <div 
+    class="note-card flex flex-col rounded-lg shadow-md h-full transition-opacity duration-300"
+    :class="[noteColorClass, { 'opacity-30': !isMatch && searchQuery }]"
+  >
+    <div class="note-header flex justify-between items-start p-3 border-b" :class="noteBorderClass">
+      <h3 class="font-bold break-words break-all pr-2" v-html="highlightedTitle"></h3>
+      <div v-if="!hideControls" class="flex items-center space-x-1 flex-shrink-0">
+        <button @click="togglePin" class="p-1 rounded-full hover:bg-black/10 transition-colors" title="Anclar Nota">
+          <i 
+            class="pi pi-thumbtack" 
+            :class="{ 'text-yellow-500 transform rotate-45': note.pinned, 'text-[var(--color-text-muted)]': !note.pinned }"
+          ></i>
+        </button>
+        <button @click="$emit('request-delete', note)" class="p-1 rounded-full hover:bg-black/10 transition-colors" title="Eliminar Nota">
+          <i class="pi pi-trash text-[var(--color-text-muted)] hover:text-red-500"></i>
+        </button>
+      </div>
+    </div>
+    <div 
+      class="note-content p-4"
+      v-html="highlightedContent"
+    ></div>
   </div>
-  <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'¿Estás seguro de eliminar esta nota?'" @confirm="confirmDelete(noteToDelete.id)" @cancel="confirmDialogVisible = false"></ConfirmDeleteDialog>
 </template>
 
-<script setup>
-import { computed, defineProps, ref } from 'vue'
-import { marked } from 'marked'
-import ConfirmDeleteDialog from '../adminApp/ConfirmDeleteDialog.vue'
-import { ns } from '@/service/adminApp/client'
-const confirmDialogVisible = ref(false)
-const noteToDelete = ref();
-const props = defineProps({
-  note: {
-    type: Object,
-    required: true
-    // Estructura: { id: Number, titulo: String, descripcion: String (markdown) }
-  }
-})
+<script setup lang="ts">
+import { computed, ref, watchEffect } from 'vue';
+import { marked } from 'marked';
+import { useNotesStore, type Note } from '@/composables/useNotesStore';
 
+const props = withDefaults(defineProps<{
+  note: Note,
+  searchQuery?: string,
+  hideControls?: boolean,
+}>(), {
+  searchQuery: '',
+  hideControls: false,
+});
 
-async function confirmDelete(id) {
-  try {
-    await ns.deleteNota(id)
-    confirmDialogVisible.value = false;
-    window.location.reload()
-  } catch (error) {
-    console.error(error);
-    
+const emit = defineEmits<{ (e: 'request-delete', note: Note): void }>();
+
+const { updateNote } = useNotesStore();
+
+const togglePin = () => {
+  updateNote(props.note.id, { pinned: !props.note.pinned });
+};
+
+const isMatch = computed(() => {
+  if (!props.searchQuery) return true;
+  const query = props.searchQuery.toLowerCase();
+  return (
+    props.note.titulo.toLowerCase().includes(query) ||
+    props.note.descripcion.toLowerCase().includes(query)
+  );
+});
+
+const highlightText = (text: string): string => {
+  if (!props.searchQuery || props.searchQuery.trim() === '' || !isMatch.value) {
+    return text;
   }
-  
-}
-// Se convierte la descripción de la nota de markdown a HTML
-const parsedMarkdown = computed(() => marked(props.note.descripcion))
+  const escapedQuery = props.searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
+  return text.replace(regex, '<mark class="bg-yellow-300 bg-opacity-50 rounded px-0.5">$1</mark>');
+};
+
+const highlightedTitle = computed(() => highlightText(props.note.titulo));
+
+const highlightedContent = ref('');
+watchEffect(async () => {
+  const rendered = await marked(props.note.descripcion || '');
+  highlightedContent.value = highlightText(rendered);
+});
+
+const noteColorClass = computed(() => ({
+  'bg-blue-50 text-blue-900': props.note.color === 'blue',
+  'bg-red-50 text-red-900': props.note.color === 'red',
+  'bg-yellow-50 text-yellow-900': props.note.color === 'yellow',
+  'bg-green-50 text-green-900': props.note.color === 'green',
+  'bg-white text-gray-800': !props.note.color || props.note.color === 'white',
+}));
+
+const noteBorderClass = computed(() => ({
+  'border-blue-200': props.note.color === 'blue',
+  'border-red-200': props.note.color === 'red',
+  'border-yellow-200': props.note.color === 'yellow',
+  'border-green-200': props.note.color === 'green',
+  'border-gray-200': !props.note.color || props.note.color === 'white',
+}));
 </script>
 
 <style scoped>
-/* Estilos opcionales para los párrafos dentro del contenido */
-.note-content :global(p) {
-  margin-bottom: 0.75rem;
+.note-card {
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
 }
-
-/*
-  nota para gilberto rodriguez, se que vas a leer esto.
-
-  Propiedades para que tanto el título como el contenido de la nota
-  realicen la separación de palabras de forma automática.
-  
-  Con hyphens: auto; el navegador insertará el guion (-) en el corte
-  de línea cuando lo considere adecuado según las reglas del idioma.
-  
-  Si observas que en algunos cortes no aparece el guion (por ejemplo en nuevas palabras),
-  es porque el algoritmo del navegador determina que no es necesario mostrarlo.
-  Para un comportamiento uniforme (o sea, guiones en todos los saltos o sin guiones)
-  tendrías que optar por inhabilitar la separación automática o insertar manualmente
-  soft hyphens (&shy;) en el texto.
-*/
-.note-title,
 .note-content {
   overflow-wrap: break-word;
-  word-wrap: break-word;
-  
-  /* Aplica separación de palabras automática */
   hyphens: auto;
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
 }
+.note-content:deep(h1), .note-content:deep(h2), .note-content:deep(h3) { font-weight: bold; margin-bottom: 0.5rem; }
+.note-content:deep(p) { margin-bottom: 0.5rem; }
+.note-content:deep(ul) { list-style-type: disc; margin-left: 1.5rem; }
+.note-content:deep(ol) { list-style-type: decimal; margin-left: 1.5rem; }
+.note-content:deep(a) { color: var(--obj-important-1); text-decoration: underline; }
+.note-content:deep(pre) { background-color: #f3f4f6; padding: 0.5rem; border-radius: 0.5rem; }
 </style>
