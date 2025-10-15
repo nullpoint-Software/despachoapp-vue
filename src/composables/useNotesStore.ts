@@ -1,6 +1,6 @@
-import { ref, computed } from 'vue';
-import { saveAs } from 'file-saver';
-import { ns } from '@/service/adminApp/client';
+import { ref, computed } from "vue";
+import { saveAs } from "file-saver";
+import { ns } from "@/service/adminApp/client";
 
 // --- INTERFACES ---
 export interface Note {
@@ -8,18 +8,36 @@ export interface Note {
   titulo: string;
   descripcion: string;
   pinned: boolean;
-  color: 'white' | 'blue' | 'red' | 'yellow' | 'green';
+  color: "white" | "blue" | "red" | "yellow" | "green";
   gs_x?: number;
   gs_y?: number;
   gs_w?: number;
   gs_h?: number;
 }
 
-export type NewNotePayload = Omit<Note, 'id'>;
-export type UpdateNotePayload = Partial<Omit<Note, 'id'>>;
+// En tu archivo composables/useNotesStore.ts
+
+export interface Note {
+  id: number;
+  titulo: string;
+  descripcion: string;
+  pinned: boolean;
+  color: "white" | "blue" | "red" | "yellow" | "green";
+
+  // AÑADE ESTA PROPIEDAD
+  layout?: {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  };
+}
+
+export type NewNotePayload = Omit<Note, "id">;
+export type UpdateNotePayload = Partial<Omit<Note, "id">>;
 
 // --- CONSTANTES ---
-const PINNED_NOTES_KEY = 'pinnedNotesState';
+const PINNED_NOTES_KEY = "pinnedNotesState";
 
 // --- ESTADO GLOBAL REACTIVO ---
 const notes = ref<Note[]>([]);
@@ -31,7 +49,6 @@ const isPinnedDrawerOpen = ref<boolean>(false);
 
 // --- COMPOSABLE ---
 export function useNotesStore() {
-
   // --- LÓGICA DE LOCAL STORAGE ---
   const getPinnedIdsFromStorage = (): number[] => {
     const stored = localStorage.getItem(PINNED_NOTES_KEY);
@@ -58,43 +75,46 @@ export function useNotesStore() {
       const notesFromDB: Note[] = await ns.getNotas();
       const pinnedIds = getPinnedIdsFromStorage();
 
-      notes.value = notesFromDB.map(note => ({
+      notes.value = notesFromDB.map((note) => ({
         ...note,
         pinned: pinnedIds.includes(note.id),
-        gs_w: (note.gs_w && note.gs_w >= 2) ? note.gs_w : 2,
-        gs_h: (note.gs_h && note.gs_h >= 2) ? note.gs_h : 2,
+        gs_w: note.gs_w && note.gs_w >= 2 ? note.gs_w : 2,
+        gs_h: note.gs_h && note.gs_h >= 2 ? note.gs_h : 2,
       }));
     } catch (e) {
       const err = e as Error;
-      error.value = 'Error al cargar las notas.';
-      console.error(err.message);
-    } finally {
-      isLoading.value = false;
-    }
-  };
-  
-  const addNote = async (newNoteData: NewNotePayload): Promise<void> => {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      await ns.addNota(newNoteData);
-      await fetchNotes(); 
-    } catch (e) {
-      const err = e as Error;
-      error.value = 'No se pudo añadir la nota.';
+      error.value = "Error al cargar las notas.";
       console.error(err.message);
     } finally {
       isLoading.value = false;
     }
   };
 
-  const updateNote = async (noteId: number, updatedData: UpdateNotePayload): Promise<void> => {
+  const addNote = async (newNoteData: NewNotePayload): Promise<void> => {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      await ns.addNota(newNoteData);
+      await fetchNotes();
+    } catch (e) {
+      const err = e as Error;
+      error.value = "No se pudo añadir la nota.";
+      console.error(err.message);
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const updateNote = async (
+    noteId: number,
+    updatedData: UpdateNotePayload
+  ): Promise<void> => {
     error.value = null;
     try {
       // TODO: Conecta tu función de API que actualiza una nota.
       // await ns.updateNota(noteId, updatedData);
-      
-      const index = notes.value.findIndex(n => n.id === noteId);
+
+      const index = notes.value.findIndex((n) => n.id === noteId);
       if (index !== -1) {
         const updatedNote = { ...notes.value[index], ...updatedData } as Note;
         notes.value[index] = updatedNote;
@@ -106,26 +126,28 @@ export function useNotesStore() {
               pinnedIds.push(noteId);
             }
           } else {
-            pinnedIds = pinnedIds.filter(id => id !== noteId);
+            pinnedIds = pinnedIds.filter((id) => id !== noteId);
           }
           savePinnedIdsToStorage(pinnedIds);
         }
       }
     } catch (e) {
       const err = e as Error;
-      error.value = 'Error al actualizar la nota.';
+      error.value = "Error al actualizar la nota.";
       console.error(err.message);
     }
   };
 
-  const saveLayout = async (layout: { id: number; x: number; y: number; w: number; h: number }[]): Promise<void> => {
+  const saveLayout = async (
+    layout: { id: number; x: number; y: number; w: number; h: number }[]
+  ): Promise<void> => {
     error.value = null;
     try {
       // TODO: Conecta tu función de API que guarda el layout.
       // await ns.saveNoteLayout(layout);
-      
-      layout.forEach(item => {
-        const note = notes.value.find(n => n.id === item.id);
+
+      layout.forEach((item) => {
+        const note = notes.value.find((n) => n.id === item.id);
         if (note) {
           note.gs_x = item.x;
           note.gs_y = item.y;
@@ -135,7 +157,7 @@ export function useNotesStore() {
       });
     } catch (e) {
       const err = e as Error;
-      error.value = 'No se pudo guardar el layout.';
+      error.value = "No se pudo guardar el layout.";
       console.error(err.message);
     }
   };
@@ -143,13 +165,13 @@ export function useNotesStore() {
   const deleteNote = async (noteId: number): Promise<void> => {
     error.value = null;
     try {
-      const index = notes.value.findIndex(n => n.id === noteId);
+      const index = notes.value.findIndex((n) => n.id === noteId);
       if (index === -1) return;
       notes.value.splice(index, 1);
       await ns.deleteNota(noteId);
     } catch (e) {
       const err = e as Error;
-      error.value = 'Error al eliminar la nota.';
+      error.value = "Error al eliminar la nota.";
       console.error(err.message);
       await fetchNotes();
     }
@@ -158,8 +180,11 @@ export function useNotesStore() {
   const exportNotesToJSON = () => {
     try {
       const data = JSON.stringify(notes.value, null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      saveAs(blob, `notas_exportadas_${new Date().toISOString().split('T')[0]}.json`);
+      const blob = new Blob([data], { type: "application/json" });
+      saveAs(
+        blob,
+        `notas_exportadas_${new Date().toISOString().split("T")[0]}.json`
+      );
     } catch (e) {
       error.value = "Error al exportar las notas.";
       console.error(e);
@@ -170,8 +195,10 @@ export function useNotesStore() {
     compactGridTrigger.value++;
   };
 
-  const pinnedNotes = computed(() => notes.value.filter(note => note.pinned));
-  const unpinnedNotes = computed(() => notes.value.filter(note => !note.pinned));
+  const pinnedNotes = computed(() => notes.value.filter((note) => note.pinned));
+  const unpinnedNotes = computed(() =>
+    notes.value.filter((note) => !note.pinned)
+  );
 
   return {
     notes,
