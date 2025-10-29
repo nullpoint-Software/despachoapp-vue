@@ -45,7 +45,7 @@ class UsuarioService {
   async getUsuarioPS(id_usuario: any) {
     try {
       const response = await this.axios.post(
-        `${this.serverip}/usuario/password`,
+        `${this.serverip}/usuarios/password`,
         { id_usuario: id_usuario }, // this is the POST body
         {
           headers: {

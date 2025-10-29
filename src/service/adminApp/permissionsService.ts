@@ -25,7 +25,7 @@ export async function hasPermission(permissionKey: string): Promise<boolean> {
   try {
     const [globalRes, userRes] = await Promise.all([
       fetch(`${serverip}/permissions`),
-      fetch(`${serverip}/user_permissions`)
+      fetch(`${serverip}/permissions/user`)
     ]);
     
     
@@ -75,7 +75,7 @@ export async function getPermissions(): Promise<any> {
 
 export async function getUserPermissions(): Promise<any> {
   try {
-      const response = await axios.get(`${serverip}/user-permissions`);
+      const response = await axios.get(`${serverip}/permissions/user`);
       console.log("perms got",response.data);
       return response.data;
   } catch (error) {
@@ -85,7 +85,7 @@ export async function getUserPermissions(): Promise<any> {
 }
 
 export async function updateUserPermissions(newUserPerms: object) {
-  await fetch(`${serverip}/user-permissions`, {
+  await fetch(`${serverip}/permissions/user`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
