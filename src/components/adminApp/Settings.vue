@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full bg-transparent p-4 lg:p-6 lg:ml-20 mt-20">
+  <div class="w-full bg-transparent p-4 lg:p-6 mt-20">
     <!-- Bento Grid Container -->
     <div class="grid grid-cols-3 lg:grid-cols-2 grid-rows-3 lg:grid-rows-3 gap-2 m-4 h-full">
 
