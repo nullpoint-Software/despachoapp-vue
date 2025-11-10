@@ -259,3 +259,7 @@ html {
   background-color: var(--btn-danger-hover-bg);
 }
 
+:where(.tab-content) {
+  display: revert !important;
+}
+
