@@ -1,6 +1,13 @@
+import type { Note } from "@/composables/useNotesStore";
 import type { AxiosInstance } from "axios";
 
 class NotasService {
+  updateNota(_noteId: number, _updatedData: Partial<Omit<Note, "id">>) {
+    throw new Error("Method not implemented.");
+  }
+  saveNoteLayout(_layout: { id: number; x?: number; y?: number; w?: number; h?: number; }[]) {
+    throw new Error("Method not implemented.");
+  }
   private serverip: string;
   private axios: AxiosInstance;
 

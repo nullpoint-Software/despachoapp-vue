@@ -88,11 +88,11 @@
     <transition name="fade">
       <div
         v-if="showNotesModal"
-        class="modal-overlay fixed inset-0 z-50"
+        class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         @click.self="closeNotesModal"
       >
         <div
-          class="modal-content relative bg-[var(--color-bg)] p-4 rounded-lg shadow-2xl border border-[var(--color-border)] max-w-4xl w-full mx-4"
+          class="modal-content relative bg-theme-main p-4 rounded-lg shadow-2xl w-full max-w-[calc(100vw-200px)] h-[calc(100vh-120px)] overflow-hidden"
         >
           <Suspense>
             <BoardNote />

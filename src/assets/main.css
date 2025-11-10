@@ -1,5 +1,6 @@
 /* main.css */
 @import "tailwindcss";
+@plugin "daisyui";
 @import "primeicons/primeicons.css";
 
 /*
@@ -257,3 +258,4 @@ html {
 .hover\:bg-btn-danger-hover:hover {
   background-color: var(--btn-danger-hover-bg);
 }
+
