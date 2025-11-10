@@ -14,7 +14,7 @@ class authService {
   async loginUser(credentials: { username: string; password: string }) {
     try {
       const response = await this.axios.post(
-        `${this.serverip}/login`,
+        `${this.serverip}/auth/login`,
         credentials
       );
 
@@ -40,21 +40,22 @@ class authService {
   }
 
   getUserInfo = async () => {
+    const currentuserid = await localStorage.getItem("userid");
     try {
-      const response = await axios.get(`${this.serverip}/usuario`, {
+      const response = await axios.get(`${this.serverip}/usuarios/${currentuserid}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      await localStorage.setItem("fullname", response.data.fullName);
-      await localStorage.setItem("username", response.data.username);
-      await localStorage.setItem("userid", response.data.userid);
+      // await localStorage.setItem("fullname", response.data.fullName);
+      // await localStorage.setItem("username", response.data.username);
+      // await localStorage.setItem("userid", response.data.userid);
 
-      await localStorage.setItem("level", response.data.level);
-      await localStorage.setItem(
-        "userphoto",
-        "data:image/png;base64," + response.data.userphoto
-      );
+      // await localStorage.setItem("level", response.data.level);
+      // await localStorage.setItem(
+      //   "userphoto",
+      //   "data:image/png;base64," + response.data.userphoto
+      // );
       return response.data;
     } catch (error) {
       console.error(error);
@@ -86,11 +87,11 @@ class authService {
     }
 
     if (!token) {
-      // If the token doesn't exist, redirect to /login
+      // If the token doesn't exist, redirect to /auth/login
       localStorage.clear();
       await router.push("/login");
       this.authStatus = false;
-    } else if (token && currentRoute.path === "/login") {
+    } else if (token && currentRoute.path === "/auth/login") {
       await router.push("/app");
       this.authStatus = true;
     }
@@ -137,7 +138,9 @@ export function base64ToFile(
       byteArrays.push(byteArray);
     }
 
-    return new Blob(byteArrays, { type: mime });
+    // Create new ArrayBuffer-backed Uint8Array copies to ensure BlobPart types are compatible
+    const blobParts = byteArrays.map((ba) => new Uint8Array(ba));
+    return new Blob(blobParts, { type: mime });
   } catch (error: any) {
     throw new Error(`Invalid base64 string: ${error.message}`);
   }

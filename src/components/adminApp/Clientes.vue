@@ -101,14 +101,14 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
-import { driverObjClientes } from "../tour/clientes";
+import { driverObjClientes } from "@/components/tour/clientes";
 import Column from "primevue/column";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
 import { hasPermission } from "@/service/adminApp/permissionsService";
-import CardDetailCliente from "./CardDetailCliente.vue";
-import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
+import CardDetailCliente from "@/components/adminApp/CardDetail/CardDetailCliente.vue";
+import ConfirmDeleteDialog from "@/components/adminApp/Dialogs/ConfirmDeleteDialog.vue";
 import { cs } from "@/service/adminApp/client";
 import type { ColumnDef } from "@/types/ClientesTable";
 const canAddCliente = ref(false)

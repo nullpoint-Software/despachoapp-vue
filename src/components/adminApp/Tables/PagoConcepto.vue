@@ -211,11 +211,11 @@ import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Toast from "primevue/toast";
 import { hasPermission } from "@/service/adminApp/permissionsService";
-import CardDetailPagoConcepto from "./CardDetailPagoConcepto.vue";
-import ConfirmDeleteDialog from "./ConfirmDeleteDialog.vue";
-import PrintPagoConcepto from "./PrintPagoConcepto.vue";
-import PrintDialog from "./PrintDialog.vue";
-import ExportExcelButton from "./ExportExcelButton.vue";
+import CardDetailPagoConcepto from "../CardDetail/CardDetailPagoConcepto.vue";
+import ConfirmDeleteDialog from "../Dialogs/ConfirmDeleteDialog.vue";
+import PrintPagoConcepto from "../Print/PrintPagoConcepto.vue";
+import PrintDialog from "../Print/PrintDialog.vue";
+import ExportExcelButton from "../Exports/ExportExcelButton.vue";
 
 const printDialogVisible = ref(false);
 const canAddPagoConcepto = ref(false);

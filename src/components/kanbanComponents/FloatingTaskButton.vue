@@ -2,8 +2,9 @@
   <!-- Botón flotante para añadir tarea -->
   <button
     @click="$emit('click')"
-    class="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg z-20 transition transform hover:scale-110 
+    class="fixed right-4 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg z-20 transition transform hover:scale-110 
            w-14 h-14 flex items-center justify-center" 
+    :class="{ 'bottom-20': isMobile, 'bottom-8': !isMobile }"
     aria-label="Añadir tarea"
   >
     <i class="pi pi-plus text-2xl"></i>
@@ -11,6 +12,8 @@
 </template>
 
 <script setup>
+import { useMobileDetection } from '@/composables/useMobileDetection';
+const { isMobile } = useMobileDetection();
 // No se requiere lógica adicional aquí.
 </script>
 

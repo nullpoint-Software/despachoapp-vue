@@ -12,7 +12,7 @@ class EstadisticaService {
     // Method to get statistics for the year
     async getGananciasPorAno(): Promise<any> {
         try {
-            const response = await this.axios.get(`${this.serverip}/gananciasporano`);
+            const response = await this.axios.get(`${this.serverip}/stats/gananciasporano`);
             console.log("Ganancias por Año:", response.data);
             return response.data;
         } catch (error) {
@@ -24,7 +24,7 @@ class EstadisticaService {
     // Method to get statistics for daily earnings by hour
     async getGananciasPorDiaHora(): Promise<any> {
         try {
-            const response = await this.axios.get(`${this.serverip}/gananciaspordiahora`);
+            const response = await this.axios.get(`${this.serverip}/stats/gananciaspordiahora`);
             console.log("Ganancias por Día por Hora:", response.data);
             return response.data;
         } catch (error) {
@@ -36,7 +36,7 @@ class EstadisticaService {
     // Method to get statistics for the month
     async getGananciasPorDiaMes(): Promise<any> {
         try {
-            const response = await this.axios.get(`${this.serverip}/gananciaspordiames`);
+            const response = await this.axios.get(`${this.serverip}/stats/gananciaspordiames`);
             console.log("Ganancias por Día y Mes:", response.data);
             return response.data;
         } catch (error) {
@@ -48,7 +48,7 @@ class EstadisticaService {
     // Method to get monthly statistics for each year
     async getGananciasPorMesAno(): Promise<any> {
         try {
-            const response = await this.axios.get(`${this.serverip}/gananciaspormesano`);
+            const response = await this.axios.get(`${this.serverip}/stats/gananciaspormesano`);
             console.log("Ganancias por Mes del Año:", response.data);
             return response.data;
         } catch (error) {

@@ -24,11 +24,11 @@ const driverObjInicio = driver({
         },
         {
             element: '#resumen-ganancias',
-            popover: { title: 'Resumen de ganancias', description: 'Aqui puedes ver un resumen detallado de las ganancias del negocio en cada periodo', side: 'top', align: 'start' }
+            popover: { title: 'Resumen de ganancias', description: 'Aqui puedes ver un resumen de las ganancias en cada periodo', side: 'top', align: 'start' }
         },
         {
             element: '#mini-kanban',
-            popover: { title: 'Tareas pendientes', description: 'Aqui puedes ver las tareas pendientes para tu usuario', side: 'top', align: 'start' }
+            popover: { title: 'Tareas pendientes', description: 'Aqui puedes ver fácilmente las tareas pendientes de tu usuario', side: 'top', align: 'start' }
         },
     ],
     onNextClick: (el, step, { driver }) => {

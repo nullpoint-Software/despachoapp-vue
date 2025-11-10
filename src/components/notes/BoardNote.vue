@@ -1,204 +1,306 @@
-<!-- Board.vue -->
 <template>
-    <div class="board p-4 bg-gray-50 min-h-screen">
-      <!-- Encabezado del Tablero -->
-      <div class="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-        <h1 class="text-3xl font-extrabold text-gray-800">Tablero de Notas</h1>
-        <!-- Controles: Buscador, Slider y Botón de Añadir Nota -->
-        <div class="flex flex-col md:flex-row md:items-center md:space-x-6 w-full md:w-auto space-y-3 md:space-y-0">
-          <!-- Buscador de notas -->
-          <div class="relative">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Buscar notas..."
-              class="w-full md:w-72 pl-10 pr-4 py-2 border border-gray-300 rounded-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            <i class="pi pi-search absolute left-3 top-2.5 text-gray-500"></i>
-          </div>
-          <!-- Slider para ajustar el número de columnas -->
-          <div class="flex items-center space-x-2">
-            <label for="columns" class="text-gray-700 font-medium">Columnas:</label>
-            <input
-              id="columns"
-              type="range"
-              min="1"
-              max="5"
-              v-model.number="gridColumns"
-              class="w-32"
-            />
-            <span class="text-gray-700 font-semibold">{{ gridColumns }}</span>
-          </div>
-          <!-- Botón para añadir nueva nota (diseño modificado para círculo perfecto) -->
-          <button
-            @click="openAddModal"
-            class="w-12 h-12 rounded-full bg-green-500 hover:bg-green-600 transition transform hover:scale-105 shadow-lg text-white flex items-center justify-center"
-            aria-label="Añadir Nota"
-          >
-            <i class="pi pi-plus text-2xl"></i>
-          </button>
-        </div>
-      </div>
-  
-      <!-- Grid de notas -->
-      <div
-        class="notes-grid gap-6"
-        :style="{'display': 'grid', 'grid-template-columns': `repeat(${gridColumns}, minmax(0, 1fr))`}"
-      >
-        <Note v-for="note in filteredNotes" :key="note.id" :note="note" @delete="deleteNote" />
-      </div>
-  
-      <!-- Modal para agregar una nueva nota -->
-      <transition name="fade">
-        <div
-          v-if="showAddModal"
-          class="fixed inset-0 modal-overlay flex items-center justify-center z-50"
-          @click.self="closeAddModal"
-        >
-          <div class="modal-content relative bg-white p-6 rounded-xl shadow-2xl max-w-lg w-full">
-            <!-- Botón para cerrar el modal -->
-            <button
-              @click="closeAddModal"
-              class="absolute top-3 right-3 text-gray-600 hover:text-gray-800 transition"
-              aria-label="Cerrar"
-            >
-              <i class="pi pi-times text-2xl"></i>
-            </button>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Añadir Nota</h2>
-            <!-- Formulario para la nueva nota -->
-            <form @submit.prevent="addNote">
-              <div class="mb-5">
-                <label class="block text-gray-700 font-semibold mb-2" for="notetitulo">Título</label>
-                <input
-                  id="notetitulo"
-                  v-model="newNote.titulo"
-                  type="text"
-                  placeholder="Ingresa el título"
-                  class="w-full p-3 border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  required
-                />
-              </div>
-              <div class="mb-6">
-                <label class="block text-gray-700 font-semibold mb-2" for="notedescripcion">Descripción (Markdown)</label>
-                <textarea
-                  id="notedescripcion"
-                  v-model="newNote.descripcion"
-                  rows="5"
-                  placeholder="Ingresa la descripción en Markdown"
-                  class="w-full p-3 border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  required
-                ></textarea>
-              </div>
-              <!-- Botones de acción -->
-              <div class="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  @click="closeAddModal"
-                  class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl transition"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-xl transition"
-                >
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </transition>
+  <div
+    class="board-container w-full h-full bg-theme-main text-base-content p-4 box-border flex flex-col rounded-lg"
+  >
+    <BoardHeader
+      ref="boardHeaderRef"
+      v-model:searchQuery="searchQuery"
+      :zoom="zoom"
+      @update:zoom="(val) => (zoom = val)"
+      @fetch-notes="fetchNotes"
+      @export-layout="exportLayout"
+    />
+
+    <div
+      v-if="searchQuery && suggestions.length"
+      ref="suggestionsRef"
+      class="absolute left-1/2 transform -translate-x-1/2 mt-20 w-[min(600px,90%)] z-50"
+    >
+      <ul class="menu bg-base-200 w-full rounded-box shadow-xl border border-base-300">
+        <li class="menu-title px-4 pt-2">
+          <span>Sugerencias</span>
+        </li>
+        <li v-for="s in suggestions" :key="s.note.id" @click="selectSuggestion(s.note)">
+          <a class="!items-center">
+            <span class="font-semibold truncate flex-1">{{ s.note.titulo }}</span>
+            <span class="badge badge-ghost badge-sm ml-4">{{ s.type }}</span>
+          </a>
+        </li>
+      </ul>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, computed } from "vue";
-  import Note from "./Note.vue";
-import { ns } from "@/service/adminApp/client";
-  
-  // Array reactivo con las notas existentes
-  const notes = ref(await ns.getNotas());
-  
-  // Ref para el buscador de notas
-  const searchQuery = ref("");
-  
-  // Computed para filtrar notas según el texto de búsqueda
-  const filteredNotes = computed(() =>
-    notes.value.filter(
-      (note) =>
-        note.titulo.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        note.descripcion.toLowerCase().includes(searchQuery.value.toLowerCase())
-    )
+
+    <div
+      v-if="isLoading"
+      class="flex-grow flex items-center justify-center text-lg text-base-content"
+    >
+      Cargando...
+    </div>
+    <div
+      v-if="error"
+      class="flex-grow flex items-center justify-center text-red-500"
+    >
+      {{ error }}
+    </div>
+
+    <div class="flex-1 flex items-center justify-center relative">
+      <NoteCanvas
+        ref="noteCanvasRef"
+        :notes="allNotesForCanvas"
+        :search-query="searchQuery"
+        :zoom="zoom"
+        @open-note="openNoteModal"
+        @toggle-pin="toggleNotePin"
+        @delete-note="handleDeleteRequest"
+        @store-note="storeNote"
+        @save-layout="saveLayout"
+        @drop-note="handleDropFromStorage"
+        class="w-full h-full"
+      />
+    </div>
+
+    <NoteDetailModal
+      :is-visible="isNoteModalVisible"
+      :note="selectedNote"
+      @close="closeNoteModal"
+    />
+
+    <StorageDrawer
+      :open="isStorageDrawerOpen"
+      :notes="filteredStorageNotes"
+      @close="toggleStorageDrawer"
+      @unstore-note="unstoreNote"
+    />
+
+    <button
+      @click="toggleStorageDrawer"
+      class="fixed left-4 top-1/2 -translate-y-1/2 btn btn-base-100 btn-circle btn-lg z-40 shadow-lg group transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-2xl"
+      title="Archivadas"
+    >
+      <i
+        class="pi pi-inbox text-2xl transition-transform duration-300 ease-in-out group-hover:rotate-12"
+      ></i>
+    </button>
+
+    <PinnedDrawer
+      :open="isPinnedDrawerOpen"
+      :notes="filteredPinnedNotes"
+      :search-query="searchQuery"
+      @close="togglePinnedDrawer"
+      @open-note="openNoteModal"
+      @toggle-pin="toggleNotePin"
+      @delete-note="handleDeleteRequest"
+    />
+
+    <button
+      @click="togglePinnedDrawer"
+      class="fixed right-4 top-1/2 -translate-y-1/2 btn btn-base-100 btn-circle btn-lg z-40 shadow-lg group transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-2xl"
+      title="Ancladas"
+    >
+      <i
+        class="pi pi-thumbtack text-2xl transition-transform duration-300 ease-in-out group-hover:-rotate-12"
+      ></i>
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, computed, nextTick } from "vue";
+import BoardHeader from "./BoardComponents/BoardHeader.vue";
+import NoteCanvas from "./BoardComponents/NoteCanvas.vue";
+import PinnedDrawer from "./BoardComponents/PinnedDrawer.vue";
+import StorageDrawer from "./BoardComponents/StorageDrawer.vue";
+import NoteDetailModal from "./NoteDetailModal.vue";
+import {
+  useNotesStore,
+  type Note as NoteType,
+} from "@/composables/useNotesStore";
+
+// CAMBIO 3: Importar 'onClickOutside'
+import { onClickOutside } from '@vueuse/core';
+// CAMBIO 4: 'marked' ya no es necesario, se elimina
+// import { marked } from "marked"; 
+
+const {
+  notes,
+  canvasNotes,
+  pinnedNotes,
+  storageNotes,
+  isLoading,
+  error,
+  fetchNotes,
+  saveLayout,
+  deleteNote,
+  updateNote,
+  isPinnedDrawerOpen,
+  togglePinnedDrawer,
+} = useNotesStore();
+
+let zoom = ref(1);
+
+const searchQuery = ref("");
+const selectedNote = ref<NoteType | null>(null);
+const isNoteModalVisible = ref(false);
+const isStorageDrawerOpen = ref(false);
+
+const noteCanvasRef = ref<any>(null);
+
+// CAMBIO 5: Definir los refs para el click-outside
+const suggestionsRef = ref(null);
+const boardHeaderRef = ref(null);
+
+// CAMBIO 6: Añadir la lógica del click-outside
+onClickOutside(
+  suggestionsRef, // El elemento a vigilar
+  () => {
+    searchQuery.value = ''; // La acción a tomar (limpiar búsqueda)
+  },
+  {
+    ignore: [boardHeaderRef] // Ignorar clics dentro del header
+  }
+);
+
+const filteredCanvasNotes = computed(() => {
+  if (!searchQuery.value) return canvasNotes.value;
+  const q = searchQuery.value.toLowerCase();
+  return canvasNotes.value.filter(
+    (n) =>
+      n.titulo.toLowerCase().includes(q) ||
+      n.descripcion.toLowerCase().includes(q)
   );
-  
-  // Ref para el número de columnas del grid
-  const gridColumns = ref(3);
-  
-  // Ref para controlar la visibilidad del modal de agregar nota
-  const showAddModal = ref(false);
-  
-  // Ref para los datos del formulario de una nueva nota
-  const newNote = ref({
-    titulo: "",
-    descripcion: ""
+});
+const filteredPinnedNotes = computed(() => {
+  if (!searchQuery.value) return pinnedNotes.value;
+  const q = searchQuery.value.toLowerCase();
+  return pinnedNotes.value.filter(
+    (n) =>
+      n.titulo.toLowerCase().includes(q) ||
+      n.descripcion.toLowerCase().includes(q)
+  );
+});
+const filteredStorageNotes = computed(() => {
+  if (!searchQuery.value) return storageNotes.value;
+  const q = searchQuery.value.toLowerCase();
+  return storageNotes.value.filter(
+    (n) =>
+      n.titulo.toLowerCase().includes(q) ||
+      n.descripcion.toLowerCase().includes(q)
+  );
+});
+
+const allNotesForCanvas = computed(() =>
+  notes.value.filter((n) => n.status === "canvas" || n.status === "pinned")
+);
+
+const openNoteModal = (note: NoteType) => {
+  selectedNote.value = note;
+  isNoteModalVisible.value = true;
+};
+const closeNoteModal = () => {
+  isNoteModalVisible.value = false;
+};
+const toggleNotePin = (noteId: number) => {
+  const note = notes.value.find((n) => n.id === noteId);
+  if (note)
+    updateNote(note.id, {
+      status: note.status === "pinned" ? "canvas" : "pinned",
+    });
+};
+const storeNote = (noteId: number) => updateNote(noteId, { status: "storage" });
+const unstoreNote = (noteId: number) =>
+  updateNote(noteId, { status: "canvas" });
+const handleDeleteRequest = (note: NoteType) => {
+  deleteNote(note.id);
+};
+
+const handleDropFromStorage = async (payload: {
+  id: number;
+  x: number;
+  y: number;
+}) => {
+  await updateNote(payload.id, {
+    status: "canvas",
+    gs_x: Math.round(payload.x),
+    gs_y: Math.round(payload.y),
+    gs_w: 2,
+    gs_h: 2,
   });
-  
-  // Función para abrir el modal
-  const openAddModal = () => {
-    showAddModal.value = true;
-  };
-  
-  // Función para cerrar el modal y resetear el formulario
-  const closeAddModal = () => {
-    showAddModal.value = false;
-    newNote.value = { titulo: "", descripcion: "" };
-  };
-  
-  // Función para agregar la nueva nota
-  const addNote = async () => {
-    const newId =
-      notes.value.length > 0 ? Math.max(...notes.value.map((n) => n.id)) + 1 : 1;
-    notes.value.push({ id: newId, ...newNote.value });
-    await ns.addNota(newNote.value)
-    closeAddModal();
-  };
-  </script>
-  
-  <style scoped>
-  .board {
-    background-color: #f9fafb;
-  }
-  
-  /* Estilos para el modal */
-  .modal-overlay {
-    backdrop-filter: blur(4px);
-    background-color: rgba(0, 0, 0, 0.45);
-  }
-  
-  .modal-content {
-    animation: slideDown 0.3s ease-out;
-  }
-  
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-30px);
+  await fetchNotes();
+};
+
+const toggleStorageDrawer = () => {
+  isStorageDrawerOpen.value = !isStorageDrawerOpen.value;
+};
+
+const exportLayout = () => {
+  const layout = allNotesForCanvas.value.map((n) => ({
+    id: n.id,
+    x: n.gs_x ?? 0,
+    y: n.gs_y ?? 0,
+    w: n.gs_w ?? 2,
+    h: n.gs_h ?? 2,
+  }));
+  saveLayout(layout as any);
+  const data = JSON.stringify(layout, null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `layout_export_${new Date().toISOString().split("T")[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+
+function scoreText(query: string, text: string) {
+  const q = query.toLowerCase();
+  const t = (text || "").toLowerCase();
+  if (!q || !t) return 0;
+  if (t === q) return 100;
+  const idx = t.indexOf(q);
+  if (idx === -1) return 0;
+  return Math.max(1, 50 - idx) + Math.max(0, 20 - (t.length - q.length));
+}
+type SuggestItem = { note: NoteType; score: number; type: string };
+const suggestions = computed(() => {
+  const q = searchQuery.value.trim();
+  if (!q) return [];
+  const candidates: SuggestItem[] = [];
+  const pushFrom = (arr: NoteType[], typeLabel: string) => {
+    for (const n of arr) {
+      const sTitle = scoreText(q, n.titulo);
+      const sDesc = scoreText(q, n.descripcion);
+      const score = Math.max(sTitle, sDesc);
+      if (score > 0) candidates.push({ note: n, score, type: typeLabel });
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+  };
+  pushFrom(canvasNotes.value, "Lienzo");
+  pushFrom(pinnedNotes.value, "Fijada");
+  pushFrom(storageNotes.value, "Archivada");
+  return candidates.sort((a, b) => b.score - a.score).slice(0, 8);
+});
+
+// CAMBIO 7: La función snippet ya no es necesaria, se elimina
+/*
+function snippet(text: string | undefined, query: string) {
+  if (!text) return "";
+  ...
+}
+*/
+
+async function selectSuggestion(note: NoteType) {
+  if (isPinnedDrawerOpen.value) togglePinnedDrawer();
+  if (isStorageDrawerOpen.value) isStorageDrawerOpen.value = false;
   
-  /* Transición para modal */
-  .fade-enter-active,
-  .fade-leave-active {
-    transition: opacity 0.3s;
-  }
-  .fade-enter-from,
-  .fade-leave-to {
-    opacity: 0;
-  }
-  </style>
-  
+  // CAMBIO 8: Limpiar la búsqueda al seleccionar
+  searchQuery.value = '';
+
+  await nextTick();
+  noteCanvasRef.value?.locateNote?.(note.id);
+  openNoteModal(note);
+}
+
+onMounted(() => {
+  fetchNotes();
+});
+</script>

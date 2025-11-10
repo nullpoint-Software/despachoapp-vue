@@ -1,22 +1,265 @@
+/* main.css */
 @import "tailwindcss";
+@plugin "daisyui";
+@import "primeicons/primeicons.css";
 
-/* width */
-::-webkit-scrollbar {
-    width: 10px;
+/*
+  ==========================================================================
+   SISTEMA DE DISEÑO Y TEMAS PERSONALIZADO
+  ==========================================================================
+   - Paletas de color 100% personalizadas.
+   - Alto contraste y legibilidad como prioridad.
+   - Tema "Nocturno" (oscuro) cargado por defecto.
+  ==========================================================================
+*/
+
+:root {
+  /* --- Configuración de Fuente (Editable con JS) --- */
+  --font-family: "Inter", sans-serif;
+  --font-size-base: 1rem; /* 16px por defecto */
+
+  /* ======================================================================= */
+  /* --- TEMA POR DEFECTO: NOCTURNO (OSCURO) --- */
+  /* ======================================================================= */
+  --color-bg: #0d1117; /* Azul casi negro, más suave que el negro puro */
+  --color-bg-secondary: #161b22; /* Superficies elevadas como tarjetas */
+  --color-text: #e6edf3; /* Blanco suave */
+  --color-text-muted: #848d97; /* Texto secundario o descriptivo */
+  --color-border: #30363d; /* Bordes sutiles */
+  --bg-modal: #1a2028; /* Fondo de modales, ligeramente más claro */
+
+  /* Botones */
+  --btn-primary-bg: #238636; /* Verde GitHub */
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover-bg: #2ea043;
+
+  --btn-secondary-bg: #21262d;
+  --btn-secondary-text: #c9d1d9;
+  --btn-secondary-hover-bg: #30363d;
+
+  --btn-danger-bg: #da3633; /* Rojo GitHub */
+  --btn-danger-text: #ffffff;
+  --btn-danger-hover-bg: #f85149;
+
+  /* Énfasis y Gráficas */
+  --obj-important-1: #58a6ff; /* Azul */
+  --obj-important-2: #3fb950; /* Verde */
+  --obj-important-3: #d29922; /* Amarillo/Dorado */
+  --obj-important-4: #f85149; /* Rojo */
+
+  --chart-1: #58a6ff;
+  --chart-2: #a371f7; /* Púrpura */
+  --chart-3: #3fb950;
+  --chart-4: #f85149;
+  --chart-5: #d29922;
+
+  /* ======================================================================= */
+  /* --- PALETAS DE COLOR PERSONALIZADAS --- */
+  /* ======================================================================= */
+
+  /* Paleta: Diurno (Claro) */
+  --diurno-bg: #f6f8fa;
+  --diurno-bg-secondary: #ffffff;
+  --diurno-text: #24292f;
+  --diurno-text-muted: #57606a;
+  --diurno-border: #d0d7de;
+
+  /* Paleta: Arena (Crema) */
+  --arena-bg: #fdf6e3;
+  --arena-bg-secondary: #f5efe0;
+  --arena-text: #654f3a;
+  --arena-text-muted: #938270;
+  --arena-border: #d8ccb5;
+
+  /* Paleta: Océano (Azul) */
+  --oceano-bg: #0a2647;
+  --oceano-bg-secondary: #144272;
+  --oceano-text: #eafdfc;
+  --oceano-text-muted: #a6b7c8;
+  --oceano-border: #205295;
+
+  /* Paleta: Carmesí (Rojo-Gris) */
+  --carmesi-bg: #222222;
+  --carmesi-bg-secondary: #2e2e2e;
+  --carmesi-text: #eaeaea;
+  --carmesi-text-muted: #a1a1a1;
+  --carmesi-border: #444444;
 }
 
-/* Track */
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
+/* ======================================================================= */
+/* --- DEFINICIÓN DE TEMAS --- */
+/* ======================================================================= */
+
+/* --- Tema Diurno (Claro) --- */
+html.theme-diurno {
+  --color-bg: var(--diurno-bg);
+  --color-bg-secondary: var(--diurno-bg-secondary);
+  --color-text: var(--diurno-text);
+  --color-text-muted: var(--diurno-text-muted);
+  --color-border: var(--diurno-border);
+  --bg-modal: var(--diurno-bg-secondary);
+
+  --btn-primary-bg: #0969da;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover-bg: #0c7ff0;
+  --btn-secondary-bg: #f6f8fa;
+  --btn-secondary-text: #24292f;
+  --btn-secondary-hover-bg: #f0f3f6;
+  --btn-danger-bg: #d73a49;
+  --btn-danger-text: #ffffff;
+  --btn-danger-hover-bg: #e94c5a;
+
+  --obj-important-1: #0969da;
+  --obj-important-2: #1f883d;
+  --obj-important-3: #bf8700;
+  --obj-important-4: #d73a49;
 }
 
-/* Handle */
-::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 5px;
+/* --- Tema Arena (Crema) --- */
+html.theme-arena {
+  --color-bg: var(--arena-bg);
+  --color-bg-secondary: var(--arena-bg-secondary);
+  --color-text: var(--arena-text);
+  --color-text-muted: var(--arena-text-muted);
+  --color-border: var(--arena-border);
+  --bg-modal: var(--arena-bg-secondary);
+
+  --btn-primary-bg: #84a98c;
+  --btn-primary-text: #223026;
+  --btn-primary-hover-bg: #95bb9e;
+  --btn-secondary-bg: #eae2d3;
+  --btn-secondary-text: #53402d;
+  --btn-secondary-hover-bg: #e0d7c5;
+  --btn-danger-bg: #c16253;
+  --btn-danger-text: #ffffff;
+  --btn-danger-hover-bg: #d47566;
+
+  --obj-important-1: #3a5a40;
+  --obj-important-2: #84a98c;
+  --obj-important-3: #b58b5c;
+  --obj-important-4: #c16253;
 }
 
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-    background: #555;
+/* --- Tema Océano (Azul) --- */
+html.theme-oceano {
+  --color-bg: var(--oceano-bg);
+  --color-bg-secondary: var(--oceano-bg-secondary);
+  --color-text: var(--oceano-text);
+  --color-text-muted: var(--oceano-text-muted);
+  --color-border: var(--oceano-border);
+  --bg-modal: var(--oceano-bg-secondary);
+
+  --btn-primary-bg: #2c74b3;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover-bg: #3e8acf;
+  --btn-secondary-bg: #144272;
+  --btn-secondary-text: #eafdfc;
+  --btn-secondary-hover-bg: #205295;
+  --btn-danger-bg: #e84545;
+  --btn-danger-text: #ffffff;
+  --btn-danger-hover-bg: #ff6b6b;
+
+  --obj-important-1: #2c74b3;
+  --obj-important-2: #5fd068;
+  --obj-important-3: #ffd384;
+  --obj-important-4: #e84545;
 }
+
+/* --- Tema Carmesí (Rojo-Gris) --- */
+html.theme-carmesi {
+  --color-bg: var(--carmesi-bg);
+  --color-bg-secondary: var(--carmesi-bg-secondary);
+  --color-text: var(--carmesi-text);
+  --color-text-muted: var(--carmesi-text-muted);
+  --color-border: var(--carmesi-border);
+  --bg-modal: var(--carmesi-bg-secondary);
+
+  --btn-primary-bg: #cf0a0a;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover-bg: #e12d2d;
+  --btn-secondary-bg: #3c3c3c;
+  --btn-secondary-text: #eaeaea;
+  --btn-secondary-hover-bg: #4f4f4f;
+  /* El botón de peligro puede ser el mismo que el primario o uno más oscuro */
+  --btn-danger-bg: #b30000;
+  --btn-danger-text: #ffffff;
+  --btn-danger-hover-bg: #cf0a0a;
+
+  --obj-important-1: #579bb1;
+  --obj-important-2: #82cd47;
+  --obj-important-3: #ffc60b;
+  --obj-important-4: #cf0a0a;
+}
+
+/*
+  Aplicación global de las variables de fuente y color.
+*/
+html {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  transition: background-color 0.2s ease-out, color 0.2s ease-out;
+}
+
+/*
+  Utilidades Tailwind
+*/
+@tailwind utilities;
+
+/*
+  Clases de utilidad para aplicar colores del tema.
+*/
+.bg-theme-main {
+  background-color: var(--color-bg);
+}
+.bg-theme-secondary {
+  background-color: var(--color-bg-secondary);
+}
+.text-theme-main {
+  color: var(--color-text);
+}
+.text-theme-muted {
+  color: var(--color-text-muted);
+}
+.border-theme {
+  border-color: var(--color-border);
+}
+.bg-modal-theme {
+  background-color: var(--bg-modal);
+}
+
+.bg-btn-primary {
+  background-color: var(--btn-primary-bg);
+}
+.text-btn-primary {
+  color: var(--btn-primary-text);
+}
+.hover\:bg-btn-primary-hover:hover {
+  background-color: var(--btn-primary-hover-bg);
+}
+
+.bg-btn-secondary {
+  background-color: var(--btn-secondary-bg);
+}
+.text-btn-secondary {
+  color: var(--btn-secondary-text);
+}
+.hover\:bg-btn-secondary-hover:hover {
+  background-color: var(--btn-secondary-hover-bg);
+}
+
+.bg-btn-danger {
+  background-color: var(--btn-danger-bg);
+}
+.text-btn-danger {
+  color: var(--btn-danger-text);
+}
+.hover\:bg-btn-danger-hover:hover {
+  background-color: var(--btn-danger-hover-bg);
+}
+
+:where(.tab-content) {
+  display: revert !important;
+}
+

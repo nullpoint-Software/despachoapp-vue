@@ -30,3 +30,4 @@ env.d.ts
 
 *.tsbuildinfo
 .env
+public/build-time.txt

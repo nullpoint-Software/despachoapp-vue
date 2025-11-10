@@ -7,26 +7,26 @@ const driverObjTareasMain = driver({
     steps: [
         {
             popover: {
-                title: 'Tareas', description: `Aqui es donde se muestran tareas a realizar, se organizan en 4 columnas, <strong>Disponible, 
-                Pendiente, En Progreso y Terminado</strong>`, side: "over", align: "center"
+                title: 'Tareas', description: `Aquí se muestran todas las tareas a realizar, organizadas en cuatro columnas: <strong>Disponible, 
+                Pendiente, En Progreso y Terminado.</strong> Las tarjetas se arrastran de una columna a otra conforme avanza su progreso.`, side: "over", align: "center"
             }
         },
         {
             element: '#search-bar',
             popover: {
-                title: 'Buscar', description: `En esta barra puedes buscar todo el <strong>historial de tareas</strong> realizadas.`, side: "bottom", align: "center"
+                title: 'Buscar', description: `En esta barra puedes buscar todo el <strong>historial de tareas</strong>.`, side: "bottom", align: "center"
             }
         },
         {
             element: '.disponible-column',
             popover: {
-                title: 'Tareas disponibles', description: `Las tareas que estan disponibles a ser realizadas se ubican en esta columna, 
-                cuando arrastres una tarjeta a la siguiente columna, se asignará automáticamente a tu usuario <img src='`+dragTareaGif+`'>`, side: 'right', align: 'center'
+                title: 'Tareas disponibles', description: `Las tareas disponibles para realizar se ubican en esta columna, 
+                cuando arrastres una tarjeta a la siguiente columna, se asignará automáticamente a tu usuario. <img src='`+dragTareaGif+`'>`, side: 'right', align: 'center'
             }
         },
         {
             element: '.pendiente-column',
-            popover: { title: 'Tareas disponibles', description: `Las tareas que estan pendientes por realizarse por un usuario`, side: 'right', align: 'center' }
+            popover: { title: 'Tareas disponibles', description: `Aquí se muestran las tareas que están pendientes de ser realizadas por los usuarios`, side: 'right', align: 'center' }
         },
         {
             element: '.progreso-column',
@@ -43,7 +43,7 @@ const driverObjTareasMain = driver({
             popover: { 
                 title: 'Tareas finalizadas', 
                 description: `Aquí se ubican todas las tareas que ya fueron completadas y cerradas. 
-                Sirve como historial visual de los avances.`, 
+                Funciona como un historial visual de los avances.`, 
                 side: 'right', 
                 align: 'center' 
             }
