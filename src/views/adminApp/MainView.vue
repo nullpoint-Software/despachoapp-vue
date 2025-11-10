@@ -57,7 +57,32 @@
       <div
         v-if="isMobile && isMoreMenuOpen"
         class="fixed bottom-0 left-0 w-full pt-3 pb-8 bg-[var(--color-bg-secondary)] rounded-t-2xl z-50"
-      ></div>
+      >
+        <div class="px-4">
+          <h3 class="text-lg font-bold mb-4">Más Opciones</h3>
+          <ul>
+            <li v-for="item in moreNavItems" :key="item.name">
+              <RouterLink
+                :to="item.path"
+                @click="toggleMoreMenu"
+                class="flex items-center space-x-4 py-3 text-lg"
+              >
+                <i :class="item.icon"></i>
+                <span>{{ item.name }}</span>
+              </RouterLink>
+            </li>
+            <li>
+              <a
+                @click="openNotesAndClose"
+                class="flex items-center space-x-4 py-3 text-lg cursor-pointer"
+              >
+                <i class="pi pi-book"></i>
+                <span>Notas</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
     </transition>
 
     <transition name="fade">
@@ -98,6 +123,7 @@ import PinnedNotesWindow from "@/components/adminApp/Menus/PinnedNotesWindow.vue
 import BoardNote from "@/components/notes/BoardNote.vue";
 import LogsModal from "@/components/adminApp/EventTracker/LogsModal.vue";
 import { as } from "@/service/adminApp/client";
+import { useEventListener } from "@vueuse/core";
 
 interface MenuItem {
   name: string;
@@ -128,16 +154,16 @@ const profilePicture = ref<string>(
     : defaultprofilePicture
 );
 
-// useEventListener(document, "keydown", (e: KeyboardEvent) => {
-//   if (
-//     e.key === "/" &&
-//     (e.target as HTMLElement).tagName !== "INPUT" &&
-//     (e.target as HTMLElement).tagName !== "TEXTAREA"
-//   ) {
-//     e.preventDefault();
-//     togglePinnedWindow();
-//   }
-// });
+useEventListener(document, "keydown", (e: KeyboardEvent) => {
+  if (
+    e.key === "/" &&
+    (e.target as HTMLElement).tagName !== "INPUT" &&
+    (e.target as HTMLElement).tagName !== "TEXTAREA"
+  ) {
+    e.preventDefault();
+    togglePinnedWindow();
+  }
+});
 
 watch(showLogs, (val) => {
   if (val) logsKey.value++;
