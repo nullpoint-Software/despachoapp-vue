@@ -15,6 +15,7 @@ export default defineConfig({
     vueDevTools(),
     tailwindcss(),
     VitePWA({
+       registerType: 'autoUpdate', 
       includeAssets: ['/icons/favicon.ico', '/icons/apple-touch-icon.png', '/icons/favicon.svg'],
       manifest: {
         name: 'ContaApp',

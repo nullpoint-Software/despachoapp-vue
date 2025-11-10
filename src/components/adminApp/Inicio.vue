@@ -116,11 +116,12 @@ const datos = await es.getDatos();
 const chartRef = ref(null);
 // Resumen de ganancias totales
 const resumen = computed(() => ({
-  dia: datos.dia.reduce((acc, x) => acc + x.ganancia, 0),
-  mes: datos.mes.reduce((acc, x) => acc + x.ganancia, 0),
-  anio: datos.anio.reduce((acc, x) => acc + x.ganancia, 0),
-  anios: datos.anios.reduce((acc, x) => acc + x.ganancia, 0),
+  dia: datos.dia.reduce((acc, x) => acc + Number(x.ganancia), 0),
+  mes: datos.mes.reduce((acc, x) => acc + Number(x.ganancia), 0),
+  anio: datos.anio.reduce((acc, x) => acc + Number(x.ganancia), 0),
+  anios: datos.anios.reduce((acc, x) => acc + Number(x.ganancia), 0),
 }));
+
 
 // Paleta de colores para cada barra
 const colores = ["#4ade80", "#ff4757", "#1e90ff"];
