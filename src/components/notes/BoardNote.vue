@@ -1,306 +1,82 @@
 <template>
-  <div
-    class="board-container w-full h-full bg-theme-main text-base-content p-4 box-border flex flex-col rounded-lg"
-  >
-    <BoardHeader
-      ref="boardHeaderRef"
-      v-model:searchQuery="searchQuery"
-      :zoom="zoom"
-      @update:zoom="(val) => (zoom = val)"
-      @fetch-notes="fetchNotes"
-      @export-layout="exportLayout"
-    />
+  <main ref="pageRef" class="notes-directory">
+    <header class="directory-header">
+      <div><p>ARCHIVO / NOTAS</p><h1>Directorio</h1></div>
+      <label class="directory-search"><span>Buscar //</span><input v-model="query" placeholder="CLIENTE, NÚMERO, ASUNTO…" /></label>
+      <div class="header-actions"><button type="button" @click="createFolder"><i class="pi pi-folder-plus"/> Carpeta</button><button type="button" class="accent" @click="createNote"><i class="pi pi-file-plus"/> Nota</button></div>
+    </header>
 
-    <div
-      v-if="searchQuery && suggestions.length"
-      ref="suggestionsRef"
-      class="absolute left-1/2 transform -translate-x-1/2 mt-20 w-[min(600px,90%)] z-50"
-    >
-      <ul class="menu bg-base-200 w-full rounded-box shadow-xl border border-base-300">
-        <li class="menu-title px-4 pt-2">
-          <span>Sugerencias</span>
-        </li>
-        <li v-for="s in suggestions" :key="s.note.id" @click="selectSuggestion(s.note)">
-          <a class="!items-center">
-            <span class="font-semibold truncate flex-1">{{ s.note.titulo }}</span>
-            <span class="badge badge-ghost badge-sm ml-4">{{ s.type }}</span>
-          </a>
-        </li>
-      </ul>
+    <div class="directory-layout">
+      <aside class="tree-panel">
+        <div class="panel-label"><span>Índice</span><b>{{ visibleNotes.length }} doc.</b></div>
+        <button type="button" class="tree-root" :class="{active:currentPath==='General'}" @click="currentPath='General'"><i class="pi pi-folder-open"/><span>General</span></button>
+        <template v-for="folder in directoryFolders" :key="folder">
+          <div class="tree-item-row" :class="{active:currentPath===folder}" :style="treeIndent(folder)">
+            <button type="button" class="tree-item" @click="currentPath=folder">
+              <span class="branch">{{ branchMark(folder) }}</span><i :class="currentPath===folder?'pi pi-folder-open':'pi pi-folder'"/><span>{{ folderName(folder) }}</span><b>{{ countFolder(folder) }}</b>
+            </button>
+            <button type="button" class="folder-delete" title="Eliminar carpeta" @click="deleteFolder(folder)"><i class="pi pi-trash"/></button>
+          </div>
+        </template>
+        <button type="button" class="archive-link" :class="{active:currentPath==='__storage'}" @click="currentPath='__storage'"><i class="pi pi-inbox"/> Archivadas <b>{{ storageNotes.length }}</b></button>
+      </aside>
+
+      <section class="directory-content">
+        <div class="breadcrumb"><span>Raíz</span><i>/</i><template v-for="part in breadcrumbs" :key="part"><b>{{ part }}</b><i>/</i></template><em>RUTA {{ currentLabel }}</em></div>
+        <div v-if="isLoading" class="empty-state"><b>··</b><h2>Cargando archivo</h2></div>
+        <div v-else-if="error" class="empty-state"><b>!!</b><h2>{{ error }}</h2><button @click="fetchNotes">Reintentar</button></div>
+        <div v-else-if="!visibleNotes.length" class="empty-state"><b>00</b><div><h2>Carpeta vacía</h2><p>Crea una nota o una subcarpeta para clasificar información.</p><button @click="createNote">+ Nueva nota aquí</button></div></div>
+        <div v-else class="file-list">
+          <div class="file-list-head"><span>Documento</span><span>Estado</span><span>Acciones</span></div>
+          <article v-for="(note,index) in visibleNotes" :key="note.id" class="file-row" @dblclick="openNote(note)">
+            <span class="file-index">{{ String(index+1).padStart(2,'0') }}</span><button class="file-name" @click="openNote(note)"><i class="pi pi-file"/><span><b>{{ note.titulo || 'Sin título' }}</b><small>{{ plain(note.descripcion) }}</small></span></button>
+            <span class="file-status"><i v-if="note.pinned" class="pi pi-thumbtack"/>{{ note.status==='storage'?'ARCHIVO':'ACTIVA' }}</span>
+            <span class="file-actions"><button title="Fijar" @click="togglePin(note)"><i class="pi pi-thumbtack"/></button><button :title="note.status==='storage'?'Restaurar':'Archivar'" @click="toggleArchive(note)"><i :class="note.status==='storage'?'pi pi-replay':'pi pi-inbox'"/></button><button title="Eliminar" @click="removeNote(note)"><i class="pi pi-trash"/></button></span>
+          </article>
+        </div>
+      </section>
     </div>
 
-    <div
-      v-if="isLoading"
-      class="flex-grow flex items-center justify-center text-lg text-base-content"
-    >
-      Cargando...
-    </div>
-    <div
-      v-if="error"
-      class="flex-grow flex items-center justify-center text-red-500"
-    >
-      {{ error }}
-    </div>
-
-    <div class="flex-1 flex items-center justify-center relative">
-      <NoteCanvas
-        ref="noteCanvasRef"
-        :notes="allNotesForCanvas"
-        :search-query="searchQuery"
-        :zoom="zoom"
-        @open-note="openNoteModal"
-        @toggle-pin="toggleNotePin"
-        @delete-note="handleDeleteRequest"
-        @store-note="storeNote"
-        @save-layout="saveLayout"
-        @drop-note="handleDropFromStorage"
-        class="w-full h-full"
-      />
-    </div>
-
-    <NoteDetailModal
-      :is-visible="isNoteModalVisible"
-      :note="selectedNote"
-      @close="closeNoteModal"
-    />
-
-    <StorageDrawer
-      :open="isStorageDrawerOpen"
-      :notes="filteredStorageNotes"
-      @close="toggleStorageDrawer"
-      @unstore-note="unstoreNote"
-    />
-
-    <button
-      @click="toggleStorageDrawer"
-      class="fixed left-4 top-1/2 -translate-y-1/2 btn btn-base-100 btn-circle btn-lg z-40 shadow-lg group transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-2xl"
-      title="Archivadas"
-    >
-      <i
-        class="pi pi-inbox text-2xl transition-transform duration-300 ease-in-out group-hover:rotate-12"
-      ></i>
-    </button>
-
-    <PinnedDrawer
-      :open="isPinnedDrawerOpen"
-      :notes="filteredPinnedNotes"
-      :search-query="searchQuery"
-      @close="togglePinnedDrawer"
-      @open-note="openNoteModal"
-      @toggle-pin="toggleNotePin"
-      @delete-note="handleDeleteRequest"
-    />
-
-    <button
-      @click="togglePinnedDrawer"
-      class="fixed right-4 top-1/2 -translate-y-1/2 btn btn-base-100 btn-circle btn-lg z-40 shadow-lg group transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-2xl"
-      title="Ancladas"
-    >
-      <i
-        class="pi pi-thumbtack text-2xl transition-transform duration-300 ease-in-out group-hover:-rotate-12"
-      ></i>
-    </button>
-  </div>
+    <Teleport to="body"><div v-if="editorOpen" class="editor-overlay" @click.self="closeEditor"><form class="note-editor" @submit.prevent="saveEditor"><header><p>{{ editing?.id ? 'EDITAR DOCUMENTO' : 'NUEVO DOCUMENTO' }}</p><button type="button" @click="closeEditor">×</button></header><label><span>Título</span><input v-model="draft.titulo" required autofocus /></label><label><span>Ruta</span><input v-model="draft.folderPath" placeholder="Clientes/Números" /></label><label><span>Contenido</span><textarea v-model="draft.descripcion" rows="12" placeholder="Escribe aquí. Se admite Markdown." /></label><footer><button type="button" @click="closeEditor">Cancelar</button><button class="accent" type="submit" :disabled="saving">{{ saving?'Guardando…':'Guardar nota' }}</button></footer></form></div></Teleport>
+  </main>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from "vue";
-import BoardHeader from "./BoardComponents/BoardHeader.vue";
-import NoteCanvas from "./BoardComponents/NoteCanvas.vue";
-import PinnedDrawer from "./BoardComponents/PinnedDrawer.vue";
-import StorageDrawer from "./BoardComponents/StorageDrawer.vue";
-import NoteDetailModal from "./NoteDetailModal.vue";
-import {
-  useNotesStore,
-  type Note as NoteType,
-} from "@/composables/useNotesStore";
-
-// CAMBIO 3: Importar 'onClickOutside'
-import { onClickOutside } from '@vueuse/core';
-// CAMBIO 4: 'marked' ya no es necesario, se elimina
-// import { marked } from "marked"; 
-
-const {
-  notes,
-  canvasNotes,
-  pinnedNotes,
-  storageNotes,
-  isLoading,
-  error,
-  fetchNotes,
-  saveLayout,
-  deleteNote,
-  updateNote,
-  isPinnedDrawerOpen,
-  togglePinnedDrawer,
-} = useNotesStore();
-
-let zoom = ref(1);
-
-const searchQuery = ref("");
-const selectedNote = ref<NoteType | null>(null);
-const isNoteModalVisible = ref(false);
-const isStorageDrawerOpen = ref(false);
-
-const noteCanvasRef = ref<any>(null);
-
-// CAMBIO 5: Definir los refs para el click-outside
-const suggestionsRef = ref(null);
-const boardHeaderRef = ref(null);
-
-// CAMBIO 6: Añadir la lógica del click-outside
-onClickOutside(
-  suggestionsRef, // El elemento a vigilar
-  () => {
-    searchQuery.value = ''; // La acción a tomar (limpiar búsqueda)
-  },
-  {
-    ignore: [boardHeaderRef] // Ignorar clics dentro del header
-  }
-);
-
-const filteredCanvasNotes = computed(() => {
-  if (!searchQuery.value) return canvasNotes.value;
-  const q = searchQuery.value.toLowerCase();
-  return canvasNotes.value.filter(
-    (n) =>
-      n.titulo.toLowerCase().includes(q) ||
-      n.descripcion.toLowerCase().includes(q)
-  );
-});
-const filteredPinnedNotes = computed(() => {
-  if (!searchQuery.value) return pinnedNotes.value;
-  const q = searchQuery.value.toLowerCase();
-  return pinnedNotes.value.filter(
-    (n) =>
-      n.titulo.toLowerCase().includes(q) ||
-      n.descripcion.toLowerCase().includes(q)
-  );
-});
-const filteredStorageNotes = computed(() => {
-  if (!searchQuery.value) return storageNotes.value;
-  const q = searchQuery.value.toLowerCase();
-  return storageNotes.value.filter(
-    (n) =>
-      n.titulo.toLowerCase().includes(q) ||
-      n.descripcion.toLowerCase().includes(q)
-  );
-});
-
-const allNotesForCanvas = computed(() =>
-  notes.value.filter((n) => n.status === "canvas" || n.status === "pinned")
-);
-
-const openNoteModal = (note: NoteType) => {
-  selectedNote.value = note;
-  isNoteModalVisible.value = true;
-};
-const closeNoteModal = () => {
-  isNoteModalVisible.value = false;
-};
-const toggleNotePin = (noteId: number) => {
-  const note = notes.value.find((n) => n.id === noteId);
-  if (note)
-    updateNote(note.id, {
-      status: note.status === "pinned" ? "canvas" : "pinned",
-    });
-};
-const storeNote = (noteId: number) => updateNote(noteId, { status: "storage" });
-const unstoreNote = (noteId: number) =>
-  updateNote(noteId, { status: "canvas" });
-const handleDeleteRequest = (note: NoteType) => {
-  deleteNote(note.id);
-};
-
-const handleDropFromStorage = async (payload: {
-  id: number;
-  x: number;
-  y: number;
-}) => {
-  await updateNote(payload.id, {
-    status: "canvas",
-    gs_x: Math.round(payload.x),
-    gs_y: Math.round(payload.y),
-    gs_w: 2,
-    gs_h: 2,
-  });
-  await fetchNotes();
-};
-
-const toggleStorageDrawer = () => {
-  isStorageDrawerOpen.value = !isStorageDrawerOpen.value;
-};
-
-const exportLayout = () => {
-  const layout = allNotesForCanvas.value.map((n) => ({
-    id: n.id,
-    x: n.gs_x ?? 0,
-    y: n.gs_y ?? 0,
-    w: n.gs_w ?? 2,
-    h: n.gs_h ?? 2,
-  }));
-  saveLayout(layout as any);
-  const data = JSON.stringify(layout, null, 2);
-  const blob = new Blob([data], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `layout_export_${new Date().toISOString().split("T")[0]}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-};
-
-function scoreText(query: string, text: string) {
-  const q = query.toLowerCase();
-  const t = (text || "").toLowerCase();
-  if (!q || !t) return 0;
-  if (t === q) return 100;
-  const idx = t.indexOf(q);
-  if (idx === -1) return 0;
-  return Math.max(1, 50 - idx) + Math.max(0, 20 - (t.length - q.length));
-}
-type SuggestItem = { note: NoteType; score: number; type: string };
-const suggestions = computed(() => {
-  const q = searchQuery.value.trim();
-  if (!q) return [];
-  const candidates: SuggestItem[] = [];
-  const pushFrom = (arr: NoteType[], typeLabel: string) => {
-    for (const n of arr) {
-      const sTitle = scoreText(q, n.titulo);
-      const sDesc = scoreText(q, n.descripcion);
-      const score = Math.max(sTitle, sDesc);
-      if (score > 0) candidates.push({ note: n, score, type: typeLabel });
-    }
-  };
-  pushFrom(canvasNotes.value, "Lienzo");
-  pushFrom(pinnedNotes.value, "Fijada");
-  pushFrom(storageNotes.value, "Archivada");
-  return candidates.sort((a, b) => b.score - a.score).slice(0, 8);
-});
-
-// CAMBIO 7: La función snippet ya no es necesaria, se elimina
-/*
-function snippet(text: string | undefined, query: string) {
-  if (!text) return "";
-  ...
-}
-*/
-
-async function selectSuggestion(note: NoteType) {
-  if (isPinnedDrawerOpen.value) togglePinnedDrawer();
-  if (isStorageDrawerOpen.value) isStorageDrawerOpen.value = false;
-  
-  // CAMBIO 8: Limpiar la búsqueda al seleccionar
-  searchQuery.value = '';
-
-  await nextTick();
-  noteCanvasRef.value?.locateNote?.(note.id);
-  openNoteModal(note);
-}
-
-onMounted(() => {
-  fetchNotes();
-});
+import { computed, onMounted, ref } from "vue";
+import { useNotesStore, type Note } from "@/composables/useNotesStore";
+import { useBrutalMotion } from "@/composables/useBrutalMotion";
+const {notes,storageNotes,isLoading,error,fetchNotes,addNote,updateNote,deleteNote}=useNotesStore();
+const pageRef=ref<HTMLElement|null>(null);useBrutalMotion(pageRef,[".directory-header",".tree-panel",".directory-content"]);
+const FOLDERS_KEY="notesDirectoryFolders";const folders=ref<string[]>(loadFolders());const currentPath=ref("General"),query=ref(""),editorOpen=ref(false),editing=ref<Note|null>(null),saving=ref(false);
+const draft=ref({titulo:"",descripcion:"",folderPath:"General"});
+function normalizePath(path:string){const clean=String(path||"").split("/").map(part=>part.trim().replace(/[\\/]+/g,"-")).filter(Boolean);if(!clean.length)return"General";if(clean[0].toLocaleLowerCase("es")!=="general")clean.unshift("General");return clean.join("/")}
+function folderAncestors(path:string){const normalized=normalizePath(path);const parts=normalized.split("/");return parts.slice(1).map((_,index)=>parts.slice(0,index+2).join("/"))}
+function loadFolders(){try{return JSON.parse(localStorage.getItem(FOLDERS_KEY)||"[]").map(normalizePath).filter((path:string)=>path!=="General")}catch{return []}}
+function saveFolders(){folders.value=[...new Set(folders.value.map(normalizePath).filter(path=>path&&path!=="General"))].sort((a,b)=>a.localeCompare(b,"es"));localStorage.setItem(FOLDERS_KEY,JSON.stringify(folders.value))}
+const directoryFolders=computed(()=>{const fromNotes=notes.value.flatMap(note=>note.folderPath&&note.folderPath!=="General"?folderAncestors(note.folderPath):[]);return[...new Set([...folders.value,...fromNotes].map(normalizePath).filter(path=>path!=="General"))].sort((a,b)=>a.localeCompare(b,"es"))});
+const breadcrumbs=computed(()=>currentPath.value.startsWith("__")?[currentPath.value==="__storage"?"Archivadas":"General"]:normalizePath(currentPath.value).split("/"));
+const currentLabel=computed(()=>breadcrumbs.value.join(" / "));
+const visibleNotes=computed(()=>{const q=query.value.trim().toLocaleLowerCase("es");return notes.value.filter(note=>{const notePath=normalizePath(note.folderPath||"General");const activePath=currentPath.value.startsWith("__")?currentPath.value:normalizePath(currentPath.value);const inPath=activePath==="__storage"?note.status==="storage":note.status!=="storage"&&notePath===activePath;const matches=!q||`${note.titulo} ${note.descripcion} ${notePath}`.toLocaleLowerCase("es").includes(q);return inPath&&matches})});
+function countFolder(folder:string){const target=normalizePath(folder);return notes.value.filter(note=>note.status!=="storage"&&normalizePath(note.folderPath||"General")===target).length}
+function plain(value:string){return String(value||"").replace(/[#*_>`\[\]]/g,"").slice(0,95)||"Documento sin contenido"}
+function folderName(folder:string){const parts=normalizePath(folder).split("/");return parts[parts.length-1]}
+function folderDepth(folder:string){return Math.max(1,normalizePath(folder).split("/").length-1)}
+function treeIndent(folder:string){return {"--depth":String(folderDepth(folder))}}
+function branchMark(folder:string){const depth=folderDepth(folder);return depth>1?"├":"└"}
+function createFolder(){const name=window.prompt("Nombre de la subcarpeta");if(!name?.trim())return;const base=currentPath.value.startsWith("__")?"General":normalizePath(currentPath.value);const path=normalizePath(`${base}/${name}`);folders.value.push(...folderAncestors(path));saveFolders();currentPath.value=path}
+function createNote(){const target=currentPath.value.startsWith("__")?"General":normalizePath(currentPath.value);editing.value=null;draft.value={titulo:"",descripcion:"",folderPath:target};editorOpen.value=true}
+function openNote(note:Note){editing.value=note;draft.value={titulo:note.titulo,descripcion:note.descripcion,folderPath:normalizePath(note.folderPath||"General")};editorOpen.value=true}
+function closeEditor(){if(!saving.value)editorOpen.value=false}
+async function saveEditor(){if(!draft.value.titulo.trim())return;saving.value=true;const path=normalizePath(draft.value.folderPath);if(path!=="General"){folders.value.push(...folderAncestors(path));saveFolders()}try{if(editing.value)await updateNote(editing.value.id,{...draft.value,folderPath:path});else await addNote({...draft.value,folderPath:path,pinned:false,color:"white",status:"canvas"});currentPath.value=path;editorOpen.value=false}finally{saving.value=false}}
+async function deleteFolder(folder:string){const target=normalizePath(folder);const affected=notes.value.filter(note=>{const path=normalizePath(note.folderPath||"General");return path===target||path.startsWith(`${target}/`)});const message=affected.length?`¿Eliminar la carpeta “${folderName(target)}”? ${affected.length} nota(s) pasarán a General.`:`¿Eliminar la carpeta “${folderName(target)}”?`;if(!window.confirm(message))return;folders.value=folders.value.filter(path=>{const normalized=normalizePath(path);return normalized!==target&&!normalized.startsWith(`${target}/`)});saveFolders();for(const note of affected)await updateNote(note.id,{folderPath:"General"});if(currentPath.value===target||normalizePath(currentPath.value).startsWith(`${target}/`))currentPath.value="General"}
+function togglePin(note:Note){updateNote(note.id,{pinned:!Boolean(note.pinned)})}
+function toggleArchive(note:Note){updateNote(note.id,{status:note.status==="storage"?"canvas":"storage"})}
+function removeNote(note:Note){if(window.confirm(`¿Eliminar “${note.titulo}”?`))deleteNote(note.id)}
+onMounted(fetchNotes);
 </script>
+
+<style scoped>
+.notes-directory{height:100%;min-height:38rem;padding:1rem;background:#0d0e0e;color:#eceae4;font-family:"Courier New",monospace}.directory-header{display:grid;grid-template-columns:29rem 1fr auto;min-height:7.8rem;border:2px solid #e7e4dc;background:#090a0a}.directory-header>div:first-child{padding:1.2rem 1.35rem;border-right:2px solid #e7e4dc}.directory-header p{margin:0;font-size:.72rem;font-weight:800;letter-spacing:.1em}.directory-header h1{margin:.25rem 0 0;font:300 clamp(2.8rem,5vw,4.8rem)/.8 Arial,sans-serif;letter-spacing:-.06em;text-transform:uppercase}.directory-search{display:flex;flex-direction:column;justify-content:center;padding:1rem 1.2rem}.directory-search span{color:#fff;font-size:.7rem;font-weight:800;text-transform:uppercase}.directory-search input{height:2.4rem;border:0;border-bottom:1px solid #4d4b46;background:transparent;color:#fff;font:700 .82rem "Courier New",monospace;outline:none}.header-actions{display:flex}.header-actions button,.empty-state button,.note-editor button{border:0;border-left:1px solid #141413;background:#e7e4dc;color:#111;padding:0 1.25rem;font:800 .75rem "Courier New",monospace;text-transform:uppercase;cursor:pointer}.header-actions .accent,.note-editor .accent{background:#ee3f36;color:#fff}.directory-layout{display:grid;grid-template-columns:32rem 1fr;height:calc(100% - 7.8rem);min-height:31rem;border:2px solid #e7e4dc;border-top:0}.tree-panel{overflow:auto;border-right:2px solid #e7e4dc;background:#151616}.panel-label{display:flex;justify-content:space-between;padding:1rem;border-bottom:1px solid #555;font-size:.72rem;text-transform:uppercase}.tree-root,.tree-item,.archive-link{display:flex;width:100%;min-height:2.7rem;align-items:center;gap:.7rem;border:0;border-bottom:1px solid #292a29;background:transparent;color:#e7e4dc;padding:.6rem 1rem;text-align:left;font:800 .76rem "Courier New",monospace;text-transform:uppercase;cursor:pointer}.tree-root span,.tree-item span:not(.branch){overflow:hidden;text-overflow:ellipsis}.tree-item b,.archive-link b{margin-left:auto}.tree-panel button.active{background:#e7e4dc;color:#111}.branch{color:#777}.archive-link{margin-top:1rem;border-top:1px solid #555}.directory-content{min-width:0;background:repeating-linear-gradient(0deg,#0d0e0e 0,#0d0e0e 3px,#111212 4px)}.breadcrumb{display:flex;align-items:center;gap:.7rem;min-height:3.2rem;padding:0 1rem;border-bottom:1px solid #555;font-size:.73rem;text-transform:uppercase}.breadcrumb i{color:#ee3f36}.breadcrumb em{margin-left:auto;font-style:normal}.empty-state{display:flex;align-items:center;justify-content:center;gap:3rem;height:calc(100% - 3.2rem);padding:2rem}.empty-state>b{color:#292a29;font:300 clamp(5rem,12vw,9rem)/1 Arial,sans-serif}.empty-state h2{margin:0;font:900 clamp(2rem,5vw,3.4rem)/1 Georgia,serif;text-transform:uppercase}.empty-state p{max-width:35rem;color:#aaa;font-weight:700;line-height:1.5}.empty-state button{min-height:3rem;border:1px solid #e7e4dc}.file-list{padding:1.25rem}.file-list-head,.file-row{display:grid;grid-template-columns:minmax(15rem,1fr) 8rem 10rem;align-items:center}.file-list-head{padding:.7rem 1rem;border:1px solid #777;color:#aaa;font-size:.7rem;text-transform:uppercase}.file-row{position:relative;min-height:5.2rem;border:1px solid #555;border-top:0;background:#151616}.file-row:hover{background:#1d1e1d}.file-index{position:absolute;left:.75rem;top:.7rem;color:#666;font-size:.66rem}.file-name{display:flex;align-items:center;gap:.9rem;min-width:0;height:100%;border:0;background:transparent;color:#fff;padding:1rem 1rem 1rem 2.8rem;text-align:left;cursor:pointer}.file-name>i{color:#ee3f36;font-size:1.3rem}.file-name span{min-width:0}.file-name b,.file-name small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-name b{font-size:.9rem;text-transform:uppercase}.file-name small{margin-top:.35rem;color:#999}.file-status{font-size:.7rem;font-weight:800}.file-status i{margin-right:.4rem;color:#d0a928}.file-actions{display:flex;justify-content:flex-end;padding-right:.75rem}.file-actions button{width:2.6rem;height:2.6rem;border:1px solid #555;background:#0d0e0e;color:#fff;cursor:pointer}.file-actions button:hover{background:#ee3f36}.editor-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:1rem;background:rgba(0,0,0,.84)}.note-editor{width:min(47rem,100%);border:2px solid #111;background:#e7e4dc;color:#111;box-shadow:12px 12px 0 #ee3f36}.note-editor header{position:relative;padding:1.2rem 4rem 1.2rem 1.3rem;background:#111;color:#fff}.note-editor header p{margin:0;font-size:.75rem;font-weight:800}.note-editor header button{position:absolute;right:0;top:0;width:3.6rem;height:100%;background:#ee3f36;color:#fff;font-size:1.8rem}.note-editor label{display:flex;flex-direction:column;gap:.4rem;padding:1rem 1.3rem 0;font-size:.75rem;font-weight:800;text-transform:uppercase}.note-editor input,.note-editor textarea{border:1px solid #555;border-radius:0;background:#fff;padding:.75rem;color:#111;font:700 .9rem/1.45 "Courier New",monospace}.note-editor footer{display:flex;justify-content:flex-end;padding:1.2rem 1.3rem}.note-editor footer button{min-height:3rem;border:1px solid #111}@media(max-width:1000px){.directory-header{grid-template-columns:1fr auto}.directory-search{grid-column:1/-1;grid-row:2}.directory-layout{grid-template-columns:17rem 1fr}.directory-header>div:first-child{border-right:0}.file-list-head,.file-row{grid-template-columns:minmax(10rem,1fr) 8rem}.file-list-head span:nth-child(2),.file-status{display:none}}@media(max-width:680px){.notes-directory{padding:.4rem}.directory-header{grid-template-columns:1fr}.header-actions{grid-row:3}.header-actions button{flex:1;min-height:3.5rem}.directory-layout{display:block;height:auto}.tree-panel{max-height:15rem;border-right:0;border-bottom:2px solid #e7e4dc}.directory-content{min-height:30rem}.file-list-head,.file-row{grid-template-columns:1fr 8rem}.file-list-head span:nth-child(2){display:none}.empty-state{gap:1rem}.empty-state>b{font-size:4rem}}
+.notes-directory{background:var(--br-bg);color:var(--br-text)}.directory-header{border-color:var(--br-control);background:var(--br-bg)}.directory-header>div:first-child,.directory-layout{border-color:var(--br-control)}.header-actions .accent,.note-editor .accent,.note-editor header button,.file-actions button:hover{background:var(--br-accent);color:var(--br-accent-text)}.breadcrumb i,.file-name>i{color:var(--br-accent)}.tree-panel,.file-row{background:var(--br-panel)}.directory-content{background:repeating-linear-gradient(0deg,var(--br-bg) 0,var(--br-bg) 3px,var(--br-panel) 4px)}.tree-panel button.active{background:var(--br-control);color:#111}.note-editor{background:var(--br-control);box-shadow:12px 12px 0 var(--br-accent)}
+.tree-item-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 2.7rem;border-bottom:1px solid #292a29}.tree-item-row::before{content:"";position:absolute;left:calc(.95rem + (var(--depth,1) - 1)*1.35rem);top:0;bottom:0;border-left:1px solid color-mix(in srgb,var(--br-line,#555) 70%,transparent)}.tree-item-row.active{background:var(--br-control);color:#111}.tree-item-row.active::before{border-color:#111}.tree-item-row .tree-item{position:relative;z-index:1;display:grid!important;grid-template-columns:1.15rem 1.25rem minmax(0,1fr) auto;gap:.55rem!important;border:0!important;border-bottom:0!important;padding-left:calc(1rem + (var(--depth,1) - 1)*1.35rem)!important}.tree-item-row .branch{display:inline-grid;width:1.15rem;place-items:center;color:var(--br-muted,#777);font-weight:900}.tree-item-row.active .branch{color:#111}.folder-delete{position:relative;z-index:1;display:grid;min-height:2.7rem;place-items:center;border:0;border-left:1px solid #292a29;background:transparent;color:inherit;cursor:pointer}.folder-delete:hover{background:var(--br-accent);color:var(--br-accent-text)}
+</style>

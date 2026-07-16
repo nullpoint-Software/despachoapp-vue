@@ -15,6 +15,28 @@ interface UserPermissions {
 let perms: PermissionsService | null = null;
 // oxlint-disable-next-line no-unused-vars
 let userPerms: UserPermissions | null = null;
+let loadingPermissions: Promise<void> | null = null;
+
+const authHeaders = (): Record<string, string> => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+async function loadPermissions() {
+  if (perms && userPerms) return;
+  if (!loadingPermissions) {
+    loadingPermissions = (async () => {
+      const [globalRes, userRes] = await Promise.all([
+        fetch(`${serverip}/permissions`, { headers: authHeaders() }),
+        fetch(`${serverip}/permissions/user`, { headers: authHeaders() }),
+      ]);
+      if (!globalRes.ok || !userRes.ok) throw new Error(`Permissions request failed (${globalRes.status}/${userRes.status})`);
+      perms = await globalRes.json();
+      userPerms = await userRes.json();
+    })().finally(() => { loadingPermissions = null; });
+  }
+  await loadingPermissions;
+}
 
 export async function hasPermission(permissionKey: string): Promise<boolean> {
 
@@ -23,24 +45,15 @@ export async function hasPermission(permissionKey: string): Promise<boolean> {
   const userId = localStorage.getItem("userid");
 
   try {
-    const [globalRes, userRes] = await Promise.all([
-      fetch(`${serverip}/permissions`),
-      fetch(`${serverip}/permissions/user`)
-    ]);
-    
-    
-    perms = await globalRes.json();
-    userPerms = await userRes.json();
-    console.log("got global perms ",perms);
+    await loadPermissions();
   } catch (error) {
     console.error("Failed to load permissions:", error);
     return false;
   }
 
-  // // First check user-level permissions
-  // if (userPerms && userId && userPerms[userId] && userPerms[userId][permissionKey] !== undefined) {
-  //   return userPerms[userId][permissionKey] === true;
-  // }
+  if (userPerms && userId && userPerms[userId] && userPerms[userId][permissionKey] !== undefined) {
+    return userPerms[userId][permissionKey] === true;
+  }
 
   // Fallback to role-based permissions
   console.log("key: "+permissionKey)
@@ -55,16 +68,15 @@ export async function hasPermission(permissionKey: string): Promise<boolean> {
 export async function updatePermissions(newPerms: object) {
   await fetch(`${serverip}/permissions`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify(newPerms)
   });
+  perms = null;
 }
 
 export async function getPermissions(): Promise<any> {
   try {
-      const response = await axios.get(`${serverip}/permissions`);
+      const response = await axios.get(`${serverip}/permissions`, { headers: authHeaders() });
       console.log("perms got",response.data);
       return response.data;
   } catch (error) {
@@ -75,7 +87,7 @@ export async function getPermissions(): Promise<any> {
 
 export async function getUserPermissions(): Promise<any> {
   try {
-      const response = await axios.get(`${serverip}/permissions/user`);
+      const response = await axios.get(`${serverip}/permissions/user`, { headers: authHeaders() });
       console.log("perms got",response.data);
       return response.data;
   } catch (error) {
@@ -87,9 +99,8 @@ export async function getUserPermissions(): Promise<any> {
 export async function updateUserPermissions(newUserPerms: object) {
   await fetch(`${serverip}/permissions/user`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify(newUserPerms)
   });
+  userPerms = null;
 }

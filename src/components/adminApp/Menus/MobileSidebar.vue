@@ -21,6 +21,7 @@
           </div>
         </div>
         <Divider class="!before:border-[var(--color-border)] my-4" />
+        <PaletteSelector />
         <ul class="mt-4">
           <li v-for="item in menuItems" :key="item.name" @click="$emit('closeMenu')">
             <router-link
@@ -53,9 +54,10 @@
 </template>
 
 <script setup>
-import Avatar from "primevue/avatar";
-import Divider from "primevue/divider";
-import Button from "primevue/button";
+import Avatar from "@/components/ui/AppAvatar.vue";
+import Divider from "@/components/ui/AppDivider.vue";
+import Button from "@/components/ui/AppButton.vue";
+import PaletteSelector from "@/components/ui/PaletteSelector.vue";
 
 defineProps({
   isOpen: Boolean,

@@ -169,9 +169,10 @@
     <!-- SEARCH MODAL (MOBILE/TABLET) -->
     <transition name="fade-scale">
       <div v-if="showSearchModal" @click.self="showSearchModal = false"
-        class="fixed inset-0 z-40 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-4">
-          <div class="flex items-center mb-4">
+        class="modal-overlay fixed inset-0 z-40 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4">
+        <div class="modal-content bg-white rounded-xl shadow-lg w-full max-w-sm p-4">
+          <div class="standard-modal-header flex items-center mb-4">
+            <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="showSearchModal=false">×</button>
             <i class="pi pi-search text-xl mr-2 text-black"></i>
             <input type="text" v-model="searchQuery" placeholder="Buscar usuario..."
               class="flex-1 py-2 border-b border-gray-300 focus:outline-none text-black" />
@@ -195,11 +196,12 @@
     <!-- USER DETAILS MODAL -->
     <transition name="fade-scale">
       <div v-if="modalAbierto" @click.self="modalAbierto = false; isDropdown = false"
-        class="fixed user-detail-modal inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4">
+        class="modal-overlay fixed user-detail-modal inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4">
         <div
-          class="bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[92vh] p-8 overflow-y-auto  relative">
+          class="modal-content bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[92vh] p-8 overflow-y-auto relative">
           <!-- HEADER with delete + close -->
-          <div class="flex justify-between items-center border-b pb-4 mb-6 space-x-4">
+          <div class="standard-modal-header flex justify-between items-center border-b pb-4 mb-6 space-x-4">
+            <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="modalAbierto=false;isDropdown=false">×</button>
             <div class="flex-1">
               <h3 class="text-2xl font-bold">Detalles del usuario</h3>
             </div>
@@ -287,7 +289,6 @@
         </div>
       </div>
     </transition>
-    <Toast />
   </div>
   <!-- Confirmación para eliminación -->
   <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'¿Estás seguro de eliminar este usuario permanentemente? Se eliminaran los datos de este usuario y las tareas que se le hayan asignado seran regresadas a estado Disponible.'" @confirm="confirmDelete(userToDelete)"
@@ -299,9 +300,7 @@ import { as, ps, us } from '@/service/adminApp/client'
 import { ref, computed, onMounted } from 'vue'
 import defaultAvatar from '@/assets/img/user.jpg'
 import imageCompression from "browser-image-compression"; 
-import { PrimeIcons } from '@primevue/core/api';
-import { Toast } from 'primevue';
-import { useToast } from 'primevue';
+import { useAppToast } from '@/composables/useAppToast';
 import ConfirmDeleteDialog from '@/components/adminApp/Dialogs/ConfirmDeleteDialog.vue';
 import { getPermissions, hasPermission, updatePermissions, updateUserPermissions } from '@/service/adminApp/permissionsService';
 import router from '@/router';
@@ -327,7 +326,7 @@ async function cancelDelete() {
   confirmDialogVisible.value = false;
   userToDelete.value = null;
 }
-const toast = useToast();
+const toast = useAppToast();
 // PERFIL
 const userInfo = await as.getUserInfo();
 const isAdmin = userInfo && userInfo.level === 'Administrador';

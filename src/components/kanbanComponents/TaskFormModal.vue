@@ -4,8 +4,8 @@
     <div class="modal-overlay" @click.self="close">
       <div class="modal-content relative bg-gray-50">
         <!-- Encabezado: cambia según el estado (editar o agregar) -->
-        <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
-          <div>
+        <div class="task-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+          <div class="task-modal-icon">
             <!-- Si es edición, muestra icono de lápiz; si es agregar, de más -->
             <template v-if="isEdit">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24"
@@ -23,9 +23,8 @@
               </svg>
             </template>
           </div>
-          <h3 class="text-2xl font-bold text-black">
-            {{ isEdit ? 'Editar Tarea' : 'Agregar Tarea' }}
-          </h3>
+          <div><p class="modal-kicker">REGISTRO / TAREAS</p><h3 class="text-2xl font-bold text-black">{{ isEdit ? 'Editar tarea' : 'Nueva tarea' }}</h3><span class="modal-description">Define el trabajo y la información necesaria para completarlo.</span></div>
+          <button type="button" class="modal-close-button" aria-label="Cerrar" @click="close">×</button>
         </div>
 
         <!-- Paso 1: Datos básicos -->
@@ -59,7 +58,7 @@
           <!-- Empleado Asignado (opcional) -->
 
           <!-- Botón para pasar al siguiente paso -->
-          <div class="flex justify-end">
+          <div class="task-modal-actions flex justify-end">
             <button @click="emit('close')"
               class="cursor-pointer mr-4 items-center justify-center gap-2 px-4 py-2 bg-gray-500 rounded-md text-white font-semibold shadow hover:bg-gray-400 transition transform hover:scale-105 focus:outline-none">Cancelar</button>
             <button @click="save" class="cursor-pointer items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none">
@@ -140,7 +139,7 @@ const props = defineProps({
   }
 });
 const emit = defineEmits(["close", "save"]);
-const clients = ref(await cs.getClientes())
+const clients = ref([])
 // "isEdit" es verdadero si la tarea tiene un id (modo edición)
 const isEdit = computed(() => !!props.task.id_tarea);
 
@@ -159,7 +158,8 @@ const errors = ref({
 });
 
 // Lista de empleados con nombres reales
-const employees = ref(await us.getUsuarios());
+const employees = ref([]);
+onMounted(async()=>{const [clientResult,employeeResult]=await Promise.allSettled([cs.getClientes(),us.getUsuarios()]);if(clientResult.status==="fulfilled")clients.value=Array.isArray(clientResult.value)?clientResult.value:[];if(employeeResult.status==="fulfilled")employees.value=Array.isArray(employeeResult.value)?employeeResult.value:[]});
 
 // Validar campos del Paso 1 y avanzar al Paso 2
 const nextStep = () => {
@@ -271,4 +271,5 @@ const close = () => {
 .fade-leave-to {
   opacity: 0;
 }
+.modal-content{max-width:48rem;padding:0!important;border:2px solid #0e0e0d!important;border-radius:0!important;background:var(--br-control)!important;box-shadow:12px 12px 0 var(--br-accent)!important}.task-modal-header{position:relative;display:block!important;margin:0!important;padding:1.4rem 4.5rem 1.25rem 1.5rem!important;border:0!important;border-bottom:2px solid #141413!important;border-radius:0!important;background:#141413!important;color:var(--br-text)!important}.task-modal-icon{display:none}.modal-kicker{margin:0 0 .45rem;color:var(--br-accent);font:800 .75rem "Courier New",monospace;letter-spacing:.09em}.task-modal-header h3{margin:0;color:var(--br-text)!important;font:900 clamp(1.8rem,5vw,3.2rem)/.95 Arial,sans-serif!important;letter-spacing:-.055em;text-transform:uppercase}.modal-description{display:block;margin-top:.65rem;color:var(--br-muted);font:600 .82rem/1.3 "Courier New",monospace}.modal-close-button{position:absolute;right:0;top:0;width:3.75rem;height:3.75rem;border:0;border-left:2px solid var(--br-control);border-bottom:2px solid var(--br-control);background:var(--br-accent);color:var(--br-accent-text);font:400 2rem/1 Arial;cursor:pointer}.modal-content>.space-y-4{padding:1.5rem!important}.modal-content input,.modal-content textarea{min-height:3rem;border:1px solid #56534c!important;border-radius:0!important;background:#fff!important;color:#141413!important;padding:.75rem!important;font:700 .9rem "Courier New",monospace}.task-modal-actions{gap:.75rem;padding-top:1rem;border-top:1px solid #77736b}.task-modal-actions button{min-height:3rem;border:1px solid #141413!important;border-radius:0!important;background:transparent!important;color:#141413!important;padding:.7rem 1rem!important;font:800 .78rem "Courier New",monospace!important;text-transform:uppercase;box-shadow:none!important;transform:none!important}.task-modal-actions button:last-child{background:var(--br-accent)!important;color:var(--br-accent-text)!important;border-color:var(--br-accent)!important}@media(max-width:640px){.modal-content{box-shadow:6px 6px 0 var(--br-accent)!important}}
 </style>

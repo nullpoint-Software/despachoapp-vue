@@ -1,6 +1,6 @@
 <template>
   <Loader v-if="isLoading"></Loader>
-  <div class="relative flex justify-center items-center min-h-screen overflow-hidden m-1">
+  <div class="login-page relative flex justify-center items-center min-h-screen overflow-hidden">
     <!-- Partículas giratorias -->
     <div class="background" :class="{ react: reacting }">
       <span v-for="i in 20" :key="i"></span>
@@ -17,17 +17,20 @@
     </div>
 
     <!-- Contenido de login -->
-    <div class="relative z-20 bg-white/30 backdrop-blur-md shadow-lg rounded-lg p-8 w-full max-w-md">
+    <div class="login-shell relative z-20 w-full">
+      <aside class="login-brand"><p>DESPACHO / ACCESO</p><img :src="mainImageSrc" alt="Logo"/><h1>Control<br/>operativo</h1><span>Clientes · Pagos · Tareas · Notas</span></aside>
+      <section class="login-form-panel">
+        <div class="palette-position"><PaletteSelector /></div>
       <!-- Logo -->
-      <div class="flex justify-center mb-4">
+      <div class="login-logo flex justify-center mb-4">
         <img :src="mainImageSrc" alt="Logo" class="w-16" />
       </div>
 
       <!-- Título y subtítulo -->
-      <h2 class="text-3xl font-bold text-white text-center mb-2">
+      <h2 class="text-3xl font-bold text-center mb-2">
         Iniciar Sesión
       </h2>
-      <p class="text-white/80 text-center mb-6">
+      <p class="login-copy text-center mb-6">
         Accede a tu cuenta
       </p>
       <div v-if="showError" class="relative bg-red-600 rounded-md mb-1">
@@ -50,7 +53,7 @@
             <input v-model="password" :type="showPassword ? 'text' : 'password'"
               class="w-full p-3 border border-white/50 rounded-md bg-white text-gray-900 focus:ring-2 focus:ring-blue-300"
               placeholder="••••••••" @input="handleInput" />
-            <button type="button" class="absolute right-3 top-3 text-white/80" @click="togglePassword">
+            <button type="button" class="password-toggle absolute right-3 top-3" @click="togglePassword">
               <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
             </button>
           </div>
@@ -72,26 +75,27 @@
 
         <!-- Botón de inicio -->
         <button type="submit"
-          class="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition cursor-pointer">
+          class="login-submit w-full py-3 font-semibold transition cursor-pointer">
           Iniciar Sesión
         </button>
-      </form>
+      </form></section>
     </div>
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from "vue";
-import InputText from "primevue/inputtext";
+import InputText from "@/components/ui/AppInput.vue";
 import mainImageSrc from "@/assets/img/logsymbolwhite.png";
 import { useRouter } from "vue-router";
 import { as } from "@/service/adminApp/client";
-import { Toast, useToast } from "primevue";
+import { useAppToast } from "@/composables/useAppToast";
 import { useRoute } from "vue-router";
 import Loader from "@/components/adminApp/Menus/Loader.vue";
+import PaletteSelector from "@/components/ui/PaletteSelector.vue";
 
 export default {
-  components: { InputText, Loader },
+  components: { InputText, Loader, PaletteSelector },
   setup() {
     const email = ref("");
     const password = ref("");
@@ -107,7 +111,7 @@ export default {
     const togglePassword = () => {
       showPassword.value = !showPassword.value;
     };
-    const toast = useToast();
+    const toast = useAppToast();
     //checar si hay autenticacion
     onMounted(async () => {
       isLoading.value = true
@@ -249,19 +253,11 @@ export default {
 }
 
 /* Ocultar scrollbar */
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-html {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
 </style>
 
 <!-- Estilos scoped para las ondas -->
 <style scoped>
+.login-page{padding:1rem;background:var(--br-bg);color:var(--br-text)}.login-shell{display:grid;grid-template-columns:1.08fr .92fr;width:min(70rem,100%);min-height:39rem;border:2px solid var(--br-control);background:var(--br-panel);box-shadow:14px 14px 0 var(--br-accent)}.login-brand{display:flex;flex-direction:column;justify-content:flex-end;padding:2rem;border-right:2px solid var(--br-control);background:repeating-linear-gradient(0deg,var(--br-bg) 0,var(--br-bg) 4px,var(--br-panel) 5px)}.login-brand p{margin:auto 0 0;color:var(--br-accent);font:800 .75rem "Courier New",monospace;letter-spacing:.12em}.login-brand img{width:4rem;margin-bottom:auto}.login-brand h1{margin:1rem 0;font:900 clamp(3.4rem,7vw,6rem)/.78 Arial,sans-serif;letter-spacing:-.075em;text-transform:uppercase}.login-brand span{color:var(--br-muted);font:800 .75rem "Courier New",monospace;text-transform:uppercase}.login-form-panel{position:relative;display:flex;flex-direction:column;justify-content:center;padding:clamp(1.5rem,4vw,3.5rem);background:var(--br-control);color:#141413}.palette-position{position:absolute;right:1rem;top:1rem}.login-logo{display:none}.login-form-panel h2{font:900 clamp(2rem,5vw,3.5rem)/1 Arial,sans-serif;letter-spacing:-.055em;text-align:left!important;text-transform:uppercase}.login-copy{color:#5e5a52!important;text-align:left!important;font:700 .82rem "Courier New",monospace}.login-form-panel label{color:#141413!important;font:800 .72rem "Courier New",monospace;text-transform:uppercase}.login-form-panel :deep(input),.login-form-panel>form input{border:1px solid #555!important;border-radius:0!important;background:#fff!important;color:#141413!important}.password-toggle{color:#141413}.login-submit{border:1px solid #141413;border-radius:0;background:var(--br-accent);color:var(--br-accent-text);font:900 .78rem "Courier New",monospace;text-transform:uppercase}.login-submit:hover{filter:brightness(.9);transform:translateY(-1px)}:global(.background){background:var(--br-bg)!important}:global(.background span){border-radius:0!important;color:var(--br-accent)!important;opacity:.06!important}@media(max-width:760px){.login-shell{grid-template-columns:1fr;box-shadow:6px 6px 0 var(--br-accent)}.login-brand{min-height:14rem;border-right:0;border-bottom:2px solid var(--br-control)}.login-brand h1{font-size:3.2rem}.login-brand img{display:none}.login-form-panel{min-height:28rem}.palette-position{position:static;margin-bottom:1rem}}
 .wave-container {
   position: absolute;
   border-radius: 50%;

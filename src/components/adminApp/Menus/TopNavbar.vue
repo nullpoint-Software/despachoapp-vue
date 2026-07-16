@@ -33,6 +33,7 @@
           </div>
       </router-link>
 
+      <PaletteSelector />
       <Divider
         layout="vertical"
         class="!before:border-[var(--color-border)]"
@@ -64,9 +65,10 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
-import Avatar from "primevue/avatar";
-import Divider from "primevue/divider";
-import Button from "primevue/button";
+import Avatar from "@/components/ui/AppAvatar.vue";
+import Divider from "@/components/ui/AppDivider.vue";
+import Button from "@/components/ui/AppButton.vue";
+import PaletteSelector from "@/components/ui/PaletteSelector.vue";
 
 const router = useRouter();
 

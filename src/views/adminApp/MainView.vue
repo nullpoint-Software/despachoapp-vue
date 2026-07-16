@@ -91,9 +91,8 @@
         class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         @click.self="closeNotesModal"
       >
-        <div
-          class="modal-content relative bg-theme-main p-4 rounded-lg shadow-2xl w-full max-w-[calc(100vw-200px)] h-[calc(100vh-120px)] overflow-hidden"
-        >
+        <div class="notes-modal-frame">
+          <button class="notes-modal-close" type="button" aria-label="Cerrar notas" @click="closeNotesModal">×</button>
           <Suspense>
             <BoardNote />
           </Suspense>
@@ -204,3 +203,6 @@ const closeNotesModal = () => (showNotesModal.value = false);
 const openLogs = () => (showLogs.value = true);
 const closeLogs = () => (showLogs.value = false);
 </script>
+<style scoped>
+.notes-modal-frame{position:relative;width:min(96rem,calc(100vw - 3rem));height:calc(100vh - 5rem);min-width:0;overflow:hidden;border:2px solid var(--br-control);background:var(--br-bg);box-shadow:12px 12px 0 var(--br-accent)}.notes-modal-close{position:absolute;right:0;top:0;z-index:80;width:3.2rem;height:3.2rem;border:0;border-left:2px solid var(--br-control);border-bottom:2px solid var(--br-control);background:var(--br-accent);color:var(--br-accent-text);font-size:1.8rem;cursor:pointer}.notes-modal-frame :deep(.notes-directory){box-sizing:border-box;width:100%;height:100%;min-width:0;min-height:0;padding:1rem;overflow:hidden}.notes-modal-frame :deep(.directory-layout){min-width:0}.notes-modal-frame :deep(.tree-panel),.notes-modal-frame :deep(.directory-content){min-width:0}@media(max-width:800px){.notes-modal-frame{width:calc(100vw - 1rem);height:calc(100vh - 1rem);box-shadow:5px 5px 0 var(--br-accent)}.notes-modal-frame :deep(.notes-directory){padding:.35rem;overflow:auto}}
+</style>

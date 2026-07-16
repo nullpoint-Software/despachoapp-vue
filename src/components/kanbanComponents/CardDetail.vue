@@ -3,7 +3,8 @@
     <div class="modal-overlay" @click.self="$emit('close')">
       <div class="modal-content relative bg-gray-50">
 
-        <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+        <div class="standard-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+          <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="$emit('close')">×</button>
           <div class="w-16 h-16" v-if="card.id_usuario">
             <img :src="!card.image ? defaultprofilePicture : card.image" alt="Foto del Usuario"
                  class="w-16 h-16 rounded-full object-cover" />

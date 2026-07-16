@@ -9,9 +9,9 @@
         v-if="note"
         class="modal-content relative bg-[var(--bg-modal)] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
       >
-        <header class="p-5 border-b border-[var(--color-border)] flex justify-between items-center flex-shrink-0">
+        <header class="standard-modal-header p-5 border-b border-[var(--color-border)] flex justify-between items-center flex-shrink-0">
           <h2 class="text-2xl font-bold">{{ note.titulo }}</h2>
-          <button @click="$emit('close')" class="p-2 -mr-2 rounded-full hover:bg-[var(--btn-secondary-hover-bg)]">
+          <button @click="$emit('close')" class="standard-modal-close">
             <i class="pi pi-times text-xl"></i>
           </button>
         </header>

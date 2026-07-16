@@ -9,18 +9,19 @@
           &times;
         </button> -->
         <!-- Encabezado -->
-        <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+        <div class="standard-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+          <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="cancel">×</button>
           <i class="pi pi-exclamation-triangle text-3xl text-red-500"></i>
           <h3 class="text-2xl font-bold text-gray-800">Confirmar Eliminación</h3>
         </div>
         <!-- Mensaje y checkbox -->
-        <div class="mb-6 px-4">
-          <p class="text-center text-gray-700 mb-4">
+        <div class="confirm-body mb-6 px-4">
+          <p class="confirm-message text-center text-gray-700 mb-4">
              {{element ? element : "¿Estás seguro de eliminar este Elemento?" }}
              <br><br>
              Marca la casilla para confirmar. 
           </p>
-          <div class="flex items-center justify-center">
+          <div class="confirm-check flex items-center justify-center">
             <input type="checkbox" id="confirmDelete" v-model="agreed" class="mr-2" />
             <label for="confirmDelete" class="text-gray-700 font-medium">
               Estoy de acuerdo
@@ -39,7 +40,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import Button from 'primevue/button';
+import Button from '@/components/ui/AppButton.vue';
 defineProps({
   element: String,
 })
@@ -103,4 +104,5 @@ const cancel = () => {
     transform: translateY(0);
   }
 }
+.confirm-body{display:grid;gap:1rem;padding:1.5rem!important}.confirm-message{margin:0!important;font:700 1rem/1.5 Arial,sans-serif;text-align:left!important}.confirm-check{display:flex!important;width:100%;align-items:center!important;justify-content:flex-start!important;gap:.7rem;border:1px solid #77736b;background:#fff;padding:.85rem}.confirm-check label{color:#141413!important;font:800 .75rem/1.2 "Courier New",monospace!important;text-transform:uppercase}.confirm-check input{flex:0 0 1.15rem}.modal-content>.flex.justify-end{padding:1rem 1.5rem!important}@media(max-width:520px){.confirm-check{align-items:flex-start!important}.confirm-body{padding:1rem!important}}
 </style>

@@ -12,10 +12,15 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "@/assets/img/logsymbolblack.png";
 
-const props = defineProps({ tasks: Array });
+const props = defineProps({
+  tasks: Array,
+  reportDate: {
+    type: String,
+    default: "",
+  },
+});
 const emit = defineEmits(["done"]);
 
-const today = new Date().toLocaleString().split(",")[0];
 //la cosa con obtener ISOString de una fecha vacia es que obtiene la fecha actual en el meridiano UTC
 //y si estas en una zona horaria atrasada te da el dia siguiente y la comparacion falla
 //ENTONCES es mejor obtener la fecha local en string y partirla
@@ -24,6 +29,14 @@ const employeeName = localStorage.getItem("fullname");
 const userId = localStorage.getItem("userid");
 const isLoading = ref(true);
 const tasks = ref();
+const padDatePart = (value) => String(value).padStart(2, "0");
+const dateToInputValue = (date) =>
+  `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
+const selectedDate = props.reportDate || dateToInputValue(new Date());
+const displayDate = (() => {
+  const [year, month, day] = selectedDate.split("-");
+  return year && month && day ? `${day}/${month}/${year}` : selectedDate;
+})();
 
 async function generateReport() {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
@@ -32,10 +45,10 @@ async function generateReport() {
       (t) =>
         t.estado === "Terminado" &&
         t.id_usuario == userId &&
-        new Date(t.fecha_vencimiento).toLocaleString().split(",")[0] == today
+        dateToInputValue(new Date(t.fecha_vencimiento)) === selectedDate
     );
     if (!finished.length) {
-      alert("No hay tareas terminadas hoy.");
+      alert(`No hay tareas terminadas para la fecha ${displayDate}.`);
       emit("done");
       return;
     }
@@ -49,8 +62,9 @@ async function generateReport() {
     const imgH = imgProps.height * (imgW / imgProps.width);
     // altura total ocupada por el header (ajusta el valor si cambias paddings)
     const headerTop = 30; // margen superior del logo
-    const headerContentHeight = imgH + 110 + 40; // logo + textos + cajas
-    const headerHeight = headerTop + headerContentHeight; // espacio que debe reservar la tabla
+    const yName = headerTop + imgH + 110;
+    const yDate = yName + 30;
+    const headerHeight = yDate + 34; // espacio que debe reservar la tabla
     // --------------------------------------------------------------------
 
     // función que dibuja el header en cada página
@@ -72,7 +86,6 @@ async function generateReport() {
       const boxW = 250;
       const grpW = boxW + 70;
       const startX = pw / 2 - grpW / 2;
-      const yName = headerTop + imgH + 110;
       const centerX = startX + 70 + boxW / 2;
 
       doc.setFont("helvetica", "normal").setFontSize(12).setTextColor(33);
@@ -83,10 +96,9 @@ async function generateReport() {
         baseline: "middle",
       });
 
-      const yDate = yName + 30;
       doc.text("Fecha:", startX, yDate);
       doc.setFillColor(255).rect(startX + 70, yDate - 12, boxW, 20, "F");
-      doc.text(today, centerX, yDate - 12 + 10, {
+      doc.text(displayDate, centerX, yDate - 12 + 10, {
         align: "center",
         baseline: "middle",
       });

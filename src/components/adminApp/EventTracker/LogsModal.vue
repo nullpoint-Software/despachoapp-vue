@@ -5,7 +5,8 @@
       @click.self="closeModal">
       <div class="modal-content bg-gray-50 p-6 rounded-md shadow-lg w-full max-w-3xl mt-10 max-h-[90vh] flex flex-col">
         <!-- Cabecera fija -->
-        <div class="flex-none sticky top-0 bg-gray-50 pb-4 mb-4 z-10">
+        <div class="logs-modal-header flex-none sticky top-0 bg-gray-50 pb-4 mb-4 z-10">
+          <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="closeModal">×</button>
           <h2 class="text-2xl text-center text-black font-semibold mb-4">
             Registros de Cambios ({{ currentPageTitle }})
           </h2>
@@ -133,7 +134,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import Button from "primevue/button";
+import Button from "@/components/ui/AppButton.vue";
 import { ls, us } from "@/service/adminApp/client";
 const props = defineProps({
   visible: { type: Boolean, required: true }
@@ -354,4 +355,5 @@ function cardClasses(log) {
 .modal-content .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+.logs-modal-header{margin:0 0 1rem!important}.logs-modal-header~.overflow-y-auto{margin:0 1.5rem}.logs-modal-header~.flex{margin:0 1.5rem 1.5rem}
 </style>

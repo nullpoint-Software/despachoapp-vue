@@ -6,7 +6,8 @@
       <div class="modal-content relative bg-gray-50">
         <!-- Quité el botón de cierre interno según lo solicitado -->
         <!-- Encabezado -->
-        <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+        <div class="standard-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+          <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="close">×</button>
           <i class="pi pi-user-edit text-3xl text-blue-500"></i>
           <h3 class="text-2xl font-bold text-black">
             {{ customer.id_cliente ? 'Editar Cliente' : 'Agregar Cliente' }}
@@ -83,8 +84,8 @@
 
 <script setup>
 import { ref, watch, defineProps, defineEmits } from "vue";
-import InputText from "primevue/inputtext";
-import Button from "primevue/button";
+import InputText from "@/components/ui/AppInput.vue";
+import Button from "@/components/ui/AppButton.vue";
 
 const props = defineProps({
   customer: {

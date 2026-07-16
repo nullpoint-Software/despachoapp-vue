@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import { Toast } from 'primevue';
+import { RouterView } from 'vue-router'
+import AppToast from '@/components/ui/AppToast.vue';
 
 </script>
 
 <template>
 
-<Toast />
+<AppToast />
 <Suspense>
   <RouterView :key="$route.path" />
 </Suspense>

@@ -1,293 +1,41 @@
 <template>
-  <!-- Contenedor principal -->
-  <div class="flex flex-col h-full w-full">
-    <!-- Encabezado responsivo con degradado de fondo -->
-    <header class="w-full py-6 px-4 bg-transparent text-white text-center">
-      <h1 class="font-extrabold text-3xl sm:text-4xl">Inicio</h1>
-    </header>
+  <main ref="pageRef" class="home-dashboard">
+    <header class="page-hero"><div><p>OPERACIÓN / RESUMEN</p><h1>Inicio</h1><span>Ingresos, costos y trabajo pendiente.</span></div><div class="hero-date"><b>{{ currentDay }}</b><span>{{ currentMonth }}</span></div></header>
 
-    <!-- Contenedor principal para selector, gráfico y resumen -->
+    <section v-if="isAdmin" id="chart-section" class="revenue-panel">
+      <header class="panel-header"><div><p>FLUJO / COMPARATIVO</p><h2>Ingresos y costos</h2></div><div class="chart-actions"><label>Periodo<select v-model="periodo"><option value="dia">Día</option><option value="mes">Mes</option><option value="anio">Año</option><option value="anios">Años</option></select></label><label class="check"><input v-model="zoomEnabled" type="checkbox"/><span>Zoom</span></label></div></header>
+      <div class="chart-legend"><span><i :style="{backgroundColor:paletteColors[0]}"/>Ingresos</span><span><i :style="{backgroundColor:paletteColors[1]}"/>Costos</span></div>
+      <div class="chart-wrap"><Line v-if="!loading" :key="chartKey" :data="chartData" :options="chartOptions" :plugins="[emptyDataPlugin]"/><div v-else class="chart-loading">Cargando movimientos…</div></div>
+      <p v-if="loadError" class="dashboard-error">{{ loadError }}</p>
+      <div id="resumen-ganancias" class="summary-grid"><article><span>Hoy</span><strong>{{ money(resumen.dia) }}</strong></article><article><span>Este mes</span><strong>{{ money(resumen.mes) }}</strong></article><article><span>Este año</span><strong>{{ money(resumen.anio) }}</strong></article><article class="accent"><span>Histórico</span><strong>{{ money(resumen.anios) }}</strong></article></div>
+    </section>
 
-    <main class="flex-grow p-4 bg-transparent" v-if="isAdmin">
-      <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 flex flex-col gap-6 " id="chart-section">
-        <!-- Selector de período -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <div class="period-control flex-row">
-            <label for="periodo" class="mr-4 font-bold text-lg text-gray-700">Ver por:</label>
-            <select v-model="periodo" id="periodo"
-              class="p-2 rounded-md border border-gray-300 bg-white text-gray-800 focus:ring-2 focus:ring-blue-400">
-              <option value="dia">Día</option>
-              <option value="mes">Mes</option>
-              <option value="anio">Año</option>
-              <option value="anios">Años</option>
-            </select>
-          </div>
-
-          <div class="flex sm:inline-flex flex-row sm:items-center sm:gap-4 chart-controls">
-            <label class="mr-2 items-center space-x-2 text-gray-800 cursor-pointer" id="group-bars">
-              <input type="checkbox" class="form-checkbox text-blue-600" :checked="chartOptions.scales.y.stacked"
-                @change="toggleStacked" />
-              <span>Agrupar barras</span>
-            </label>
-            <label class="items-center space-x-2 text-gray-800 cursor-pointer" id="enable-zoom">
-              <input type="checkbox" class="form-checkbox text-blue-600"
-                :checked="chartOptions.plugins.zoom.pan.enabled" @change="toggleZoom" />
-              <span>Activar zoom</span>
-            </label>
-          </div>
-        </div>
-        <div class="info m-0 text-center -mb-7 -mt-4" v-if="chartOptions.plugins.zoom.pan.enabled">
-          <p class="font-semibold italic px-0 text-gray-600">
-            Ajustar zoom con rueda del mouse o deslizar con 2 dedos
-          </p>
-        </div>
-        <!-- Contenedor del gráfico: se adapta según el tamaño del contenedor -->
-        <div class="relative w-full" :class="chartContainerClass">
-          <Bar :data="chartData" :options="chartOptions" :key="chartKey" :ref="chartRef" :plugins="[emptyDataPlugin]" />
-        </div>
-
-        <!-- Resumen de ganancias en tarjetas -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="resumen-ganancias">
-          <div class="bg-blue-500 hover:bg-blue-600 transition duration-300 text-white p-4 rounded-xl shadow">
-            <div class="font-bold text-lg">Hoy</div>
-            <div class="text-2xl font-semibold mt-2">${{ resumen.dia }}</div>
-          </div>
-          <div class="bg-green-500 hover:bg-green-600 transition duration-300 text-white p-4 rounded-xl shadow">
-            <div class="font-bold text-lg">Este mes</div>
-            <div class="text-2xl font-semibold mt-2">${{ resumen.mes }}</div>
-          </div>
-          <div class="bg-yellow-500 hover:bg-yellow-600 transition duration-300 text-white p-4 rounded-xl shadow">
-            <div class="font-bold text-lg">Este año</div>
-            <div class="text-2xl font-semibold mt-2">${{ resumen.anio }}</div>
-          </div>
-          <div class="bg-purple-500 hover:bg-purple-600 transition duration-300 text-white p-4 rounded-xl shadow">
-            <div class="font-bold text-lg">Histórico</div>
-            <div class="text-2xl font-semibold mt-2">${{ resumen.anios }}</div>
-          </div>
-        </div>
-      </div>
-    </main>
-    <main class="flex-grow p-4 bg-transparent">
-      <header class="w-full py-6 px-4 bg-transparent text-white text-center">
-        <h1 class="font-extrabold text-3xl sm:text-4xl">Tareas pendientes</h1>
-      </header>
-      <div class="max-w-6xl mx-auto place-items-center bg-transparent rounded-xl p-2 flex flex-col gap-6"
-        id="mini-kanban">
-        <KanbanBoard :showDisponible="false" :showTerminado="false" :showOwn="true" :mini="true"
-          :showEnProgreso="false"></KanbanBoard>
-      </div>
-    </main>
-  </div>
+    <section class="tasks-preview"><header><div><p>TRABAJO / PERSONAL</p><h2>Tareas pendientes</h2></div><router-link to="/app/tareas">Ver todas <i class="pi pi-arrow-right"/></router-link></header><div id="mini-kanban"><KanbanBoard :show-disponible="false" :show-terminado="false" :show-own="true" :mini="true" :show-en-progreso="false"/></div></section>
+  </main>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from "vue";
-import { Bar } from "vue-chartjs";
-import { driverObjInicio } from "@/components/tour/inicio"
+<script setup lang="ts">
+import { computed, onMounted, ref, watch } from "vue";
+import { Line } from "vue-chartjs";
+import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler } from "chart.js";
+import zoomPlugin from "chartjs-plugin-zoom";
 import { es } from "@/service/adminApp/client";
 import KanbanBoard from "../kanbanComponents/KanbanBoard.vue";
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-} from "chart.js";
-import zoomPlugin from "chartjs-plugin-zoom";
-// Registra los módulos de Chart.js
-ChartJS.register(
-  Title,
-  Tooltip,
-  Legend,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  zoomPlugin
-);
-
-// Variable reactiva para el período seleccionado
-const periodo = ref("anio");
-const chartKey = ref(0);
-const isAdmin = (localStorage.getItem("level") == "Administrador")
-// Datos de ejemplo para cada período
-const datos = await es.getDatos();
-const chartRef = ref(null);
-// Resumen de ganancias totales
-const resumen = computed(() => ({
-  dia: datos.dia.reduce((acc, x) => acc + Number(x.ganancia), 0),
-  mes: datos.mes.reduce((acc, x) => acc + Number(x.ganancia), 0),
-  anio: datos.anio.reduce((acc, x) => acc + Number(x.ganancia), 0),
-  anios: datos.anios.reduce((acc, x) => acc + Number(x.ganancia), 0),
-}));
-
-
-// Paleta de colores para cada barra
-const colores = ["#4ade80", "#ff4757", "#1e90ff"];
-
-// Configuración del chart (datos y opciones)
-const chartData = ref(
-  computed(() => {
-    const d = datos[periodo.value] || [];
-    return {
-      labels: d.map((x) => x.nombre),
-      datasets: [
-        {
-          label: "Ingresos",
-          data: d.map((x) => x.ingresos),
-          backgroundColor: d.map((_, i) => colores[2]), // Ingresos color
-          borderColor: d.map((_, i) => colores[2]),
-          borderWidth: 1,
-          borderRadius: 4,
-          maxBarThickness: 40,
-        },
-        {
-          label: "Costos",
-          data: d.map((x) => x.costos),
-          backgroundColor: d.map((_, i) => colores[1]), // Costos color
-          borderColor: d.map((_, i) => colores[1]),
-          borderWidth: 1,
-          borderRadius: 4,
-          maxBarThickness: 40,
-        },
-        {
-          label: "Ganancia",
-          data: d.map((x) => x.ganancia),
-          backgroundColor: d.map((_, i) => colores[0]), // Ganancia color
-          borderColor: d.map((_, i) => colores[0]),
-          borderWidth: 1,
-          borderRadius: 4,
-          maxBarThickness: 40,
-        },
-      ],
-    };
-  })
-);
-
-const emptyDataPlugin = {
-  id: "emptyData",
-  beforeDraw(chart) {
-    const datasetsEmpty = chart.data.datasets.every(
-      (dataset) =>
-        !dataset.data ||
-        dataset.data.length === 0 ||
-        dataset.data.every((v) => v === 0)
-    );
-
-    if (datasetsEmpty) {
-      const { width, height } = chart;
-      const ctx = chart.ctx;
-
-      if (!ctx) return;
-
-      ctx.save();
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = "16px sans-serif";
-      ctx.fillStyle = "#888";
-      ctx.fillText(
-        "No hay información para este periodo",
-        width / 2,
-        height / 2
-      );
-      ctx.restore();
-    }
-  },
-};
-
-const chartOptions = ref({
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      stacked: false,
-      ticks: {
-        color: "null",
-        callback: function (value) {
-          return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-            maximumFractionDigits: 0,
-          }).format(value);
-        },
-        display: true,
-      },
-      grid: { color: "#e5e7eb" },
-    },
-    x: {
-      stacked: false,
-      ticks: { color: "#333" },
-      grid: { display: false },
-    },
-  },
-  plugins: {
-    legend: {
-      labels: {
-        color: "#333",
-        font: { weight: "600" },
-      },
-    },
-    tooltip: {
-      callbacks: {
-        label: function (context) {
-          const label = context.dataset.label || "";
-          const value = context.raw;
-          return (
-            `${label}: ` +
-            new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
-              maximumFractionDigits: 0,
-            }).format(value)
-          );
-        },
-      },
-    },
-    zoom: {
-      pan: { enabled: true, mode: "x" },
-      zoom: {
-        wheel: { enabled: true },
-        pinch: { enabled: true },
-        mode: "x",
-      },
-    },
-    emptyData: {},
-  },
-});
-
-const toggleStacked = () => {
-  const stackedd = !chartOptions.value.scales.y.stacked;
-  chartOptions.value.scales.y.stacked = stackedd;
-  chartOptions.value.scales.y.ticks.display = !stackedd;
-  chartOptions.value.scales.x.stacked = stackedd;
-  chartKey.value++;
-};
-
-const toggleZoom = () => {
-  const stackedd = !chartOptions.value.plugins.zoom.pan.enabled;
-  chartOptions.value.plugins.zoom.pan.enabled = stackedd;
-  chartOptions.value.plugins.zoom.zoom.wheel.enabled = stackedd;
-  chartOptions.value.plugins.zoom.zoom.pinch.enabled = stackedd;
-  chartKey.value++;
-};
-
-// Clase dinámica para el contenedor del gráfico según el viewport
-const chartContainerClass = computed(() => {
-  // Se asignan distintas alturas según el ancho de ventana
-  const width = window.innerWidth;
-  if (width < 640) return "h-64";
-  if (width >= 640 && width < 1024) return "h-80";
-  return "h-96";
-});
-
-onMounted(() => {
-  const done = localStorage.getItem('tourInicioDone');
-  if (!done) {
-    driverObjInicio.drive()
-  }
-})
+import { driverObjInicio } from "@/components/tour/inicio";
+import { useColorPalette } from "@/composables/useColorPalette";
+import { useBrutalMotion } from "@/composables/useBrutalMotion";
+ChartJS.register(Title,Tooltip,Legend,LineElement,PointElement,CategoryScale,LinearScale,Filler,zoomPlugin);
+type Period="dia"|"mes"|"anio"|"anios";type Entry={nombre:string;ingresos:number;costos:number;ganancia:number};
+const emptyData=()=>({dia:[],mes:[],anio:[],anios:[]} as Record<Period,Entry[]>);const datos=ref(emptyData());const periodo=ref<Period>("anio"),loading=ref(true),loadError=ref(""),zoomEnabled=ref(false),chartKey=ref(0),pageRef=ref<HTMLElement|null>(null);const isAdmin=localStorage.getItem("level")==="Administrador";const {selectedPalette}=useColorPalette();
+useBrutalMotion(pageRef,[".page-hero",".revenue-panel",".tasks-preview"]);watch([selectedPalette,zoomEnabled],()=>chartKey.value++);
+const paletteColors=computed(()=>({carbon:["#69b77b","#55c6d8"],cobalt:["#76a0ff","#58d1c9"],forest:["#a8d65b","#59bca4"],sand:["#e0b95b","#d98258"]}[selectedPalette.value]));
+const chartData=computed(()=>{const rows=datos.value[periodo.value]||[];const [income,cost]=paletteColors.value;return{labels:rows.map(x=>x.nombre),datasets:[{label:"Ingresos",data:rows.map(x=>Number(x.ingresos||0)),borderColor:income,backgroundColor:`${income}80`,fill:true,tension:.42,pointRadius:3,pointHoverRadius:6,borderWidth:2},{label:"Costos",data:rows.map(x=>Number(x.costos||0)),borderColor:cost,backgroundColor:`${cost}68`,fill:true,tension:.42,pointRadius:3,pointHoverRadius:6,borderWidth:2}]}});
+const chartOptions=computed(()=>({responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:"index" as const},scales:{y:{beginAtZero:true,ticks:{color:"#8e8b84",callback:(value:any)=>money(value)},grid:{color:"rgba(120,116,108,.18)"}},x:{ticks:{color:"#8e8b84"},grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:(context:any)=>`${context.dataset.label}: ${money(context.raw)}`}},zoom:{pan:{enabled:zoomEnabled.value,mode:"x" as const},zoom:{wheel:{enabled:zoomEnabled.value},pinch:{enabled:zoomEnabled.value},mode:"x" as const}}}}));
+const resumen=computed(()=>Object.fromEntries((Object.keys(datos.value) as Period[]).map(key=>[key,datos.value[key].reduce((sum,item)=>sum+Number(item.ganancia||0),0)])) as Record<Period,number>);const money=(value:any)=>new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0}).format(Number(value||0));const now=new Date();const currentDay=now.toLocaleDateString("es-MX",{day:"2-digit"});const currentMonth=now.toLocaleDateString("es-MX",{month:"short",year:"numeric"}).toUpperCase();
+const emptyDataPlugin={id:"emptyData",beforeDraw(chart:any){if(chart.data.datasets.every((dataset:any)=>!dataset.data?.some((value:number)=>value!==0))){const{ctx,width,height}=chart;ctx.save();ctx.textAlign="center";ctx.fillStyle="#8e8b84";ctx.font="700 14px Courier New";ctx.fillText("NO HAY INFORMACIÓN PARA ESTE PERIODO",width/2,height/2);ctx.restore()}}};
+onMounted(async()=>{try{const response=await es.getDatos();datos.value={...emptyData(),...(response||{})}}catch(error){console.error(error);loadError.value="No se pudo cargar el resumen financiero."}finally{loading.value=false}if(!localStorage.getItem("tourInicioDone"))driverObjInicio.drive()});
 </script>
 
-<style scoped></style>
+<style scoped>
+.home-dashboard{min-height:100%;padding:clamp(1rem,2.5vw,2rem);background:var(--br-bg);color:var(--br-text)}.page-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;padding:1.5rem 0 2rem;border-top:1px solid var(--br-line);border-bottom:1px solid var(--br-line)}.page-hero p,.panel-header p,.tasks-preview header p{margin:0 0 .5rem;color:var(--br-accent);font:800 .72rem "Courier New",monospace;letter-spacing:.12em}.page-hero h1{margin:0;font:900 clamp(3.5rem,9vw,7rem)/.75 Arial,sans-serif;letter-spacing:-.075em;text-transform:uppercase}.page-hero>div>span{display:block;margin-top:1rem;color:var(--br-muted);font:700 .9rem "Courier New",monospace}.hero-date{min-width:8rem;padding:1rem;border:1px solid var(--br-line-strong);text-align:right}.hero-date b{display:block;font:900 3rem/1 Arial}.hero-date span{font:800 .7rem "Courier New",monospace}.revenue-panel,.tasks-preview{margin-top:1rem;border:1px solid var(--br-line);background:var(--br-panel)}.panel-header,.tasks-preview>header{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;padding:1.2rem 1.35rem;border-bottom:1px solid var(--br-line)}.panel-header h2,.tasks-preview h2{margin:0;font:900 clamp(1.7rem,4vw,2.7rem)/1 Arial,sans-serif;letter-spacing:-.045em;text-transform:uppercase}.chart-actions{display:flex;align-items:flex-end;gap:.7rem}.chart-actions label{color:var(--br-muted);font:800 .68rem "Courier New",monospace;text-transform:uppercase}.chart-actions select{display:block;min-width:8rem;margin-top:.3rem;border:1px solid var(--br-line-strong);border-radius:0;background:var(--br-control);color:#141413;padding:.65rem}.chart-actions .check{display:flex;min-height:2.8rem;align-items:center;gap:.4rem;border:1px solid var(--br-line-strong);padding:0 .7rem}.chart-legend{display:flex;justify-content:center;gap:1.5rem;padding:1rem 1rem 0;color:var(--br-muted);font:800 .7rem "Courier New",monospace;text-transform:uppercase}.chart-legend span{display:flex;align-items:center;gap:.4rem}.chart-legend i{width:.75rem;height:.75rem}.chart-legend .income{background:#69b77b}.chart-legend .cost{background:#55c6d8}.chart-wrap{height:clamp(18rem,38vw,30rem);padding:1rem 1.25rem 1.5rem}.chart-loading{display:grid;height:100%;place-items:center;color:var(--br-muted);font:800 .8rem "Courier New",monospace}.dashboard-error{margin:0 1.25rem 1rem;border:1px solid var(--br-danger);padding:.75rem;color:#e06a5c;font-weight:800}.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--br-line)}.summary-grid article{min-height:7rem;padding:1rem;border-right:1px solid var(--br-line)}.summary-grid article:last-child{border-right:0}.summary-grid span{display:block;margin-bottom:.7rem;color:var(--br-muted);font:800 .7rem "Courier New",monospace;text-transform:uppercase}.summary-grid strong{font:900 clamp(1.35rem,3vw,2.2rem)/1 Arial}.summary-grid .accent{background:var(--br-accent);color:var(--br-accent-text)}.summary-grid .accent span{color:inherit}.tasks-preview>header a{border:1px solid var(--br-line-strong);padding:.75rem;color:var(--br-text);font:800 .72rem "Courier New",monospace;text-decoration:none;text-transform:uppercase}.tasks-preview>header a:hover{background:var(--br-accent);color:var(--br-accent-text)}#mini-kanban{padding:.5rem}@media(max-width:700px){.page-hero,.panel-header,.tasks-preview>header{align-items:flex-start;flex-direction:column}.hero-date{width:100%;text-align:left}.summary-grid{grid-template-columns:1fr 1fr}.chart-actions{width:100%;justify-content:space-between}.chart-wrap{padding:.5rem}}
+</style>

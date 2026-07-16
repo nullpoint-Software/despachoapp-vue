@@ -1,22 +1,25 @@
 <!-- KanbanBoard.vue -->
 <template>
-  <Toast />
-  <div class="relative">
+  <div class="kanban-root relative">
     <!-- Buscador -->
-    <div class="sticky z-49 max-w-lg mx-auto mb-4" :class=" isMobile ? 'top-5' : 'top-20' ">
+    <div class="task-toolbar relative z-10">
       <div id="search-bar" v-if="!mini" :class="[
-        'flex items-center bg-gray-900 text-white rounded-full px-4 py-2 transition-shadow duration-200',
+        'task-search bg-gray-900 text-white transition-shadow duration-200',
         showShadow ? 'shadow-2xl shadow-neutral-900' : 'shadow-none',
       ]">
-        <input v-model="searchQuery" ref="searchBarRef" @click="searchActive = true" type="text"
+        <label for="task-search-input">BUSCAR //</label><i class="pi pi-search search-icon"></i><input id="task-search-input" v-model="searchQuery" ref="searchBarRef" @click="searchActive = true" type="text"
           placeholder="Buscar tareas..." class="bg-transparent flex-1 outline-none px-2 py-1 text-lg" />
         <button v-if="searchQuery" @click="searchQuery = ''" @mousedown.stop
-          class="text-gray-400 hover:text-white transition">
+          class="search-clear text-gray-400 hover:text-white transition">
           ✕
         </button>
+        <label class="report-date-field" for="task-report-date">
+          <span>FECHA REPORTE</span>
+          <DateTimePicker id="task-report-date" v-model="reportDate" :show-time="false" aria-label="Fecha del reporte" />
+        </label>
         <!-- Botón PDF personalizado -->
         <button @click="showPdf = true"
-          class="ml-2 p-2 rounded-full cursor-pointer bg-white/10 hover:bg-white/20 transition flex items-center justify-center"
+          class="report-button cursor-pointer transition flex items-center justify-center"
           aria-label="Reporte PDF">
           <i class="pi pi-file-pdf text-xl text-white"></i>
         </button>
@@ -104,7 +107,7 @@
       @save="saveTaskForm" />
   </div>
 
-  <PdfReport v-if="showPdf" @done="showPdf = false" :tasks="cards" />
+  <PdfReport v-if="showPdf" @done="showPdf = false" :tasks="cards" :report-date="reportDateValue" />
 </template>
 
 <script setup>
@@ -117,19 +120,20 @@ import {
   onBeforeUnmount,
 } from "vue";
 import KanbanColumn from "./KanbanColumn.vue";
-import { Toast, useToast } from "primevue";
+import { useAppToast } from "@/composables/useAppToast";
 import CardDetail from "./CardDetail.vue";
 import PdfReport from "../PdfReport.vue";
 import FloatingTaskButton from "./FloatingTaskButton.vue";
 import { useMobileDetection } from "@/composables/useMobileDetection";
 import Loader from "@/components/adminApp/Menus/Loader.vue";
 import TaskFormModal from "./TaskFormModal.vue";
+import DateTimePicker from "@/components/ui/DateTimePicker.vue";
 import { hasPermission } from "@/service/adminApp/permissionsService";
 import { cs, ts } from "@/service/adminApp/client";
 import { base64ToFile } from "@/service/adminApp/authService";
-const toast = useToast();
-const isMobile = useMobileDetection();
-const userId = ref(await localStorage.getItem("userid"));
+const toast = useAppToast();
+const { isMobile } = useMobileDetection();
+const userId = ref(localStorage.getItem("userid"));
 const userFullName = ref(localStorage.getItem("fullname"));
 const userName = ref(localStorage.getItem("username"));
 const userPhoto = ref(localStorage.getItem("userphoto"));
@@ -153,6 +157,14 @@ const showPdf = ref(null);
 const showShadow = ref(false);
 const searchActive = ref(false);
 const searchBarRef = ref(null);
+const padDatePart = (value) => String(value).padStart(2, "0");
+const toDateInputValue = (date) =>
+  `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
+const reportDate = ref(new Date());
+const reportDateValue = computed(() => {
+  const value = reportDate.value instanceof Date ? reportDate.value : new Date();
+  return toDateInputValue(value);
+});
 const handleScroll = () => {
   const searchBar = document.getElementById("search-bar");
   const kanbanBoard = document.querySelector(".kanban-board");
@@ -180,31 +192,19 @@ onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 
-const cardsDisponible = ref(
-  (await ts.getTareasDisponibles()).map((item) => ({
-    ...item,
-    highlight: false,
-    fecha_creacion: new Date(item.fecha_creacion).toLocaleString(),
-  }))
-);
-// console.log("cards disponibles", cardsDisponible);
-
-const cards = ref(
-  (showOwn.value || localStorage.getItem("level") == "Empleado"
-    ? (await ts.getTareas()).filter((item) => item.id_usuario == userId.value)
-    : await ts.getTareas()
-  ).map((item) => ({
-    ...item,
-    highlight: false,
-    fecha_creacion: new Date(item.fecha_creacion).toLocaleString(),
-    fecha_vencimiento: item.fecha_vencimiento
-      ? new Date(item.fecha_vencimiento).toLocaleString()
-      : null,
-    image: item.usuario_imagen
-      ? URL.createObjectURL(base64ToFile(item.usuario_imagen, "task-img.png"))
-      : null,
-  }))
-);
+const cardsDisponible = ref([]);
+const cards = ref([]);
+onMounted(async () => {
+  try {
+    const [available, allTasks] = await Promise.all([ts.getTareasDisponibles(), ts.getTareas()]);
+    cardsDisponible.value = (Array.isArray(available) ? available : []).map((item) => ({ ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString() }));
+    const visibleTasks = showOwn.value || localStorage.getItem("level") === "Empleado" ? (allTasks || []).filter((item) => item.id_usuario == userId.value) : (allTasks || []);
+    cards.value = visibleTasks.map((item) => ({ ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString(), fecha_vencimiento:item.fecha_vencimiento?new Date(item.fecha_vencimiento).toLocaleString():null, image:item.usuario_imagen?URL.createObjectURL(base64ToFile(item.usuario_imagen,"task-img.png")):null }));
+  } catch (error) {
+    console.error("No se pudieron cargar las tareas", error);
+    toast.add({severity:"error",summary:"Sin conexión",detail:"No se pudieron cargar las tareas.",life:3500});
+  }
+});
 // console.log("cards", cards);
 
 const columnStatuses = [
@@ -569,4 +569,5 @@ const saveTaskForm = (taskData) => {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+.kanban-root{background:var(--br-panel)}.task-toolbar{top:0;margin:0;padding:1rem 1rem 0;background:var(--br-panel)}#search-bar.task-search{display:grid;grid-template-columns:auto 1.4rem minmax(0,1fr) auto auto auto;align-items:center;gap:.65rem;width:100%;min-height:4rem;border:1px solid var(--br-line-strong)!important;border-radius:0!important;background:var(--br-bg)!important;box-shadow:none!important;padding:.55rem .65rem .55rem 1rem!important;font-family:"Courier New",monospace}#search-bar label{color:var(--br-accent);font:800 .7rem "Courier New",monospace;letter-spacing:.08em}#search-bar .search-icon{color:var(--br-muted)}#search-bar input{min-width:0;width:100%;color:var(--br-text)!important;font:700 .95rem "Courier New",monospace}#search-bar .report-date-field{display:grid;grid-template-columns:auto minmax(9.5rem,10.75rem);align-items:center;gap:.55rem;margin-left:.25rem;color:var(--br-muted);white-space:nowrap}#search-bar .report-date-field span{font:800 .64rem "Courier New",monospace;letter-spacing:.08em}#search-bar .report-date-field input{height:2.8rem;border:1px solid var(--br-line);border-radius:0;background:var(--br-panel-2);padding:0 .65rem;color:var(--br-text)!important;color-scheme:dark;font:800 .78rem "Courier New",monospace}#search-bar .search-clear,#search-bar .report-button{display:grid;width:2.8rem;height:2.8rem;place-items:center;border:1px solid var(--br-line);border-radius:0;background:var(--br-panel-2);color:var(--br-text)}#search-bar .report-button:hover,#search-bar .search-clear:hover{background:var(--br-accent);color:var(--br-accent-text)}.kanban-board{gap:.75rem!important;padding:1rem!important}.kanban-board>div>.flex.justify-center{gap:.35rem!important}.kanban-board>div>.flex.justify-center button,.kanban-board>div>.flex.justify-center span{min-width:2.7rem;border:1px solid var(--br-line-strong)!important;border-radius:0!important;background:var(--br-bg)!important;color:var(--br-text)!important;box-shadow:none!important;padding:.65rem!important;font:800 .75rem "Courier New",monospace}.kanban-board>div>.flex.justify-center button:hover:not(:disabled){background:var(--br-accent)!important;color:var(--br-accent-text)!important}@media(max-width:900px){#search-bar.task-search{grid-template-columns:auto 1.4rem minmax(0,1fr) auto auto}#search-bar .report-date-field{grid-column:1/-2;width:100%;margin-left:0}#search-bar .report-date-field input{max-width:12rem}}@media(max-width:640px){#search-bar.task-search{grid-template-columns:1.4rem minmax(0,1fr) auto;gap:.5rem}#search-bar label:not(.report-date-field){display:none}#search-bar .report-date-field{grid-column:1/-1;grid-template-columns:auto minmax(0,1fr)}.task-toolbar{padding:.5rem .5rem 0}}
 </style>

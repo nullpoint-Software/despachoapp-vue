@@ -144,9 +144,12 @@ const hyphenatedDescription = computed(() => hyphenateText(props.card?.descripci
 /* Estilos del componente (ligeramente repetidos para asegurar consistencia) */
 .kanban-card{
   /* ya aplicados como utilidades en template; aquí quedan estilos base por si se usan sin Tailwind */
-  background-color: #ffffff;
-  border-radius: 1rem;
+  background-color: var(--br-control);
+  border-radius: 0;
+  border: 1px solid #141413;
+  box-shadow: 4px 4px 0 rgba(0,0,0,.35);
 }
+.kanban-card:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--br-accent)}.kanban-card img{border-radius:0;border:1px solid #141413}.kanban-card h3{color:#141413!important;font:900 1rem/1.25 Arial,sans-serif;text-transform:uppercase}.kanban-card p,.kanban-card span{color:#4d4b46!important;font-family:"Courier New",monospace}.truncate-multiline::after{background:linear-gradient(90deg,transparent,var(--br-control) 65%)}
 
 /* animación destacada */
 @keyframes pulseGlow{0%{box-shadow:0 0 10px rgba(0,102,255,.5)}50%{box-shadow:0 0 20px rgba(0,102,255,.8)}100%{box-shadow:0 0 10px rgba(0,102,255,.5)}}

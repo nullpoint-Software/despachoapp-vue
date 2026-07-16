@@ -1,447 +1,144 @@
-<!-- CardDetailPagoConcepto.vue -->
 <template>
-  <transition name="fade">
-    <div class="modal-overlay" @click.self="close">
-      <div class="modal-content relative bg-gray-50">
-        <!-- Encabezado -->
-        <div
-          class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow"
-        >
-          <div>
-            <h3 class="text-2xl font-bold text-black">
-              <i class="pi pi-receipt text-3xl text-blue-500"></i>
-              {{ pago.id ? "Editar Pago Concepto" : "Agregar Pago Concepto" }}
-            </h3>
-          </div>
-        </div>
+  <Teleport to="body">
+    <Transition name="modal">
+      <div class="modal-overlay" role="presentation" @click.self="close">
+        <section class="modal-shell" role="dialog" aria-modal="true" aria-labelledby="payment-title">
+          <header class="modal-header">
+            <p>REGISTRO / CAJA</p>
+            <button type="button" class="modal-close" aria-label="Cerrar" @click="close">×</button>
+            <h2 id="payment-title">{{ payment.id ? "Editar pago" : "Nuevo pago" }}</h2>
+            <span>Los importes admiten cero. Todos los campos marcados son obligatorios.</span>
+          </header>
 
-        <!-- Formulario -->
-        <div class="space-y-4 px-4">
-          <!-- Cliente -->
-          <div class="flex flex-col">
-            <label class="font-semibold text-black">Cliente</label>
-            <select
-              v-model="pago.id_cliente"
-              class="p-2 border border-gray-300 rounded text-black"
-              placeholder="Seleccione un cliente"
-            >
-              <option
-                v-for="client in clientes"
-                :key="client"
-                :value="client.id_cliente"
-              >
-                {{ client.nombre }}
-              </option>
-            </select>
-            <span v-if="errors.cliente" class="text-red-500 text-sm">{{
-              errors.cliente
-            }}</span>
-          </div>
-
-          <!-- Asunto -->
-          <div class="flex flex-col">
-            <label class="font-semibold text-black">Asunto</label>
-            <InputText
-              v-model="pago.asunto"
-              class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese el asunto"
-            />
-            <span v-if="errors.asunto" class="text-red-500 text-sm">{{
-              errors.asunto
-            }}</span>
-          </div>
-
-          <!-- Quien atendio (deshabilitado) -->
-          <div class="flex flex-col">
-            <label class="font-semibold text-black">Quien atendio</label>
-            <div class="flex items-center">
-              <img
-                v-if="getEmployeeImage(pago.id_atendio)"
-                :src="getEmployeeImage(pago.id_atendio)"
-                alt="Foto"
-                class="w-8 h-8 rounded-full mr-2"
-              />
-              <select
-                v-if="employees.length"
-                v-model="pago.id_atendio"
-                class="text-black p-2 border border-gray-300 rounded w-full"
-                placeholder="Nombre del usuario"
-              >
-                <option
-                  v-for="employee in employees"
-                  :key="employee"
-                  :value="employee.id_usuario"
-                >
-                  {{ employee.nombre + " (" + employee.username + ")" }}
-                </option>
+          <form class="payment-form" @submit.prevent="save">
+            <label class="field field--wide">
+              <span>01 / Cliente *</span>
+              <select v-model="payment.id_cliente" :disabled="loadingOptions">
+                <option value="" disabled>{{ loadingOptions ? "Cargando clientes…" : "Selecciona un cliente" }}</option>
+                <option v-for="client in clientes" :key="client.id_cliente" :value="client.id_cliente">{{ client.nombre }}</option>
               </select>
+              <small v-if="errors.cliente">{{ errors.cliente }}</small>
+            </label>
+
+            <label class="field field--wide">
+              <span>02 / Asunto *</span>
+              <InputText v-model="payment.asunto" placeholder="Ej. Declaración mensual" autocomplete="off" />
+              <small v-if="errors.asunto">{{ errors.asunto }}</small>
+            </label>
+
+            <label class="field field--wide">
+              <span>03 / Atendió *</span>
+              <select v-model="payment.id_atendio" :disabled="loadingOptions">
+                <option value="" disabled>Selecciona a la persona responsable</option>
+                <option v-for="employee in employees" :key="employee.id_usuario" :value="employee.id_usuario">{{ employee.nombre }} · {{ employee.username }}</option>
+              </select>
+              <small v-if="errors.atendio">{{ errors.atendio }}</small>
+            </label>
+
+            <label class="field">
+              <span>04 / Cobramos *</span>
+              <div class="money"><b>$</b><InputText v-model="payment.cobramos" type="number" step="0.01" min="0" /></div>
+              <small v-if="errors.cobramos">{{ errors.cobramos }}</small>
+            </label>
+
+            <label class="field">
+              <span>05 / Pagamos *</span>
+              <div class="money"><b>$</b><InputText v-model="payment.pagamos" type="number" step="0.01" min="0" /></div>
+              <small v-if="errors.pagamos">{{ errors.pagamos }}</small>
+            </label>
+
+            <div class="field field--wide">
+              <span>06 / Fecha y hora *</span>
+              <DateTimePicker v-model="selectedDate" />
+              <small v-if="errors.fecha">{{ errors.fecha }}</small>
             </div>
-            <span v-if="errors.atendio" class="text-red-500 text-sm">{{
-              errors.atendio
-            }}</span>
-          </div>
 
-          <!-- Cobramos -->
-          <div class="flex flex-col">
-            <label class="font-semibold text-black">Cobramos</label>
-            <div class="flex">
-              <span
-                class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l"
-                >$</span
-              >
-              <!-- type="number" con step="0.01" impide letras -->
-              <InputText
-                type="number"
-                step="0.01"
-                min="0"
-                v-model="pago.cobramos"
-                class="p-2 border border-gray-300 rounded-r focus:outline-none w-full"
-                placeholder="Ingrese el monto cobrado"
-              />
-            </div>
-            <span v-if="errors.cobramos" class="text-red-500 text-sm">{{
-              errors.cobramos
-            }}</span>
-          </div>
-
-          <!-- Pagamos -->
-          <div class="flex flex-col">
-            <label class="font-semibold text-black">Pagamos</label>
-            <div class="flex">
-              <span
-                class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l"
-                >$</span
-              >
-              <InputText
-                type="number"
-                step="0.01"
-                min="0"
-                v-model="pago.pagamos"
-                class="p-2 border border-gray-300 rounded-r focus:outline-none w-full"
-                placeholder="Ingrese el monto pagado"
-              />
-            </div>
-            <span v-if="errors.pagamos" class="text-red-500 text-sm">{{
-              errors.pagamos
-            }}</span>
-          </div>
-
-          <!-- Fecha (con Calendar) -->
-          <div class="flex flex-col">
-            <label class="font-semibold text-black">Fecha</label>
-            <Calendar
-              v-model="fechaSeleccionada"
-              showIcon
-              showTime
-              showSeconds="true"
-              hourFormat="24"
-              placeholder="Selecciona la fecha"
-              class="w-full border border-gray-300 rounded focus:outline-none"
-            />
-            <span v-if="errors.fecha" class="text-red-500 text-sm">{{
-              errors.fecha
-            }}</span>
-          </div>
-
-          <!-- Saldo
-          <div class="flex flex-col">
-            <label class="font-semibold text-black">Saldo</label>
-            <div class="flex">
-              <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
-              <InputText
-                type="number"
-                step="0.01"
-                min="0"
-                v-model="pago.saldo"
-                class="p-2 border border-gray-300 rounded-r focus:outline-none w-full"
-                placeholder="Ingrese el saldo"
-              />
-            </div>
-            <span v-if="errors.saldo" class="text-red-500 text-sm">{{ errors.saldo }}</span>
-          </div> -->
-        </div>
-
-        <!-- Botones -->
-        <div class="flex justify-end space-x-6 mt-6 px-4">
-          <Button
-            label="Cancelar"
-            icon="pi pi-times"
-            class="p-button-text"
-            @click="close"
-          />
-          <Button
-            label="Guardar"
-            icon="pi pi-check"
-            class="p-button-primary"
-            @click="save"
-          />
-        </div>
+            <p v-if="loadError || saveError" class="form-error">{{ saveError || loadError }}</p>
+            <footer class="modal-actions field--wide">
+              <Button label="Cancelar" icon="pi pi-times" outlined @click="close" />
+              <Button :label="saving ? 'Guardando…' : 'Guardar pago'" icon="pi pi-check" class="p-button-primary" type="submit" :disabled="saving || loadingOptions" />
+            </footer>
+          </form>
+        </section>
       </div>
-    </div>
-  </transition>
+    </Transition>
+  </Teleport>
 </template>
 
-<script setup>
-import { ref, watch, defineProps, defineEmits, onMounted, computed } from "vue";
-import InputText from "primevue/inputtext";
-import Button from "primevue/button";
-import Calendar from "primevue/calendar";
-import { Select } from "primevue";
-import defaultProfilePicture from "@/assets/img/user.jpg";
-import {
-  formatFechaHoraFullSQL,
-  formatFechaSQL,
-  ps,
-  formatFechaHoraFullPagoSQL,
-  cs,
-  us,
-} from "@/service/adminApp/client";
-const userpic = ref(localStorage.getItem("userphoto"));
-const userid = await localStorage.getItem("userid");
-const clientes = await cs.getClientes();
-const employees = await us.getUsuarios();
-console.log(employees);
+<script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from "vue";
+import InputText from "@/components/ui/AppInput.vue";
+import Button from "@/components/ui/AppButton.vue";
+import DateTimePicker from "@/components/ui/DateTimePicker.vue";
+import { cs, ps, us, formatFechaHoraFullSQL } from "@/service/adminApp/client";
 
-const props = defineProps({
-  pago: {
-    type: Object,
-    default: () => ({
-      id: "",
-      cliente: "",
-      asunto: "",
-      atendio: "",
-      cobramos: "",
-      pagamos: "",
-      fecha: "",
-      saldo: "",
-    }),
-  },
-  usuario: {
-    type: Object,
-    default: () => ({
-      id: "",
-      nombre: "",
-      foto: "",
-    }),
-  },
-});
-const emit = defineEmits(["close", "save"]);
+interface Payment { [key: string]: any }
+const props = withDefaults(defineProps<{ pago?: Payment; usuario?: Payment }>(), { pago: () => ({}), usuario: () => ({}) });
+const emit = defineEmits<{ close: []; save: [payment: Payment] }>();
+const payment = ref<Payment>({ id_cliente: "", asunto: "", id_atendio: localStorage.getItem("userid") || props.usuario.id || "", cobramos: 0, pagamos: 0, ...props.pago });
+const selectedDate = ref<Date>(toDate(payment.value.fecha));
+const clientes = ref<Payment[]>([]);
+const employees = ref<Payment[]>([]);
+const loadingOptions = ref(true);
+const loadError = ref("");
+const saveError = ref("");
+const saving = ref(false);
+const errors = ref<Record<string, string>>({});
 
-const pago = ref({ ...props.pago });
-const errors = ref({
-  cliente: "",
-  asunto: "",
-  atendio: "",
-  cobramos: "",
-  pagamos: "",
-  fecha: "",
-  saldo: "",
-});
+function toDate(value?: unknown) {
+  if (!value) return new Date();
+  const date = value instanceof Date ? value : new Date(String(value).replace(" ", "T"));
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+function close() { if (!saving.value) emit("close"); }
+function onKeydown(event: KeyboardEvent) { if (event.key === "Escape") close(); }
 
-/* 
-  Usamos un ref para Calendar, ya que Calendar guarda Date.
-  Luego lo convertimos a dd/mm/yyyy en save()
-*/
-const fechaSeleccionada = ref();
-const imagen = new String(pago.value.imagen);
 onMounted(async () => {
-  if (!pago.value.atendio) {
-    //por si es un registro nuevo se ocupa el nombre de user
-    pago.value.id_atendio = userid;
-  }
-  if (!pago.value.fecha) {
-    const hoy = new Date();
-    pago.value.fecha = await hoy; // dd/mm/yyyy
-    fechaSeleccionada.value = formatFechaHoraFullPagoSQL(hoy);
-    console.log("current pago: ", pago.value);
-  } else {
-    fechaSeleccionada.value = new Date(
-      formatFechaHoraFullPagoSQL(pago.value.fecha)
-    );
-    console.log(formatFechaHoraFullPagoSQL(pago.value.fecha));
-  }
-  console.log(pago.value);
-
-  // Asignar atendio si está vacío
-  if (!pago.value.atendio && props.usuario.nombre) {
-    pago.value.atendio = props.usuario.nombre;
-  }
-  // Convertir la cadena a Date para el Calendar
-  // fechaSeleccionada.value = new Date();
+  document.addEventListener("keydown", onKeydown);
+  document.body.classList.add("modal-open");
+  const [clientResult, employeeResult] = await Promise.allSettled([cs.getClientes(), us.getUsuarios()]);
+  if (clientResult.status === "fulfilled") clientes.value = Array.isArray(clientResult.value) ? clientResult.value : [];
+  if (employeeResult.status === "fulfilled") employees.value = Array.isArray(employeeResult.value) ? employeeResult.value : [];
+  if (!clientes.value.length || !employees.value.length) loadError.value = "No fue posible cargar todos los catálogos. Revisa la conexión e inténtalo de nuevo.";
+  loadingOptions.value = false;
 });
+onBeforeUnmount(() => { document.removeEventListener("keydown", onKeydown); document.body.classList.remove("modal-open"); });
 
-// Cada vez que cambie props.pago, reseteamos
-watch(
-  () => props.pago,
-  (newVal) => {
-    pago.value = { ...newVal };
-    errors.value = {
-      cliente: "",
-      asunto: "",
-      atendio: "",
-      cobramos: "",
-      pagamos: "",
-      fecha: "",
-      saldo: "",
-    };
-    // fechaSeleccionada.value = aDate(newVal.fecha);
-  }
-);
-
-function getEmployeeImage(id_atendio) {
-  const emp = employees.find((e) => e.id_usuario === id_atendio);
-  if (id_atendio == userid) {
-    return userpic.value;
-  }
-  if (emp && emp.imagen && !String(emp.imagen).endsWith("null")) {
-    return "data:image/png;base64," + emp.imagen;
-  }
-  return defaultProfilePicture;
+function validate() {
+  const next: Record<string, string> = {};
+  if (!payment.value.id_cliente) next.cliente = "Selecciona un cliente.";
+  if (!String(payment.value.asunto || "").trim()) next.asunto = "Escribe el asunto.";
+  if (!payment.value.id_atendio) next.atendio = "Selecciona quién atendió.";
+  if (payment.value.cobramos === "" || payment.value.cobramos == null) next.cobramos = "Indica el monto.";
+  if (payment.value.pagamos === "" || payment.value.pagamos == null) next.pagamos = "Indica el monto.";
+  if (!selectedDate.value) next.fecha = "Selecciona fecha y hora.";
+  errors.value = next;
+  return Object.keys(next).length === 0;
 }
 
-/* VALIDACIÓN */
-const validate = () => {
-  let valid = true;
-  errors.value = {
-    cliente: "",
-    asunto: "",
-    atendio: "",
-    cobramos: "",
-    pagamos: "",
-    fecha: "",
-    saldo: "",
-  };
-  if (!pago.value.id_cliente) {
-    errors.value.cliente = "El cliente es obligatorio.";
-    valid = false;
-  }
-  if (!pago.value.asunto.trim()) {
-    errors.value.asunto = "El asunto es obligatorio.";
-    valid = false;
-  }
-  if (!pago.value.id_atendio) {
-    errors.value.atendio = "El campo 'quien atendio' es obligatorio.";
-    valid = false;
-  }
-  if (
-    pago.value.cobramos === null ||
-    pago.value.cobramos === undefined ||
-    pago.value.cobramos === ""
-  ) {
-    //permitir que sea 0
-    errors.value.cobramos = "El monto cobrado es obligatorio.";
-    valid = false;
-  }
-  if (
-    pago.value.pagamos === null ||
-    pago.value.pagamos === undefined ||
-    pago.value.pagamos === ""
-  ) {
-    //permitir que sea 0
-    errors.value.pagamos = "El monto pagado es obligatorio.";
-    valid = false;
-  }
-  if (!pago.value.fecha.trim()) {
-    errors.value.fecha = "La fecha es obligatoria.";
-    valid = false;
-  }
-  return valid;
-};
-
-const close = () => {
-  emit("close");
-};
-
-const addDollarPrefix = (value) => {
-  // Si está vacío o 0, no le agregamos nada
-  if (!value) return value;
-  if (typeof value === "string" && !value.startsWith("$")) {
-    return "$" + value;
-  }
-  return value;
-};
-
-const save = async () => {
-  //   console.log("pago.value.id_atendio", pago.value.id_atendio);
-  // console.log("employees", employees);
-  const selectedCliente = clientes.findIndex(
-    (c) => c.id_cliente === pago.value.id_cliente
-  );
-  const selectedAtendio = employees.findIndex(
-    (e) => String(e.id_usuario) === String(pago.value.id_atendio)
-  );
-  if (fechaSeleccionada.value) {
-    pago.value.fecha = formatFechaHoraFullSQL(fechaSeleccionada.value);
-  }
-  if (validate()) {
-    if (!pago.value.id) {
-      console.log("new");
-      pago.value.cliente = clientes[selectedCliente].nombre;
-      pago.value.atendio = employees[selectedAtendio].nombre;
-      pago.value.id =
-        "C-" +
-        new Date()
-          .toLocaleString("sv-SE")
-          .replace("T", "")
-          .replace(/[-: ]/g, "");
-      pago.value.isnew = true;
-      console.log("trying to send, ", pago.value);
-
-      await ps.addPagoConcepto(pago.value);
-      emit("save", { ...pago.value });
-    } else {
-      console.log("edit");
-      pago.value.cliente = clientes[selectedCliente].nombre;
-      pago.value.atendio = employees[selectedAtendio].nombre;
-      await ps.updatePagoConcepto(pago.value.id, pago.value);
-      emit("save", { ...pago.value });
+async function save() {
+  saveError.value = "";
+  if (!validate()) return;
+  const client = clientes.value.find(item => String(item.id_cliente) === String(payment.value.id_cliente));
+  const employee = employees.value.find(item => String(item.id_usuario) === String(payment.value.id_atendio));
+  if (!client || !employee) { saveError.value = "La selección ya no es válida. Actualiza los catálogos e inténtalo de nuevo."; return; }
+  const payload: Payment = { ...payment.value, cliente: client.nombre, atendio: employee.nombre, cobramos: Number(payment.value.cobramos), pagamos: Number(payment.value.pagamos), fecha: formatFechaHoraFullSQL(selectedDate.value.toISOString()) };
+  saving.value = true;
+  try {
+    if (payload.id) await ps.updatePagoConcepto(payload.id, payload);
+    else {
+      payload.id = `C-${new Date().toLocaleString("sv-SE").replace("T", "").replace(/[-: ]/g, "")}`;
+      payload.isnew = true;
+      await ps.addPagoConcepto(payload);
     }
-  }
-};
+    emit("save", payload);
+  } catch (error) {
+    console.error("No se pudo guardar el pago", error);
+    saveError.value = "No se pudo guardar el pago. Verifica la conexión y vuelve a intentar.";
+  } finally { saving.value = false; }
+}
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(4px);
-  background-color: rgba(255, 255, 255, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modal-content {
-  background-color: #f9fafb;
-  border-radius: 0.5rem;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 26rem;
-  padding: 1.5rem;
-  position: relative;
-  animation: slideDown 0.3s ease-out;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+.modal-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:1rem;background:rgba(8,8,7,.82);backdrop-filter:blur(3px)}.modal-shell{width:min(48rem,100%);max-height:calc(100vh - 2rem);overflow:auto;border:2px solid #0e0e0d;background:var(--br-control);color:#141413;box-shadow:12px 12px 0 var(--br-accent)}.modal-header{position:relative;padding:1.4rem 4.5rem 1.25rem 1.5rem;border-bottom:2px solid #141413;background:#141413;color:var(--br-text)}.modal-header p,.field>span{margin:0 0 .45rem;font:800 .75rem/1.1 "Courier New",monospace;letter-spacing:.09em;text-transform:uppercase}.modal-header h2{margin:0;font:900 clamp(1.8rem,5vw,3.2rem)/.95 Arial,sans-serif;letter-spacing:-.055em;text-transform:uppercase}.modal-header>span{display:block;margin-top:.65rem;color:var(--br-muted);font:600 .82rem/1.3 "Courier New",monospace}.modal-close{position:absolute;right:0;top:0;width:3.75rem;height:3.75rem;border:0;border-left:2px solid var(--br-control);border-bottom:2px solid var(--br-control);background:var(--br-accent);color:#fff;font:400 2rem/1 Arial;cursor:pointer}.payment-form{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:1.5rem}.field{display:flex;min-width:0;flex-direction:column}.field--wide{grid-column:1/-1}.field select{width:100%;min-height:3rem;border:1px solid #56534c;border-radius:0;background:#fff;color:#141413;padding:.7rem .8rem;font:700 .9rem "Courier New",monospace}.field small{margin-top:.35rem;color:#a52319;font:800 .75rem "Courier New",monospace}.money{display:grid;grid-template-columns:3rem 1fr}.money b{display:grid;place-items:center;border:1px solid #56534c;border-right:0;background:#141413;color:#fff}.money :deep(input){width:100%}.form-error{grid-column:1/-1;margin:0;border:1px solid #a52319;background:#f4c6bd;padding:.8rem;color:#761b14;font:800 .8rem/1.3 "Courier New",monospace}.modal-actions{display:flex;justify-content:flex-end;gap:.75rem;padding-top:.5rem;border-top:1px solid #77736b}.modal-enter-active,.modal-leave-active{transition:opacity .18s ease}.modal-enter-active .modal-shell,.modal-leave-active .modal-shell{transition:transform .22s cubic-bezier(.2,.8,.2,1)}.modal-enter-from,.modal-leave-to{opacity:0}.modal-enter-from .modal-shell{transform:translateY(18px) scale(.98)}.modal-leave-to .modal-shell{transform:translateY(8px)}@media(max-width:640px){.payment-form{grid-template-columns:1fr}.field{grid-column:1}.modal-shell{box-shadow:6px 6px 0 var(--br-accent)}}
 </style>

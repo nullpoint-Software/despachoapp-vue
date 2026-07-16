@@ -3,7 +3,8 @@
         <div class="modal-overlay">
             <div class="modal-content relative bg-gray-50">
                 <!-- Encabezado -->
-                <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+                <div class="standard-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+                    <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="close">×</button>
                     <div>
                         <h3 class="text-2xl font-bold text-black">
                             <i class="pi pi-print text-3xl text-blue-500"></i>
@@ -20,7 +21,7 @@
     </transition>
 </template>
 <script setup>
-import Button from "primevue/button";
+import Button from "@/components/ui/AppButton.vue";
 const emit = defineEmits(["close", "ok"]);
 function close(){
     emit("close")

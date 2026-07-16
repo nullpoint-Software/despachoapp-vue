@@ -33,6 +33,10 @@
           <img :src="logo" alt="Logo" />
         </div>
         <pre class="ticket-content">{{ formattedTicket }}</pre>
+        <div v-if="barcodeValue" class="ticket-barcode" aria-label="Codigo de barras">
+          <div class="ticket-barcode__bars"></div>
+          <span>{{ barcodeValue }}</span>
+        </div>
       </div>
 
       <!-- Botones de accion -->
@@ -57,7 +61,7 @@
 <script setup>
 const serverip = import.meta.env.VITE_API_SERVER_IP;
 import { ref, computed, onMounted } from "vue";
-import Button from "primevue/button";
+import Button from "@/components/ui/AppButton.vue";
 import logoAsset from "@/assets/img/logsymbolblack.png";
 import connetor_plugin from "@abrazasoft/thermal_printer_vuejs";
 
@@ -95,15 +99,21 @@ const leftCol = 14;
 const rightCol = totalWidth - 7 - leftCol;
 const dashLine = "-".repeat(totalWidth);
 const eqLine = "=".repeat(totalWidth);
+const barcodeValue = computed(() => {
+  const id = props.ticket?.id ?? props.ticket?.folio;
+  if (id) return String(id);
+  return `PAGO-${dayjs(props.ticket?.fechapago || new Date()).format("YYYYMMDDHHmmss")}`;
+});
 
 function centerText(txt) {
-  const pad = Math.max(0, Math.floor((totalWidth - txt.length) / 2));
-  return " ".repeat(pad) + txt + " ".repeat(totalWidth - txt.length - pad);
+  const value = String(txt).slice(0, totalWidth);
+  const pad = Math.max(0, Math.floor((totalWidth - value.length) / 2));
+  return " ".repeat(pad) + value + " ".repeat(Math.max(0, totalWidth - value.length - pad));
 }
 
 function wrapText(text, width) {
   const lines = [];
-  let rem = text;
+  let rem = String(text ?? "");
   while (String(rem).length > width) {
     lines.push(rem.slice(0, width));
     rem = rem.slice(width);
@@ -194,11 +204,11 @@ const doPrint = async () => {
     con.textaling("left");
     formattedTicket.value.split("\n").forEach(line => con.text(line));
     // barcode
-    if (props.ticket.id) {
+    if (barcodeValue.value) {
       con.feed("1");
-      con.barcode_128(String(props.ticket.id));
+      con.barcode_128(barcodeValue.value);
       con.textaling("center");
-      con.text(props.ticket.id);
+      con.text(barcodeValue.value);
     }
     // cierre
     con.feed("5");
@@ -248,4 +258,5 @@ const doPrint = async () => {
 .actions {
   display: flex; justify-content: space-around; margin-top: 10px;
 }
+.ticket{width:fit-content;max-width:100%;margin:0 auto 20px;overflow:auto}.logo{padding:.45rem}.logo img{width:2.4rem}.ticket-content{box-sizing:border-box;width:max-content;max-width:none;min-height:0;padding:.6rem .75rem;overflow:visible;white-space:pre;font:700 .72rem/1.28 "Courier New",monospace}.ticket-barcode{display:grid;place-items:center;gap:.25rem;padding:.25rem .75rem .75rem;background:#fff;color:#141413}.ticket-barcode__bars{width:70%;height:2.1rem;background:repeating-linear-gradient(90deg,#141413 0 2px,transparent 2px 4px,#141413 4px 5px,transparent 5px 8px,#141413 8px 11px,transparent 11px 13px)}.ticket-barcode>span{font:700 .58rem "Courier New",monospace}
 </style>

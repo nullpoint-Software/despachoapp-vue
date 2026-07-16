@@ -31,8 +31,10 @@ class NotasService {
     try {
       const res = await this.axios.post(`${this.serverip}/notas`, nota);
       console.log("Nota guardada:", res.data);
+      return res.data;
     } catch (err) {
       console.error("Error al guardar nota:", err);
+      throw err;
     }
   }
 

@@ -23,6 +23,7 @@ export interface Note {
   pinned: boolean | number;
   color: "white" | "blue" | "red" | "yellow" | "green";
   status: "canvas" | "pinned" | "storage" | string;
+  folderPath?: string;
   gs_x?: number;
   gs_y?: number;
   gs_w?: number;
@@ -98,6 +99,7 @@ export function useNotesStore() {
           pinned: pinnedBool || pinnedIds.includes(Number(raw.id)),
           color: raw.color ?? "white",
           status,
+          folderPath: raw.folderPath ?? "General",
           gs_x: raw.gs_x !== undefined ? Number(raw.gs_x) : undefined,
           gs_y: raw.gs_y !== undefined ? Number(raw.gs_y) : undefined,
           gs_w: Number(gs_w),
@@ -125,19 +127,20 @@ export function useNotesStore() {
     error.value = null;
     try {
       // 1. Asumir que la API devuelve la nota creada con su ID
-      const addedRaw = (await ns.addNota(newNoteData)) as any;
+      const addedRaw = ((await ns.addNota(newNoteData)) as any) ?? {};
 
       // 2. Normalizar la nueva nota (lógica similar a fetchNotes)
       const pinnedIds = getPinnedIdsFromStorage();
       const pinnedBool = Boolean(Number(addedRaw.pinned));
       const status = addedRaw.status ?? (pinnedBool ? "pinned" : "canvas");
       const newNote: Note = {
-        id: Number(addedRaw.id),
-        titulo: addedRaw.titulo ?? "",
-        descripcion: addedRaw.descripcion ?? "",
+        id: Number(addedRaw.id ?? Date.now()),
+        titulo: addedRaw.titulo ?? newNoteData.titulo ?? "",
+        descripcion: addedRaw.descripcion ?? newNoteData.descripcion ?? "",
         pinned: pinnedBool || pinnedIds.includes(Number(addedRaw.id)),
         color: addedRaw.color ?? "white",
         status,
+        folderPath: addedRaw.folderPath ?? newNoteData.folderPath ?? "General",
         gs_x: addedRaw.gs_x !== undefined ? Number(addedRaw.gs_x) : 0, // Default a 0,0
         gs_y: addedRaw.gs_y !== undefined ? Number(addedRaw.gs_y) : 0,
         gs_w: Number(addedRaw.gs_w ?? 2),

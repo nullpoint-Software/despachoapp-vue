@@ -26,6 +26,7 @@ button {
   /* Se añade una animación de pulso para llamar la atención del usuario */
   animation: pulse 3s infinite;
 }
+button{border:2px solid var(--br-control);border-radius:0!important;background:var(--br-accent)!important;color:var(--br-accent-text)!important;box-shadow:6px 6px 0 #090909!important;animation:none!important}button:hover{transform:translate(-2px,-2px)!important;box-shadow:9px 9px 0 #090909!important}
 
 /* Animación de pulso: aumenta y reduce la escala suavemente */
 @keyframes pulse {

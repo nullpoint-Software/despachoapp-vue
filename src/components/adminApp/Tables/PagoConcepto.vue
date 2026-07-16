@@ -167,7 +167,6 @@
     </DataTable>
   </div>
   <!-- Toast y modales -->
-  <Toast />
   <CardDetailPagoConcepto
     v-if="cardVisible"
     :pago="selectedPayment"
@@ -204,27 +203,28 @@ import {
   formatFechaHoraFullSQL,
   formatFechaHoraFullPagoSQL,
 } from "@/service/adminApp/client";
-import { useToast } from "primevue/usetoast";
-import DataTable from "primevue/datatable";
-import Column from "primevue/column";
-import InputText from "primevue/inputtext";
-import Button from "primevue/button";
-import Toast from "primevue/toast";
+import { useAppToast } from "@/composables/useAppToast";
+import DataTable from "@/components/ui/AppDataTable";
+import Column from "@/components/ui/AppColumn.vue";
+import InputText from "@/components/ui/AppInput.vue";
+import Button from "@/components/ui/AppButton.vue";
 import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailPagoConcepto from "../CardDetail/CardDetailPagoConcepto.vue";
 import ConfirmDeleteDialog from "../Dialogs/ConfirmDeleteDialog.vue";
 import PrintPagoConcepto from "../Print/PrintPagoConcepto.vue";
 import PrintDialog from "../Print/PrintDialog.vue";
 import ExportExcelButton from "../Exports/ExportExcelButton.vue";
+import { usePaymentActions } from "@/composables/usePaymentActions";
 
 const printDialogVisible = ref(false);
 const canAddPagoConcepto = ref(false);
 const canEditPagoConcepto = ref(false);
 const canDeletePagoConcepto = ref(false);
-const toast = useToast();
+const toast = useAppToast();
 const route = useRoute();
 // Datos de ejemplo
-const payments = ref(await ps.getPagoConcepto());
+const payments = ref([]);
+const { newPaymentRequest } = usePaymentActions();
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
@@ -297,6 +297,16 @@ const containerRef = ref(null);
 const containerWidth = ref(0);
 let resizeObserver = null;
 onMounted(async () => {
+  try {
+    const loadedPayments = await ps.getPagoConcepto();
+    payments.value = (Array.isArray(loadedPayments) ? loadedPayments : []).map((item) => ({
+      ...item,
+      fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
+    }));
+  } catch (error) {
+    console.error("No se pudieron cargar los pagos", error);
+    toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudieron cargar los pagos.", life: 3500 });
+  }
   const searchParam = route.query.search;
   console.log(searchParam);
 
@@ -314,10 +324,6 @@ onMounted(async () => {
     });
     resizeObserver.observe(containerRef.value);
   }
-  payments.value = payments.value.map((item) => ({
-    ...item,
-    fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
-  }));
 });
 onUnmounted(() => {
   if (resizeObserver && containerRef.value) {
@@ -388,8 +394,9 @@ const openCard = (payment) => {
   }
   cardVisible.value = true;
 };
+watch(newPaymentRequest, () => openCard(null));
 const savePayment = async (payment) => {
-  console.log("recieve save pay", payment);
+  const normalizedPayment = { ...payment, fecha_legible: formatFechaHoraFullPagoSQL(payment.fecha) };
 
   if (payment.id) {
     const index = payments.value.findIndex((p) => p.id === payment.id);
@@ -397,7 +404,7 @@ const savePayment = async (payment) => {
       console.log(index);
       console.log("edit save");
 
-      payments.value.splice(index, 1, { ...payment });
+      payments.value.splice(index, 1, normalizedPayment);
       payments.value = [...payments.value];
       toast.add({
         severity: "success",
@@ -408,7 +415,7 @@ const savePayment = async (payment) => {
     }
   }
   if (payment.isnew) {
-    payments.value.unshift(payment);
+    payments.value.unshift(normalizedPayment);
     toast.add({
       severity: "success",
       summary: "Agregado",
@@ -426,18 +433,16 @@ const openConfirmDialog = (payment) => {
   candidateToDelete.value = { ...payment };
   confirmDialogVisible.value = true;
 };
-const confirmDelete = () => {
+const confirmDelete = async () => {
   if (candidateToDelete.value) {
-    payments.value = payments.value.filter(
-      (p) => p.id !== candidateToDelete.value.id
-    );
-    ps.deletePagoConcepto(candidateToDelete.value.id);
-    toast.add({
-      severity: "warn",
-      summary: "Eliminado",
-      detail: "Pago concepto eliminado correctamente",
-      life: 2000,
-    });
+    try {
+      await ps.deletePagoConcepto(candidateToDelete.value.id);
+      payments.value = payments.value.filter((p) => p.id !== candidateToDelete.value.id);
+      toast.add({ severity: "warn", summary: "Eliminado", detail: "Pago concepto eliminado correctamente", life: 2000 });
+    } catch (error) {
+      console.error("No se pudo eliminar el pago", error);
+      toast.add({ severity: "error", summary: "No eliminado", detail: "No se pudo eliminar el pago.", life: 3500 });
+    }
   }
   confirmDialogVisible.value = false;
   candidateToDelete.value = null;

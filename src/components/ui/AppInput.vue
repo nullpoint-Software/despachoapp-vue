@@ -1,0 +1,3 @@
+<template><input :value="modelValue ?? ''" @input="emit('update:modelValue',($event.target as HTMLInputElement).value)" /></template>
+<script setup lang="ts">defineProps<{modelValue?:string|number|null}>();const emit=defineEmits<{(event:"update:modelValue",value:string):void}>();</script>
+<style scoped>input{min-height:3rem;border:1px solid var(--br-line-strong,#77736b);border-radius:0;background:var(--br-control,#e7e4dc);color:#141413;padding:.7rem .8rem;font:700 .9rem/1.2 "Courier New",monospace}input:focus{outline:2px solid var(--br-accent,#e34b32);outline-offset:2px}input:disabled{background:#aaa69c;opacity:.72}</style>

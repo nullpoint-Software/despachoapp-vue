@@ -70,7 +70,6 @@
   </div>
 
   <!-- Toast y modales -->
-  <Toast />
   <CardDetailHistorial v-if="cardVisible" :registro="selectedHistorial" :usuario="usuario" @close="cardVisible = false"
     @save="saveHistorial" />
   <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
@@ -79,21 +78,20 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
-import { useToast } from "primevue/usetoast";
-import DataTable from "primevue/datatable";
-import Column from "primevue/column";
-import InputText from "primevue/inputtext";
-import Button from "primevue/button";
-import Toast from "primevue/toast";
+import { useAppToast } from "@/composables/useAppToast";
+import DataTable from "@/components/ui/AppDataTable";
+import Column from "@/components/ui/AppColumn.vue";
+import InputText from "@/components/ui/AppInput.vue";
+import Button from "@/components/ui/AppButton.vue";
 import { driverObjPagos } from "../../tour/pagos";
 import CardDetailHistorial from "@/components/adminApp/CardDetail/CardDetailHistorial.vue";
 import ConfirmDeleteDialog from "@/components/adminApp/Dialogs/ConfirmDeleteDialog.vue";
 import { formatFechaHoraFullSQL, formatFechaHoraSQL, formatFechaHoraFullPagoSQL, ps } from "@/service/adminApp/client";
 
-const toast = useToast();
+const toast = useAppToast();
 const router = useRouter();
 // Datos de ejemplo
-const historial = ref(await ps.getPagoHistorial());
+const historial = ref([]);
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
@@ -159,7 +157,17 @@ onUnmounted(() => window.removeEventListener("resize", handleResize));
 const containerRef = ref(null);
 const containerWidth = ref(0);
 let resizeObserver = null;
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const loadedHistory = await ps.getPagoHistorial();
+    historial.value = (Array.isArray(loadedHistory) ? loadedHistory : []).map(item => ({
+      ...item,
+      fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
+    }));
+  } catch (error) {
+    console.error("No se pudo cargar el historial", error);
+    toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudo cargar el historial de pagos.", life: 3500 });
+  }
   if (containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -169,10 +177,6 @@ onMounted(() => {
     resizeObserver.observe(containerRef.value);
   }
 
-  historial.value = historial.value.map(item => ({
-    ...item,
-    fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
-  }));
   startTour()
 });
 

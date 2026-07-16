@@ -4,7 +4,8 @@
     <div class="modal-overlay" @click.self="close">
       <div class="modal-content relative bg-gray-50">
         <!-- Encabezado -->
-        <div class="flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+        <div class="standard-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+          <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="close">×</button>
           <div>
             <h3 class="text-2xl font-bold text-black">
               <i class="pi pi-calendar text-3xl text-blue-500"></i>
@@ -100,9 +101,9 @@
 
 <script setup>
 import { ref, watch, defineProps, defineEmits, onMounted } from "vue";
-import InputText from "primevue/inputtext";
-import Button from "primevue/button";
-import Calendar from "primevue/calendar";
+import InputText from "@/components/ui/AppInput.vue";
+import Button from "@/components/ui/AppButton.vue";
+import Calendar from "@/components/ui/AppDateInput.vue";
 
 const props = defineProps({
   registro: {

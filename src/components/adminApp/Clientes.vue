@@ -1,11 +1,11 @@
 <template>
   <!-- Contenedor principal de la vista -->
-  <div class="shadow-xl bg-transparent text-white w-full h-full flex flex-col">
+  <main ref="pageRef" class="clients-view">
     <!-- Título -->
-    <div class="flex-auto font-extrabold text-2xl sm:text-4xl mb-6 text-center">
-      <br />
-      Clientes
-    </div>
+    <header class="clients-hero">
+      <div><p>ADMINISTRACIÓN / 01</p><h1>Clientes</h1><span>Expedientes, accesos y datos de contacto.</span></div>
+      <div class="hero-stat"><b>{{ customers.length }}</b><span>registros</span></div>
+    </header>
     <!-- Contenedor de la tabla: se usa containerRef para medir el ancho asignado -->
     <div ref="containerRef" id="clientes-table" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
       <DataTable id="inner-info" :value="customers" :filters="filters" :globalFilterFields="[
@@ -86,7 +86,6 @@
     </div>
 
     <!-- Toast -->
-    <Toast />
 
     <!-- Card para agregar/editar clientes -->
     <CardDetailCliente v-if="cardVisible" :customer="selectedCustomer" @close="cardVisible = false"
@@ -94,23 +93,25 @@
 
     <!-- Confirmación para eliminación -->
     <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { useToast } from "primevue/usetoast";
-import DataTable from "primevue/datatable";
+import { useAppToast } from "@/composables/useAppToast";
+import DataTable from "@/components/ui/AppDataTable";
 import { driverObjClientes } from "@/components/tour/clientes";
-import Column from "primevue/column";
-import InputText from "primevue/inputtext";
-import Button from "primevue/button";
-import Toast from "primevue/toast";
+import Column from "@/components/ui/AppColumn.vue";
+import InputText from "@/components/ui/AppInput.vue";
+import Button from "@/components/ui/AppButton.vue";
 import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailCliente from "@/components/adminApp/CardDetail/CardDetailCliente.vue";
 import ConfirmDeleteDialog from "@/components/adminApp/Dialogs/ConfirmDeleteDialog.vue";
 import { cs } from "@/service/adminApp/client";
 import type { ColumnDef } from "@/types/ClientesTable";
+import { useBrutalMotion } from "@/composables/useBrutalMotion";
+const pageRef = ref<HTMLElement | null>(null);
+useBrutalMotion(pageRef, [".clients-hero", "#clientes-table"]);
 const canAddCliente = ref(false)
 const canEditCliente = ref(false)
 const canDeleteCliente = ref(false)
@@ -120,9 +121,9 @@ onMounted(async () => {
   canEditCliente.value = await hasPermission('canEditCliente')
   canDeleteCliente.value = await hasPermission('canDeleteCliente')
 })
-const toast = useToast();
+const toast = useAppToast();
 // Ejemplos de clientes
-const customers = ref(await cs.getClientes());
+const customers = ref<any[]>([]);
 // Definición de columnas base (sin la columna de acciones)
 const columns = ref<ColumnDef[]>([
   { field: "id_cliente", header: "ID", visible: true },
@@ -189,7 +190,14 @@ onUnmounted(() => window.removeEventListener("resize", handleResize));
 const containerRef = ref(null);
 const containerWidth = ref(0);
 let resizeObserver: ResizeObserver;
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const loadedCustomers = await cs.getClientes();
+    customers.value = Array.isArray(loadedCustomers) ? loadedCustomers : [];
+  } catch (error) {
+    console.error("No se pudieron cargar los clientes", error);
+    toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudieron cargar los clientes.", life: 3500 });
+  }
   if (containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -293,27 +301,21 @@ const openCard = (customer: any) => {
 const saveCustomer = async (customer: any) => {
   if (customer) {
     const index = customers.value.findIndex((c: any) => c.id_cliente === customer.id_cliente);
-    if (index !== -1) {
-      customers.value[index] = { ...customer };
-      console.log("sending edit to id " + customer.id_cliente, await cs.editCliente(customer))
-      toast.add({
-        severity: "success",
-        summary: "Actualizado",
-        detail: "Cliente actualizado correctamente",
-        life: 2000,
-      });
-    } else {
-      customers.value.unshift(customer);
-      toast.add({
-        severity: "success",
-        summary: "Agregado",
-        detail: "Cliente agregado correctamente",
-        life: 2000,
-      });
-      console.log("sending", await cs.addCliente(customer));
-      window.location.reload()
+    try {
+      if (index !== -1) {
+        const saved = await cs.editCliente(customer);
+        customers.value.splice(index, 1, { ...customer, ...(saved && typeof saved === "object" ? saved : {}) });
+        toast.add({ severity: "success", summary: "Actualizado", detail: "Cliente actualizado correctamente", life: 2000 });
+      } else {
+        const saved = await cs.addCliente(customer);
+        customers.value.unshift({ ...customer, ...(saved && typeof saved === "object" ? saved : {}) });
+        toast.add({ severity: "success", summary: "Agregado", detail: "Cliente agregado correctamente", life: 2000 });
+      }
+      cardVisible.value = false;
+    } catch (error) {
+      console.error("No se pudo guardar el cliente", error);
+      toast.add({ severity: "error", summary: "No guardado", detail: "Revisa la conexión e inténtalo de nuevo.", life: 3500 });
     }
-    cardVisible.value = false;
   }
 }
 
@@ -326,16 +328,14 @@ const openConfirmDialog = (customer: any) => {
 };
 const confirmDelete = async () => {
   if (candidateToDelete.value) {
-    console.log("deleting cliente with id " + candidateToDelete.value.id, await cs.deleteCliente(candidateToDelete.value.id_cliente))
-    customers.value = await customers.value.filter(
-      (c: any) => c.id_cliente !== candidateToDelete.value.id_cliente
-    );
-    toast.add({
-      severity: "warn",
-      summary: "Eliminado",
-      detail: "Cliente eliminado correctamente",
-      life: 2000,
-    });
+    try {
+      await cs.deleteCliente(candidateToDelete.value.id_cliente);
+      customers.value = customers.value.filter((c: any) => c.id_cliente !== candidateToDelete.value.id_cliente);
+      toast.add({ severity: "warn", summary: "Eliminado", detail: "Cliente eliminado correctamente", life: 2000 });
+    } catch (error) {
+      console.error("No se pudo eliminar el cliente", error);
+      toast.add({ severity: "error", summary: "No eliminado", detail: "No se pudo eliminar el cliente.", life: 3500 });
+    }
   }
   confirmDialogVisible.value = false;
   candidateToDelete.value = null;
@@ -369,3 +369,6 @@ function handleCellClick(row: any, field: string, col: ColumnDef) {
   }
 }
 </script>
+<style scoped>
+.clients-view{min-height:100%;padding:clamp(1rem,2.5vw,2rem);background:var(--br-bg);color:var(--br-text)}.clients-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;padding:1.5rem 0;border-top:1px solid var(--br-line);border-bottom:1px solid var(--br-line);margin-bottom:1rem}.clients-hero p{margin:0 0 .5rem;color:var(--br-accent);font:800 .75rem "Courier New",monospace;letter-spacing:.12em}.clients-hero h1{margin:0;font:900 clamp(3.2rem,9vw,7rem)/.75 Arial,sans-serif;letter-spacing:-.075em;text-transform:uppercase}.clients-hero>div>span{display:block;margin-top:1rem;color:var(--br-muted);font:700 .9rem "Courier New",monospace}.hero-stat{min-width:10rem;padding:1rem;border:1px solid var(--br-line-strong);text-align:right}.hero-stat b{display:block;font:900 2.8rem/1 Arial,sans-serif}.hero-stat span{font:800 .7rem "Courier New",monospace;text-transform:uppercase}@media(max-width:640px){.clients-hero{align-items:flex-start;flex-direction:column}.hero-stat{width:100%;text-align:left}}
+</style>
