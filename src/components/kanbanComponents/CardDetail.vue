@@ -59,12 +59,12 @@
             </tr>
           </tbody>
         </table>
-        <div class="flex space-x-4">
-          <button @click="editTask" class="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold shadow hover:bg-blue-400 transition transform hover:scale-105 focus:outline-none">
+        <div class="task-detail-actions flex space-x-4">
+          <button @click="editTask" class="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold hover:bg-blue-400 transition focus:outline-none">
             <i class="pi pi-pencil"></i>
             <span>Modificar</span>
           </button>
-          <button @click="advanceState" :style="{ backgroundColor: getStatusColor(card.estado) }" class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold shadow hover:opacity-90 transition transform hover:scale-105 focus:outline-none border border-gray-300">
+          <button @click="advanceState" :style="{ backgroundColor: getStatusColor(card.estado) }" class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold hover:opacity-90 transition focus:outline-none border border-gray-300">
             <i :class="getStateIcon(card.estado)"></i>
             <!-- ---------------------- Cambio: usar v-html con estado procesado por si contiene palabras largas ---------------------- -->
             <span v-html="hyphenatedEstado"></span>
@@ -266,6 +266,14 @@ const hyphenatedDescripcionTruncated = computed(() => {
 /* Cerrar botón y acciones heredan colores legibles */
 .modal-content.full button {
   color: #1f2937;
+}
+
+.task-detail-actions button,
+.task-detail-actions button:hover,
+.task-detail-actions button:focus,
+.task-detail-actions button:active {
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 /* ---------------------- Cambio: estilos para compatibilidad y paleta general ---------------------- */

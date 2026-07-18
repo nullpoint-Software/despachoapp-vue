@@ -11,6 +11,8 @@
         :profile-picture="profilePicture"
         :profile-type="ProfileType"
         :is-admin="isAdmin"
+        :notes-active="showNotesModal"
+        :logs-active="showLogs"
         @toggle-menu="toggleMenu"
         @open-notes="openNotesModal"
         @open-logs="openLogs"
@@ -173,6 +175,7 @@ const menuItems = ref<MenuItem[]>([
   { name: "Tareas", path: "/app/tareas", icon: "pi pi-th-large" },
   { name: "Clientes", path: "/app/clientes", icon: "pi pi-id-card" },
   { name: "Pagos", path: "/app/pagos", icon: "pi pi-wallet" },
+  { name: "Fiscal", path: "/app/fiscal", icon: "pi pi-percentage" },
 ]);
 
 const mainNavItems = computed(() => menuItems.value.slice(0, 3));
@@ -205,4 +208,5 @@ const closeLogs = () => (showLogs.value = false);
 </script>
 <style scoped>
 .notes-modal-frame{position:relative;width:min(96rem,calc(100vw - 3rem));height:calc(100vh - 5rem);min-width:0;overflow:hidden;border:2px solid var(--br-control);background:var(--br-bg);box-shadow:12px 12px 0 var(--br-accent)}.notes-modal-close{position:absolute;right:0;top:0;z-index:80;width:3.2rem;height:3.2rem;border:0;border-left:2px solid var(--br-control);border-bottom:2px solid var(--br-control);background:var(--br-accent);color:var(--br-accent-text);font-size:1.8rem;cursor:pointer}.notes-modal-frame :deep(.notes-directory){box-sizing:border-box;width:100%;height:100%;min-width:0;min-height:0;padding:1rem;overflow:hidden}.notes-modal-frame :deep(.directory-layout){min-width:0}.notes-modal-frame :deep(.tree-panel),.notes-modal-frame :deep(.directory-content){min-width:0}@media(max-width:800px){.notes-modal-frame{width:calc(100vw - 1rem);height:calc(100vh - 1rem);box-shadow:5px 5px 0 var(--br-accent)}.notes-modal-frame :deep(.notes-directory){padding:.35rem;overflow:auto}}
+.notes-modal-close{right:.65rem;top:.65rem;display:grid;width:2.5rem;height:2.5rem;place-items:center;border:1px solid var(--br-control);background:var(--br-accent);padding:0;font:400 1.45rem/1 Arial;transition:transform .18s ease,filter .18s ease}.notes-modal-close:hover{filter:brightness(1.12)}.notes-modal-close:active{transform:translateY(1px)}
 </style>

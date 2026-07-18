@@ -136,6 +136,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import Button from "@/components/ui/AppButton.vue";
 import { ls, us } from "@/service/adminApp/client";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 const props = defineProps({
   visible: { type: Boolean, required: true }
 });
@@ -143,9 +144,7 @@ const emit = defineEmits(['close', 'undo']);
 const now = Date.now();
 const currentPageTitle = ref("Todos")
 const msDay = 864e5;
-const rawLogs = await ls.getLogs();
-const logs = ref(
-  rawLogs
+const normalizeLogs = (items) => items
     .map((log) => ({
       ...log,
       payload:
@@ -156,9 +155,8 @@ const logs = ref(
           : log.oldpayload,
       timestamp: new Date(log.timestamp).toISOString(),
     }))
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-);
-console.log(logs);
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+const logs = ref([]);
 
 const route = useRoute();
 
@@ -174,7 +172,17 @@ const typeOptions = [
   { label: "Eliminar", value: "Deleted" },
 ];
 
-onMounted(() =>{
+onMounted(async () =>{
+  try {
+    await loadProgressively({
+      pageSize: 50,
+      fetchPage: (page) => ls.getLogs(page),
+      onUpdate: (items) => { logs.value = normalizeLogs(items); },
+      onBackgroundError: (error) => console.error("No se completó la carga de registros", error),
+    });
+  } catch (error) {
+    console.error("No se pudieron cargar los registros", error);
+  }
   if(currentPageTitle.value == "Todos"){
       showAll.value = true;
     }

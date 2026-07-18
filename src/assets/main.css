@@ -5,6 +5,17 @@
 @import "../components/ui/data-table.css";
 @import "../components/ui/form-controls.css";
 
+/* Scroll y controles nativos integrados con la paleta activa */
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--br-line-strong) var(--br-bg)}
+*{scrollbar-width:thin;scrollbar-color:var(--br-line-strong) var(--br-panel)}
+*::-webkit-scrollbar{width:.65rem;height:.65rem}
+*::-webkit-scrollbar-track{background:var(--br-panel)}
+*::-webkit-scrollbar-thumb{border:2px solid var(--br-panel);border-radius:0;background:var(--br-line-strong)}
+*::-webkit-scrollbar-thumb:hover{background:var(--br-accent)}
+*::-webkit-scrollbar-corner{background:var(--br-panel)}
+input[type="number"]{-moz-appearance:textfield;appearance:textfield}
+input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0}
+
 /*
   ==========================================================================
    SISTEMA DE DISEÑO Y TEMAS PERSONALIZADO
@@ -282,7 +293,7 @@ body{margin:0;background:var(--br-bg);font-size:17px}button,input,select,textare
   border-radius:0!important;
 }
 :where(.home-dashboard,.records-view,.clients-view,.tasks-page) :where(.shadow,.shadow-md,.shadow-lg,.shadow-xl,.shadow-2xl){
-  box-shadow:none!important;
+  box-shadow:6px 6px 0 var(--br-accent)!important;
 }
 :where(.home-dashboard,.records-view,.clients-view,.tasks-page) :where(.page-hero,.records-hero,.clients-hero,.tasks-hero){
   border-top:2px solid var(--br-line-strong)!important;
@@ -301,11 +312,20 @@ body{margin:0;background:var(--br-bg);font-size:17px}button,input,select,textare
 }
 :where(.records-view,.clients-view) :where(.flex-grow.w-full.overflow-hidden){
   border-radius:0!important;
-  box-shadow:none!important;
+  box-shadow:8px 8px 0 var(--br-accent)!important;
 }
 :where(.records-view,.clients-view) .app-data-table{
   margin-bottom:.75rem;
 }
+#clientes-table,.records-content>.flex-grow.w-full{width:calc(100% - .6rem)!important;margin-right:.6rem!important;margin-bottom:1rem!important;box-shadow:8px 8px 0 var(--br-accent)!important}
+#clientes-table>.app-data-table,.records-content>.flex-grow.w-full>.app-data-table{margin-bottom:0!important;box-shadow:none!important}
+
+/* Profundidad uniforme para las superficies principales */
+body nav.fixed,body aside.fixed{box-shadow:none!important}
+:where(.home-dashboard,.records-view,.clients-view,.tasks-page,.fiscal-view) :where(.revenue-panel,.tasks-preview,.board-frame,.records-tabs,.app-data-table,.invoice-panel,.reports-panel,.xml-dropzone,.summary-grid){
+  box-shadow:8px 8px 0 var(--br-accent)!important;
+}
+:where(.fiscal-view) :where(.xml-dropzone,.summary-grid,.invoice-panel,.reports-panel){margin-bottom:.5rem}
 
 html[data-br-palette="carbon"]{--br-bg:#10100f;--br-panel:#191918;--br-panel-2:#242321;--br-control:#e7e4dc;--br-text:#eceae4;--br-muted:#aaa79f;--br-line:#4d4b46;--br-line-strong:#77736b;--br-accent:#e34b32;--br-accent-text:#fff;--color-bg:#10100f;--color-bg-secondary:#191918;--color-text:#eceae4;--color-text-muted:#aaa79f;--color-border:#4d4b46;--bg-modal:#e7e4dc;--btn-primary-bg:#e34b32;--btn-primary-text:#fff;--btn-primary-hover-bg:#bf3623;--btn-secondary-bg:#242321;--btn-secondary-text:#eceae4;--btn-secondary-hover-bg:#34332f;--obj-important-1:#e34b32;--obj-important-2:#78a187;--obj-important-3:#d0a928}
 html[data-br-palette="cobalt"]{--br-bg:#0c1420;--br-panel:#121e2d;--br-panel-2:#1b2b3e;--br-control:#e9edf5;--br-text:#edf3fb;--br-muted:#9aaabd;--br-line:#34465c;--br-line-strong:#637791;--br-accent:#4f7cff;--br-accent-text:#fff;--color-bg:#0c1420;--color-bg-secondary:#121e2d;--color-text:#edf3fb;--color-text-muted:#9aaabd;--color-border:#34465c;--bg-modal:#e9edf5;--btn-primary-bg:#4f7cff;--btn-primary-text:#fff;--btn-primary-hover-bg:#335fda;--btn-secondary-bg:#1b2b3e;--btn-secondary-text:#edf3fb;--btn-secondary-hover-bg:#263b53;--obj-important-1:#4f7cff;--obj-important-2:#5dbb9d;--obj-important-3:#e6b84d}

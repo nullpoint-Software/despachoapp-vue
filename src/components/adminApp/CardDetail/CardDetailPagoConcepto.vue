@@ -71,6 +71,7 @@ import InputText from "@/components/ui/AppInput.vue";
 import Button from "@/components/ui/AppButton.vue";
 import DateTimePicker from "@/components/ui/DateTimePicker.vue";
 import { cs, ps, us, formatFechaHoraFullSQL } from "@/service/adminApp/client";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 
 interface Payment { [key: string]: any }
 const props = withDefaults(defineProps<{ pago?: Payment; usuario?: Payment }>(), { pago: () => ({}), usuario: () => ({}) });
@@ -96,8 +97,7 @@ function onKeydown(event: KeyboardEvent) { if (event.key === "Escape") close(); 
 onMounted(async () => {
   document.addEventListener("keydown", onKeydown);
   document.body.classList.add("modal-open");
-  const [clientResult, employeeResult] = await Promise.allSettled([cs.getClientes(), us.getUsuarios()]);
-  if (clientResult.status === "fulfilled") clientes.value = Array.isArray(clientResult.value) ? clientResult.value : [];
+  const [clientResult, employeeResult] = await Promise.allSettled([loadProgressively({ pageSize:40, fetchPage:(page)=>cs.getClientes(page), onUpdate:(items)=>{ clientes.value=items; } }), us.getUsuarios()]);
   if (employeeResult.status === "fulfilled") employees.value = Array.isArray(employeeResult.value) ? employeeResult.value : [];
   if (!clientes.value.length || !employees.value.length) loadError.value = "No fue posible cargar todos los catálogos. Revisa la conexión e inténtalo de nuevo.";
   loadingOptions.value = false;

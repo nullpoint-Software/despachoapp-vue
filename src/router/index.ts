@@ -44,6 +44,10 @@ const router = createRouter({
           path: "clientes", 
           component: () => import("@/components/adminApp/Clientes.vue") 
         },
+        {
+          path: "fiscal",
+          component: () => import("@/components/adminApp/Fiscal.vue")
+        },
         { 
           path: "settings", 
           component: () => import("@/components/adminApp/Settings.vue") 

@@ -9,9 +9,10 @@ class LogsService {
     this.axios = axios;
   }
 
-  async getLogs(): Promise<any> {
+  async getLogs(page?: { limit: number; offset: number }): Promise<any> {
     try {
       const response = await this.axios.get(`${this.serverip}/logs`, {
+        params: page,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

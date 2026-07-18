@@ -16,9 +16,9 @@ class NotasService {
     this.axios = axios;
   }
 
-  async getNotas(): Promise<any> {
+  async getNotas(page?: { limit: number; offset: number }): Promise<any> {
     try {
-      const response = await this.axios.get(`${this.serverip}/notas`);
+      const response = await this.axios.get(`${this.serverip}/notas`, { params: page });
       console.log("notas", response.data);
       return response.data;
     } catch (error) {

@@ -119,6 +119,7 @@ import { ref, computed, watch, defineProps, defineEmits, onMounted } from "vue";
 import { cs, formatFechaHoraFullSQL } from "@/service/adminApp/client";
 import { us } from "@/service/adminApp/client";
 import { ts } from "@/service/adminApp/client";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 const isAdmin = (localStorage.getItem("level") == 'Administrador')
 
 // Definición de propiedades con datos iniciales de la tarea
@@ -159,7 +160,7 @@ const errors = ref({
 
 // Lista de empleados con nombres reales
 const employees = ref([]);
-onMounted(async()=>{const [clientResult,employeeResult]=await Promise.allSettled([cs.getClientes(),us.getUsuarios()]);if(clientResult.status==="fulfilled")clients.value=Array.isArray(clientResult.value)?clientResult.value:[];if(employeeResult.status==="fulfilled")employees.value=Array.isArray(employeeResult.value)?employeeResult.value:[]});
+onMounted(async()=>{const [clientResult,employeeResult]=await Promise.allSettled([loadProgressively({pageSize:40,fetchPage:(page)=>cs.getClientes(page),onUpdate:(items)=>{clients.value=items}}),us.getUsuarios()]);if(clientResult.status==="rejected")console.error("No se cargaron los clientes",clientResult.reason);if(employeeResult.status==="fulfilled")employees.value=Array.isArray(employeeResult.value)?employeeResult.value:[]});
 
 // Validar campos del Paso 1 y avanzar al Paso 2
 const nextStep = () => {

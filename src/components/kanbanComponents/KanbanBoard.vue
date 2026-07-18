@@ -15,7 +15,7 @@
         </button>
         <label class="report-date-field" for="task-report-date">
           <span>FECHA REPORTE</span>
-          <DateTimePicker id="task-report-date" v-model="reportDate" :show-time="false" aria-label="Fecha del reporte" />
+          <DateTimePicker id="task-report-date" v-model="reportDate" :show-time="false" modal title="Fecha del reporte" aria-label="Fecha del reporte" />
         </label>
         <!-- Botón PDF personalizado -->
         <button @click="showPdf = true"
@@ -50,7 +50,7 @@
         <!-- SEPARAR COLUMNA DISPONIBLE PARA MOSTRAR LAS TAREAS SIN USUARIO ASIGNADO -->
         <KanbanColumn :status="'Disponible'" :cards="getPaginatedCardsDisponible()"
           :color="getColumnColor('Disponible')" @moveCard="moveCard" @viewDetails="openCardDetail"
-          :highlighted-card="highlightedCard" />
+          />
 
         <div class="flex justify-center items-center mt-2 space-x-2">
           <button @click="
@@ -75,7 +75,7 @@
         <!-- Cada tarjeta tiene su id="card-{card.id}" para scroll -->
         <KanbanColumn :mini="mini" :status="status" :cards="getPaginatedCardsByStatus(status)"
           :color="getColumnColor(status)" @moveCard="moveCard" @viewDetails="openCardDetail"
-          :highlighted-card="highlightedCard" />
+          />
 
         <!-- Paginación -->
         <div class="flex justify-center items-center mt-2 space-x-2">
@@ -131,6 +131,7 @@ import DateTimePicker from "@/components/ui/DateTimePicker.vue";
 import { hasPermission } from "@/service/adminApp/permissionsService";
 import { cs, ts } from "@/service/adminApp/client";
 import { base64ToFile } from "@/service/adminApp/authService";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 const toast = useAppToast();
 const { isMobile } = useMobileDetection();
 const userId = ref(localStorage.getItem("userid"));
@@ -194,17 +195,28 @@ onUnmounted(() => {
 
 const cardsDisponible = ref([]);
 const cards = ref([]);
+const taskImages = new Map();
+const normalizeAvailable = (item) => ({ ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString() });
+const normalizeTask = (item) => {
+  let image = taskImages.get(item.id_tarea) || null;
+  if (!image && item.usuario_imagen) {
+    image = URL.createObjectURL(base64ToFile(item.usuario_imagen,"task-img.png"));
+    taskImages.set(item.id_tarea, image);
+  }
+  return { ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString(), fecha_vencimiento:item.fecha_vencimiento?new Date(item.fecha_vencimiento).toLocaleString():null, image };
+};
 onMounted(async () => {
   try {
-    const [available, allTasks] = await Promise.all([ts.getTareasDisponibles(), ts.getTareas()]);
-    cardsDisponible.value = (Array.isArray(available) ? available : []).map((item) => ({ ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString() }));
-    const visibleTasks = showOwn.value || localStorage.getItem("level") === "Empleado" ? (allTasks || []).filter((item) => item.id_usuario == userId.value) : (allTasks || []);
-    cards.value = visibleTasks.map((item) => ({ ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString(), fecha_vencimiento:item.fecha_vencimiento?new Date(item.fecha_vencimiento).toLocaleString():null, image:item.usuario_imagen?URL.createObjectURL(base64ToFile(item.usuario_imagen,"task-img.png")):null }));
+    await Promise.all([
+      loadProgressively({ pageSize:30, fetchPage:(page)=>ts.getTareasDisponibles(page), onUpdate:(items)=>{ cardsDisponible.value=items.map(normalizeAvailable); }, onBackgroundError:(error)=>console.error("No se completaron las tareas disponibles",error) }),
+      loadProgressively({ pageSize:30, fetchPage:(page)=>ts.getTareas(page), onUpdate:(items)=>{ const visible=showOwn.value||localStorage.getItem("level")==="Empleado"?items.filter((item)=>item.id_usuario==userId.value):items; cards.value=visible.map(normalizeTask); }, onBackgroundError:(error)=>console.error("No se completaron las tareas",error) }),
+    ]);
   } catch (error) {
     console.error("No se pudieron cargar las tareas", error);
     toast.add({severity:"error",summary:"Sin conexión",detail:"No se pudieron cargar las tareas.",life:3500});
   }
 });
+onUnmounted(()=>{taskImages.forEach((url)=>URL.revokeObjectURL(url));taskImages.clear()});
 // console.log("cards", cards);
 
 const columnStatuses = [
@@ -570,4 +582,5 @@ const saveTaskForm = (taskData) => {
   scrollbar-width: none;
 }
 .kanban-root{background:var(--br-panel)}.task-toolbar{top:0;margin:0;padding:1rem 1rem 0;background:var(--br-panel)}#search-bar.task-search{display:grid;grid-template-columns:auto 1.4rem minmax(0,1fr) auto auto auto;align-items:center;gap:.65rem;width:100%;min-height:4rem;border:1px solid var(--br-line-strong)!important;border-radius:0!important;background:var(--br-bg)!important;box-shadow:none!important;padding:.55rem .65rem .55rem 1rem!important;font-family:"Courier New",monospace}#search-bar label{color:var(--br-accent);font:800 .7rem "Courier New",monospace;letter-spacing:.08em}#search-bar .search-icon{color:var(--br-muted)}#search-bar input{min-width:0;width:100%;color:var(--br-text)!important;font:700 .95rem "Courier New",monospace}#search-bar .report-date-field{display:grid;grid-template-columns:auto minmax(9.5rem,10.75rem);align-items:center;gap:.55rem;margin-left:.25rem;color:var(--br-muted);white-space:nowrap}#search-bar .report-date-field span{font:800 .64rem "Courier New",monospace;letter-spacing:.08em}#search-bar .report-date-field input{height:2.8rem;border:1px solid var(--br-line);border-radius:0;background:var(--br-panel-2);padding:0 .65rem;color:var(--br-text)!important;color-scheme:dark;font:800 .78rem "Courier New",monospace}#search-bar .search-clear,#search-bar .report-button{display:grid;width:2.8rem;height:2.8rem;place-items:center;border:1px solid var(--br-line);border-radius:0;background:var(--br-panel-2);color:var(--br-text)}#search-bar .report-button:hover,#search-bar .search-clear:hover{background:var(--br-accent);color:var(--br-accent-text)}.kanban-board{gap:.75rem!important;padding:1rem!important}.kanban-board>div>.flex.justify-center{gap:.35rem!important}.kanban-board>div>.flex.justify-center button,.kanban-board>div>.flex.justify-center span{min-width:2.7rem;border:1px solid var(--br-line-strong)!important;border-radius:0!important;background:var(--br-bg)!important;color:var(--br-text)!important;box-shadow:none!important;padding:.65rem!important;font:800 .75rem "Courier New",monospace}.kanban-board>div>.flex.justify-center button:hover:not(:disabled){background:var(--br-accent)!important;color:var(--br-accent-text)!important}@media(max-width:900px){#search-bar.task-search{grid-template-columns:auto 1.4rem minmax(0,1fr) auto auto}#search-bar .report-date-field{grid-column:1/-2;width:100%;margin-left:0}#search-bar .report-date-field input{max-width:12rem}}@media(max-width:640px){#search-bar.task-search{grid-template-columns:1.4rem minmax(0,1fr) auto;gap:.5rem}#search-bar label:not(.report-date-field){display:none}#search-bar .report-date-field{grid-column:1/-1;grid-template-columns:auto minmax(0,1fr)}.task-toolbar{padding:.5rem .5rem 0}}
+#search-bar .report-date-field{grid-template-columns:auto minmax(10.5rem,12rem)}#search-bar .report-date-field :deep(.dt-trigger){min-height:2.8rem;border-color:var(--br-line);background:var(--br-panel-2);color:var(--br-text)}#search-bar .report-date-field :deep(.dt-value){padding:.55rem .7rem;font-size:.76rem}#search-bar .report-date-field :deep(.dt-icon){width:2.8rem;border-color:var(--br-line);background:var(--br-panel-2)}
 </style>

@@ -12,9 +12,9 @@ class PagosService {
 
   // ----------- PagoHistorial -----------
 
-  async getPagoHistorial() {
+  async getPagoHistorial(page?: { limit: number; offset: number }) {
     try {
-      const response = await this.axios.get(`${this.serverip}/pagos/historial`);
+      const response = await this.axios.get(`${this.serverip}/pagos/historial`, { params: page });
       return response.data;
 // oxlint-disable-next-line no-useless-catch
     } catch (error) {
@@ -52,9 +52,9 @@ class PagosService {
 
   // ----------- PagoMensual -----------
 
-  async getPagoMensual() {
+  async getPagoMensual(page?: { limit: number; offset: number }) {
     try {
-      const response = await this.axios.get(`${this.serverip}/pagos/mensual`);
+      const response = await this.axios.get(`${this.serverip}/pagos/mensual`, { params: page });
       return response.data;
     } catch (error) {
       throw error;
@@ -90,9 +90,9 @@ class PagosService {
 
   // ----------- PagoConcepto -----------
 
-  async getPagoConcepto() {
+  async getPagoConcepto(page?: { limit: number; offset: number }) {
     try {
-      const response = await this.axios.get(`${this.serverip}/pagos/concepto`);
+      const response = await this.axios.get(`${this.serverip}/pagos/concepto`, { params: page });
       return response.data;
     } catch (error) {
       throw error;

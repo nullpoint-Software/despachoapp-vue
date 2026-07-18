@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="hidden lg:flex fixed top-0 left-0 h-screen flex-col bg-gradient-to-b from-[var(--color-bg-secondary)] to-[var(--color-bg)] text-[var(--color-text)] w-20 hover:w-64 transition-all duration-300 ease-out group overflow-hidden shadow-lg border-r border-[var(--color-border)] pt-20 z-40"
+    class="hidden lg:flex fixed top-0 left-0 h-screen flex-col bg-gradient-to-b from-[var(--color-bg-secondary)] to-[var(--color-bg)] text-[var(--color-text)] w-20 hover:w-64 transition-all duration-300 ease-out group overflow-hidden border-r border-[var(--color-border)] pt-20 z-40"
   >
     <nav class="flex-1 overflow-y-auto custom-scrollbar-hide">
       <ul class="space-y-2 p-2">
@@ -45,3 +45,10 @@ defineProps({
   menuItems: Array,
 });
 </script>
+
+<style scoped>
+aside{box-shadow:none!important}
+aside a{margin:0 .3rem .35rem 0;box-shadow:none!important;transition:background-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease}
+aside a:hover{box-shadow:5px 5px 0 var(--br-control)!important;transform:translate(-1px,-1px)}
+aside a:active{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--br-control)!important}
+</style>

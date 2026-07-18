@@ -4,7 +4,7 @@
     <!-- Título -->
     <header class="clients-hero">
       <div><p>ADMINISTRACIÓN / 01</p><h1>Clientes</h1><span>Expedientes, accesos y datos de contacto.</span></div>
-      <div class="hero-stat"><b>{{ customers.length }}</b><span>registros</span></div>
+      <div class="hero-stat"><b>{{ customers.length }}</b><span>{{ customersComplete ? 'registros' : 'cargando…' }}</span></div>
     </header>
     <!-- Contenedor de la tabla: se usa containerRef para medir el ancho asignado -->
     <div ref="containerRef" id="clientes-table" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
@@ -110,6 +110,7 @@ import ConfirmDeleteDialog from "@/components/adminApp/Dialogs/ConfirmDeleteDial
 import { cs } from "@/service/adminApp/client";
 import type { ColumnDef } from "@/types/ClientesTable";
 import { useBrutalMotion } from "@/composables/useBrutalMotion";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 const pageRef = ref<HTMLElement | null>(null);
 useBrutalMotion(pageRef, [".clients-hero", "#clientes-table"]);
 const canAddCliente = ref(false)
@@ -124,6 +125,7 @@ onMounted(async () => {
 const toast = useAppToast();
 // Ejemplos de clientes
 const customers = ref<any[]>([]);
+const customersComplete = ref(false);
 // Definición de columnas base (sin la columna de acciones)
 const columns = ref<ColumnDef[]>([
   { field: "id_cliente", header: "ID", visible: true },
@@ -192,8 +194,12 @@ const containerWidth = ref(0);
 let resizeObserver: ResizeObserver;
 onMounted(async () => {
   try {
-    const loadedCustomers = await cs.getClientes();
-    customers.value = Array.isArray(loadedCustomers) ? loadedCustomers : [];
+    await loadProgressively<any>({
+      pageSize: 40,
+      fetchPage: (page) => cs.getClientes(page),
+      onUpdate: (items, complete) => { customers.value = items; customersComplete.value = complete; },
+      onBackgroundError: (error) => console.error("No se pudo completar la carga de clientes", error),
+    });
   } catch (error) {
     console.error("No se pudieron cargar los clientes", error);
     toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudieron cargar los clientes.", life: 3500 });
