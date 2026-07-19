@@ -7,8 +7,7 @@
         'task-search bg-gray-900 text-white transition-shadow duration-200',
         showShadow ? 'shadow-2xl shadow-neutral-900' : 'shadow-none',
       ]">
-        <label for="task-search-input">BUSCAR //</label><i class="pi pi-search search-icon"></i><input id="task-search-input" v-model="searchQuery" ref="searchBarRef" @click="searchActive = true" type="text"
-          placeholder="Buscar tareas..." class="bg-transparent flex-1 outline-none px-2 py-1 text-lg" />
+        <label for="task-search-input">BUSCAR //</label><i class="pi pi-search search-icon"></i><AppAutocomplete id="task-search-input" v-model="searchQuery" class="task-search-autocomplete" :options="taskSearchOptions" placeholder="Buscar tareas..." @select="selectTaskSuggestion" />
         <button v-if="searchQuery" @click="searchQuery = ''" @mousedown.stop
           class="search-clear text-gray-400 hover:text-white transition">
           ✕
@@ -24,17 +23,6 @@
           <i class="pi pi-file-pdf text-xl text-white"></i>
         </button>
       </div>
-      <ul v-if="searchActive"
-        class="absolute overflow-y-auto max-h-96 top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white">
-        <li v-for="card in filteredCards" :key="card.id_tarea" @click="
-          markCard(card.id_tarea);
-        searchActive = false;
-        " @mousedown.stop
-          class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition">
-          <span class="w-5 h-5 rounded-full mr-3" :style="{ backgroundColor: getColumnColor(card.estado) }"></span>
-          <span class="flex-1">{{ card.titulo }}</span>
-        </li>
-      </ul>
     </div>
 
     <!-- Kanban Board -->
@@ -128,6 +116,7 @@ import { useMobileDetection } from "@/composables/useMobileDetection";
 import Loader from "@/components/adminApp/Menus/Loader.vue";
 import TaskFormModal from "./TaskFormModal.vue";
 import DateTimePicker from "@/components/ui/DateTimePicker.vue";
+import AppAutocomplete from "@/components/ui/AppAutocomplete.vue";
 import { hasPermission } from "@/service/adminApp/permissionsService";
 import { cs, ts } from "@/service/adminApp/client";
 import { base64ToFile } from "@/service/adminApp/authService";
@@ -156,8 +145,6 @@ const showEnProgreso = rawProps.showEnProgreso ?? true;
 const showTerminado = rawProps.showTerminado ?? true;
 const showPdf = ref(null);
 const showShadow = ref(false);
-const searchActive = ref(false);
-const searchBarRef = ref(null);
 const padDatePart = (value) => String(value).padStart(2, "0");
 const toDateInputValue = (date) =>
   `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
@@ -176,18 +163,9 @@ const handleScroll = () => {
   showShadow.value = barRect.bottom >= boardRect.top;
   console.log("scrolling", showShadow.value, barRect, boardRect);
 };
-function handleClickOutside(event) {
-  if (searchBarRef.value && !searchBarRef.value.contains(event.target)) {
-    searchActive.value = false;
-  }
-}
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
-  document.addEventListener("mousedown", handleClickOutside);
   handleScroll();
-});
-onBeforeUnmount(() => {
-  document.removeEventListener("mousedown", handleClickOutside);
 });
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
@@ -236,6 +214,20 @@ const currentPage = ref({
 
 const highlightedCard = ref(null);
 const selectedCard = ref(null);
+let highlightTimer = null;
+
+const clearCardHighlight = () => {
+  if (highlightedCard.value == null) return;
+  const previousCard = [...cards.value, ...cardsDisponible.value].find(
+    (item) => item.id_tarea === highlightedCard.value,
+  );
+  if (previousCard) previousCard.highlight = false;
+  highlightedCard.value = null;
+};
+
+onBeforeUnmount(() => {
+  if (highlightTimer) clearTimeout(highlightTimer);
+});
 
 // Cálculo de páginas basado en el número de tareas por estado
 const pages = computed(() => {
@@ -446,6 +438,12 @@ const openCardDetail = (card) => {
 };
 
 const markCard = (cardId) => {
+  if (highlightTimer) {
+    clearTimeout(highlightTimer);
+    highlightTimer = null;
+  }
+  clearCardHighlight();
+
   let card = cards.value.find((c) => c.id_tarea === cardId); //mutable para que funcione con la disponibles
   if (!card) {
     card = cardsDisponible.value.find((card) => card.id_tarea === cardId);
@@ -476,25 +474,20 @@ const markCard = (cardId) => {
         }
       }, 100);
     });
-    setTimeout(() => {
-      card.highlight = false;
-    }, 3000);
+    highlightTimer = setTimeout(() => {
+      if (highlightedCard.value === cardId) clearCardHighlight();
+      highlightTimer = null;
+    }, 3500);
   }
 };
 
 const searchQuery = ref("");
-const normalizedText = (text) =>
-  String(text)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-const filteredCards = computed(() =>
-  [...cards.value, ...cardsDisponible.value].filter((card) =>
-    normalizedText(card.titulo.toLowerCase()).includes(
-      normalizedText(searchQuery.value.toLowerCase())
-    )
-  )
-);
+const taskOptionLabel = (card) => `${card.titulo} - ${card.estado}`;
+const taskSearchOptions = computed(() => [...cards.value, ...cardsDisponible.value].map(taskOptionLabel));
+const selectTaskSuggestion = (option) => {
+  const card = [...cards.value, ...cardsDisponible.value].find(item => taskOptionLabel(item) === option);
+  if (card) markCard(card.id_tarea);
+};
 
 /* -----------------------------------------------------------
    Código para el modal de formulario para añadir/modificar tarea

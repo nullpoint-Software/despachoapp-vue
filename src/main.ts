@@ -5,10 +5,12 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { initializePalette } from './composables/useColorPalette'
+import { initializeFontSize } from './composables/useFontSize'
 
 
 const app = createApp(App)
 initializePalette()
+initializeFontSize()
 const pinia = createPinia();
 
 app.use(pinia)

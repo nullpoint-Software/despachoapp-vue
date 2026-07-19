@@ -50,5 +50,11 @@ defineProps({
 aside{box-shadow:none!important}
 aside a{margin:0 .3rem .35rem 0;box-shadow:none!important;transition:background-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease}
 aside a:hover{box-shadow:5px 5px 0 var(--br-control)!important;transform:translate(-1px,-1px)}
+aside a:hover,
+aside a.router-link-active,
+aside a:hover i,
+aside a.router-link-active i,
+aside a:hover span,
+aside a.router-link-active span{color:var(--br-accent-text)!important}
 aside a:active{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--br-control)!important}
 </style>
