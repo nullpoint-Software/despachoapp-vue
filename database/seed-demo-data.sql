@@ -1,7 +1,176 @@
 -- Datos integrales de demostración para DespachoApp.
 -- Es idempotente: puede ejecutarse varias veces sin duplicar los registros DEMO.
 
-SET NAMES utf8mb4;
+SET NAMES utf8mb4 COLLATE utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS cfdi_facturas (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  id_cliente INT NOT NULL,
+  uuid VARCHAR(36) NOT NULL,
+  direccion ENUM('emitida','recibida') NOT NULL,
+  estatus ENUM('vigente','cancelada','sustituida') NOT NULL DEFAULT 'vigente',
+  version_cfdi VARCHAR(10) DEFAULT NULL,
+  tipo_comprobante VARCHAR(5) DEFAULT NULL,
+  serie VARCHAR(40) DEFAULT NULL,
+  folio VARCHAR(80) DEFAULT NULL,
+  fecha_emision DATETIME DEFAULT NULL,
+  fecha_timbrado DATETIME DEFAULT NULL,
+  emisor_rfc VARCHAR(13) NOT NULL,
+  emisor_nombre VARCHAR(255) DEFAULT NULL,
+  receptor_rfc VARCHAR(13) NOT NULL,
+  receptor_nombre VARCHAR(255) DEFAULT NULL,
+  moneda VARCHAR(5) DEFAULT 'MXN',
+  tipo_cambio DECIMAL(18,6) DEFAULT 1.000000,
+  forma_pago VARCHAR(5) DEFAULT NULL,
+  metodo_pago VARCHAR(5) DEFAULT NULL,
+  subtotal DECIMAL(14,2) DEFAULT 0.00,
+  total DECIMAL(14,2) DEFAULT 0.00,
+  base_iva_16 DECIMAL(14,2) DEFAULT 0.00,
+  iva_16 DECIMAL(14,2) DEFAULT 0.00,
+  base_iva_8 DECIMAL(14,2) DEFAULT 0.00,
+  iva_8 DECIMAL(14,2) DEFAULT 0.00,
+  base_iva_0 DECIMAL(14,2) DEFAULT 0.00,
+  base_exento DECIMAL(14,2) DEFAULT 0.00,
+  otros_impuestos DECIMAL(14,2) DEFAULT 0.00,
+  total_impuestos_trasladados DECIMAL(14,2) DEFAULT 0.00,
+  total_impuestos_retenidos DECIMAL(14,2) DEFAULT 0.00,
+  iva_retenido DECIMAL(14,2) DEFAULT 0.00,
+  isr_retenido DECIMAL(14,2) DEFAULT 0.00,
+  ieps_retenido DECIMAL(14,2) DEFAULT 0.00,
+  diot_tipo_tercero VARCHAR(5) DEFAULT NULL,
+  diot_tipo_operacion VARCHAR(5) DEFAULT NULL,
+  diot_numero_id_fiscal VARCHAR(80) DEFAULT NULL,
+  diot_pais VARCHAR(3) DEFAULT NULL,
+  diot_jurisdiccion VARCHAR(100) DEFAULT NULL,
+  diot_region ENUM('ninguna','norte','sur') NOT NULL DEFAULT 'ninguna',
+  diot_importacion ENUM('ninguna','bien','servicio','intangible') NOT NULL DEFAULT 'ninguna',
+  diot_acreditamiento ENUM('exclusivo','proporcion','actividades_exentas','no_objeto') NOT NULL DEFAULT 'exclusivo',
+  diot_proporcion DECIMAL(8,6) DEFAULT 1.000000,
+  diot_efecto_fiscal TINYINT(1) NOT NULL DEFAULT 1,
+  xml_path VARCHAR(500) DEFAULT NULL,
+  importado_por INT DEFAULT NULL,
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY cfdi_facturas_uuid_unique (uuid),
+  KEY cfdi_facturas_cliente_fecha_idx (id_cliente, fecha_emision),
+  KEY cfdi_facturas_emisor_idx (id_cliente, emisor_rfc),
+  CONSTRAINT cfdi_facturas_cliente_fk FOREIGN KEY (id_cliente) REFERENCES clientes (id_cliente) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT cfdi_facturas_importado_por_fk FOREIGN KEY (importado_por) REFERENCES usuarios (id_usuario) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS cfdi_conceptos (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  factura_id BIGINT NOT NULL,
+  clave_prod_serv VARCHAR(20) DEFAULT NULL,
+  no_identificacion VARCHAR(100) DEFAULT NULL,
+  descripcion TEXT,
+  cantidad DECIMAL(18,6) DEFAULT 0.000000,
+  clave_unidad VARCHAR(10) DEFAULT NULL,
+  unidad VARCHAR(80) DEFAULT NULL,
+  valor_unitario DECIMAL(18,6) DEFAULT 0.000000,
+  importe DECIMAL(14,2) DEFAULT 0.00,
+  descuento DECIMAL(14,2) DEFAULT 0.00,
+  objeto_impuesto VARCHAR(5) DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY cfdi_conceptos_factura_idx (factura_id),
+  CONSTRAINT cfdi_conceptos_factura_fk FOREIGN KEY (factura_id) REFERENCES cfdi_facturas (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS cfdi_impuestos (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  factura_id BIGINT NOT NULL,
+  concepto_id BIGINT DEFAULT NULL,
+  movimiento ENUM('traslado','retencion') NOT NULL,
+  impuesto VARCHAR(5) NOT NULL,
+  tipo_factor VARCHAR(20) DEFAULT NULL,
+  tasa_cuota DECIMAL(10,6) DEFAULT NULL,
+  base DECIMAL(14,2) DEFAULT 0.00,
+  importe DECIMAL(14,2) DEFAULT 0.00,
+  PRIMARY KEY (id),
+  KEY cfdi_impuestos_factura_idx (factura_id),
+  KEY cfdi_impuestos_concepto_idx (concepto_id),
+  CONSTRAINT cfdi_impuestos_factura_fk FOREIGN KEY (factura_id) REFERENCES cfdi_facturas (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT cfdi_impuestos_concepto_fk FOREIGN KEY (concepto_id) REFERENCES cfdi_conceptos (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS cfdi_relaciones (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  factura_id BIGINT NOT NULL,
+  tipo_relacion VARCHAR(5) NOT NULL,
+  uuid_relacionado VARCHAR(36) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY cfdi_relaciones_unique (factura_id, tipo_relacion, uuid_relacionado),
+  CONSTRAINT cfdi_relaciones_factura_fk FOREIGN KEY (factura_id) REFERENCES cfdi_facturas (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS cfdi_pagos (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  complemento_factura_id BIGINT NOT NULL,
+  uuid_documento VARCHAR(36) NOT NULL,
+  fecha_pago DATETIME DEFAULT NULL,
+  forma_pago VARCHAR(5) DEFAULT NULL,
+  moneda_pago VARCHAR(5) DEFAULT 'MXN',
+  tipo_cambio_pago DECIMAL(18,6) DEFAULT 1.000000,
+  monto_pago DECIMAL(14,2) DEFAULT 0.00,
+  num_parcialidad INT DEFAULT NULL,
+  saldo_anterior DECIMAL(14,2) DEFAULT 0.00,
+  importe_pagado DECIMAL(14,2) DEFAULT 0.00,
+  saldo_insoluto DECIMAL(14,2) DEFAULT 0.00,
+  PRIMARY KEY (id),
+  UNIQUE KEY cfdi_pagos_unique (complemento_factura_id, uuid_documento, num_parcialidad),
+  CONSTRAINT cfdi_pagos_factura_fk FOREIGN KEY (complemento_factura_id) REFERENCES cfdi_facturas (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS fiscal_proveedores (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  id_cliente INT NOT NULL,
+  rfc VARCHAR(13) NOT NULL,
+  nombre VARCHAR(255) DEFAULT NULL,
+  tipo_tercero VARCHAR(5) NOT NULL DEFAULT '04',
+  tipo_operacion VARCHAR(5) NOT NULL DEFAULT '85',
+  numero_id_fiscal VARCHAR(80) DEFAULT NULL,
+  pais VARCHAR(3) DEFAULT NULL,
+  jurisdiccion VARCHAR(100) DEFAULT NULL,
+  region ENUM('ninguna','norte','sur') NOT NULL DEFAULT 'ninguna',
+  importacion ENUM('ninguna','bien','servicio','intangible') NOT NULL DEFAULT 'ninguna',
+  acreditamiento ENUM('exclusivo','proporcion','actividades_exentas','no_objeto') NOT NULL DEFAULT 'exclusivo',
+  proporcion DECIMAL(8,6) DEFAULT 1.000000,
+  efecto_fiscal TINYINT(1) NOT NULL DEFAULT 1,
+  actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY fiscal_proveedores_cliente_rfc_unique (id_cliente, rfc),
+  CONSTRAINT fiscal_proveedores_cliente_fk FOREIGN KEY (id_cliente) REFERENCES clientes (id_cliente) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS reportes_fiscales (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  id_cliente INT NOT NULL,
+  nombre VARCHAR(255) NOT NULL,
+  tipo ENUM('mensual','anual','diot') NOT NULL,
+  direccion ENUM('emitida','recibida') NOT NULL,
+  ejercicio INT NOT NULL,
+  mes INT DEFAULT NULL,
+  reporte_origen_id BIGINT DEFAULT NULL,
+  creado_por INT DEFAULT NULL,
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY reportes_fiscales_cliente_nombre_unique (id_cliente, nombre),
+  KEY reportes_fiscales_cliente_periodo_idx (id_cliente, tipo, ejercicio, mes),
+  CONSTRAINT reportes_fiscales_cliente_fk FOREIGN KEY (id_cliente) REFERENCES clientes (id_cliente) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT reportes_fiscales_usuario_fk FOREIGN KEY (creado_por) REFERENCES usuarios (id_usuario) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT reportes_fiscales_origen_fk FOREIGN KEY (reporte_origen_id) REFERENCES reportes_fiscales (id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS reporte_facturas (
+  reporte_id BIGINT NOT NULL,
+  factura_id BIGINT NOT NULL,
+  PRIMARY KEY (reporte_id, factura_id),
+  KEY reporte_facturas_factura_idx (factura_id),
+  CONSTRAINT reporte_facturas_reporte_fk FOREIGN KEY (reporte_id) REFERENCES reportes_fiscales (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT reporte_facturas_factura_fk FOREIGN KEY (factura_id) REFERENCES cfdi_facturas (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 START TRANSACTION;
 
 SET @admin_id := (SELECT id_usuario FROM usuarios WHERE puesto = 'Administrador' ORDER BY id_usuario LIMIT 1);
@@ -213,12 +382,12 @@ INSERT IGNORE INTO reporte_facturas (reporte_id,factura_id) VALUES
 -- Eventos visibles en la ventana de actividad.
 INSERT INTO events (userid,type,aggregate_id,payload,oldpayload,timestamp)
 SELECT @admin_id,'ClienteAdded',CAST(@client_alpha AS CHAR),JSON_OBJECT('id_cliente',@client_alpha,'nombre','DEMO Alfa Consultores, S.A. de C.V.','rfc','DFA010101AB1'),NULL,'2026-07-18 08:00:00'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE type='ClienteAdded' AND aggregate_id=CAST(@client_alpha AS CHAR) AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.rfc'))='DFA010101AB1');
+WHERE NOT EXISTS (SELECT 1 FROM events WHERE type='ClienteAdded' COLLATE utf8mb4_general_ci AND aggregate_id=CAST(@client_alpha AS CHAR) COLLATE utf8mb4_general_ci);
 INSERT INTO events (userid,type,aggregate_id,payload,oldpayload,timestamp)
 SELECT @employee_id,'TareaUpdated',CAST(@task_progress AS CHAR),JSON_OBJECT('id_tarea',@task_progress,'titulo','[DEMO] Configurar proveedores DIOT','estado','En Progreso'),JSON_OBJECT('id_tarea',@task_progress,'titulo','[DEMO] Configurar proveedores DIOT','estado','Pendiente'),'2026-07-18 10:30:00'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE type='TareaUpdated' AND aggregate_id=CAST(@task_progress AS CHAR) AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.titulo'))='[DEMO] Configurar proveedores DIOT');
+WHERE NOT EXISTS (SELECT 1 FROM events WHERE type='TareaUpdated' COLLATE utf8mb4_general_ci AND aggregate_id=CAST(@task_progress AS CHAR) COLLATE utf8mb4_general_ci);
 INSERT INTO events (userid,type,aggregate_id,payload,oldpayload,timestamp)
 SELECT @admin_id,'PagoConceptoAdded','DEMO-C-20260718-01',JSON_OBJECT('id','DEMO-C-20260718-01','asunto','Configuración y revisión DIOT','cobramos',1950),NULL,'2026-07-18 14:30:00'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE type='PagoConceptoAdded' AND aggregate_id='DEMO-C-20260718-01');
+WHERE NOT EXISTS (SELECT 1 FROM events WHERE type='PagoConceptoAdded' COLLATE utf8mb4_general_ci AND aggregate_id='DEMO-C-20260718-01' COLLATE utf8mb4_general_ci);
 
 COMMIT;

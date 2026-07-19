@@ -97,7 +97,7 @@ function onKeydown(event: KeyboardEvent) { if (event.key === "Escape") close(); 
 onMounted(async () => {
   document.addEventListener("keydown", onKeydown);
   document.body.classList.add("modal-open");
-  const [clientResult, employeeResult] = await Promise.allSettled([loadProgressively({ pageSize:40, fetchPage:(page)=>cs.getClientes(page), onUpdate:(items)=>{ clientes.value=items; } }), us.getUsuarios()]);
+  const [clientResult, employeeResult] = await Promise.allSettled([loadProgressively<Payment>({ pageSize:40, fetchPage:async(page)=>await cs.getClientes(page) as Payment[], onUpdate:(items)=>{ clientes.value=items; } }), us.getUsuarios()]);
   if (employeeResult.status === "fulfilled") employees.value = Array.isArray(employeeResult.value) ? employeeResult.value : [];
   if (!clientes.value.length || !employees.value.length) loadError.value = "No fue posible cargar todos los catálogos. Revisa la conexión e inténtalo de nuevo.";
   loadingOptions.value = false;

@@ -11,10 +11,14 @@ interface ProgressiveOptions<T> {
 }
 
 const waitForIdle = () => new Promise<void>((resolve) => {
-  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-    window.requestIdleCallback(() => resolve(), { timeout: 350 });
+  const scheduler = globalThis as typeof globalThis & {
+    requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+  };
+
+  if (typeof scheduler.requestIdleCallback === "function") {
+    scheduler.requestIdleCallback(() => resolve(), { timeout: 350 });
   } else {
-    window.setTimeout(resolve, 80);
+    globalThis.setTimeout(resolve, 80);
   }
 });
 
