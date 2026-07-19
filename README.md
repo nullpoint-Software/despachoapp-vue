@@ -231,6 +231,29 @@ npm run test:fiscal:e2e
 
 La prueba integral utiliza la base configurada en `.env`; no debe ejecutarse contra producción.
 
+## Actualización de seguridad de dependencias
+
+El 19 de julio de 2026 se actualizaron las dependencias afectadas por las alertas de GitHub y `npm audit`:
+
+| Dependencia | Versión instalada anterior | Versión nueva | Motivo |
+| --- | ---: | ---: | --- |
+| `axios` | `1.12.2` | `1.18.1` | Corrige alertas de SSRF, contaminación de prototipos, filtración de credenciales, inyección de encabezados y denegación de servicio. |
+| `dompurify` | `3.3.0` | `3.4.12` | Corrige evasiones del sanitizado que podían permitir XSS y contaminación de la configuración. |
+| `express` | `4.21.2` | `4.22.2` | Mantiene compatibilidad con Express 4 y actualiza `body-parser`, `qs` y `path-to-regexp` para corregir riesgos de DoS y ReDoS. |
+| `jspdf` | `3.0.3` | `4.2.1` | Corrige lectura de archivos, traversal, inyección de objetos o JavaScript en PDF y denegaciones de servicio. El código usa ahora la importación nombrada requerida por la versión 4. |
+| `jspdf-autotable` | `5.0.2` | `5.0.8` | Asegura compatibilidad declarada con `jsPDF 4` y conserva la generación de tablas fiscales. |
+| `vite` | `6.4.1` | `6.4.3` | Corrige lectura arbitraria, traversal y exposición de hashes NTLM desde el servidor de desarrollo. |
+| `xlsx` / SheetJS CE | `0.18.5` | `0.20.3` | Corrige contaminación de prototipos y ReDoS. Como npm no publica la versión corregida, se instala el paquete oficial desde `cdn.sheetjs.com`. |
+
+También se ejecutó `npm audit fix` para actualizar dependencias transitivas como Rollup, Babel, Lodash, Minimatch, Picomatch, PostCSS, AJV y `serialize-javascript`. Después de la actualización, `npm audit` reportó **0 vulnerabilidades**.
+
+Para reproducir exactamente estas versiones debe conservarse y utilizarse `package-lock.json`:
+
+```bash
+npm ci
+npm audit
+```
+
 ## Guía de ventanas
 
 ### Sitio público

@@ -8,7 +8,7 @@ import { ref, onMounted } from "vue";
 import { ts } from "../service/adminApp/client";
 import { formatFechaHoraSQL } from "../service/adminApp/client";
 import Loader from "./adminApp/Menus/Loader.vue";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "@/assets/img/logsymbolblack.png";
 

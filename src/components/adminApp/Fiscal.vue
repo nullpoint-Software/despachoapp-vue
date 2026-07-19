@@ -758,7 +758,7 @@ import {
   ref,
   watch,
 } from "vue";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import autoTable, { type UserOptions } from "jspdf-autotable";
 import logo from "@/assets/img/logblack.png";
 import AppButton from "@/components/ui/AppButton.vue";
