@@ -7,15 +7,14 @@
         'task-search bg-gray-900 text-white transition-shadow duration-200',
         showShadow ? 'shadow-2xl shadow-neutral-900' : 'shadow-none',
       ]">
-        <label for="task-search-input">BUSCAR //</label><i class="pi pi-search search-icon"></i><input id="task-search-input" v-model="searchQuery" ref="searchBarRef" @click="searchActive = true" type="text"
-          placeholder="Buscar tareas..." class="bg-transparent flex-1 outline-none px-2 py-1 text-lg" />
+        <label for="task-search-input">BUSCAR //</label><i class="pi pi-search search-icon"></i><AppAutocomplete id="task-search-input" v-model="searchQuery" class="task-search-autocomplete" :options="taskSearchOptions" placeholder="Buscar tareas..." @select="selectTaskSuggestion" />
         <button v-if="searchQuery" @click="searchQuery = ''" @mousedown.stop
           class="search-clear text-gray-400 hover:text-white transition">
           ✕
         </button>
         <label class="report-date-field" for="task-report-date">
           <span>FECHA REPORTE</span>
-          <DateTimePicker id="task-report-date" v-model="reportDate" :show-time="false" aria-label="Fecha del reporte" />
+          <DateTimePicker id="task-report-date" v-model="reportDate" :show-time="false" modal title="Fecha del reporte" aria-label="Fecha del reporte" />
         </label>
         <!-- Botón PDF personalizado -->
         <button @click="showPdf = true"
@@ -24,17 +23,6 @@
           <i class="pi pi-file-pdf text-xl text-white"></i>
         </button>
       </div>
-      <ul v-if="searchActive"
-        class="absolute overflow-y-auto max-h-96 top-full left-0 w-full bg-gray-800 shadow-lg rounded-lg mt-2 z-10 text-white">
-        <li v-for="card in filteredCards" :key="card.id_tarea" @click="
-          markCard(card.id_tarea);
-        searchActive = false;
-        " @mousedown.stop
-          class="flex items-center p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition">
-          <span class="w-5 h-5 rounded-full mr-3" :style="{ backgroundColor: getColumnColor(card.estado) }"></span>
-          <span class="flex-1">{{ card.titulo }}</span>
-        </li>
-      </ul>
     </div>
 
     <!-- Kanban Board -->
@@ -50,7 +38,7 @@
         <!-- SEPARAR COLUMNA DISPONIBLE PARA MOSTRAR LAS TAREAS SIN USUARIO ASIGNADO -->
         <KanbanColumn :status="'Disponible'" :cards="getPaginatedCardsDisponible()"
           :color="getColumnColor('Disponible')" @moveCard="moveCard" @viewDetails="openCardDetail"
-          :highlighted-card="highlightedCard" />
+          />
 
         <div class="flex justify-center items-center mt-2 space-x-2">
           <button @click="
@@ -75,7 +63,7 @@
         <!-- Cada tarjeta tiene su id="card-{card.id}" para scroll -->
         <KanbanColumn :mini="mini" :status="status" :cards="getPaginatedCardsByStatus(status)"
           :color="getColumnColor(status)" @moveCard="moveCard" @viewDetails="openCardDetail"
-          :highlighted-card="highlightedCard" />
+          />
 
         <!-- Paginación -->
         <div class="flex justify-center items-center mt-2 space-x-2">
@@ -128,9 +116,11 @@ import { useMobileDetection } from "@/composables/useMobileDetection";
 import Loader from "@/components/adminApp/Menus/Loader.vue";
 import TaskFormModal from "./TaskFormModal.vue";
 import DateTimePicker from "@/components/ui/DateTimePicker.vue";
+import AppAutocomplete from "@/components/ui/AppAutocomplete.vue";
 import { hasPermission } from "@/service/adminApp/permissionsService";
 import { cs, ts } from "@/service/adminApp/client";
 import { base64ToFile } from "@/service/adminApp/authService";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 const toast = useAppToast();
 const { isMobile } = useMobileDetection();
 const userId = ref(localStorage.getItem("userid"));
@@ -155,8 +145,6 @@ const showEnProgreso = rawProps.showEnProgreso ?? true;
 const showTerminado = rawProps.showTerminado ?? true;
 const showPdf = ref(null);
 const showShadow = ref(false);
-const searchActive = ref(false);
-const searchBarRef = ref(null);
 const padDatePart = (value) => String(value).padStart(2, "0");
 const toDateInputValue = (date) =>
   `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
@@ -175,18 +163,9 @@ const handleScroll = () => {
   showShadow.value = barRect.bottom >= boardRect.top;
   console.log("scrolling", showShadow.value, barRect, boardRect);
 };
-function handleClickOutside(event) {
-  if (searchBarRef.value && !searchBarRef.value.contains(event.target)) {
-    searchActive.value = false;
-  }
-}
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
-  document.addEventListener("mousedown", handleClickOutside);
   handleScroll();
-});
-onBeforeUnmount(() => {
-  document.removeEventListener("mousedown", handleClickOutside);
 });
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
@@ -194,17 +173,28 @@ onUnmounted(() => {
 
 const cardsDisponible = ref([]);
 const cards = ref([]);
+const taskImages = new Map();
+const normalizeAvailable = (item) => ({ ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString() });
+const normalizeTask = (item) => {
+  let image = taskImages.get(item.id_tarea) || null;
+  if (!image && item.usuario_imagen) {
+    image = URL.createObjectURL(base64ToFile(item.usuario_imagen,"task-img.png"));
+    taskImages.set(item.id_tarea, image);
+  }
+  return { ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString(), fecha_vencimiento:item.fecha_vencimiento?new Date(item.fecha_vencimiento).toLocaleString():null, image };
+};
 onMounted(async () => {
   try {
-    const [available, allTasks] = await Promise.all([ts.getTareasDisponibles(), ts.getTareas()]);
-    cardsDisponible.value = (Array.isArray(available) ? available : []).map((item) => ({ ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString() }));
-    const visibleTasks = showOwn.value || localStorage.getItem("level") === "Empleado" ? (allTasks || []).filter((item) => item.id_usuario == userId.value) : (allTasks || []);
-    cards.value = visibleTasks.map((item) => ({ ...item, highlight:false, fecha_creacion:new Date(item.fecha_creacion).toLocaleString(), fecha_vencimiento:item.fecha_vencimiento?new Date(item.fecha_vencimiento).toLocaleString():null, image:item.usuario_imagen?URL.createObjectURL(base64ToFile(item.usuario_imagen,"task-img.png")):null }));
+    await Promise.all([
+      loadProgressively({ pageSize:30, fetchPage:(page)=>ts.getTareasDisponibles(page), onUpdate:(items)=>{ cardsDisponible.value=items.map(normalizeAvailable); }, onBackgroundError:(error)=>console.error("No se completaron las tareas disponibles",error) }),
+      loadProgressively({ pageSize:30, fetchPage:(page)=>ts.getTareas(page), onUpdate:(items)=>{ const visible=showOwn.value||localStorage.getItem("level")==="Empleado"?items.filter((item)=>item.id_usuario==userId.value):items; cards.value=visible.map(normalizeTask); }, onBackgroundError:(error)=>console.error("No se completaron las tareas",error) }),
+    ]);
   } catch (error) {
     console.error("No se pudieron cargar las tareas", error);
     toast.add({severity:"error",summary:"Sin conexión",detail:"No se pudieron cargar las tareas.",life:3500});
   }
 });
+onUnmounted(()=>{taskImages.forEach((url)=>URL.revokeObjectURL(url));taskImages.clear()});
 // console.log("cards", cards);
 
 const columnStatuses = [
@@ -224,6 +214,20 @@ const currentPage = ref({
 
 const highlightedCard = ref(null);
 const selectedCard = ref(null);
+let highlightTimer = null;
+
+const clearCardHighlight = () => {
+  if (highlightedCard.value == null) return;
+  const previousCard = [...cards.value, ...cardsDisponible.value].find(
+    (item) => item.id_tarea === highlightedCard.value,
+  );
+  if (previousCard) previousCard.highlight = false;
+  highlightedCard.value = null;
+};
+
+onBeforeUnmount(() => {
+  if (highlightTimer) clearTimeout(highlightTimer);
+});
 
 // Cálculo de páginas basado en el número de tareas por estado
 const pages = computed(() => {
@@ -434,6 +438,12 @@ const openCardDetail = (card) => {
 };
 
 const markCard = (cardId) => {
+  if (highlightTimer) {
+    clearTimeout(highlightTimer);
+    highlightTimer = null;
+  }
+  clearCardHighlight();
+
   let card = cards.value.find((c) => c.id_tarea === cardId); //mutable para que funcione con la disponibles
   if (!card) {
     card = cardsDisponible.value.find((card) => card.id_tarea === cardId);
@@ -464,25 +474,20 @@ const markCard = (cardId) => {
         }
       }, 100);
     });
-    setTimeout(() => {
-      card.highlight = false;
-    }, 3000);
+    highlightTimer = setTimeout(() => {
+      if (highlightedCard.value === cardId) clearCardHighlight();
+      highlightTimer = null;
+    }, 3500);
   }
 };
 
 const searchQuery = ref("");
-const normalizedText = (text) =>
-  String(text)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-const filteredCards = computed(() =>
-  [...cards.value, ...cardsDisponible.value].filter((card) =>
-    normalizedText(card.titulo.toLowerCase()).includes(
-      normalizedText(searchQuery.value.toLowerCase())
-    )
-  )
-);
+const taskOptionLabel = (card) => `${card.titulo} - ${card.estado}`;
+const taskSearchOptions = computed(() => [...cards.value, ...cardsDisponible.value].map(taskOptionLabel));
+const selectTaskSuggestion = (option) => {
+  const card = [...cards.value, ...cardsDisponible.value].find(item => taskOptionLabel(item) === option);
+  if (card) markCard(card.id_tarea);
+};
 
 /* -----------------------------------------------------------
    Código para el modal de formulario para añadir/modificar tarea
@@ -570,4 +575,5 @@ const saveTaskForm = (taskData) => {
   scrollbar-width: none;
 }
 .kanban-root{background:var(--br-panel)}.task-toolbar{top:0;margin:0;padding:1rem 1rem 0;background:var(--br-panel)}#search-bar.task-search{display:grid;grid-template-columns:auto 1.4rem minmax(0,1fr) auto auto auto;align-items:center;gap:.65rem;width:100%;min-height:4rem;border:1px solid var(--br-line-strong)!important;border-radius:0!important;background:var(--br-bg)!important;box-shadow:none!important;padding:.55rem .65rem .55rem 1rem!important;font-family:"Courier New",monospace}#search-bar label{color:var(--br-accent);font:800 .7rem "Courier New",monospace;letter-spacing:.08em}#search-bar .search-icon{color:var(--br-muted)}#search-bar input{min-width:0;width:100%;color:var(--br-text)!important;font:700 .95rem "Courier New",monospace}#search-bar .report-date-field{display:grid;grid-template-columns:auto minmax(9.5rem,10.75rem);align-items:center;gap:.55rem;margin-left:.25rem;color:var(--br-muted);white-space:nowrap}#search-bar .report-date-field span{font:800 .64rem "Courier New",monospace;letter-spacing:.08em}#search-bar .report-date-field input{height:2.8rem;border:1px solid var(--br-line);border-radius:0;background:var(--br-panel-2);padding:0 .65rem;color:var(--br-text)!important;color-scheme:dark;font:800 .78rem "Courier New",monospace}#search-bar .search-clear,#search-bar .report-button{display:grid;width:2.8rem;height:2.8rem;place-items:center;border:1px solid var(--br-line);border-radius:0;background:var(--br-panel-2);color:var(--br-text)}#search-bar .report-button:hover,#search-bar .search-clear:hover{background:var(--br-accent);color:var(--br-accent-text)}.kanban-board{gap:.75rem!important;padding:1rem!important}.kanban-board>div>.flex.justify-center{gap:.35rem!important}.kanban-board>div>.flex.justify-center button,.kanban-board>div>.flex.justify-center span{min-width:2.7rem;border:1px solid var(--br-line-strong)!important;border-radius:0!important;background:var(--br-bg)!important;color:var(--br-text)!important;box-shadow:none!important;padding:.65rem!important;font:800 .75rem "Courier New",monospace}.kanban-board>div>.flex.justify-center button:hover:not(:disabled){background:var(--br-accent)!important;color:var(--br-accent-text)!important}@media(max-width:900px){#search-bar.task-search{grid-template-columns:auto 1.4rem minmax(0,1fr) auto auto}#search-bar .report-date-field{grid-column:1/-2;width:100%;margin-left:0}#search-bar .report-date-field input{max-width:12rem}}@media(max-width:640px){#search-bar.task-search{grid-template-columns:1.4rem minmax(0,1fr) auto;gap:.5rem}#search-bar label:not(.report-date-field){display:none}#search-bar .report-date-field{grid-column:1/-1;grid-template-columns:auto minmax(0,1fr)}.task-toolbar{padding:.5rem .5rem 0}}
+#search-bar .report-date-field{grid-template-columns:auto minmax(10.5rem,12rem)}#search-bar .report-date-field :deep(.dt-trigger){min-height:2.8rem;border-color:var(--br-line);background:var(--br-panel-2);color:var(--br-text)}#search-bar .report-date-field :deep(.dt-value){padding:.55rem .7rem;font-size:.76rem}#search-bar .report-date-field :deep(.dt-icon){width:2.8rem;border-color:var(--br-line);background:var(--br-panel-2)}
 </style>

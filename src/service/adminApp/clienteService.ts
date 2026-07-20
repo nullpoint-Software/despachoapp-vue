@@ -9,9 +9,9 @@ class ClienteService {
         this.axios = axios;
     }
 
-    async getClientes(): Promise<any> {
+    async getClientes(page?: { limit: number; offset: number }): Promise<any> {
         try {
-            const response = await this.axios.get(`${this.serverip}/clientes`);
+            const response = await this.axios.get(`${this.serverip}/clientes`, { params: page });
             console.log("cliente",response.data);
             return response.data;
         } catch (error) {

@@ -5,6 +5,7 @@ export const colorPalettes = [
   { id: "cobalt", name: "Tinta cobalto", colors: ["#0c1420", "#4f7cff", "#e9edf5"] },
   { id: "forest", name: "Bosque ácido", colors: ["#0e1511", "#a8d65b", "#e7eadf"] },
   { id: "sand", name: "Arena editorial", colors: ["#1a1712", "#e0b95b", "#f1eadb"] },
+  { id: "oled", name: "OLED absoluto", colors: ["#000000", "#101211", "#36d889"] },
 ] as const;
 export type PaletteId = typeof colorPalettes[number]["id"];
 const STORAGE_KEY = "appColorPalette";

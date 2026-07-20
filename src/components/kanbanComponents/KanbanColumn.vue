@@ -56,4 +56,5 @@ const handleCardClick = (card) => {
 </script>
 <style scoped>
 .kanban-column{min-width:17rem!important;max-width:none!important;margin:0!important;border:1px solid var(--br-line)!important;border-radius:0!important;background:var(--br-panel-2)!important;padding:.75rem!important;box-shadow:none!important}.kanban-column>h2{border-radius:0!important;background:transparent!important;color:var(--br-text)!important;padding:.8rem!important;border-bottom:3px solid v-bind(color);box-shadow:none!important;font:900 1rem "Courier New",monospace;text-align:left!important;text-transform:uppercase}.kanban-column p{color:var(--br-muted)!important;font-family:"Courier New",monospace}
+.kanban-column{margin:0 .4rem .4rem 0!important;box-shadow:6px 6px 0 var(--br-accent)!important}
 </style>

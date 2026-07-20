@@ -79,6 +79,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAppToast } from "@/composables/useAppToast";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 import DataTable from "@/components/ui/AppDataTable";
 import Column from "@/components/ui/AppColumn.vue";
 import InputText from "@/components/ui/AppInput.vue";
@@ -159,11 +160,12 @@ const containerWidth = ref(0);
 let resizeObserver = null;
 onMounted(async () => {
   try {
-    const loadedHistory = await ps.getPagoHistorial();
-    historial.value = (Array.isArray(loadedHistory) ? loadedHistory : []).map(item => ({
-      ...item,
-      fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
-    }));
+    await loadProgressively({
+      pageSize: 40,
+      fetchPage: (page) => ps.getPagoHistorial(page),
+      onUpdate: (items) => { historial.value = items.map(item => ({ ...item, fecha_legible: formatFechaHoraFullPagoSQL(item.fecha) })); },
+      onBackgroundError: (error) => console.error("No se pudo completar la carga del historial", error),
+    });
   } catch (error) {
     console.error("No se pudo cargar el historial", error);
     toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudo cargar el historial de pagos.", life: 3500 });

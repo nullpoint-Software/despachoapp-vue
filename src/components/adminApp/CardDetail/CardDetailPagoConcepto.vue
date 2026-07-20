@@ -13,26 +13,21 @@
           <form class="payment-form" @submit.prevent="save">
             <label class="field field--wide">
               <span>01 / Cliente *</span>
-              <select v-model="payment.id_cliente" :disabled="loadingOptions">
-                <option value="" disabled>{{ loadingOptions ? "Cargando clientes…" : "Selecciona un cliente" }}</option>
-                <option v-for="client in clientes" :key="client.id_cliente" :value="client.id_cliente">{{ client.nombre }}</option>
-              </select>
-              <small v-if="errors.cliente">{{ errors.cliente }}</small>
+              <AppAutocomplete id="payment-client" v-model="clientSearch" :options="clientOptions" :disabled="loadingOptions" :invalid="Boolean(errors.cliente)" placeholder="Escribe el nombre o RFC" aria-describedby="payment-client-help" @update:model-value="onClientInput" />
+              <small id="payment-client-help" :class="{ 'field-help': !errors.cliente }">{{ errors.cliente || "Escribe para filtrar y selecciona una coincidencia." }}</small>
             </label>
 
             <label class="field field--wide">
               <span>02 / Asunto *</span>
-              <InputText v-model="payment.asunto" placeholder="Ej. Declaración mensual" autocomplete="off" />
+              <AppAutocomplete v-model="payment.asunto" :options="subjectSuggestions" :invalid="Boolean(errors.asunto)" placeholder="Escribe o selecciona un asunto" aria-describedby="payment-subject-help" />
+              <small id="payment-subject-help" v-if="!errors.asunto" class="field-help">Puedes completar la frase después de elegir una sugerencia.</small>
               <small v-if="errors.asunto">{{ errors.asunto }}</small>
             </label>
 
             <label class="field field--wide">
               <span>03 / Atendió *</span>
-              <select v-model="payment.id_atendio" :disabled="loadingOptions">
-                <option value="" disabled>Selecciona a la persona responsable</option>
-                <option v-for="employee in employees" :key="employee.id_usuario" :value="employee.id_usuario">{{ employee.nombre }} · {{ employee.username }}</option>
-              </select>
-              <small v-if="errors.atendio">{{ errors.atendio }}</small>
+              <AppAutocomplete id="payment-employee" v-model="employeeSearch" :options="employeeOptions" :disabled="loadingOptions" :invalid="Boolean(errors.atendio)" placeholder="Escribe el nombre de quien atendió" aria-describedby="payment-employee-help" @update:model-value="onEmployeeInput" />
+              <small id="payment-employee-help" :class="{ 'field-help': !errors.atendio }">{{ errors.atendio || "Escribe para filtrar y selecciona una coincidencia." }}</small>
             </label>
 
             <label class="field">
@@ -66,11 +61,13 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import InputText from "@/components/ui/AppInput.vue";
+import AppAutocomplete from "@/components/ui/AppAutocomplete.vue";
 import Button from "@/components/ui/AppButton.vue";
 import DateTimePicker from "@/components/ui/DateTimePicker.vue";
 import { cs, ps, us, formatFechaHoraFullSQL } from "@/service/adminApp/client";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 
 interface Payment { [key: string]: any }
 const props = withDefaults(defineProps<{ pago?: Payment; usuario?: Payment }>(), { pago: () => ({}), usuario: () => ({}) });
@@ -79,11 +76,35 @@ const payment = ref<Payment>({ id_cliente: "", asunto: "", id_atendio: localStor
 const selectedDate = ref<Date>(toDate(payment.value.fecha));
 const clientes = ref<Payment[]>([]);
 const employees = ref<Payment[]>([]);
+const clientSearch = ref(String(payment.value.cliente || ""));
+const employeeSearch = ref(String(payment.value.atendio || props.usuario.nombre || ""));
 const loadingOptions = ref(true);
 const loadError = ref("");
 const saveError = ref("");
 const saving = ref(false);
 const errors = ref<Record<string, string>>({});
+const subjectSuggestions = [
+  "Pago de honorarios del mes de",
+  "Cuota IMSS del mes de",
+  "Préstamo de",
+  "Impresión de",
+  "Cita SAT",
+  "Impuestos",
+  "Declaración mensual",
+  "Pago provisional",
+  "Trámite ante el SAT",
+  "Renovación de e.firma",
+];
+
+const normalize = (value: unknown) => String(value || "").trim().toLocaleLowerCase("es-MX");
+const clientLabel = (client: Payment) => `${client.nombre || "Sin nombre"}${client.rfc ? ` - ${client.rfc}` : ""}`;
+const employeeLabel = (employee: Payment) => `${employee.nombre || "Sin nombre"}${employee.username ? ` - ${employee.username}` : ""}`;
+const clientOptions = computed(() => clientes.value.map(clientLabel));
+const employeeOptions = computed(() => employees.value.map(employeeLabel));
+function findClient(value: string) { const term = normalize(value); return clientes.value.find(item => normalize(clientLabel(item)) === term || normalize(item.nombre) === term || normalize(item.rfc) === term); }
+function findEmployee(value: string) { const term = normalize(value); return employees.value.find(item => normalize(employeeLabel(item)) === term || normalize(item.nombre) === term || normalize(item.username) === term); }
+function onClientInput(value: string) { payment.value.id_cliente = findClient(value)?.id_cliente || ""; }
+function onEmployeeInput(value: string) { payment.value.id_atendio = findEmployee(value)?.id_usuario || ""; }
 
 function toDate(value?: unknown) {
   if (!value) return new Date();
@@ -96,9 +117,12 @@ function onKeydown(event: KeyboardEvent) { if (event.key === "Escape") close(); 
 onMounted(async () => {
   document.addEventListener("keydown", onKeydown);
   document.body.classList.add("modal-open");
-  const [clientResult, employeeResult] = await Promise.allSettled([cs.getClientes(), us.getUsuarios()]);
-  if (clientResult.status === "fulfilled") clientes.value = Array.isArray(clientResult.value) ? clientResult.value : [];
-  if (employeeResult.status === "fulfilled") employees.value = Array.isArray(employeeResult.value) ? employeeResult.value : [];
+  const [clientResult, employeeResult] = await Promise.allSettled([loadProgressively<Payment>({ pageSize:40, fetchPage:async(page)=>await cs.getClientes(page) as Payment[], onUpdate:(items)=>{ clientes.value=items; } }), us.getUsuarios()]);
+  if (employeeResult.status === "fulfilled") employees.value = Array.isArray(employeeResult.value) ? employeeResult.value as Payment[] : [];
+  const selectedClient = clientes.value.find(item => String(item.id_cliente) === String(payment.value.id_cliente));
+  const selectedEmployee = employees.value.find(item => String(item.id_usuario) === String(payment.value.id_atendio));
+  if (selectedClient) clientSearch.value = clientLabel(selectedClient);
+  if (selectedEmployee) employeeSearch.value = employeeLabel(selectedEmployee);
   if (!clientes.value.length || !employees.value.length) loadError.value = "No fue posible cargar todos los catálogos. Revisa la conexión e inténtalo de nuevo.";
   loadingOptions.value = false;
 });
@@ -140,5 +164,5 @@ async function save() {
 </script>
 
 <style scoped>
-.modal-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:1rem;background:rgba(8,8,7,.82);backdrop-filter:blur(3px)}.modal-shell{width:min(48rem,100%);max-height:calc(100vh - 2rem);overflow:auto;border:2px solid #0e0e0d;background:var(--br-control);color:#141413;box-shadow:12px 12px 0 var(--br-accent)}.modal-header{position:relative;padding:1.4rem 4.5rem 1.25rem 1.5rem;border-bottom:2px solid #141413;background:#141413;color:var(--br-text)}.modal-header p,.field>span{margin:0 0 .45rem;font:800 .75rem/1.1 "Courier New",monospace;letter-spacing:.09em;text-transform:uppercase}.modal-header h2{margin:0;font:900 clamp(1.8rem,5vw,3.2rem)/.95 Arial,sans-serif;letter-spacing:-.055em;text-transform:uppercase}.modal-header>span{display:block;margin-top:.65rem;color:var(--br-muted);font:600 .82rem/1.3 "Courier New",monospace}.modal-close{position:absolute;right:0;top:0;width:3.75rem;height:3.75rem;border:0;border-left:2px solid var(--br-control);border-bottom:2px solid var(--br-control);background:var(--br-accent);color:#fff;font:400 2rem/1 Arial;cursor:pointer}.payment-form{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:1.5rem}.field{display:flex;min-width:0;flex-direction:column}.field--wide{grid-column:1/-1}.field select{width:100%;min-height:3rem;border:1px solid #56534c;border-radius:0;background:#fff;color:#141413;padding:.7rem .8rem;font:700 .9rem "Courier New",monospace}.field small{margin-top:.35rem;color:#a52319;font:800 .75rem "Courier New",monospace}.money{display:grid;grid-template-columns:3rem 1fr}.money b{display:grid;place-items:center;border:1px solid #56534c;border-right:0;background:#141413;color:#fff}.money :deep(input){width:100%}.form-error{grid-column:1/-1;margin:0;border:1px solid #a52319;background:#f4c6bd;padding:.8rem;color:#761b14;font:800 .8rem/1.3 "Courier New",monospace}.modal-actions{display:flex;justify-content:flex-end;gap:.75rem;padding-top:.5rem;border-top:1px solid #77736b}.modal-enter-active,.modal-leave-active{transition:opacity .18s ease}.modal-enter-active .modal-shell,.modal-leave-active .modal-shell{transition:transform .22s cubic-bezier(.2,.8,.2,1)}.modal-enter-from,.modal-leave-to{opacity:0}.modal-enter-from .modal-shell{transform:translateY(18px) scale(.98)}.modal-leave-to .modal-shell{transform:translateY(8px)}@media(max-width:640px){.payment-form{grid-template-columns:1fr}.field{grid-column:1}.modal-shell{box-shadow:6px 6px 0 var(--br-accent)}}
+.modal-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:1rem;background:rgba(8,8,7,.82);backdrop-filter:blur(3px)}.modal-shell{width:min(48rem,100%);max-height:calc(100vh - 2rem);overflow:auto;border:2px solid #0e0e0d;background:var(--br-control);color:#141413;box-shadow:12px 12px 0 var(--br-accent)}.modal-header{position:relative;padding:1.4rem 4.5rem 1.25rem 1.5rem;border-bottom:2px solid #141413;background:#141413;color:var(--br-text)}.modal-header p,.field>span{margin:0 0 .45rem;font:800 .75rem/1.1 "Courier New",monospace;letter-spacing:.09em;text-transform:uppercase}.modal-header h2{margin:0;font:900 clamp(1.8rem,5vw,3.2rem)/.95 Arial,sans-serif;letter-spacing:-.055em;text-transform:uppercase}.modal-header>span{display:block;margin-top:.65rem;color:var(--br-muted);font:600 .82rem/1.3 "Courier New",monospace}.modal-close{position:absolute;right:0;top:0;width:3.75rem;height:3.75rem;border:0;border-left:2px solid var(--br-control);border-bottom:2px solid var(--br-control);background:var(--br-accent);color:#fff;font:400 2rem/1 Arial;cursor:pointer}.payment-form{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:1.5rem}.field{display:flex;min-width:0;flex-direction:column}.field--wide{grid-column:1/-1}.field :deep(input){width:100%}.field small{margin-top:.35rem;color:#a52319;font:800 .75rem "Courier New",monospace}.field small.field-help{color:#4e4b45;font-weight:700}.money{display:grid;grid-template-columns:3rem 1fr}.money b{display:grid;place-items:center;border:1px solid #56534c;border-right:0;background:#141413;color:#fff}.money :deep(input){width:100%}.form-error{grid-column:1/-1;margin:0;border:1px solid #a52319;background:#f4c6bd;padding:.8rem;color:#761b14;font:800 .8rem/1.3 "Courier New",monospace}.modal-actions{display:flex;justify-content:flex-end;gap:.75rem;padding-top:.5rem;border-top:1px solid #77736b}.modal-enter-active,.modal-leave-active{transition:opacity .18s ease}.modal-enter-active .modal-shell,.modal-leave-active .modal-shell{transition:transform .22s cubic-bezier(.2,.8,.2,1)}.modal-enter-from,.modal-leave-to{opacity:0}.modal-enter-from .modal-shell{transform:translateY(18px) scale(.98)}.modal-leave-to .modal-shell{transform:translateY(8px)}@media(max-width:640px){.payment-form{grid-template-columns:1fr}.field{grid-column:1}.modal-shell{box-shadow:6px 6px 0 var(--br-accent)}}
 </style>

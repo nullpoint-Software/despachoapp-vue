@@ -1,6 +1,7 @@
 import { ref, computed } from "vue";
 import { saveAs } from "file-saver";
 import { ns } from "@/service/adminApp/client";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 
 // --- CONSTANTES ---
 const PINNED_NOTES_KEY = "pinnedNotesState";
@@ -84,10 +85,9 @@ export function useNotesStore() {
 
       // 2. Si no hay datos locales, buscar en la DB
       console.log("No hay notas locales, cargando desde DB...");
-      const notesFromDB: any[] = await ns.getNotas();
       const pinnedIds = getPinnedIdsFromStorage();
 
-      const normalizedNotes = notesFromDB.map((raw) => {
+      const normalizeNotes = (items: any[]) => items.map((raw) => {
         const pinnedBool = Boolean(Number(raw.pinned));
         const status = raw.status ?? (pinnedBool ? "pinned" : "canvas");
         const gs_w = raw.gs_w ?? 2;
@@ -107,10 +107,16 @@ export function useNotesStore() {
         } as Note;
       });
 
-      notes.value = normalizedNotes;
-
-      // 3. Guardar las notas de la DB en Local Storage para la próxima vez
-      saveNotesToStorage(normalizedNotes);
+      await loadProgressively<any>({
+        pageSize: 30,
+        fetchPage: (page) => ns.getNotas(page),
+        onUpdate: (items) => {
+          const normalizedNotes = normalizeNotes(items);
+          notes.value = normalizedNotes;
+          saveNotesToStorage(normalizedNotes);
+        },
+        onBackgroundError: (backgroundError) => console.error("No se completó la carga de notas", backgroundError),
+      });
       // ----------------------
     } catch (e) {
       const err = e as any;

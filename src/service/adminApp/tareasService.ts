@@ -22,9 +22,9 @@ class TareasService {
     }
   }
 
-  async getTareas(): Promise<any> {
+  async getTareas(page?: { limit: number; offset: number }): Promise<any> {
     try {
-      const response = await this.axios.get(`${this.serverip}/tareas`);
+      const response = await this.axios.get(`${this.serverip}/tareas`, { params: page });
       return response.data;
     } catch (error) {
       console.error("Error fetching tareas:", error);
@@ -32,10 +32,10 @@ class TareasService {
     }
   }
 
-  async getTareasDisponibles(): Promise<any> {
+  async getTareasDisponibles(page?: { limit: number; offset: number }): Promise<any> {
     try {
       const response = await this.axios.get(
-        `${this.serverip}/tareas/disponible`
+        `${this.serverip}/tareas/disponible`, { params: page }
       );
       return response.data;
     } catch (error) {

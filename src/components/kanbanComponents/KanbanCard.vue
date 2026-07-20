@@ -1,7 +1,7 @@
 <template>
   <div
     :id="`card-${card.id_tarea}`"
-    class="kanban-card bg-white rounded-2xl shadow-lg p-4 mb-3 cursor-pointer border border-gray-300 hover:shadow-xl transition-all duration-300 flex items-start gap-3"
+    class="kanban-card bg-white rounded-2xl p-4 mb-3 cursor-pointer border border-gray-300 transition-all duration-300 flex items-start gap-3"
     :class="{ highlighted: card.highlight }"
     draggable="true"
     @dragstart="dragStart($event, card)"
@@ -146,12 +146,25 @@ const hyphenatedDescription = computed(() => hyphenateText(props.card?.descripci
   /* ya aplicados como utilidades en template; aquí quedan estilos base por si se usan sin Tailwind */
   background-color: var(--br-control);
   border-radius: 0;
-  border: 1px solid #141413;
-  box-shadow: 4px 4px 0 rgba(0,0,0,.35);
+  border: 1px solid var(--br-line-strong);
+  box-shadow: none !important;
+  margin-right: 0;
+  margin-bottom: .8rem !important;
 }
-.kanban-card:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--br-accent)}.kanban-card img{border-radius:0;border:1px solid #141413}.kanban-card h3{color:#141413!important;font:900 1rem/1.25 Arial,sans-serif;text-transform:uppercase}.kanban-card p,.kanban-card span{color:#4d4b46!important;font-family:"Courier New",monospace}.truncate-multiline::after{background:linear-gradient(90deg,transparent,var(--br-control) 65%)}
+.kanban-card:hover{transform:translate(-2px,-2px);background:var(--br-control);box-shadow:6px 6px 0 var(--br-accent)!important;margin-right:.35rem;margin-bottom:1.15rem!important}.kanban-card img{border-radius:0;border:1px solid var(--br-line-strong)}.kanban-card h3{color:var(--br-control-text,#141413)!important;font:900 1rem/1.25 Arial,sans-serif;text-transform:uppercase}.kanban-card p,.kanban-card span{color:var(--br-control-muted,#4d4b46)!important;font-family:"Courier New",monospace}.truncate-multiline::after{background:linear-gradient(90deg,transparent,var(--br-control) 65%)}
 
 /* animación destacada */
-@keyframes pulseGlow{0%{box-shadow:0 0 10px rgba(0,102,255,.5)}50%{box-shadow:0 0 20px rgba(0,102,255,.8)}100%{box-shadow:0 0 10px rgba(0,102,255,.5)}}
-.highlighted{animation:pulseGlow 1.5s infinite alternate;border-color:rgba(0,102,255,.8)}
+.kanban-card.highlighted{
+  position:relative;
+  z-index:1;
+  border-color:var(--br-accent)!important;
+  background:color-mix(in srgb,var(--br-control) 88%,var(--br-accent))!important;
+  box-shadow:0 0 0 3px var(--br-accent),8px 8px 0 var(--br-accent)!important;
+  animation:task-search-highlight .7s ease-in-out 4;
+}
+@keyframes task-search-highlight{
+  0%,100%{transform:translate(0,0)}
+  50%{transform:translate(-2px,-2px)}
+}
+@media(prefers-reduced-motion:reduce){.kanban-card.highlighted{animation:none}}
 </style>

@@ -204,6 +204,7 @@ import {
   formatFechaHoraFullPagoSQL,
 } from "@/service/adminApp/client";
 import { useAppToast } from "@/composables/useAppToast";
+import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 import DataTable from "@/components/ui/AppDataTable";
 import Column from "@/components/ui/AppColumn.vue";
 import InputText from "@/components/ui/AppInput.vue";
@@ -298,11 +299,12 @@ const containerWidth = ref(0);
 let resizeObserver = null;
 onMounted(async () => {
   try {
-    const loadedPayments = await ps.getPagoConcepto();
-    payments.value = (Array.isArray(loadedPayments) ? loadedPayments : []).map((item) => ({
-      ...item,
-      fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
-    }));
+    await loadProgressively({
+      pageSize: 40,
+      fetchPage: (page) => ps.getPagoConcepto(page),
+      onUpdate: (items) => { payments.value = items.map((item) => ({ ...item, fecha_legible: formatFechaHoraFullPagoSQL(item.fecha) })); },
+      onBackgroundError: (error) => console.error("No se pudo completar la carga de pagos", error),
+    });
   } catch (error) {
     console.error("No se pudieron cargar los pagos", error);
     toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudieron cargar los pagos.", life: 3500 });
