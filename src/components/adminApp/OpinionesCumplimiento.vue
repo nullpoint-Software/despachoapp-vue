@@ -300,7 +300,9 @@ const filteredRecords = computed(() => {
     return matchesStatus && matchesRegime && matchesTerm;
   });
 });
-const regimeOrder = new Map(regimenesFiscales.map((regime, index) => [regime.value, index]));
+const regimeOrder = new Map<string, number>(
+  regimenesFiscales.map((regime, index) => [regime.value, index]),
+);
 const groupedRecords = computed(() => {
   const groups = new Map<string, ComplianceRecord[]>();
   filteredRecords.value.forEach((record) => {
