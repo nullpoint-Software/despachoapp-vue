@@ -18,10 +18,26 @@ El sistema se divide en dos repositorios:
 - Separación de facturas emitidas/ingresos y recibidas/egresos.
 - Reportes fiscales mensuales, anuales y DIOT.
 - Archivo TXT de carga masiva para DIOT.
+- Consulta individual y masiva de opiniones de cumplimiento públicas del SAT.
+- Clasificación de opiniones, descarga del PDF y archivo automático en el expediente del cliente.
 - Notas internas organizadas en carpetas.
 - Bitácora de operaciones con opción de revertir cambios compatibles.
 - Administración de usuarios, perfiles y permisos.
 - Diseño adaptable para escritorio y dispositivos móviles.
+
+## Actualización de cumplimiento y diseño (22 de julio de 2026)
+
+- Se agregó la vista **Opiniones de cumplimiento** con consulta pública individual y masiva por RFC.
+- El resultado distingue opinión positiva, con pendientes, suspensión de actividades, inscrito sin obligaciones, no inscrito, cancelado, no localizado, no pública y error de consulta.
+- Cuando el SAT entrega un PDF, el servidor lo descarga, cifra y guarda automáticamente en los documentos del cliente junto con sus metadatos.
+- La vista muestra fecha de consulta, fecha de emisión, vigencia disponible, régimen fiscal y acciones pendientes detectadas.
+- Se incorporó una guía paso a paso para autorizar ante el SAT la publicación de una opinión positiva.
+- Los filtros por resultado y régimen fiscal usan botones de opción dentro de un modal, con acciones para aplicar, cancelar y restablecer.
+- Los clientes ahora incluyen régimen fiscal para separar RESICO, RIF, actividad empresarial, personas morales y los demás regímenes del catálogo.
+- Las tablas de Clientes y Pagos conservan desplazamiento horizontal estable en pantallas pequeñas y ocultan el paginador cuando no es necesario.
+- Los reportes guardados se exportan a Excel con encabezados y totales limitados a las columnas con datos.
+- La fila de totales del PDF fiscal usa fondo gris y mantiene importes y etiquetas alineados.
+- El patrón visual del fondo ahora se mantiene visible en Inicio, Tareas, Clientes, Pagos, Fiscal, Cumplimiento y Ajustes, sin afectar el contraste de tablas y formularios.
 
 ## Requisitos
 
@@ -80,6 +96,7 @@ VITE_SQL_USER=root
 VITE_SQL_PASS=
 VITE_SQL_DB=kanbanpagos
 JWT_SECRET=cambia-esta-clave-por-una-larga-y-aleatoria
+DATA_ENCRYPTION_KEY=pega-aqui-una-clave-base64-de-32-bytes
 PORT=5000
 ```
 
@@ -87,7 +104,16 @@ Opcionalmente se puede definir otra carpeta para los CFDI:
 
 ```dotenv
 CFDI_XML_DIR=C:/ruta/privada/cfdi
+CLIENT_DOCUMENT_DIR=C:/ruta/privada/documentos-clientes
 ```
+
+Genera `DATA_ENCRYPTION_KEY` desde el servidor con:
+
+```bash
+npm run security:generate-key
+```
+
+Copia el resultado al `.env` antes de ejecutar migraciones. Esta clave cifra XML, documentos y credenciales FIEL/CIECF con AES-256-GCM. No la publiques ni la guardes en Git. Sin la misma clave no es posible recuperar los archivos o secretos cifrados, por lo que debe conservarse en un gestor de secretos y en el respaldo seguro del despliegue.
 
 Aunque algunas variables de base de datos comienzan con `VITE_`, pertenecen al servidor y no deben colocarse en el `.env` público del frontend. El archivo `.env` del servidor está excluido de Git.
 
@@ -111,7 +137,10 @@ Este comando:
 - crea o actualiza las tablas del módulo fiscal;
 - agrega proveedores, relaciones, complementos y reportes;
 - prepara el almacenamiento de rutas XML;
-- mueve a archivos del servidor cualquier XML antiguo guardado dentro de la base de datos.
+- cifra las credenciales FIEL y CIECF existentes;
+- retira esas credenciales de los eventos de auditoría antiguos;
+- mueve a archivos cifrados del servidor cualquier XML antiguo guardado dentro de la base de datos;
+- crea el catálogo de documentos PDF cifrados por cliente.
 
 No inicies el módulo Fiscal contra una base nueva sin ejecutar antes este comando.
 
@@ -300,21 +329,18 @@ Administra los expedientes de los clientes del despacho.
 
 - Alta, consulta, edición y eliminación de clientes.
 - Búsqueda por los campos visibles y navegación por páginas.
-- Registro de nombre, RFC, correo, teléfono, contraseña FIEL y contraseña CIECF.
+- Registro de nombre, RFC, régimen fiscal, correo, teléfono, contraseña FIEL y contraseña CIECF.
 - Las columnas sensibles permanecen ocultas por defecto y se revelan o copian mediante la interacción de la tabla.
+- Expediente de PDF para INE, opinión fiscal, e.firma, constancia de situación fiscal y otros documentos.
+- Carga por arrastre, descarga y eliminación de documentos con validación de tipo y límite de 15 MB.
+- Los PDF y las credenciales se cifran en el servidor; MySQL conserva sólo metadatos y rutas de archivo.
 - Los CFDI importados en Fiscal quedan asociados al `id_cliente` de este expediente.
 
 La eliminación de un cliente puede afectar relaciones con pagos, tareas o CFDI. Debe confirmarse que el expediente ya no sea necesario antes de borrarlo.
 
 #### Pagos (`/app/pagos`)
 
-Concentra cobros, gastos y honorarios. Tiene dos secciones.
-
-**Historial** (`/app/pagos/historial`)
-
-- Unifica los movimientos de pagos mensuales y pagos por concepto.
-- Permite buscar, paginar y copiar valores.
-- El botón de enlace abre el registro original para consultarlo o editarlo.
+Concentra cobros, gastos, honorarios y cierres de caja. Al entrar a `/app/pagos` se abre directamente la vista de pagos por concepto.
 
 **Por concepto** (`/app/pagos/concepto`)
 
@@ -412,7 +438,7 @@ La configuración se guarda por RFC y cliente, por lo que se reutiliza en las de
 - La selección queda almacenada para volver a generar el mismo corte.
 - El nombre sugerido del reporte se completa automáticamente a partir del cliente, periodo y tipo de corte.
 - El PDF se genera en orientación horizontal con nombre del cliente, logotipo y número de página.
-- Los reportes fiscales pueden descargarse como CSV.
+- Los reportes fiscales pueden descargarse como Excel con formato en encabezados y totales.
 - La DIOT puede descargarse como TXT de carga masiva para el SAT.
 - Los reportes guardados se consultan desde un drawer organizado por ejercicio y mes.
 
@@ -423,10 +449,30 @@ Antes de presentar una DIOT, valida la configuración de proveedores y contrasta
 Los XML no se guardan completos dentro de MySQL. Se almacenan en el servidor con una estructura similar a:
 
 ```text
-despachoapp-server/storage/cfdi/clientes/{cliente}/{año}/{mes}/{uuid}.xml
+despachoapp-server/storage/cfdi/clientes/{cliente}/{año}/{mes}/{uuid}.xml.enc
 ```
 
-La tabla `cfdi_facturas` conserva únicamente `xml_path`. La carpeta está excluida de Git y debe incluirse en la estrategia de respaldos.
+La tabla `cfdi_facturas` conserva únicamente `xml_path`. El contenido usa AES-256-GCM y se descifra en memoria sólo durante una descarga autorizada. La carpeta está excluida de Git y debe incluirse en la estrategia de respaldos.
+
+**Almacenamiento de documentos de clientes**
+
+Los PDF se guardan cifrados bajo `storage/client-documents` o en la ruta configurada con `CLIENT_DOCUMENT_DIR`. La tabla `cliente_documentos` registra el cliente, tipo documental, nombre original, tamaño, huella SHA-256, usuario y ruta. No almacena el PDF dentro de MySQL.
+
+#### Opiniones de cumplimiento (`/app/cumplimiento`)
+
+Consulta el resultado público de la opinión de cumplimiento de los clientes registrados.
+
+- Permite actualizar un cliente o ejecutar una consulta masiva en lotes para todos los expedientes.
+- Utiliza únicamente el RFC en la consulta pública; no envía la CIECF ni la e.firma.
+- Distingue resultados positivos, negativos, situaciones especiales, opiniones privadas y errores de consulta.
+- Reconoce expresamente los estados **Suspensión de actividades** e **Inscrito sin obligaciones**, sin clasificarlos como opinión positiva.
+- Muestra las omisiones o situaciones que el cliente debe revisar cuando el SAT proporciona ese detalle.
+- Descarga el PDF disponible, lo guarda cifrado en los documentos del cliente y muestra si el archivo quedó archivado.
+- Presenta la fecha de consulta, fecha de emisión, vigencia informada y régimen fiscal del cliente.
+- Agrupa los resultados por régimen fiscal y permite filtrar por resultado o régimen desde un modal.
+- Incluye instrucciones para autorizar que una opinión positiva sea pública ante el SAT.
+
+La disponibilidad, contenido y vigencia dependen de la respuesta pública del SAT. Una consulta sin detalle no debe interpretarse automáticamente como positiva.
 
 #### Notas
 
@@ -498,11 +544,12 @@ Publica el contenido de `dist` en el servidor web. No publiques el código fuent
 
 1. Configura un usuario MySQL exclusivo con los permisos mínimos necesarios.
 2. Define un `JWT_SECRET` largo y aleatorio.
-3. Ejecuta `npm run db:migrate` durante el despliegue, antes de reiniciar la API.
-4. Ejecuta Node mediante un administrador de procesos como PM2 o como servicio del sistema.
-5. Coloca la API detrás de HTTPS y de un proxy inverso.
-6. Restringe CORS al dominio real de la aplicación.
-7. Protege las carpetas `archivos` y `storage/cfdi` contra acceso web directo.
+3. Genera `DATA_ENCRYPTION_KEY`, guárdala fuera del repositorio y verifica que el proceso Node pueda leerla.
+4. Ejecuta `npm run db:migrate` durante el despliegue, antes de reiniciar la API. Haz un respaldo previo porque esta migración cifra los XML y secretos existentes.
+5. Ejecuta Node mediante un administrador de procesos como PM2 o como servicio del sistema.
+6. Coloca la API detrás de HTTPS y de un proxy inverso.
+7. Restringe CORS al dominio real de la aplicación.
+8. Protege las carpetas `archivos`, `storage/cfdi` y `storage/client-documents` contra acceso web directo.
 
 ## Respaldos
 
@@ -510,9 +557,11 @@ Un respaldo completo necesita estos elementos:
 
 - exportación SQL de `kanbanpagos`;
 - carpeta `despachoapp-server/storage/cfdi`;
+- carpeta `despachoapp-server/storage/client-documents`;
 - carpeta `despachoapp-server/archivos`, si se utilizan adjuntos;
 - archivos de permisos dentro de `despachoapp-server/data`;
 - variables de entorno almacenadas de forma segura.
+- la misma `DATA_ENCRYPTION_KEY` en un respaldo separado y protegido.
 
 Respaldar solamente MySQL no recuperará los XML, porque la base contiene sólo sus rutas.
 

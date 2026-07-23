@@ -2,7 +2,6 @@
 <template>
   <!-- Contenedor de la tabla -->
   <div
-    ref="containerRef"
     class="flex-grow w-full overflow-hidden rounded-xl shadow-lg"
   >
     <DataTable
@@ -17,11 +16,11 @@
         'pagamos',
         'fecha_legible',
       ]"
-      paginator
+      :paginator="!isMobile"
       sortMode="multiple"
       removableSort
-      :rows="5"
-      :rowsPerPageOptions="[5, 10, 20, 50]"
+      :rows="10"
+      :rowsPerPageOptions="[10, 20, 50]"
       :rowClass="rowClass"
       class="w-full rounded-lg p-5"
     >
@@ -68,29 +67,11 @@
             </div>
           </div>
         </div>
-        <!-- Slider para columnas -->
-        <div
-          v-if="pages.length > 1"
-          class="flex justify-center items-center space-x-2 p-2 bg-gray-800 rounded-md shadow-md mt-2"
-        >
-          <Button
-            icon="pi pi-chevron-left"
-            @click="prevPage"
-            :disabled="currentPageIndex === 0"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
-          <Button
-            icon="pi pi-chevron-right"
-            @click="nextPage"
-            :disabled="currentPageIndex === maxPageIndex"
-            class="p-button-rounded p-button-outlined p-button-secondary hover:p-button-info"
-          />
-        </div>
       </template>
 
       <!-- Renderizado dinámico de columnas -->
       <Column
-        v-for="col in visibleColumns"
+        v-for="col in tableColumns"
         :key="col.field"
         :sortable="col.field !== 'actions'"
         :field="col.field !== 'actions' ? col.field : undefined"
@@ -238,16 +219,16 @@ const usuario = ref({
 // Definición de columnas base
 const columns = ref([
   { field: "id", header: "ID" },
+  { field: "asunto", header: "Concepto" },
   { field: "cliente", header: "Cliente" },
-  { field: "asunto", header: "Asunto" },
   { field: "atendio", header: "Atendió" },
-  { field: "cobramos", header: "Cobramos" },
   { field: "pagamos", header: "Pagamos" },
+  { field: "cobramos", header: "Cobramos" },
   { field: "fecha", header: "Fecha" },
   // { field: "saldo", header: "Saldo" },
 ]);
 const actionsColumn = { field: "actions", header: "Acciones" };
-const baseColumns = computed(() => columns.value);
+const tableColumns = computed(() => [...columns.value, actionsColumn]);
 
 // Filtros
 const filters = ref({
@@ -285,18 +266,12 @@ const copyToClipboard = async (text) => {
 
 // Detección de dispositivo móvil
 const isMobile = ref(window.innerWidth <= 640);
-const screenWidth = ref(window.innerWidth);
 const handleResize = () => {
-  screenWidth.value = window.innerWidth;
-  isMobile.value = screenWidth.value <= 640;
+  isMobile.value = window.innerWidth <= 640;
 };
 onMounted(() => window.addEventListener("resize", handleResize));
 onUnmounted(() => window.removeEventListener("resize", handleResize));
 
-// MEDICIÓN DEL ANCHO DEL COMPONENTE
-const containerRef = ref(null);
-const containerWidth = ref(0);
-let resizeObserver = null;
 onMounted(async () => {
   try {
     await loadProgressively({
@@ -318,42 +293,6 @@ onMounted(async () => {
   canAddPagoConcepto.value = await hasPermission("canAddPagoConcepto");
   canEditPagoConcepto.value = await hasPermission("canEditPagoConcepto");
   canDeletePagoConcepto.value = await hasPermission("canDeletePagoConcepto");
-  if (containerRef.value) {
-    resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        containerWidth.value = entry.contentRect.width;
-      }
-    });
-    resizeObserver.observe(containerRef.value);
-  }
-});
-onUnmounted(() => {
-  if (resizeObserver && containerRef.value) {
-    resizeObserver.unobserve(containerRef.value);
-  }
-});
-
-// CÁLCULO DEL SLIDER DE COLUMNAS
-const minColumnWidth = 150;
-const visibleCount = computed(() =>
-  Math.floor((containerWidth.value || screenWidth.value) / minColumnWidth)
-);
-const pages = computed(() => {
-  const total = baseColumns.value.length;
-  const vis = visibleCount.value;
-  if (total + 1 <= vis) return [baseColumns.value];
-  const pagesArray = [];
-  const firstPageCount = Math.max(1, vis - 1);
-  pagesArray.push(baseColumns.value.slice(0, firstPageCount));
-  const remaining = baseColumns.value.slice(firstPageCount);
-  for (let i = 0; i < remaining.length; i += 2) {
-    pagesArray.push(remaining.slice(i, i + 2));
-  }
-  return pagesArray;
-});
-const currentPageIndex = ref(0);
-watch(pages, () => {
-  currentPageIndex.value = 0;
 });
 watch(
   () => route.query.search,
@@ -361,20 +300,6 @@ watch(
     filters.value.global.value = newSearch || "";
   }
 );
-const maxPageIndex = computed(() => pages.value.length - 1);
-const visibleColumns = computed(() => {
-  if (pages.value.length === 1) {
-    return [...baseColumns.value, actionsColumn];
-  } else {
-    return [...pages.value[currentPageIndex.value], actionsColumn];
-  }
-});
-const prevPage = () => {
-  if (currentPageIndex.value > 0) currentPageIndex.value--;
-};
-const nextPage = () => {
-  if (currentPageIndex.value < maxPageIndex.value) currentPageIndex.value++;
-};
 
 // Lógica para el Card y eliminación (igual que antes)
 const cardVisible = ref(false);
@@ -464,5 +389,87 @@ const openPrint = (payment) => {
 </script>
 
 <style scoped>
-/* tu CSS existente */
+:deep(.app-data-table__table) {
+  min-width: 62rem;
+  table-layout: fixed;
+}
+
+:deep(.app-data-table__table th) {
+  height: 2.5rem;
+  min-width: 0;
+  padding: 0.3rem 0.35rem;
+  font-size: 10px;
+  line-height: 1.15;
+}
+
+:deep(.app-data-table__table th > div) {
+  padding: 0.2rem !important;
+  font-size: 10px !important;
+  line-height: 1.15;
+}
+
+:deep(.app-data-table__table td) {
+  min-width: 0;
+  font-size: 12px;
+}
+
+:deep(.app-data-table__table td > div),
+:deep(.app-data-table__table td div) {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.32rem 0.28rem !important;
+  font-size: 12px !important;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.app-data-table__table td .app-button) {
+  width: 1.9rem;
+  min-width: 1.9rem;
+  min-height: 1.9rem;
+  padding: 0.3rem;
+  font-size: 11px;
+}
+
+:deep(.app-data-table__table td .flex) {
+  gap: 0.3rem !important;
+  padding: 0.32rem 0.2rem !important;
+}
+
+:deep(.app-data-table__table th:nth-child(1)),
+:deep(.app-data-table__table td:nth-child(1)) { width: 10%; }
+:deep(.app-data-table__table th:nth-child(2)),
+:deep(.app-data-table__table td:nth-child(2)) { width: 17%; }
+:deep(.app-data-table__table th:nth-child(3)),
+:deep(.app-data-table__table td:nth-child(3)) { width: 15%; }
+:deep(.app-data-table__table th:nth-child(4)),
+:deep(.app-data-table__table td:nth-child(4)) { width: 10%; }
+:deep(.app-data-table__table th:nth-child(5)),
+:deep(.app-data-table__table td:nth-child(5)),
+:deep(.app-data-table__table th:nth-child(6)),
+:deep(.app-data-table__table td:nth-child(6)) { width: 9%; }
+:deep(.app-data-table__table th:nth-child(7)),
+:deep(.app-data-table__table td:nth-child(7)) { width: 17%; }
+:deep(.app-data-table__table th:nth-child(8)),
+:deep(.app-data-table__table td:nth-child(8)) { width: 13%; }
+
+:deep(.app-pager) {
+  min-height: 3rem;
+  font-size: 11px;
+}
+
+:deep(.app-data-table__header input) {
+  font-size: 0.85rem !important;
+}
+
+@media (max-width: 700px) {
+  :deep(.app-data-table__table) { min-width: 58rem; }
+  :deep(.app-data-table__table th),
+  :deep(.app-data-table__table td),
+  :deep(.app-data-table__table td > div),
+  :deep(.app-data-table__table td div) {
+    font-size: 11px !important;
+  }
+}
 </style>

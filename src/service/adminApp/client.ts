@@ -9,12 +9,15 @@ import EstadisticaService from "./estadisticaService";
 import UsuarioService from "./usuariosService";
 import LogsService from "./logsService";
 import FiscalService from "./fiscalService";
+import CumplimientoService from "./cumplimientoService";
 
 const instance = axios.create();
 instance.interceptors.request.use((config) => {
   const userId = localStorage.getItem("userid");
   const token = localStorage.getItem("token");
-  if (userId && typeof config.data == "object") {
+  if (userId && config.data instanceof FormData) {
+    if (!config.data.has("userId")) config.data.append("userId", userId);
+  } else if (userId && typeof config.data == "object") {
     config.data.userId = userId;
   } else if (config.method === "delete") {
     config.data = { userId };
@@ -33,6 +36,7 @@ export const es = new EstadisticaService(serverip, instance);
 export const us = new UsuarioService(serverip, instance);
 export const ls = new LogsService(serverip, instance);
 export const fs = new FiscalService(serverip, instance);
+export const cos = new CumplimientoService(serverip, instance);
 export const formatFechaSQL = (dateStr: string): string => {
   const date = new Date(dateStr);
 

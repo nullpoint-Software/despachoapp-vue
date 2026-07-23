@@ -48,6 +48,10 @@ const router = createRouter({
           path: "fiscal",
           component: () => import("@/components/adminApp/Fiscal.vue")
         },
+        {
+          path: "cumplimiento",
+          component: () => import("@/components/adminApp/OpinionesCumplimiento.vue")
+        },
         { 
           path: "settings", 
           component: () => import("@/components/adminApp/Settings.vue") 
@@ -56,12 +60,8 @@ const router = createRouter({
           path: "pagos",
           component: () => import("@/components/adminApp/Pagos.vue"),
           children: [
-            { path: "", redirect: "/app/pagos/historial" },
-            { 
-              path: "historial", 
-              name: "pagos-historial", 
-              component: () => import("@/components/adminApp/Tables/PagosHistorial.vue") 
-            },
+            { path: "", redirect: "/app/pagos/concepto" },
+            { path: "historial", redirect: "/app/pagos/concepto" },
             { 
               path: "concepto", 
               name: "pagos-concepto", 

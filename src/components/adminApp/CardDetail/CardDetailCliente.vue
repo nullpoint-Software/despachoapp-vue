@@ -34,21 +34,38 @@
             <span v-if="errors.rfc" class="text-red-500 text-sm">{{ errors.rfc }}</span>
           </div>
           <div class="flex flex-col">
+            <label class="font-semibold text-black">Régimen fiscal</label>
+            <AppSelect
+              v-model="customer.regimen_fiscal"
+              :options="regimenesFiscales"
+              option-label="label"
+              option-value="value"
+              placeholder="Selecciona el régimen"
+            />
+            <span v-if="errors.regimen_fiscal" class="text-red-500 text-sm">{{ errors.regimen_fiscal }}</span>
+          </div>
+          <div class="flex flex-col">
             <label class="font-semibold text-black">Contraseña FIEL</label>
             <InputText
               v-model="customer.fiel"
+              type="password"
+              autocomplete="new-password"
               class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese la contraseña FIEL"
+              :placeholder="customer.id_cliente ? 'Deja vacío para conservarla' : 'Ingrese la contraseña FIEL'"
             />
+            <small v-if="customer.id_cliente" class="text-gray-600">Sólo escribe una nueva contraseña si deseas reemplazarla.</small>
             <span v-if="errors.fiel" class="text-red-500 text-sm">{{ errors.fiel }}</span>
           </div>
           <div class="flex flex-col">
             <label class="font-semibold text-black">Contraseña CIECF</label>
             <InputText
               v-model="customer.ciecf"
+              type="password"
+              autocomplete="new-password"
               class="p-2 border border-gray-300 rounded"
-              placeholder="Ingrese la contraseña ciecf"
+              :placeholder="customer.id_cliente ? 'Deja vacío para conservarla' : 'Ingrese la contraseña CIECF'"
             />
+            <small v-if="customer.id_cliente" class="text-gray-600">Sólo escribe una nueva contraseña si deseas reemplazarla.</small>
             <span v-if="errors.ciecf" class="text-red-500 text-sm">{{ errors.ciecf }}</span>
           </div>
           <div class="flex flex-col">
@@ -86,6 +103,8 @@
 import { ref, watch, defineProps, defineEmits } from "vue";
 import InputText from "@/components/ui/AppInput.vue";
 import Button from "@/components/ui/AppButton.vue";
+import AppSelect from "@/components/ui/AppSelect.vue";
+import { regimenesFiscales } from "@/constants/regimenesFiscales";
 
 const props = defineProps({
   customer: {
@@ -94,6 +113,7 @@ const props = defineProps({
       id_cliente: "",
       nombre: "",
       rfc: "",
+      regimen_fiscal: "",
       fiel: "",
       ciecf: "",
       telefono: "",
@@ -107,6 +127,7 @@ const customer = ref({ ...props.customer });
 const errors = ref({
   nombre: "",
   rfc: "",
+  regimen_fiscal: "",
   fiel: "",
   ciecf: "",
   telefono: "",
@@ -115,12 +136,12 @@ const errors = ref({
 
 watch(() => props.customer, (newVal) => {
   customer.value = { ...newVal };
-  errors.value = { nombre: "", rfc: "", fiel: "", ciecf: "", telefono: "", email: "" };
+  errors.value = { nombre: "", rfc: "", regimen_fiscal: "", fiel: "", ciecf: "", telefono: "", email: "" };
 });
 
 const validate = () => {
   let valid = true;
-  errors.value = { nombre: "", rfc: "", fiel: "", ciecf: "", telefono: "", email: "" };
+  errors.value = { nombre: "", rfc: "", regimen_fiscal: "", fiel: "", ciecf: "", telefono: "", email: "" };
 
   if (!customer.value.nombre.trim()) {
     errors.value.nombre = "El nombre es obligatorio.";
@@ -130,11 +151,15 @@ const validate = () => {
     errors.value.rfc = "El RFC es obligatorio.";
     valid = false;
   }
-  if (!customer.value.fiel.trim()) {
+  if (!customer.value.regimen_fiscal) {
+    errors.value.regimen_fiscal = "Selecciona el régimen fiscal.";
+    valid = false;
+  }
+  if (!customer.value.id_cliente && !customer.value.fiel.trim()) {
     errors.value.fiel = "La contraseña FIEL es obligatoria.";
     valid = false;
   }
-  if (!customer.value.ciecf.trim()) {
+  if (!customer.value.id_cliente && !customer.value.ciecf.trim()) {
     errors.value.ciecf = "La contraseña CIECF es obligatoria.";
     valid = false;
   }

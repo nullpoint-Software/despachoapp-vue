@@ -63,6 +63,14 @@ export default class FiscalService {
     return (await this.axios.get(`${this.serverip}/fiscal/reports/${id}`)).data;
   }
 
+  async removeReportInvoice(reportId: number, invoiceId: number) {
+    return (await this.axios.delete(`${this.serverip}/fiscal/reports/${reportId}/invoices/${invoiceId}`)).data;
+  }
+
+  async deleteReport(reportId: number) {
+    return (await this.axios.delete(`${this.serverip}/fiscal/reports/${reportId}`)).data;
+  }
+
   async exportReport(id: number, fallbackName: string) {
     const response = await this.axios.get(`${this.serverip}/fiscal/reports/${id}/export`, { responseType: "blob" });
     const disposition = String(response.headers["content-disposition"] || "");

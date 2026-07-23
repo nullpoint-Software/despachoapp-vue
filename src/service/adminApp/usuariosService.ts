@@ -42,11 +42,11 @@ class UsuarioService {
     }
   }
 
-  async getUsuarioPS(id_usuario: any) {
+  async getUsuarioPS(id_usuario: any, currentPassword: string) {
     try {
       const response = await this.axios.post(
         `${this.serverip}/usuarios/password`,
-        { id_usuario: id_usuario }, // this is the POST body
+        { id_usuario, currentPassword },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
