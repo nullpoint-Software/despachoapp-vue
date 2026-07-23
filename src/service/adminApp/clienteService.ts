@@ -52,6 +52,61 @@ class ClienteService {
             throw error;
         }
     }
+
+    async revelarCredencial(idCliente: number, field: "fiel" | "ciecf", password: string) {
+        const response = await this.axios.post(
+            `${this.serverip}/clientes/${idCliente}/credenciales/revelar`,
+            { field, password },
+        );
+        return response.data as { field: "fiel" | "ciecf"; value: string };
+    }
+
+    async verificarDocumentos(idCliente: number, password: string) {
+        const response = await this.axios.post(
+            `${this.serverip}/clientes/${idCliente}/documentos/verificar`,
+            { password },
+        );
+        return response.data as { accessToken: string; expiresIn: number };
+    }
+
+    private documentHeaders(accessToken: string) {
+        return { "X-Document-Authorization": accessToken };
+    }
+
+    async getDocumentos(idCliente: number, accessToken: string) {
+        const response = await this.axios.get(`${this.serverip}/clientes/${idCliente}/documentos`, {
+            headers: this.documentHeaders(accessToken),
+        });
+        return response.data;
+    }
+
+    async subirDocumento(idCliente: number, tipo: string, file: File, accessToken: string) {
+        const data = new FormData();
+        data.append("tipo", tipo);
+        data.append("file", file);
+        const response = await this.axios.post(
+            `${this.serverip}/clientes/${idCliente}/documentos`,
+            data,
+            { headers: this.documentHeaders(accessToken) },
+        );
+        return response.data;
+    }
+
+    async descargarDocumento(idCliente: number, documentId: number, accessToken: string) {
+        const response = await this.axios.get(
+            `${this.serverip}/clientes/${idCliente}/documentos/${documentId}/archivo`,
+            { responseType: "blob", headers: this.documentHeaders(accessToken) },
+        );
+        return response.data as Blob;
+    }
+
+    async eliminarDocumento(idCliente: number, documentId: number, accessToken: string) {
+        const response = await this.axios.delete(
+            `${this.serverip}/clientes/${idCliente}/documentos/${documentId}`,
+            { headers: this.documentHeaders(accessToken) },
+        );
+        return response.data;
+    }
 }
 
 export default ClienteService;
