@@ -320,12 +320,13 @@ const cancelDelete = () => {
 const revealed = ref<Record<string, Record<string, boolean>>>({});
 const revealedValues = ref<Record<string, Record<string, string>>>({});
 const revealTimers = new Map<string, ReturnType<typeof setTimeout>>();
+type ProtectedClientField = "rfc" | "fiel" | "ciecf";
 onUnmounted(() => {
   revealTimers.forEach((timer) => clearTimeout(timer));
   revealTimers.clear();
 });
 const credentialDialogVisible = ref(false);
-const credentialTarget = ref<{ row: any; field: "fiel" | "ciecf" } | null>(null);
+const credentialTarget = ref<{ row: any; field: ProtectedClientField } | null>(null);
 const verificationPassword = ref("");
 const verificationError = ref("");
 const verificationBusy = ref(false);
@@ -337,6 +338,10 @@ function isFieldVisible(row: any, field: string) {
 function setFieldVisibility(row: any, field: string, visible: boolean) {
   if (!revealed.value[row.id_cliente]) revealed.value[row.id_cliente] = {};
   revealed.value[row.id_cliente][field] = visible;
+}
+
+function clearsValueWhenHidden(field: string) {
+  return field === "fiel" || field === "ciecf";
 }
 
 function closeCredentialDialog() {
@@ -370,7 +375,7 @@ async function verifyAndReveal() {
     revealTimers.set(timerKey, setTimeout(() => {
       setFieldVisibility(target.row, target.field, false);
       delete revealedValues.value[rowKey]?.[target.field];
-      target.row[target.field] = null;
+      if (clearsValueWhenHidden(target.field)) target.row[target.field] = null;
       revealTimers.delete(timerKey);
     }, 20000));
 
@@ -393,14 +398,14 @@ function handleCellClick(row: any, field: string, col: ColumnDef) {
   if (isFieldVisible(row, field)) {
     copyToClipboard(revealedValues.value[row.id_cliente]?.[field] || row[field], true);
     setFieldVisibility(row, field, false);
-    row[field] = null;
+    if (clearsValueWhenHidden(field)) row[field] = null;
     const timerKey = `${row.id_cliente}:${field}`;
     const timer = revealTimers.get(timerKey);
     if (timer) clearTimeout(timer);
     revealTimers.delete(timerKey);
     return;
   }
-  credentialTarget.value = { row, field: field as "fiel" | "ciecf" };
+  credentialTarget.value = { row, field: field as ProtectedClientField };
   verificationPassword.value = "";
   verificationError.value = "";
   credentialDialogVisible.value = true;

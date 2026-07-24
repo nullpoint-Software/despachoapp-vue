@@ -53,12 +53,12 @@ class ClienteService {
         }
     }
 
-    async revelarCredencial(idCliente: number, field: "fiel" | "ciecf", password: string) {
+    async revelarCredencial(idCliente: number, field: "rfc" | "fiel" | "ciecf", password: string) {
         const response = await this.axios.post(
             `${this.serverip}/clientes/${idCliente}/credenciales/revelar`,
             { field, password },
         );
-        return response.data as { field: "fiel" | "ciecf"; value: string };
+        return response.data as { field: "rfc" | "fiel" | "ciecf"; value: string };
     }
 
     async verificarDocumentos(idCliente: number, password: string) {
