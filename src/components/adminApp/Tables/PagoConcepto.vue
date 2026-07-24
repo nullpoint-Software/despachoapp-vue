@@ -16,7 +16,7 @@
         'pagamos',
         'fecha_legible',
       ]"
-      :paginator="!isMobile"
+      :paginator="false"
       sortMode="multiple"
       removableSort
       :rows="10"
@@ -146,6 +146,23 @@
         </template>
       </Column>
     </DataTable>
+    <footer class="app-pager">
+      <span>{{ pagerLabel }}</span>
+      <div class="app-pager__controls">
+        <button type="button" class="app-pager__button" :disabled="currentPage === 0 || loadingPayments"
+          aria-label="Página anterior" title="Página anterior" @click="previousPage">
+          <i class="pi pi-angle-left"></i>
+        </button>
+        <samp>{{ currentPage + 1 }} / {{ pageCount }}</samp>
+        <button type="button" class="app-pager__button" :disabled="currentPage >= pageCount - 1 || loadingPayments"
+          aria-label="Página siguiente" title="Página siguiente" @click="nextPage">
+          <i class="pi pi-angle-right"></i>
+        </button>
+        <select v-model.number="pageSize" aria-label="Registros por página" :disabled="loadingPayments">
+          <option v-for="option in pageSizeOptions" :key="option" :value="option">{{ option }} por página</option>
+        </select>
+      </div>
+    </footer>
   </div>
   <!-- Toast y modales -->
   <CardDetailPagoConcepto
@@ -185,7 +202,6 @@ import {
   formatFechaHoraFullPagoSQL,
 } from "@/service/adminApp/client";
 import { useAppToast } from "@/composables/useAppToast";
-import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 import DataTable from "@/components/ui/AppDataTable";
 import Column from "@/components/ui/AppColumn.vue";
 import InputText from "@/components/ui/AppInput.vue";
@@ -204,8 +220,14 @@ const canEditPagoConcepto = ref(false);
 const canDeletePagoConcepto = ref(false);
 const toast = useAppToast();
 const route = useRoute();
-// Datos de ejemplo
 const payments = ref([]);
+const totalPayments = ref(0);
+const loadingPayments = ref(false);
+const pageSize = ref(20);
+const currentPage = ref(0);
+const pageSizeOptions = [10, 20, 50];
+let searchTimer = null;
+let requestSequence = 0;
 const { newPaymentRequest } = usePaymentActions();
 
 // Lectura del usuario desde localStorage
@@ -237,6 +259,52 @@ const filters = ref({
 const clearFilter = () => {
   filters.value.global.value = null;
 };
+const pageCount = computed(() => Math.max(1, Math.ceil(totalPayments.value / pageSize.value)));
+const pagerLabel = computed(() => {
+  if (!totalPayments.value) return loadingPayments.value ? "Cargando registros" : "0 registros";
+  const start = currentPage.value * pageSize.value + 1;
+  const end = Math.min(totalPayments.value, start + payments.value.length - 1);
+  return `${start}-${end} de ${totalPayments.value} registros`;
+});
+
+const normalizePaymentPage = (items) => items.map((item) => ({
+  ...item,
+  fecha_legible: formatFechaHoraFullPagoSQL(item.fecha),
+}));
+
+async function loadPaymentsPage() {
+  const sequence = ++requestSequence;
+  loadingPayments.value = true;
+  try {
+    const search = String(filters.value.global.value || "").trim();
+    const response = await ps.getPagoConceptoPage({
+      limit: pageSize.value,
+      offset: currentPage.value * pageSize.value,
+      search,
+    });
+    if (sequence !== requestSequence) return;
+    payments.value = normalizePaymentPage(response.data);
+    totalPayments.value = response.total;
+    if (currentPage.value >= pageCount.value) currentPage.value = pageCount.value - 1;
+  } catch (error) {
+    console.error("No se pudieron cargar los pagos", error);
+    toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudieron cargar los pagos.", life: 3500 });
+  } finally {
+    if (sequence === requestSequence) loadingPayments.value = false;
+  }
+}
+
+function previousPage() {
+  if (currentPage.value === 0) return;
+  currentPage.value -= 1;
+  void loadPaymentsPage();
+}
+
+function nextPage() {
+  if (currentPage.value >= pageCount.value - 1) return;
+  currentPage.value += 1;
+  void loadPaymentsPage();
+}
 
 // Clase para las filas
 const rowClass = (data, index) =>
@@ -270,26 +338,18 @@ const handleResize = () => {
   isMobile.value = window.innerWidth <= 640;
 };
 onMounted(() => window.addEventListener("resize", handleResize));
-onUnmounted(() => window.removeEventListener("resize", handleResize));
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+  if (searchTimer) clearTimeout(searchTimer);
+});
 
 onMounted(async () => {
-  try {
-    await loadProgressively({
-      pageSize: 40,
-      fetchPage: (page) => ps.getPagoConcepto(page),
-      onUpdate: (items) => { payments.value = items.map((item) => ({ ...item, fecha_legible: formatFechaHoraFullPagoSQL(item.fecha) })); },
-      onBackgroundError: (error) => console.error("No se pudo completar la carga de pagos", error),
-    });
-  } catch (error) {
-    console.error("No se pudieron cargar los pagos", error);
-    toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudieron cargar los pagos.", life: 3500 });
-  }
   const searchParam = route.query.search;
-  console.log(searchParam);
 
   if (searchParam) {
     filters.value.global.value = searchParam;
   }
+  await loadPaymentsPage();
   canAddPagoConcepto.value = await hasPermission("canAddPagoConcepto");
   canEditPagoConcepto.value = await hasPermission("canEditPagoConcepto");
   canDeletePagoConcepto.value = await hasPermission("canDeletePagoConcepto");
@@ -300,6 +360,17 @@ watch(
     filters.value.global.value = newSearch || "";
   }
 );
+watch(() => filters.value.global.value, () => {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentPage.value = 0;
+    void loadPaymentsPage();
+  }, 300);
+});
+watch(pageSize, () => {
+  currentPage.value = 0;
+  void loadPaymentsPage();
+});
 
 // Lógica para el Card y eliminación (igual que antes)
 const cardVisible = ref(false);
@@ -323,16 +394,10 @@ const openCard = (payment) => {
 };
 watch(newPaymentRequest, () => openCard(null));
 const savePayment = async (payment) => {
-  const normalizedPayment = { ...payment, fecha_legible: formatFechaHoraFullPagoSQL(payment.fecha) };
-
   if (payment.id) {
     const index = payments.value.findIndex((p) => p.id === payment.id);
     if (index !== -1) {
-      console.log(index);
-      console.log("edit save");
-
-      payments.value.splice(index, 1, normalizedPayment);
-      payments.value = [...payments.value];
+      await loadPaymentsPage();
       toast.add({
         severity: "success",
         summary: "Actualizado",
@@ -342,7 +407,8 @@ const savePayment = async (payment) => {
     }
   }
   if (payment.isnew) {
-    payments.value.unshift(normalizedPayment);
+    currentPage.value = 0;
+    await loadPaymentsPage();
     toast.add({
       severity: "success",
       summary: "Agregado",
@@ -364,7 +430,8 @@ const confirmDelete = async () => {
   if (candidateToDelete.value) {
     try {
       await ps.deletePagoConcepto(candidateToDelete.value.id);
-      payments.value = payments.value.filter((p) => p.id !== candidateToDelete.value.id);
+      if (payments.value.length === 1 && currentPage.value > 0) currentPage.value -= 1;
+      await loadPaymentsPage();
       toast.add({ severity: "warn", summary: "Eliminado", detail: "Pago concepto eliminado correctamente", life: 2000 });
     } catch (error) {
       console.error("No se pudo eliminar el pago", error);

@@ -20,6 +20,13 @@ class ClienteService {
         }
     }
 
+    async getClientesPage(page: { limit: number; offset: number; search?: string }): Promise<{ data: any[]; total: number; limit: number; offset: number }> {
+        const response = await this.axios.get(`${this.serverip}/clientes`, {
+            params: { ...page, includeTotal: true },
+        });
+        return response.data;
+    }
+
     async addCliente(cliente:any){
         try{
             const response = await this.axios.post(`${this.serverip}/clientes`,cliente);

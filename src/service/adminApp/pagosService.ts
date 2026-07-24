@@ -59,6 +59,17 @@ class PagosService {
     }
   }
 
+  async getPagoConceptoPage(page: { limit: number; offset: number; search?: string }) {
+    try {
+      const response = await this.axios.get(`${this.serverip}/pagos/concepto`, {
+        params: { ...page, includeTotal: true },
+      });
+      return response.data as { data: any[]; total: number; limit: number; offset: number };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async addPagoConcepto(data: any) {
     try {
       const response = await this.axios.post(`${this.serverip}/pagos/concepto`, data);

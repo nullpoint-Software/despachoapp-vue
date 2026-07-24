@@ -4,7 +4,7 @@
     <!-- Título -->
     <header class="clients-hero">
       <div><p>ADMINISTRACIÓN / 01</p><h1>Clientes</h1><span>Expedientes, accesos y datos de contacto.</span></div>
-      <div class="hero-stat"><b>{{ customers.length }}</b><span>{{ customersComplete ? 'registros' : 'cargando…' }}</span></div>
+      <div class="hero-stat"><b>{{ totalCustomers }}</b><span>{{ loadingCustomers ? 'cargando...' : 'registros' }}</span></div>
     </header>
     <div id="clientes-table" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
       <DataTable id="inner-info" :value="customers" :filters="filters" :globalFilterFields="[
@@ -16,7 +16,7 @@
         'ciecf',
         'telefono',
         'correo',
-      ]" :paginator="!isMobile" sortMode="multiple" removableSort :rows="10" :rowsPerPageOptions="[10, 20, 50]"
+      ]" :paginator="false" sortMode="multiple" removableSort :rows="10" :rowsPerPageOptions="[10, 20, 50]"
         :rowClass="rowClass" class="w-full rounded-lg p-5">
         <!-- Encabezado de la tabla -->
         <template #header>
@@ -78,6 +78,23 @@
           </template>
         </Column>
       </DataTable>
+      <footer class="app-pager">
+        <span>{{ pagerLabel }}</span>
+        <div class="app-pager__controls">
+          <button type="button" class="app-pager__button" :disabled="currentPage === 0 || loadingCustomers"
+            aria-label="Página anterior" title="Página anterior" @click="previousPage">
+            <i class="pi pi-angle-left"></i>
+          </button>
+          <samp>{{ currentPage + 1 }} / {{ pageCount }}</samp>
+          <button type="button" class="app-pager__button" :disabled="currentPage >= pageCount - 1 || loadingCustomers"
+            aria-label="Página siguiente" title="Página siguiente" @click="nextPage">
+            <i class="pi pi-angle-right"></i>
+          </button>
+          <select v-model.number="pageSize" aria-label="Registros por página" :disabled="loadingCustomers">
+            <option v-for="option in pageSizeOptions" :key="option" :value="option">{{ option }} por página</option>
+          </select>
+        </div>
+      </footer>
     </div>
 
     <!-- Toast -->
@@ -118,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useAppToast } from "@/composables/useAppToast";
 import DataTable from "@/components/ui/AppDataTable";
 import { driverObjClientes } from "@/components/tour/clientes";
@@ -132,7 +149,6 @@ import ClientDocumentsModal from "@/components/adminApp/ClientDocumentsModal.vue
 import { cs } from "@/service/adminApp/client";
 import type { ColumnDef } from "@/types/ClientesTable";
 import { useBrutalMotion } from "@/composables/useBrutalMotion";
-import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 import { regimenFiscalLabel } from "@/constants/regimenesFiscales";
 const pageRef = ref<HTMLElement | null>(null);
 useBrutalMotion(pageRef, [".clients-hero", "#clientes-table"]);
@@ -146,9 +162,14 @@ onMounted(async () => {
   canDeleteCliente.value = await hasPermission('canDeleteCliente')
 })
 const toast = useAppToast();
-// Ejemplos de clientes
 const customers = ref<any[]>([]);
-const customersComplete = ref(false);
+const totalCustomers = ref(0);
+const loadingCustomers = ref(false);
+const pageSize = ref(20);
+const currentPage = ref(0);
+const pageSizeOptions = [10, 20, 50];
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+let requestSequence = 0;
 // Definición de columnas base (sin la columna de acciones)
 const columns = ref<ColumnDef[]>([
   { field: "id_cliente", header: "ID", visible: true },
@@ -176,6 +197,47 @@ const filters = ref({
 const clearFilter = () => {
   filters.value.global.value = null;
 };
+const pageCount = computed(() => Math.max(1, Math.ceil(totalCustomers.value / pageSize.value)));
+const pagerLabel = computed(() => {
+  if (!totalCustomers.value) return loadingCustomers.value ? "Cargando registros" : "0 registros";
+  const start = currentPage.value * pageSize.value + 1;
+  const end = Math.min(totalCustomers.value, start + customers.value.length - 1);
+  return `${start}-${end} de ${totalCustomers.value} registros`;
+});
+
+async function loadCustomersPage() {
+  const sequence = ++requestSequence;
+  loadingCustomers.value = true;
+  try {
+    const search = String(filters.value.global.value || "").trim();
+    const response = await cs.getClientesPage({
+      limit: pageSize.value,
+      offset: currentPage.value * pageSize.value,
+      search,
+    });
+    if (sequence !== requestSequence) return;
+    customers.value = response.data;
+    totalCustomers.value = response.total;
+    if (currentPage.value >= pageCount.value) currentPage.value = pageCount.value - 1;
+  } catch (error) {
+    console.error("No se pudieron cargar los clientes", error);
+    toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudieron cargar los clientes.", life: 3500 });
+  } finally {
+    if (sequence === requestSequence) loadingCustomers.value = false;
+  }
+}
+
+function previousPage() {
+  if (currentPage.value === 0) return;
+  currentPage.value -= 1;
+  void loadCustomersPage();
+}
+
+function nextPage() {
+  if (currentPage.value >= pageCount.value - 1) return;
+  currentPage.value += 1;
+  void loadCustomersPage();
+}
 
 // Clase para las filas
 const rowClass = ((data: any, index: number) =>
@@ -210,24 +272,30 @@ const handleResize = () => {
   isMobile.value = window.innerWidth <= 640;
 };
 onMounted(() => window.addEventListener("resize", handleResize));
-onUnmounted(() => window.removeEventListener("resize", handleResize));
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+  if (searchTimer) clearTimeout(searchTimer);
+});
 
 onMounted(async () => {
-  try {
-    await loadProgressively<any>({
-      pageSize: 40,
-      fetchPage: (page) => cs.getClientes(page),
-      onUpdate: (items, complete) => { customers.value = items; customersComplete.value = complete; },
-      onBackgroundError: (error) => console.error("No se pudo completar la carga de clientes", error),
-    });
-  } catch (error) {
-    console.error("No se pudieron cargar los clientes", error);
-    toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudieron cargar los clientes.", life: 3500 });
-  }
+  await loadCustomersPage();
   const done = localStorage.getItem('tourClientesDone');
   if (!done) {
     driverObjClientes.drive()
   }
+});
+
+watch(() => filters.value.global.value, () => {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentPage.value = 0;
+    void loadCustomersPage();
+  }, 300);
+});
+
+watch(pageSize, () => {
+  currentPage.value = 0;
+  void loadCustomersPage();
 });
 
 // Variables para el Card de agregar/editar clientes
@@ -259,27 +327,13 @@ const saveCustomer = async (customer: any) => {
     const index = customers.value.findIndex((c: any) => c.id_cliente === customer.id_cliente);
     try {
       if (index !== -1) {
-        const saved = await cs.editCliente(customer);
-        const previous = customers.value[index];
-        customers.value.splice(index, 1, {
-          ...customer,
-          ...(saved && typeof saved === "object" ? saved : {}),
-          fiel: null,
-          ciecf: null,
-          tiene_fiel: previous.tiene_fiel || Boolean(customer.fiel),
-          tiene_ciecf: previous.tiene_ciecf || Boolean(customer.ciecf),
-        });
+        await cs.editCliente(customer);
+        await loadCustomersPage();
         toast.add({ severity: "success", summary: "Actualizado", detail: "Cliente actualizado correctamente", life: 2000 });
       } else {
-        const saved = await cs.addCliente(customer);
-        customers.value.unshift({
-          ...customer,
-          ...(saved && typeof saved === "object" ? saved : {}),
-          fiel: null,
-          ciecf: null,
-          tiene_fiel: Boolean(customer.fiel),
-          tiene_ciecf: Boolean(customer.ciecf),
-        });
+        await cs.addCliente(customer);
+        currentPage.value = 0;
+        await loadCustomersPage();
         toast.add({ severity: "success", summary: "Agregado", detail: "Cliente agregado correctamente", life: 2000 });
       }
       cardVisible.value = false;
@@ -301,7 +355,8 @@ const confirmDelete = async () => {
   if (candidateToDelete.value) {
     try {
       await cs.deleteCliente(candidateToDelete.value.id_cliente);
-      customers.value = customers.value.filter((c: any) => c.id_cliente !== candidateToDelete.value.id_cliente);
+      if (customers.value.length === 1 && currentPage.value > 0) currentPage.value -= 1;
+      await loadCustomersPage();
       toast.add({ severity: "warn", summary: "Eliminado", detail: "Cliente eliminado correctamente", life: 2000 });
     } catch (error) {
       console.error("No se pudo eliminar el cliente", error);
