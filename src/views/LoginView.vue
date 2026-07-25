@@ -58,6 +58,9 @@
             </button>
           </div>
         </div>
+        <button type="button" class="forgot-password-link" @click="openResetRequest">
+          Olvidé mi contraseña
+        </button>
         <br>
         <!-- <div class="flex justify-between items-center mb-6">
           <label for="remember" class="flex items-center cursor-pointer text-white">
@@ -79,6 +82,32 @@
           Iniciar Sesión
         </button>
       </form></section>
+    </div>
+    <div v-if="resetPanelOpen" class="reset-overlay">
+      <form class="reset-panel" @submit.prevent="resetMode === 'confirm' ? confirmResetPassword() : requestResetEmail()">
+        <button type="button" class="reset-close" aria-label="Cerrar" @click="closeResetPanel">×</button>
+        <p>RECUPERACIÓN</p>
+        <h3>{{ resetMode === 'confirm' ? 'Nueva contraseña' : 'Restablecer contraseña' }}</h3>
+        <span>{{ resetMode === 'confirm' ? 'Escribe una contraseña nueva para tu cuenta.' : 'Te enviaremos un enlace de recuperación si el usuario existe.' }}</span>
+        <label v-if="resetMode === 'request'">
+          Usuario o correo
+          <InputText v-model="resetIdentifier" type="text" placeholder="admin@dreamsoft-dev.com" />
+        </label>
+        <label v-if="resetMode === 'confirm'">
+          Nueva contraseña
+          <input v-model="resetPassword" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" />
+        </label>
+        <label v-if="resetMode === 'confirm'">
+          Confirmar contraseña
+          <input v-model="resetPasswordConfirm" type="password" autocomplete="new-password" placeholder="Repite la contraseña" />
+        </label>
+        <div v-if="resetMessage" class="reset-message" :class="{ error: resetMessageType === 'error' }">
+          {{ resetMessage }}
+        </div>
+        <button type="submit" class="login-submit reset-submit" :disabled="resetLoading">
+          {{ resetLoading ? 'Enviando...' : (resetMode === 'confirm' ? 'Actualizar contraseña' : 'Enviar enlace') }}
+        </button>
+      </form>
     </div>
   </div>
 </template>
@@ -107,6 +136,15 @@ export default {
     const route = useRoute();
     const showError = ref(false);
     const isLoading = ref(false);
+    const resetPanelOpen = ref(false);
+    const resetMode = ref("request");
+    const resetToken = ref("");
+    const resetIdentifier = ref("");
+    const resetPassword = ref("");
+    const resetPasswordConfirm = ref("");
+    const resetLoading = ref(false);
+    const resetMessage = ref("");
+    const resetMessageType = ref("info");
     // Alternar visibilidad de la contraseña
     const togglePassword = () => {
       showPassword.value = !showPassword.value;
@@ -123,6 +161,12 @@ export default {
         }
 
         const errorType = route.query.error;
+        const routeResetToken = route.query.resetToken;
+        if (typeof routeResetToken === "string" && routeResetToken) {
+          resetToken.value = routeResetToken;
+          resetMode.value = "confirm";
+          resetPanelOpen.value = true;
+        }
         if (errorType === 'server') {
 
           toast.add({
@@ -142,7 +186,12 @@ export default {
           router.push("/login")
         }
       } catch (error) {
-        console.error(error);
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo preparar la pantalla de acceso.',
+          life: 5000,
+        });
 
       } finally {
         isLoading.value = false
@@ -174,10 +223,6 @@ export default {
 
     const login = async () => {
       isLoading.value = true
-      console.log("Iniciar sesión con:", {
-        email: email.value,
-        password: password.value,
-      });
       showError.value = false;
 
       const isLoggedIn = await as.loginUser({ username: email.value, password: password.value });
@@ -185,11 +230,73 @@ export default {
         // If loginUser is successful, run goLogin
         goLogin();
       } else {
-        console.log("Login failed");
         showError.value = true;
         isLoading.value = false
       }
 
+    };
+
+    const openResetRequest = () => {
+      resetMode.value = "request";
+      resetIdentifier.value = email.value;
+      resetMessage.value = "";
+      resetMessageType.value = "info";
+      resetPanelOpen.value = true;
+    };
+
+    const closeResetPanel = () => {
+      resetPanelOpen.value = false;
+      resetMessage.value = "";
+      resetPassword.value = "";
+      resetPasswordConfirm.value = "";
+    };
+
+    const requestResetEmail = async () => {
+      if (!resetIdentifier.value.trim()) {
+        resetMessage.value = "Ingresa tu usuario o correo.";
+        resetMessageType.value = "error";
+        return;
+      }
+      resetLoading.value = true;
+      resetMessage.value = "";
+      try {
+        const response = await as.requestPasswordReset(resetIdentifier.value.trim());
+        resetMessage.value = response.message || "Revisa tu correo para continuar.";
+        resetMessageType.value = "info";
+      } catch (error) {
+        resetMessage.value = "No fue posible enviar el enlace. Intenta otra vez.";
+        resetMessageType.value = "error";
+      } finally {
+        resetLoading.value = false;
+      }
+    };
+
+    const confirmResetPassword = async () => {
+      if (resetPassword.value.length < 8) {
+        resetMessage.value = "La contraseña debe tener al menos 8 caracteres.";
+        resetMessageType.value = "error";
+        return;
+      }
+      if (resetPassword.value !== resetPasswordConfirm.value) {
+        resetMessage.value = "Las contraseñas no coinciden.";
+        resetMessageType.value = "error";
+        return;
+      }
+      resetLoading.value = true;
+      resetMessage.value = "";
+      try {
+        const response = await as.confirmPasswordReset(resetToken.value, resetPassword.value);
+        resetMessage.value = response.message || "Contraseña actualizada.";
+        resetMessageType.value = "info";
+        resetPassword.value = "";
+        resetPasswordConfirm.value = "";
+        router.replace("/login");
+      } catch (error) {
+        resetMessage.value = "El enlace no es válido o ya expiró.";
+        resetMessageType.value = "error";
+      } finally {
+        resetLoading.value = false;
+      }
     };
 
 
@@ -208,9 +315,21 @@ export default {
       reacting,
       handleInput,
       login,
+      openResetRequest,
+      closeResetPanel,
+      requestResetEmail,
+      confirmResetPassword,
       goLogin,
       mainImageSrc,
-      showError
+      showError,
+      resetPanelOpen,
+      resetMode,
+      resetIdentifier,
+      resetPassword,
+      resetPasswordConfirm,
+      resetLoading,
+      resetMessage,
+      resetMessageType
     };
   },
 };
@@ -257,7 +376,7 @@ export default {
 
 <!-- Estilos scoped para las ondas -->
 <style scoped>
-.login-page{padding:1rem;background:var(--br-bg);color:var(--br-text)}.login-shell{display:grid;grid-template-columns:1.08fr .92fr;width:min(70rem,100%);min-height:39rem;border:2px solid var(--br-control);background:var(--br-panel);box-shadow:14px 14px 0 var(--br-accent)}.login-brand{display:flex;flex-direction:column;justify-content:flex-end;padding:2rem;border-right:2px solid var(--br-control);background:repeating-linear-gradient(0deg,var(--br-bg) 0,var(--br-bg) 4px,var(--br-panel) 5px)}.login-brand p{margin:auto 0 0;color:var(--br-accent);font:800 .75rem "Courier New",monospace;letter-spacing:.12em}.login-brand img{width:4rem;margin-bottom:auto}.login-brand h1{margin:1rem 0;font:900 clamp(3.4rem,7vw,6rem)/.78 Arial,sans-serif;letter-spacing:-.075em;text-transform:uppercase}.login-brand span{color:var(--br-muted);font:800 .75rem "Courier New",monospace;text-transform:uppercase}.login-form-panel{position:relative;display:flex;flex-direction:column;justify-content:center;padding:clamp(1.5rem,4vw,3.5rem);background:var(--br-control);color:#141413}.palette-position{position:absolute;right:1rem;top:1rem}.login-logo{display:none}.login-form-panel h2{font:900 clamp(2rem,5vw,3.5rem)/1 Arial,sans-serif;letter-spacing:-.055em;text-align:left!important;text-transform:uppercase}.login-copy{color:#5e5a52!important;text-align:left!important;font:700 .82rem "Courier New",monospace}.login-form-panel label{color:#141413!important;font:800 .72rem "Courier New",monospace;text-transform:uppercase}.login-form-panel :deep(input),.login-form-panel>form input{border:1px solid #555!important;border-radius:0!important;background:#fff!important;color:#141413!important}.password-toggle{color:#141413}.login-submit{border:1px solid #141413;border-radius:0;background:var(--br-accent);color:var(--br-accent-text);font:900 .78rem "Courier New",monospace;text-transform:uppercase}.login-submit:hover{filter:brightness(.9);transform:translateY(-1px)}:global(.background){background:var(--br-bg)!important}:global(.background span){border-radius:0!important;color:var(--br-accent)!important;opacity:.06!important}@media(max-width:760px){.login-shell{grid-template-columns:1fr;box-shadow:6px 6px 0 var(--br-accent)}.login-brand{min-height:14rem;border-right:0;border-bottom:2px solid var(--br-control)}.login-brand h1{font-size:3.2rem}.login-brand img{display:none}.login-form-panel{min-height:28rem}.palette-position{position:static;margin-bottom:1rem}}
+.login-page{padding:1rem;background:var(--br-bg);color:var(--br-text)}.login-shell{display:grid;grid-template-columns:1.08fr .92fr;width:min(70rem,100%);min-height:39rem;border:2px solid var(--br-control);background:var(--br-panel);box-shadow:14px 14px 0 var(--br-accent)}.login-brand{display:flex;flex-direction:column;justify-content:flex-end;padding:2rem;border-right:2px solid var(--br-control);background:repeating-linear-gradient(0deg,var(--br-bg) 0,var(--br-bg) 4px,var(--br-panel) 5px)}.login-brand p{margin:auto 0 0;color:var(--br-accent);font:800 .75rem "Courier New",monospace;letter-spacing:.12em}.login-brand img{width:4rem;margin-bottom:auto}.login-brand h1{margin:1rem 0;font:900 clamp(3.4rem,7vw,6rem)/.78 Arial,sans-serif;letter-spacing:-.075em;text-transform:uppercase}.login-brand span{color:var(--br-muted);font:800 .75rem "Courier New",monospace;text-transform:uppercase}.login-form-panel{position:relative;display:flex;flex-direction:column;justify-content:center;padding:clamp(1.5rem,4vw,3.5rem);background:var(--br-control);color:#141413}.palette-position{position:absolute;right:1rem;top:1rem}.login-logo{display:none}.login-form-panel h2{font:900 clamp(2rem,5vw,3.5rem)/1 Arial,sans-serif;letter-spacing:-.055em;text-align:left!important;text-transform:uppercase}.login-copy{color:#5e5a52!important;text-align:left!important;font:700 .82rem "Courier New",monospace}.login-form-panel label{color:#141413!important;font:800 .72rem "Courier New",monospace;text-transform:uppercase}.login-form-panel :deep(input),.login-form-panel>form input{border:1px solid #555!important;border-radius:0!important;background:#fff!important;color:#141413!important}.password-toggle{color:#141413}.login-submit{border:1px solid #141413;border-radius:0;background:var(--br-accent);color:var(--br-accent-text);font:900 .78rem "Courier New",monospace;text-transform:uppercase}.login-submit:hover{filter:brightness(.9);transform:translateY(-1px)}.forgot-password-link{display:block;margin:.35rem 0 0 auto;border:0;border-bottom:1px solid #141413;background:transparent;color:#141413;padding:.2rem 0;font:800 .68rem "Courier New",monospace;text-transform:uppercase;cursor:pointer}.forgot-password-link:hover,.forgot-password-link:focus-visible{outline:0;color:var(--br-accent);border-color:var(--br-accent)}.reset-overlay{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:color-mix(in srgb,var(--br-bg) 78%,transparent);padding:1rem}.reset-panel{position:relative;display:grid;width:min(28rem,100%);gap:.85rem;border:2px solid var(--br-control);background:var(--br-panel);box-shadow:8px 8px 0 var(--br-accent);padding:1.35rem;color:var(--br-text)}.reset-panel p{margin:0;color:var(--br-accent);font:900 .68rem "Courier New",monospace;letter-spacing:.08em}.reset-panel h3{margin:0;font:900 1.65rem Arial,sans-serif;text-transform:uppercase}.reset-panel>span{color:var(--br-muted);font:.78rem/1.45 Arial,sans-serif}.reset-panel label{display:grid;gap:.35rem;color:var(--br-muted);font:800 .68rem "Courier New",monospace;text-transform:uppercase}.reset-panel input,.reset-panel :deep(input){width:100%;border:1px solid var(--br-line-strong)!important;border-radius:0!important;background:var(--br-bg)!important;color:var(--br-text)!important;padding:.8rem!important}.reset-close{position:absolute;right:.75rem;top:.75rem;display:grid;width:2rem;height:2rem;place-items:center;border:1px solid var(--br-line-strong);background:var(--br-bg);color:var(--br-text);font-size:1.2rem;cursor:pointer}.reset-close:hover,.reset-close:focus-visible{border-color:var(--br-accent);outline:0;color:var(--br-accent)}.reset-message{border:1px solid var(--br-line);background:var(--br-bg);padding:.75rem;color:var(--br-text);font:.78rem/1.35 Arial,sans-serif}.reset-message.error{border-color:#b91c1c;color:#fca5a5}.reset-submit{min-height:2.75rem}:global(.background){background:var(--br-bg)!important}:global(.background span){border-radius:0!important;color:var(--br-accent)!important;opacity:.06!important}@media(max-width:760px){.login-shell{grid-template-columns:1fr;box-shadow:6px 6px 0 var(--br-accent)}.login-brand{min-height:14rem;border-right:0;border-bottom:2px solid var(--br-control)}.login-brand h1{font-size:3.2rem}.login-brand img{display:none}.login-form-panel{min-height:28rem}.palette-position{position:static;margin-bottom:1rem}}
 .wave-container {
   position: absolute;
   border-radius: 50%;

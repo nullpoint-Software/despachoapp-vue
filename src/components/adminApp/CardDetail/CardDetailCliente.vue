@@ -28,8 +28,10 @@
             <label class="font-semibold text-black">RFC</label>
             <InputText
               v-model="customer.rfc"
+              maxlength="13"
               class="p-2 border border-gray-300 rounded"
               placeholder="Ingrese el RFC"
+              @input="normalizeRfcInput"
             />
             <span v-if="errors.rfc" class="text-red-500 text-sm">{{ errors.rfc }}</span>
           </div>
@@ -150,6 +152,9 @@ const validate = () => {
   if (!customer.value.rfc.trim()) {
     errors.value.rfc = "El RFC es obligatorio.";
     valid = false;
+  } else if (!/^[A-Z0-9&Ñ]{12,13}$/.test(customer.value.rfc.trim().toUpperCase())) {
+    errors.value.rfc = "El RFC debe tener 12 o 13 caracteres válidos.";
+    valid = false;
   }
   if (!customer.value.regimen_fiscal) {
     errors.value.regimen_fiscal = "Selecciona el régimen fiscal.";
@@ -176,11 +181,19 @@ const validate = () => {
   return valid;
 };
 
+const normalizeRfcInput = () => {
+  customer.value.rfc = String(customer.value.rfc || "")
+    .trim()
+    .toUpperCase()
+    .slice(0, 13);
+};
+
 const close = () => {
   emit("close");
 };
 
 const save = () => {
+  normalizeRfcInput();
   if (validate()) {
     emit("save", { ...customer.value });
   }

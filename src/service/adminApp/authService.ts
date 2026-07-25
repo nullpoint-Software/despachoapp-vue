@@ -39,6 +39,21 @@ class authService {
     }
   }
 
+  async requestPasswordReset(identifier: string) {
+    const response = await this.axios.post(`${this.serverip}/auth/password-reset/request`, {
+      identifier,
+    });
+    return response.data;
+  }
+
+  async confirmPasswordReset(token: string, password: string) {
+    const response = await this.axios.post(`${this.serverip}/auth/password-reset/confirm`, {
+      token,
+      password,
+    });
+    return response.data;
+  }
+
   getUserInfo = async () => {
     const currentuserid = await localStorage.getItem("userid");
     try {

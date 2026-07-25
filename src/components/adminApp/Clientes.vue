@@ -105,8 +105,18 @@
     <ClientDocumentsModal v-if="selectedDocumentClient" :client="selectedDocumentClient"
       @close="selectedDocumentClient = null" />
 
-    <div v-if="credentialDialogVisible" class="credential-overlay" @click.self="closeCredentialDialog">
-      <form class="credential-dialog" @submit.prevent="verifyAndReveal">
+    <div v-if="credentialDialogVisible || passkeyBusy" class="credential-overlay" @click.self="closeCredentialDialog">
+      <section v-if="passkeyBusy" class="credential-dialog credential-dialog--loading" role="status" aria-live="polite">
+        <Loader contained aria-hidden="true" />
+        <p>VERIFICACIÓN DE IDENTIDAD</p>
+        <h2>Esperando passkey</h2>
+        <span>Completa la verificación en la ventana de tu dispositivo.</span>
+        <button type="button" class="credential-password-fallback" @click="usePasswordInstead">
+          <i class="pi pi-key"></i>
+          <span>Usar contraseña</span>
+        </button>
+      </section>
+      <form v-else class="credential-dialog" @submit.prevent="verifyAndReveal">
         <header>
           <div>
             <p>VERIFICACIÓN DE IDENTIDAD</p>
@@ -122,9 +132,11 @@
         </label>
         <p v-if="verificationError" class="credential-error" role="alert">{{ verificationError }}</p>
         <footer>
-          <Button type="button" label="Cancelar" outlined :disabled="verificationBusy" @click="closeCredentialDialog" />
+          <Button type="button" label="Cancelar" outlined :disabled="verificationBusy || passkeyBusy" @click="closeCredentialDialog" />
+          <Button type="button" label="Passkey" icon="pi pi-shield"
+            :disabled="verificationBusy || passkeyBusy || !canUsePasskeyReveal" @click="verifyAndRevealWithPasskey" />
           <Button type="submit" label="Verificar y mostrar" icon="pi pi-eye"
-            :disabled="!verificationPassword || verificationBusy" />
+            :disabled="!verificationPassword || verificationBusy || passkeyBusy" />
         </footer>
       </form>
     </div>
@@ -146,7 +158,8 @@ import { hasPermission } from "@/service/adminApp/permissionsService";
 import CardDetailCliente from "@/components/adminApp/CardDetail/CardDetailCliente.vue";
 import ConfirmDeleteDialog from "@/components/adminApp/Dialogs/ConfirmDeleteDialog.vue";
 import ClientDocumentsModal from "@/components/adminApp/ClientDocumentsModal.vue";
-import { cs } from "@/service/adminApp/client";
+import Loader from "@/components/adminApp/Menus/Loader.vue";
+import { cs, pks } from "@/service/adminApp/client";
 import type { ColumnDef } from "@/types/ClientesTable";
 import { useBrutalMotion } from "@/composables/useBrutalMotion";
 import { regimenFiscalLabel } from "@/constants/regimenesFiscales";
@@ -219,8 +232,7 @@ async function loadCustomersPage() {
     customers.value = response.data;
     totalCustomers.value = response.total;
     if (currentPage.value >= pageCount.value) currentPage.value = pageCount.value - 1;
-  } catch (error) {
-    console.error("No se pudieron cargar los clientes", error);
+  } catch (_error) {
     toast.add({ severity: "error", summary: "Sin conexión", detail: "No se pudieron cargar los clientes.", life: 3500 });
   } finally {
     if (sequence === requestSequence) loadingCustomers.value = false;
@@ -279,6 +291,7 @@ onUnmounted(() => {
 
 onMounted(async () => {
   await loadCustomersPage();
+  await refreshPasskeyAvailability();
   const done = localStorage.getItem('tourClientesDone');
   if (!done) {
     driverObjClientes.drive()
@@ -337,8 +350,7 @@ const saveCustomer = async (customer: any) => {
         toast.add({ severity: "success", summary: "Agregado", detail: "Cliente agregado correctamente", life: 2000 });
       }
       cardVisible.value = false;
-    } catch (error) {
-      console.error("No se pudo guardar el cliente", error);
+    } catch (_error) {
       toast.add({ severity: "error", summary: "No guardado", detail: "Revisa la conexión e inténtalo de nuevo.", life: 3500 });
     }
   }
@@ -358,8 +370,7 @@ const confirmDelete = async () => {
       if (customers.value.length === 1 && currentPage.value > 0) currentPage.value -= 1;
       await loadCustomersPage();
       toast.add({ severity: "warn", summary: "Eliminado", detail: "Cliente eliminado correctamente", life: 2000 });
-    } catch (error) {
-      console.error("No se pudo eliminar el cliente", error);
+    } catch (_error) {
       toast.add({ severity: "error", summary: "No eliminado", detail: "No se pudo eliminar el cliente.", life: 3500 });
     }
   }
@@ -385,6 +396,11 @@ const credentialTarget = ref<{ row: any; field: ProtectedClientField } | null>(n
 const verificationPassword = ref("");
 const verificationError = ref("");
 const verificationBusy = ref(false);
+const passkeyBusy = ref(false);
+const passkeySupported = ref(false);
+const hasRegisteredPasskeys = ref(false);
+const passkeyPasswordFallbackRequested = ref(false);
+const canUsePasskeyReveal = computed(() => passkeySupported.value && hasRegisteredPasskeys.value);
 
 function isFieldVisible(row: any, field: string) {
   return revealed.value[row.id_cliente]?.[field] ?? false;
@@ -400,11 +416,56 @@ function clearsValueWhenHidden(field: string) {
 }
 
 function closeCredentialDialog() {
-  if (verificationBusy.value) return;
+  if (verificationBusy.value || passkeyBusy.value) return;
   credentialDialogVisible.value = false;
   credentialTarget.value = null;
   verificationPassword.value = "";
   verificationError.value = "";
+}
+
+function openPasswordCredentialDialog() {
+  verificationPassword.value = "";
+  credentialDialogVisible.value = true;
+}
+
+function usePasswordInstead() {
+  passkeyPasswordFallbackRequested.value = true;
+  pks.cancelAuthentication();
+  passkeyBusy.value = false;
+  verificationError.value = "";
+  openPasswordCredentialDialog();
+}
+
+async function refreshPasskeyAvailability() {
+  passkeySupported.value = pks.supportsPasskeys()
+    && await pks.platformAuthenticatorAvailable().catch(() => false);
+  if (!passkeySupported.value) {
+    hasRegisteredPasskeys.value = false;
+    return;
+  }
+  try {
+    hasRegisteredPasskeys.value = (await pks.getPasskeys()).length > 0;
+  } catch (_error) {
+    hasRegisteredPasskeys.value = false;
+  }
+}
+
+function showRevealedCredential(target: { row: any; field: ProtectedClientField }, value: string) {
+  const rowKey = String(target.row.id_cliente);
+  if (!revealedValues.value[rowKey]) revealedValues.value[rowKey] = {};
+  revealedValues.value[rowKey][target.field] = value;
+  target.row[target.field] = value;
+  setFieldVisibility(target.row, target.field, true);
+
+  const timerKey = `${rowKey}:${target.field}`;
+  const previousTimer = revealTimers.get(timerKey);
+  if (previousTimer) clearTimeout(previousTimer);
+  revealTimers.set(timerKey, setTimeout(() => {
+    setFieldVisibility(target.row, target.field, false);
+    delete revealedValues.value[rowKey]?.[target.field];
+    if (clearsValueWhenHidden(target.field)) target.row[target.field] = null;
+    revealTimers.delete(timerKey);
+  }, 20000));
 }
 
 async function verifyAndReveal() {
@@ -418,21 +479,7 @@ async function verifyAndReveal() {
       target.field,
       verificationPassword.value,
     );
-    const rowKey = String(target.row.id_cliente);
-    if (!revealedValues.value[rowKey]) revealedValues.value[rowKey] = {};
-    revealedValues.value[rowKey][target.field] = response.value;
-    target.row[target.field] = response.value;
-    setFieldVisibility(target.row, target.field, true);
-
-    const timerKey = `${rowKey}:${target.field}`;
-    const previousTimer = revealTimers.get(timerKey);
-    if (previousTimer) clearTimeout(previousTimer);
-    revealTimers.set(timerKey, setTimeout(() => {
-      setFieldVisibility(target.row, target.field, false);
-      delete revealedValues.value[rowKey]?.[target.field];
-      if (clearsValueWhenHidden(target.field)) target.row[target.field] = null;
-      revealTimers.delete(timerKey);
-    }, 20000));
+    showRevealedCredential(target, response.value);
 
     verificationBusy.value = false;
     closeCredentialDialog();
@@ -441,6 +488,38 @@ async function verifyAndReveal() {
     verificationError.value = error?.response?.data?.error || "No fue posible verificar tu identidad.";
     verificationBusy.value = false;
     verificationPassword.value = "";
+  }
+}
+
+async function verifyAndRevealWithPasskey() {
+  const target = credentialTarget.value;
+  if (!target || !canUsePasskeyReveal.value) {
+    openPasswordCredentialDialog();
+    return;
+  }
+  passkeyBusy.value = true;
+  passkeyPasswordFallbackRequested.value = false;
+  verificationError.value = "";
+  try {
+    const assertion = await pks.authenticate();
+    const response = await cs.revelarCredencial(
+      target.row.id_cliente,
+      target.field,
+      "",
+      assertion,
+    );
+    showRevealedCredential(target, response.value);
+    passkeyBusy.value = false;
+    closeCredentialDialog();
+    toast.add({ severity: "success", summary: "Identidad verificada", detail: "La credencial se ocultará en 20 segundos.", life: 3000 });
+  } catch (error: any) {
+    if (passkeyPasswordFallbackRequested.value) {
+      passkeyBusy.value = false;
+      return;
+    }
+    verificationError.value = error?.response?.data?.error || "No fue posible verificar tu passkey. Puedes usar tu contraseña.";
+    passkeyBusy.value = false;
+    openPasswordCredentialDialog();
   }
 }
 
@@ -461,14 +540,18 @@ function handleCellClick(row: any, field: string, col: ColumnDef) {
     return;
   }
   credentialTarget.value = { row, field: field as ProtectedClientField };
-  verificationPassword.value = "";
   verificationError.value = "";
-  credentialDialogVisible.value = true;
+  if (canUsePasskeyReveal.value) {
+    void verifyAndRevealWithPasskey();
+    return;
+  }
+  openPasswordCredentialDialog();
 }
 </script>
 <style scoped>
 .clients-view{min-height:100%;padding:clamp(1rem,2.5vw,2rem);background:var(--br-bg);color:var(--br-text)}.clients-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;padding:1.5rem 0;border-top:1px solid var(--br-line);border-bottom:1px solid var(--br-line);margin-bottom:1rem}.clients-hero p{margin:0 0 .5rem;color:var(--br-accent);font:800 .75rem "Courier New",monospace;letter-spacing:.12em}.clients-hero h1{margin:0;font:900 clamp(3.2rem,9vw,7rem)/.75 Arial,sans-serif;letter-spacing:-.075em;text-transform:uppercase}.clients-hero>div>span{display:block;margin-top:1rem;color:var(--br-muted);font:700 .9rem "Courier New",monospace}.hero-stat{min-width:10rem;padding:1rem;border:1px solid var(--br-line-strong);text-align:right}.hero-stat b{display:block;font:900 2.8rem/1 Arial,sans-serif}.hero-stat span{font:800 .7rem "Courier New",monospace;text-transform:uppercase}@media(max-width:640px){.clients-hero{align-items:flex-start;flex-direction:column}.hero-stat{width:100%;text-align:left}}
 .credential-overlay{position:fixed;inset:0;z-index:1400;display:grid;place-items:center;padding:1rem;background:rgba(0,0,0,.82);backdrop-filter:blur(4px)}.credential-dialog{width:min(31rem,100%);border:1px solid var(--br-line-strong);background:var(--br-panel);color:var(--br-text);box-shadow:9px 9px 0 var(--br-accent)}.credential-dialog header{display:flex;justify-content:space-between;border-bottom:1px solid var(--br-line);background:var(--br-bg)}.credential-dialog header>div{padding:1.25rem}.credential-dialog header p{margin:0 0 .35rem;color:var(--br-accent);font:800 .68rem "Courier New",monospace;letter-spacing:.1em}.credential-dialog header h2{margin:0;font:900 1.8rem/1 Arial,sans-serif;text-transform:uppercase}.credential-dialog header span{display:block;margin-top:.6rem;color:var(--br-muted);font:700 .78rem/1.35 "Courier New",monospace}.credential-dialog header button{width:3.75rem;align-self:stretch;border:0;border-left:1px solid var(--br-line);background:var(--br-accent);color:var(--br-accent-text);font-size:2rem;cursor:pointer}.credential-dialog>label{display:grid;gap:.45rem;padding:1.25rem}.credential-dialog>label>span{font:800 .72rem "Courier New",monospace;text-transform:uppercase}.credential-error{margin:0 1.25rem;border:1px solid #ef4d3d;background:rgba(239,77,61,.12);padding:.75rem;color:var(--br-text);font:800 .76rem "Courier New",monospace}.credential-dialog footer{display:flex;justify-content:flex-end;gap:.75rem;padding:1rem 1.25rem 1.25rem}
+.credential-dialog--loading{display:grid;min-height:18rem;place-items:center;padding:2rem;text-align:center}.credential-dialog--loading p{margin:0;color:var(--br-accent);font:800 .68rem "Courier New",monospace;letter-spacing:.1em}.credential-dialog--loading h2{margin:.2rem 0 0;font:900 1.8rem/1 Arial,sans-serif;text-transform:uppercase}.credential-dialog--loading span{max-width:20rem;color:var(--br-muted);font:700 .78rem/1.4 "Courier New",monospace}.credential-password-fallback{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.75rem;border:1px solid var(--br-accent);background:transparent;color:var(--br-accent);padding:.55rem .85rem;font:800 .72rem "Courier New",monospace;text-transform:uppercase;cursor:pointer}.credential-password-fallback:hover{background:var(--br-accent);color:var(--br-accent-text)}
 
 :deep(.app-data-table__table) { min-width: 74rem; table-layout: fixed; }
 :deep(.app-data-table__table th) {

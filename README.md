@@ -7,11 +7,38 @@ El sistema se divide en dos repositorios:
 - `despachoapp-vue`: interfaz web desarrollada con Vue 3, TypeScript y Vite.
 - `despachoapp-server`: API desarrollada con Node.js, Express y MySQL.
 
+## English Overview
+
+DespachoApp is a web application for running an accounting office. It brings together client records, task management, payment tracking, cash cuts, protected credentials, encrypted client documents, internal notes, audit history, user administration, compliance opinions, and tax reporting from CFDI XML files.
+
+The system is split into two repositories:
+
+- `despachoapp-vue`: Vue 3, TypeScript, Vite, PWA frontend.
+- `despachoapp-server`: Node.js, Express, MySQL backend API.
+
+Main capabilities:
+
+- Dashboard for revenue, costs, and pending work.
+- Kanban board for team tasks.
+- Client records with RFC, fiscal regime, contact data, FIEL/CIECF credentials, and encrypted PDF files.
+- Password or passkey verification for protected data reveal.
+- Payment records, cash cuts, Excel exports, and thermal ticket printing.
+- CFDI XML import, classification, fiscal reports, DIOT output, PDF and Excel downloads.
+- Public SAT compliance opinion checks by RFC.
+- Internal Markdown notes organized in folders.
+- Audit log with compatible undo actions.
+- User, profile, password, passkey, permission, palette, and text-size management.
+- Responsive desktop/mobile layout. Desktop modal windows become full-screen views on mobile.
+- Transactional email for new-user credentials and password reset flows.
+
+For Docker, SMTP, volumes, and production operation, see the root `README.md` and `docs/stalwart-email.md`.
+
 ## Funciones principales
 
 - Panel de ingresos, costos y tareas pendientes.
 - Tablero Kanban para asignar y dar seguimiento a tareas.
 - Expedientes de clientes con RFC, datos de contacto, FIEL y CIECF.
+- Revelado de datos protegidos con contraseña o passkey.
 - Registro de pagos mensuales y pagos por concepto.
 - Cortes de caja, exportación a Excel e impresión de comprobantes.
 - Importación y clasificación de CFDI 4.0 desde archivos XML.
@@ -23,7 +50,23 @@ El sistema se divide en dos repositorios:
 - Notas internas organizadas en carpetas.
 - Bitácora de operaciones con opción de revertir cambios compatibles.
 - Administración de usuarios, perfiles y permisos.
+- Correos transaccionales para alta de usuario y restablecimiento de contraseña.
 - Diseño adaptable para escritorio y dispositivos móviles.
+- Ventanas flotantes de escritorio adaptadas a pantalla completa en móvil.
+
+## Actualización reciente (25 de julio de 2026)
+
+- Se agregó soporte de passkeys para verificar la revelación de datos protegidos con Face ID, Touch ID, Windows Hello o mecanismos compatibles del navegador.
+- Al revelar un dato protegido, la aplicación muestra una pantalla de carga mientras espera la interfaz de passkey y permite cambiar a contraseña.
+- Si el usuario no tiene passkeys registradas, el flujo usa contraseña.
+- El RFC del cliente se trata como dato protegido por visibilidad: pide verificación, pero no intenta descifrarlo porque se guarda como dato normal.
+- Las tablas usan filtros, paginación y carga progresiva para evitar solicitar todos los registros de golpe.
+- El menú móvil conserva el diseño sencillo de `Más`, mantiene el encabezado de perfil y agrega accesos a páginas, notas, registros, cuenta y cierre de sesión.
+- Las ventanas flotantes de escritorio pasan a vistas de pantalla completa en móvil para documentos, notas, registros, detalles, cortes, fechas, tickets y diálogos del sistema.
+- Configuración permite cambiar datos del usuario, contraseña y passkeys desde la app.
+- Al crear un usuario se envía correo con acceso, usuario y contraseña definida.
+- Se agregó flujo de restablecimiento de contraseña por correo.
+- Se desactivaron logs de consola en frontend para builds de aplicación.
 
 ## Actualización de cumplimiento y diseño (22 de julio de 2026)
 

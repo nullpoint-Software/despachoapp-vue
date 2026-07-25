@@ -12,10 +12,8 @@ class ClienteService {
     async getClientes(page?: { limit: number; offset: number }): Promise<any> {
         try {
             const response = await this.axios.get(`${this.serverip}/clientes`, { params: page });
-            console.log("cliente",response.data);
             return response.data;
         } catch (error) {
-            console.error("Error fetching clientes:", error);
             throw error;
         }
     }
@@ -30,10 +28,8 @@ class ClienteService {
     async addCliente(cliente:any){
         try{
             const response = await this.axios.post(`${this.serverip}/clientes`,cliente);
-            console.log("try insert cliente",cliente);
             return response.data;
         }catch(error){
-            console.error("error insert cliente", error)
             throw error;
         }
     }
@@ -41,10 +37,8 @@ class ClienteService {
     async editCliente(cliente:any){
         try{
             const response = await this.axios.put(`${this.serverip}/clientes/${cliente.id_cliente}`,cliente);
-            console.log("try edit cliente",cliente);
             return response.data;
         }catch(error){
-            console.error("error edit cliente", error)
             throw error;
         }
     }
@@ -52,18 +46,16 @@ class ClienteService {
     async deleteCliente(id_cliente:String){
         try{
             const response = await this.axios.delete(`${this.serverip}/clientes/${id_cliente}`);
-            console.log("try delete cliente",id_cliente);
             return response.data;
         }catch(error){
-            console.error("error delete cliente", error)
             throw error;
         }
     }
 
-    async revelarCredencial(idCliente: number, field: "rfc" | "fiel" | "ciecf", password: string) {
+    async revelarCredencial(idCliente: number, field: "rfc" | "fiel" | "ciecf", password: string, passkey?: unknown) {
         const response = await this.axios.post(
             `${this.serverip}/clientes/${idCliente}/credenciales/revelar`,
-            { field, password },
+            { field, password, passkey },
         );
         return response.data as { field: "rfc" | "fiel" | "ciecf"; value: string };
     }

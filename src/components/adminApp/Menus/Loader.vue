@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
+    <div :class="contained ? 'loader-shell loader-shell--contained' : 'loader-shell fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50'">
       <div class="loader">
         <!-- SVG filter para unión tipo 'goo' más suave -->
         <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
@@ -24,10 +24,20 @@
   </template>
   
   <script setup>
-  // Loader puro CSS, sin JS adicional
+  defineProps({
+    contained: {
+      type: Boolean,
+      default: false,
+    },
+  });
   </script>
   
   <style scoped>
+  .loader-shell--contained {
+    display: grid;
+    place-items: center;
+  }
+
   /* Contenedor aplica filtro goo */
   .loader {
     width: 100px;
@@ -40,7 +50,7 @@
   .dot {
     width: 40px;
     height: 40px;
-    background: #0b61ff;      /* color único */
+    background: var(--br-accent, #e34b32);
     border-radius: 8px;       /* esquinas suaves */
     position: absolute;
     animation: move 2s infinite ease-in-out;

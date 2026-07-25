@@ -16,10 +16,8 @@ class UsuarioService {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      console.log("usuarios", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error fetching usuarios:", error);
       throw error;
     }
   }
@@ -34,10 +32,8 @@ class UsuarioService {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      console.log("try insert usuario", usuario);
       return response.data;
     } catch (error) {
-      console.error("error insert usuario", error);
       throw error;
     }
   }
@@ -53,10 +49,8 @@ class UsuarioService {
           },
         }
       );
-      console.log("try get PS usuario", id_usuario);
       return response.data;
     } catch (error) {
-      console.error("error get usuario", error);
       throw error;
     }
   }
@@ -72,10 +66,8 @@ class UsuarioService {
           },
         }
       );
-      console.log("try edit usuario", usuario);
       return response.data;
     } catch (error) {
-      console.error("error edit usuario", error);
       throw error;
     }
   }
@@ -89,10 +81,8 @@ class UsuarioService {
           },
         }
       );
-      console.log("try delete usuario", id_usuario);
       return response.data;
     } catch (error) {
-      console.error("error delete usuario", error);
       throw error;
     }
   }

@@ -54,6 +54,41 @@
         </div>
       </section>
 
+      <section class="settings-panel passkey-panel bg-white text-black rounded-2xl shadow p-6
+               col-start-1 row-start-3 col-span-2
+               lg:col-start-1 lg:row-start-3 lg:col-span-1">
+        <div class="passkey-panel__header">
+          <div>
+            <p>ACCESO SEGURO</p>
+            <h2><i class="pi pi-shield mr-2"></i> Passkeys</h2>
+          </div>
+          <button type="button" class="passkey-add-button" :disabled="passkeyBusy || !passkeySupported"
+            @click="addPasskey">
+            <i class="pi pi-plus"></i>
+            <span>Agregar passkey</span>
+          </button>
+        </div>
+        <p class="passkey-panel__status" :class="{ unavailable: !passkeySupported }">
+          {{ passkeyStatusLabel }}
+        </p>
+        <div class="passkey-list">
+          <div v-if="passkeysLoading" class="passkey-empty">Cargando passkeys...</div>
+          <div v-else-if="!passkeys.length" class="passkey-empty">Sin passkeys registradas.</div>
+          <template v-else>
+            <article v-for="passkey in passkeys" :key="passkey.id" class="passkey-row">
+              <div>
+                <strong>{{ passkey.name }}</strong>
+                <span>{{ formatPasskeyDate(passkey.createdAt) }}</span>
+              </div>
+              <button type="button" aria-label="Eliminar passkey" title="Eliminar passkey"
+                :disabled="passkeyBusy" @click="removePasskey(passkey)">
+                <i class="pi pi-trash"></i>
+              </button>
+            </article>
+          </template>
+        </div>
+      </section>
+
       <!-- 1: BUSCAR Y SELECCIÓN DE USUARIO -->
       <aside v-if="isAdmin" class="settings-panel users-panel bg-white text-black rounded-2xl shadow p-6 flex flex-col
                col-start-3 row-start-1 row-span-3
@@ -107,8 +142,8 @@
 
       <!-- 2: AÑADIR NUEVO USUARIO -->
       <section v-if="isAdmin" class="settings-panel create-user-panel bg-white text-black rounded-2xl shadow p-6
-               col-start-1 row-start-2 col-span-2 row-span-2
-               lg:col-start-1 lg:row-start-2 lg:col-span-1 lg:row-span-2">
+               col-start-1 row-start-2 col-span-2
+               lg:col-start-1 lg:row-start-2 lg:col-span-1">
         <h2 class="text-xl font-semibold mb-4 flex items-center">
           <i class="pi pi-user-plus mr-2"></i> Añadir nuevo usuario
         </h2>
@@ -288,24 +323,49 @@
               <div><span>FICHA / 02</span><h4>Acceso y contacto</h4></div>
               <small>Información protegida de la cuenta</small>
             </div>
+            <article class="account-item account-item--actions">
+              <i class="pi pi-id-card"></i>
+              <div><small>Nombre completo</small><strong>{{ usuarioSeleccionado.nombre }}</strong></div>
+              <button type="button" aria-label="Editar nombre" title="Editar nombre"
+                @click="editSelectedUserField('nombre', 'Nombre completo')">
+                <i class="pi pi-pencil"></i>
+              </button>
+            </article>
             <article class="account-item">
               <i class="pi pi-user"></i>
               <div><small>Nombre de usuario</small><strong>{{ usuarioSeleccionado.username }}</strong></div>
+              <button type="button" aria-label="Editar usuario" title="Editar usuario"
+                @click="editSelectedUserField('username', 'Nombre de usuario')">
+                <i class="pi pi-pencil"></i>
+              </button>
             </article>
             <article class="account-item">
               <i class="pi pi-envelope"></i>
               <div><small>Correo electrónico</small><strong>{{ usuarioSeleccionado.email || 'Sin registrar' }}</strong></div>
+              <button type="button" aria-label="Editar correo" title="Editar correo"
+                @click="editSelectedUserField('email', 'Correo electrónico')">
+                <i class="pi pi-pencil"></i>
+              </button>
             </article>
             <article class="account-item account-item--password">
               <i class="pi pi-key"></i>
               <div><small>Contraseña</small><strong>{{ passwordVisible ? usuarioSeleccionado.password : '••••••••' }}</strong></div>
-              <button type="button" @click="verPassword" :aria-label="passwordVisible ? 'Volver a verificar contraseña' : 'Ver contraseña'">
-                <i :class="passwordVisible ? 'pi pi-eye-slash' : 'pi pi-eye'"></i><span>{{ passwordVisible ? 'Verificar otra vez' : 'Mostrar' }}</span>
-              </button>
+              <div class="account-actions">
+                <button type="button" @click="verPassword" :aria-label="passwordVisible ? 'Volver a verificar contraseña' : 'Ver contraseña'">
+                  <i :class="passwordVisible ? 'pi pi-eye-slash' : 'pi pi-eye'"></i><span>{{ passwordVisible ? 'Verificar' : 'Mostrar' }}</span>
+                </button>
+                <button type="button" @click="changeSelectedUserPassword" aria-label="Cambiar contraseña">
+                  <i class="pi pi-lock"></i><span>Cambiar</span>
+                </button>
+              </div>
             </article>
             <article class="account-item">
               <i class="pi pi-phone"></i>
               <div><small>Teléfono</small><strong>{{ formatPhoneValue(usuarioSeleccionado.telefono) || 'Sin registrar' }}</strong></div>
+              <button type="button" aria-label="Editar teléfono" title="Editar teléfono"
+                @click="editSelectedUserField('telefono', 'Teléfono')">
+                <i class="pi pi-pencil"></i>
+              </button>
             </article>
           </section>
           <!-- PERMISOS in two columns -->
@@ -334,7 +394,7 @@
 </template>
 
 <script setup>
-import { as, ps, us } from '@/service/adminApp/client'
+import { as, pks, us } from '@/service/adminApp/client'
 import { ref, computed, onMounted, watch } from 'vue'
 import defaultAvatar from '@/assets/img/user.jpg'
 import imageCompression from "browser-image-compression"; 
@@ -369,7 +429,7 @@ async function cancelDelete() {
   userToDelete.value = null;
 }
 const toast = useAppToast();
-const { prompt: promptDialog } = useAppDialog();
+const { prompt: promptDialog, confirm: confirmDialog } = useAppDialog();
 // PERFIL
 const userInfo = await as.getUserInfo();
 const isAdmin = userInfo && userInfo.level === 'Administrador';
@@ -397,9 +457,95 @@ onMounted(async () => {
     }
   });
 
+const passkeys = ref([]);
+const passkeysLoading = ref(false);
+const passkeyBusy = ref(false);
+const passkeySupported = ref(false);
+const platformPasskeyAvailable = ref(false);
+const passkeyStatusLabel = computed(() => {
+  if (!passkeySupported.value) return "Este navegador no tiene passkeys disponibles.";
+  if (!platformPasskeyAvailable.value) return "Passkeys disponibles con autenticadores externos.";
+  return "Listo para usar huella, rostro o Windows Hello.";
+});
+
+async function loadPasskeys() {
+  passkeysLoading.value = true;
+  try {
+    passkeys.value = await pks.getPasskeys();
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Sin passkeys', detail: error?.response?.data?.error || 'No se pudieron cargar tus passkeys.', life: 3500 });
+  } finally {
+    passkeysLoading.value = false;
+  }
+}
+
+async function setupPasskeys() {
+  passkeySupported.value = pks.supportsPasskeys();
+  if (passkeySupported.value) {
+    platformPasskeyAvailable.value = await pks.platformAuthenticatorAvailable().catch(() => false);
+  }
+  await loadPasskeys();
+}
+
+async function addPasskey() {
+  if (!passkeySupported.value || passkeyBusy.value) return;
+  const name = await promptDialog({
+    title: 'Agregar passkey',
+    message: 'Ponle un nombre reconocible a este dispositivo.',
+    inputLabel: 'Nombre',
+    inputType: 'text',
+    placeholder: 'Laptop principal',
+    confirmLabel: 'Crear passkey',
+  });
+  if (name === null) return;
+  passkeyBusy.value = true;
+  try {
+    await pks.register(name || undefined);
+    await loadPasskeys();
+    toast.add({ severity: 'success', summary: 'Passkey lista', detail: 'Ya puedes verificar datos protegidos con este dispositivo.', life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No registrada', detail: error?.response?.data?.error || 'No fue posible registrar la passkey.', life: 4000 });
+  } finally {
+    passkeyBusy.value = false;
+  }
+}
+
+async function removePasskey(passkey) {
+  if (passkeyBusy.value) return;
+  const confirmed = await confirmDialog({
+    title: 'Eliminar passkey',
+    message: `Eliminar "${passkey.name}" de tu cuenta.`,
+    tone: 'danger',
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+  });
+  if (!confirmed) return;
+  passkeyBusy.value = true;
+  try {
+    await pks.delete(passkey.id);
+    await loadPasskeys();
+    toast.add({ severity: 'success', summary: 'Passkey eliminada', detail: 'El acceso se actualizó correctamente.', life: 2500 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No eliminada', detail: error?.response?.data?.error || 'No fue posible eliminar la passkey.', life: 3500 });
+  } finally {
+    passkeyBusy.value = false;
+  }
+}
+
+function formatPasskeyDate(value) {
+  if (!value) return 'Sin fecha';
+  return new Intl.DateTimeFormat('es-MX', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
+onMounted(setupPasskeys);
+
 // USUARIOS
 const usuarios = ref(await us.getUsuarios())
-console.log(usuarios);
+const currentUserId = String(localStorage.getItem("userid") || "")
 
 const searchQuery = ref('')
 const filteredUsers = computed(() =>
@@ -444,13 +590,101 @@ async function verPassword() {
   }
 }
 
+function isSelectedUserSelf() {
+  return String(usuarioSeleccionado.value?.id_usuario || '') === currentUserId;
+}
+
+function syncSelectedUserPatch(patch) {
+  if (!usuarioSeleccionado.value) return;
+  usuarioSeleccionado.value = { ...usuarioSeleccionado.value, ...patch };
+  const index = usuarios.value.findIndex((user) => user.id_usuario === usuarioSeleccionado.value.id_usuario);
+  if (index !== -1) usuarios.value[index] = { ...usuarios.value[index], ...patch };
+  if (isSelectedUserSelf()) {
+    if (patch.nombre !== undefined) {
+      userFullName.value = patch.nombre;
+      localStorage.setItem("fullname", patch.nombre);
+    }
+    if (patch.username !== undefined) {
+      userName.value = patch.username;
+      localStorage.setItem("username", patch.username);
+    }
+    if (patch.puesto !== undefined) localStorage.setItem("level", patch.puesto);
+    if (patch.imagen !== undefined) localStorage.setItem("userphoto", "data:image/png;base64," + patch.imagen);
+  }
+}
+
+async function editSelectedUserField(field, label) {
+  if (!usuarioSeleccionado.value) return;
+  const currentValue = usuarioSeleccionado.value[field] || "";
+  const value = await promptDialog({
+    title: `Editar ${label.toLowerCase()}`,
+    message: `Actualiza ${label.toLowerCase()} para esta cuenta.`,
+    inputLabel: label,
+    inputType: 'text',
+    placeholder: String(currentValue || label),
+    confirmLabel: 'Guardar',
+  });
+  if (value === null) return;
+  try {
+    await us.editUsuario(usuarioSeleccionado.value.id_usuario, { [field]: value });
+    syncSelectedUserPatch({ [field]: value });
+    toast.add({ severity: 'success', summary: 'Usuario actualizado', detail: `${label} guardado correctamente.`, life: 2500 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No guardado', detail: error?.response?.data?.error || 'No se pudo actualizar el usuario.', life: 3500 });
+  }
+}
+
+async function changeSelectedUserPassword() {
+  if (!usuarioSeleccionado.value) return;
+  let currentPassword;
+  if (isSelectedUserSelf()) {
+    currentPassword = await promptDialog({
+      title: 'Confirmar identidad',
+      message: 'Escribe tu contraseña actual antes de cambiarla.',
+      inputLabel: 'Contraseña actual',
+      inputType: 'password',
+      placeholder: 'Contraseña actual',
+      confirmLabel: 'Continuar',
+    });
+    if (!currentPassword) return;
+  }
+  const password = await promptDialog({
+    title: 'Cambiar contraseña',
+    message: 'La nueva contraseña se guardará cifrada.',
+    inputLabel: 'Nueva contraseña',
+    inputType: 'password',
+    placeholder: 'Mínimo 8 caracteres',
+    confirmLabel: 'Continuar',
+  });
+  if (!password) return;
+  const confirmPassword = await promptDialog({
+    title: 'Confirmar contraseña',
+    message: 'Repite la nueva contraseña.',
+    inputLabel: 'Confirmación',
+    inputType: 'password',
+    placeholder: 'Repite la contraseña',
+    confirmLabel: 'Guardar',
+  });
+  if (confirmPassword === null) return;
+  if (password !== confirmPassword) {
+    toast.add({ severity: 'warn', summary: 'No coincide', detail: 'Las contraseñas no coinciden.', life: 3000 });
+    return;
+  }
+  try {
+    await us.editUsuario(usuarioSeleccionado.value.id_usuario, { password, currentPassword });
+    passwordVisible.value = false;
+    delete usuarioSeleccionado.value.password;
+    toast.add({ severity: 'success', summary: 'Contraseña actualizada', detail: 'La contraseña se guardó correctamente.', life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No guardada', detail: error?.response?.data?.error || 'No se pudo cambiar la contraseña.', life: 3500 });
+  }
+}
+
 // DELETE USER
 async function deleteUser(u) {
   try {
     usuarios.value = usuarios.value.filter(x => x.id_usuario !== u.id_usuario)
     if (u.id_usuario == localStorage.getItem("userid")) { //si se intenta eliminar a uno mismo xd
-      console.log("deleting user: ", u);
-
       await us.deleteUsuario(u.id_usuario)
       localStorage.clear()
       router.push("/")
@@ -460,22 +694,19 @@ async function deleteUser(u) {
     }
 
   } catch (error) {
-    console.log(error);
-
+    toast.add({ severity: "error", summary: "Error", detail: error?.response?.data?.error || "No se pudo eliminar el usuario.", life: 3500 });
   }
 
 }
 
 async function updateName(u) {
   try {
-    console.log("new name: ", u);
     await localStorage.setItem("fullname", u);
     await us.editUsuario(localStorage.getItem("userid"), { nombre: u })
     localStorage.setItem("showToast", "nameSuccess");
     window.location.reload()
     
   } catch (error) {
-    console.error(error);
     toast.add({
       severity: "error",
       summary: "Error",
@@ -490,7 +721,7 @@ async function updateUserStatus(u){
   try {
     await us.editUsuario(u.id_usuario,{activo: u.activo})
   } catch (error) {
-    console.error(error);
+    toast.add({ severity: "error", summary: "Error", detail: error?.response?.data?.error || "No se pudo actualizar el estado.", life: 3000 });
   }
 }
 
@@ -505,8 +736,7 @@ async function updateImage(u) {
       life: 3000,
     });
     window.location.reload()
-  } catch (error) {
-    console.error(error);
+  } catch (_error) {
     toast.add({
       severity: "error",
       summary: "Error",
@@ -713,8 +943,6 @@ const canContinueCreateUser = computed(() => {
 })
 
 const updateLevel = async (level) => {
-  // Tu lógica para actualizar el nivel
-  console.log("Nivel seleccionado:", level);
   const initialLevel = await usuarioSeleccionado.value.puesto;
   try {
     await us.editUsuario(usuarioSeleccionado.value.id_usuario, { puesto: level })
@@ -734,11 +962,8 @@ const updateLevel = async (level) => {
       detail: "No se pudo realizar la operacion",
       life: 3000,
     });
-    console.error(error);
-
   }
 
-  // Aquí puedes hacer la lógica para actualizar el valor de 'puesto' en el backend o estado
 };
 
 async function createUser() {
@@ -749,13 +974,13 @@ async function createUser() {
     if (localStorage.getItem('level') == "Administrador" && userInfo) {
       const payload = { ...newUser.value }
       delete payload.confirmPassword
-      await us.addUsuario(payload)
+      const creationResult = await us.addUsuario(payload)
       usuarios.value = await us.getUsuarios()
       toast.add({
-        severity: 'success',
+        severity: creationResult.emailWarning ? 'warn' : 'success',
         summary: 'Usuario creado',
-        detail: `${newUser.value.nombre} ya puede acceder a la aplicación.`,
-        life: 3500,
+        detail: creationResult.emailWarning || `${newUser.value.nombre} ya puede acceder a la aplicación. Credenciales enviadas por correo.`,
+        life: creationResult.emailWarning ? 6000 : 3500,
       })
       showCreateUserModal.value = false
       resetNewUser()
@@ -769,7 +994,6 @@ async function createUser() {
     }
 
   } catch (error) {
-    console.error(error);
     toast.add({
       severity: 'error',
       summary: 'No se creó el usuario',
@@ -938,7 +1162,7 @@ async function createUser() {
   display: grid !important;
   height: auto !important;
   grid-template-columns: minmax(0, 1.35fr) minmax(22rem, 0.65fr) !important;
-  grid-template-rows: auto auto !important;
+  grid-template-rows: auto auto auto !important;
   gap: 1rem !important;
   margin: 1rem 0 0 !important;
 }
@@ -1034,6 +1258,111 @@ async function createUser() {
   grid-column: 1 !important;
   grid-row: 2 !important;
   padding: 1.35rem !important;
+}
+.passkey-panel {
+  grid-column: 1 !important;
+  grid-row: 3 !important;
+  display: flex;
+  min-height: 13rem;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.35rem !important;
+}
+.passkey-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.passkey-panel__header p {
+  margin: 0 0 0.35rem;
+  color: var(--br-accent);
+  font: 800 0.68rem "Courier New", monospace;
+  letter-spacing: 0.1em;
+}
+.passkey-panel__header h2 {
+  margin: 0;
+  color: var(--br-text);
+  font: 900 clamp(1.35rem, 3vw, 2rem)/1 Arial, sans-serif;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+.passkey-panel__header h2 i {
+  color: var(--br-accent);
+}
+.passkey-add-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--br-accent);
+  border-radius: 0;
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+  padding: 0 0.85rem;
+  font: 800 0.72rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+.passkey-add-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.passkey-panel__status {
+  margin: 0;
+  border-top: 1px solid var(--br-line);
+  border-bottom: 1px solid var(--br-line);
+  padding: 0.75rem 0;
+  color: var(--br-muted);
+  font: 800 0.72rem/1.35 "Courier New", monospace;
+  text-transform: uppercase;
+}
+.passkey-panel__status.unavailable {
+  color: #ef4d3d;
+}
+.passkey-list {
+  display: grid;
+  gap: 0.65rem;
+}
+.passkey-empty,
+.passkey-row {
+  border: 1px solid var(--br-line);
+  background: var(--br-panel-2);
+  padding: 0.75rem;
+}
+.passkey-empty {
+  color: var(--br-muted);
+  font: 800 0.72rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+.passkey-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.passkey-row strong {
+  display: block;
+  color: var(--br-text);
+  font: 900 0.95rem/1.2 Arial, sans-serif;
+}
+.passkey-row span {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--br-muted);
+  font: 800 0.68rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+.passkey-row button {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--br-line-strong);
+  border-radius: 0;
+  background: transparent;
+  color: #ef4d3d;
 }
 .create-user-panel > h2,
 .users-heading span {
@@ -1930,7 +2259,7 @@ async function createUser() {
 .account-item {
   position: relative;
   display: grid;
-  grid-template-columns: 2.55rem minmax(0, 1fr);
+  grid-template-columns: 2.55rem minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.8rem;
   min-height: 6.25rem;
@@ -1975,9 +2304,13 @@ async function createUser() {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.account-item--password {
-  grid-template-columns: 2.55rem minmax(0, 1fr) auto;
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
 }
+.account-item > button,
 .account-item--password button {
   display: inline-flex;
   align-items: center;
@@ -1995,6 +2328,7 @@ async function createUser() {
   background: var(--br-accent);
   color: var(--br-accent-ink, #101010) !important;
 }
+.account-item > button span,
 .account-item--password button span { color: inherit !important; font-size: inherit !important; }
 .user-detail-modal .permissions-title { grid-column: 1 / -1; grid-row: 4; }
 .user-detail-modal .permissions-grid { grid-column: 1 / -1; grid-row: 5; }
@@ -2028,13 +2362,15 @@ async function createUser() {
   }
   .profile-panel,
   .create-user-panel,
+  .passkey-panel,
   .users-panel {
     grid-column: 1 !important;
   }
   .profile-panel { grid-row: 1 !important; }
   .create-user-panel { grid-row: 2 !important; }
+  .passkey-panel { grid-row: 3 !important; }
   .users-panel {
-    grid-row: 3 !important;
+    grid-row: 4 !important;
     max-height: none;
   }
 }
@@ -2103,7 +2439,8 @@ async function createUser() {
   .user-wizard > footer { padding: 0.75rem 1rem; }
   .wizard-primary,
   .wizard-secondary { min-width: 0; }
-  .user-detail-modal .modal-content { display: block; width: calc(100vw - 1rem) !important; box-shadow: 5px 5px 0 var(--br-accent) !important; }
+  .user-detail-modal { align-items: stretch !important; justify-content: stretch !important; padding: 0 !important; }
+  .user-detail-modal .modal-content { display: block; width: 100vw !important; height: 100dvh !important; max-height: 100dvh !important; overflow-y: auto !important; border: 0 !important; box-shadow: none !important; }
   .user-detail-modal .settings-detail-header { min-height: 6rem; gap: 0.75rem; padding: 1rem; }
   .settings-detail-header h3 { font-size: clamp(1.35rem, 7vw, 1.9rem) !important; }
   .detail-delete-button span { display: none; }
