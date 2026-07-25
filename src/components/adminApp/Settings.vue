@@ -237,7 +237,19 @@
                 <label class="wizard-field wizard-field--wide"><span>Nombre completo</span><input v-model.trim="newUser.nombre" type="text" placeholder="Nombre y apellidos" /></label>
                 <label class="wizard-field"><span>Teléfono</span><input :value="newUser.telefono" type="tel" inputmode="numeric" placeholder="317 878 1234" maxlength="12" @input="formatNewUserPhone" /><small>10 dígitos, con formato automático.</small></label>
                 <label class="wizard-field"><span>Puesto</span><select v-model="newUser.puesto"><option disabled value="">Selecciona un puesto</option><option>Administrador</option><option>Empleado</option></select></label>
-                <div class="wizard-field wizard-field--wide"><span>Correo electrónico</span><div class="email-builder"><input v-model.trim="emailLocalPart" type="text" placeholder="nombre.apellido" aria-label="Usuario del correo" /><b>@</b><input v-model.trim="emailDomain" list="email-domains" type="text" placeholder="gmail.com" aria-label="Dominio del correo" /></div><datalist id="email-domains"><option value="gmail.com"/><option value="outlook.com"/><option value="hotmail.com"/><option value="yahoo.com"/></datalist><small>{{ newUser.email || 'Escribe el nombre antes del @' }}</small></div>
+                <div class="wizard-field wizard-field--wide">
+                  <span>Correo electrónico</span>
+                  <div class="email-builder">
+                    <input v-model.trim="emailLocalPart" type="text" placeholder="nombre.apellido" aria-label="Usuario del correo" autocomplete="email" @paste="handleEmailPaste" />
+                    <b>@</b>
+                    <select v-model="emailDomainChoice" aria-label="Dominio del correo">
+                      <option v-for="domain in emailDomainOptions" :key="domain" :value="domain">{{ domain }}</option>
+                      <option :value="customEmailDomainValue">Otro dominio...</option>
+                    </select>
+                  </div>
+                  <input v-if="emailDomainChoice === customEmailDomainValue" v-model.trim="emailDomain" class="email-custom-domain" type="text" placeholder="dominio.com" aria-label="Dominio personalizado" @paste="handleEmailPaste" />
+                  <small>{{ newUser.email || 'Pega un correo completo o escribe un dominio personalizado.' }}</small>
+                </div>
               </div>
             </div>
 
@@ -938,6 +950,21 @@ const createUserStep = ref(1)
 const creatingUser = ref(false)
 const emailLocalPart = ref('')
 const emailDomain = ref('gmail.com')
+const customEmailDomainValue = '__custom__'
+const emailDomainChoice = ref('gmail.com')
+const emailDomainOptions = [
+  'gmail.com',
+  'outlook.com',
+  'hotmail.com',
+  'live.com',
+  'icloud.com',
+  'yahoo.com',
+  'proton.me',
+  'protonmail.com',
+  'zoho.com',
+  'aol.com',
+  'dreamsoft-dev.com',
+]
 const wizardTitles = ['Identidad y contacto', 'Acceso', 'Confirmación']
 
 const resetNewUser = () => {
@@ -953,6 +980,7 @@ const resetNewUser = () => {
   })
   emailLocalPart.value = ''
   emailDomain.value = 'gmail.com'
+  emailDomainChoice.value = 'gmail.com'
   newUserPreview.value = ''
   showNewPassword.value = false
   showConfirmPassword.value = false
@@ -979,12 +1007,55 @@ function formatNewUserPhone(event) {
   newUser.value.telefono = formatPhoneValue(event.target.value)
 }
 
+function parseEmailParts(value = '') {
+  const match = String(value)
+    .trim()
+    .match(/([A-Z0-9._%+-]+)@([A-Z0-9.-]+\.[A-Z]{2,})/i)
+  if (!match) return null
+  return {
+    local: match[1].replace(/\s+/g, ''),
+    domain: match[2].replace(/^@+/, '').toLowerCase(),
+  }
+}
+
+function applyEmailParts(value = '') {
+  const parsed = parseEmailParts(value)
+  if (!parsed) return false
+  emailLocalPart.value = parsed.local
+  emailDomain.value = parsed.domain
+  emailDomainChoice.value = emailDomainOptions.includes(parsed.domain) ? parsed.domain : customEmailDomainValue
+  newUser.value.email = `${parsed.local}@${parsed.domain}`
+  return true
+}
+
+function handleEmailPaste(event) {
+  const text = event.clipboardData?.getData('text') || ''
+  if (applyEmailParts(text)) event.preventDefault()
+}
+
 watch([emailLocalPart, emailDomain], ([localPart, domain]) => {
-  const cleanLocal = localPart.replace(/\s|@/g, '')
-  const cleanDomain = domain.replace(/^@+|\s/g, '') || 'gmail.com'
+  const pastedEmail = parseEmailParts(localPart) || parseEmailParts(domain)
+  if (pastedEmail) {
+    if (pastedEmail.local !== localPart) emailLocalPart.value = pastedEmail.local
+    if (pastedEmail.domain !== domain) emailDomain.value = pastedEmail.domain
+    const matchingChoice = emailDomainOptions.includes(pastedEmail.domain) ? pastedEmail.domain : customEmailDomainValue
+    if (emailDomainChoice.value !== matchingChoice) emailDomainChoice.value = matchingChoice
+    newUser.value.email = `${pastedEmail.local}@${pastedEmail.domain}`
+    return
+  }
+
+  const cleanLocal = String(localPart || '').replace(/\s|@/g, '')
+  const cleanDomain = String(domain || '').replace(/^@+|\s/g, '').toLowerCase() || 'gmail.com'
   if (cleanLocal !== localPart) emailLocalPart.value = cleanLocal
   if (cleanDomain !== domain) emailDomain.value = cleanDomain
+  const matchingChoice = emailDomainOptions.includes(cleanDomain) ? cleanDomain : customEmailDomainValue
+  if (emailDomainChoice.value !== matchingChoice) emailDomainChoice.value = matchingChoice
   newUser.value.email = cleanLocal ? `${cleanLocal}@${cleanDomain}` : ''
+})
+
+watch(emailDomainChoice, (choice) => {
+  if (!choice || choice === customEmailDomainValue || choice === emailDomain.value) return
+  emailDomain.value = choice
 })
 
 async function compressToBase64(file) {
@@ -2167,11 +2238,22 @@ async function createUser() {
   align-items: center;
   overflow: hidden;
 }
-.email-builder input {
+.email-builder input,
+.email-builder select {
+  width: 100%;
   min-height: 3.3rem;
   border: 0;
   background: transparent;
+  color: inherit;
+  font: inherit;
   box-shadow: none !important;
+}
+.email-builder select {
+  padding: 0 1.9rem 0 0.65rem;
+  cursor: pointer;
+}
+.email-custom-domain {
+  margin-top: 0.45rem;
 }
 .email-builder b { color: var(--br-accent); font: 900 1.15rem Arial, sans-serif; }
 .access-step {
