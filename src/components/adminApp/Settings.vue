@@ -351,11 +351,14 @@
               <i class="pi pi-key"></i>
               <div><small>Contraseña</small><strong>{{ passwordVisible ? usuarioSeleccionado.password : '••••••••' }}</strong></div>
               <div class="account-actions">
-                <button type="button" @click="verPassword" :aria-label="passwordVisible ? 'Volver a verificar contraseña' : 'Ver contraseña'">
-                  <i :class="passwordVisible ? 'pi pi-eye-slash' : 'pi pi-eye'"></i><span>{{ passwordVisible ? 'Verificar' : 'Mostrar' }}</span>
+                <button type="button" :disabled="passwordRevealBusy" @click="verPassword" :aria-label="passwordVisible ? 'Ocultar contraseña' : 'Ver contraseña'">
+                  <i :class="passwordRevealBusy ? 'pi pi-spin pi-spinner' : (passwordVisible ? 'pi pi-eye-slash' : 'pi pi-eye')"></i><span>{{ passwordVisible ? 'Ocultar' : 'Mostrar' }}</span>
                 </button>
                 <button type="button" @click="changeSelectedUserPassword" aria-label="Cambiar contraseña">
                   <i class="pi pi-lock"></i><span>Cambiar</span>
+                </button>
+                <button v-if="isAdmin" type="button" @click="openPasswordResetDialog" aria-label="Restablecer contraseña">
+                  <i class="pi pi-send"></i><span>Reset</span>
                 </button>
               </div>
             </article>
@@ -387,6 +390,40 @@
         </div>
       </div>
     </transition>
+
+    <!-- PASSWORD RESET OPTIONS -->
+    <transition name="fade-scale">
+      <div v-if="passwordResetDialogOpen" class="reset-options-overlay" @click.self="closePasswordResetDialog">
+        <section class="reset-options-dialog" role="dialog" aria-modal="true" aria-labelledby="reset-options-title">
+          <header>
+            <div>
+              <p>CUENTA / RESTABLECER</p>
+              <h2 id="reset-options-title">Contraseña de {{ usuarioSeleccionado?.nombre }}</h2>
+            </div>
+            <button type="button" aria-label="Cerrar" @click="closePasswordResetDialog">×</button>
+          </header>
+          <div class="reset-options-body">
+            <p>El enlace caduca en 30 minutos. Al generar uno nuevo se invalidan enlaces anteriores que no se hayan usado.</p>
+            <div v-if="generatedResetLink" class="reset-link-box">
+              <span>Enlace generado</span>
+              <input :value="generatedResetLink" readonly @focus="$event.target.select()" />
+              <button type="button" @click="copyGeneratedResetLink"><i class="pi pi-copy"></i> Copiar</button>
+            </div>
+          </div>
+          <footer>
+            <button type="button" class="reset-option reset-option--ghost" :disabled="passwordResetBusy" @click="closePasswordResetDialog">
+              Cancelar
+            </button>
+            <button type="button" class="reset-option" :disabled="passwordResetBusy" @click="generatePasswordResetLink">
+              <i class="pi pi-link"></i>{{ passwordResetBusy ? 'Generando…' : 'Generar enlace' }}
+            </button>
+            <button type="button" class="reset-option reset-option--primary" :disabled="passwordResetBusy || !usuarioSeleccionado?.email" @click="sendPasswordResetEmail">
+              <i class="pi pi-envelope"></i>{{ passwordResetBusy ? 'Enviando…' : 'Enviar correo' }}
+            </button>
+          </footer>
+        </section>
+      </div>
+    </transition>
   </main>
   <!-- Confirmación para eliminación -->
   <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'¿Estás seguro de eliminar este usuario permanentemente? Se eliminaran los datos de este usuario y las tareas que se le hayan asignado seran regresadas a estado Disponible.'" @confirm="confirmDelete(userToDelete)"
@@ -414,6 +451,10 @@ const modalAbierto = ref(false)
 const buildTime = ref();
 const usuarioSeleccionado = ref()
 const passwordVisible = ref(false)
+const passwordRevealBusy = ref(false)
+const passwordResetDialogOpen = ref(false)
+const passwordResetBusy = ref(false)
+const generatedResetLink = ref("")
 
 const confirmDialogVisible = ref(false);
 const userToDelete = ref();
@@ -560,6 +601,9 @@ const filteredUsers = computed(() =>
 function abrirModal(u) {
   usuarioSeleccionado.value = u
   passwordVisible.value = false
+  passwordRevealBusy.value = false
+  generatedResetLink.value = ""
+  passwordResetDialogOpen.value = false
   modalAbierto.value = true
   selectedLevel.value = u.puesto;
 }
@@ -568,6 +612,12 @@ function openFromSearch(u) {
   showSearchModal.value = false
 }
 async function verPassword() {
+  if (passwordRevealBusy.value || !usuarioSeleccionado.value) return;
+  if (passwordVisible.value) {
+    passwordVisible.value = false;
+    delete usuarioSeleccionado.value.password;
+    return;
+  }
   const entrada = await promptDialog({
     title: 'Ver contraseña de usuario',
     message: 'Confirma tu contraseña de acceso para consultar este dato protegido.',
@@ -577,6 +627,7 @@ async function verPassword() {
     confirmLabel: 'Verificar y mostrar',
   })
   if (!entrada) return
+  passwordRevealBusy.value = true
   try {
     const userbd = await us.getUsuarioPS(usuarioSeleccionado.value.id_usuario, entrada)
     usuarioSeleccionado.value.password = userbd.password
@@ -587,6 +638,8 @@ async function verPassword() {
     }, 20000)
   } catch (error) {
     toast.add({ severity: 'error', summary: 'Verificación rechazada', detail: error?.response?.data?.error || 'No fue posible verificar tu identidad.', life: 4000 })
+  } finally {
+    passwordRevealBusy.value = false
   }
 }
 
@@ -677,6 +730,94 @@ async function changeSelectedUserPassword() {
     toast.add({ severity: 'success', summary: 'Contraseña actualizada', detail: 'La contraseña se guardó correctamente.', life: 3000 });
   } catch (error) {
     toast.add({ severity: 'error', summary: 'No guardada', detail: error?.response?.data?.error || 'No se pudo cambiar la contraseña.', life: 3500 });
+  }
+}
+
+function openPasswordResetDialog() {
+  if (!usuarioSeleccionado.value) return;
+  generatedResetLink.value = "";
+  passwordResetDialogOpen.value = true;
+}
+
+function closePasswordResetDialog() {
+  if (passwordResetBusy.value) return;
+  passwordResetDialogOpen.value = false;
+  generatedResetLink.value = "";
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  const input = document.createElement('textarea');
+  input.value = value;
+  input.setAttribute('readonly', 'true');
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand('copy');
+  input.remove();
+}
+
+async function generatePasswordResetLink() {
+  if (!usuarioSeleccionado.value || passwordResetBusy.value) return;
+  passwordResetBusy.value = true;
+  try {
+    const result = await us.createPasswordReset(usuarioSeleccionado.value.id_usuario, false);
+    generatedResetLink.value = result.resetUrl || "";
+    if (generatedResetLink.value) await copyText(generatedResetLink.value);
+    toast.add({
+      severity: "success",
+      summary: "Enlace generado",
+      detail: generatedResetLink.value ? "El enlace se copió al portapapeles." : "Enlace creado correctamente.",
+      life: 3500,
+    });
+  } catch (error) {
+    toast.add({
+      severity: "error",
+      summary: "No generado",
+      detail: error?.response?.data?.error || "No fue posible generar el enlace.",
+      life: 4000,
+    });
+  } finally {
+    passwordResetBusy.value = false;
+  }
+}
+
+async function copyGeneratedResetLink() {
+  if (!generatedResetLink.value) return;
+  try {
+    await copyText(generatedResetLink.value);
+    toast.add({ severity: "success", summary: "Copiado", detail: "Enlace copiado al portapapeles.", life: 2500 });
+  } catch (_error) {
+    toast.add({ severity: "error", summary: "No copiado", detail: "Copia el enlace manualmente.", life: 3000 });
+  }
+}
+
+async function sendPasswordResetEmail() {
+  if (!usuarioSeleccionado.value || passwordResetBusy.value) return;
+  passwordResetBusy.value = true;
+  try {
+    await us.createPasswordReset(usuarioSeleccionado.value.id_usuario, true);
+    toast.add({
+      severity: "success",
+      summary: "Correo enviado",
+      detail: `Enlace enviado a ${usuarioSeleccionado.value.email}.`,
+      life: 3500,
+    });
+    passwordResetDialogOpen.value = false;
+    generatedResetLink.value = "";
+  } catch (error) {
+    toast.add({
+      severity: "error",
+      summary: "No enviado",
+      detail: error?.response?.data?.error || "No fue posible enviar el correo.",
+      life: 4000,
+    });
+  } finally {
+    passwordResetBusy.value = false;
   }
 }
 
@@ -2305,28 +2446,39 @@ async function createUser() {
   white-space: nowrap;
 }
 .account-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.45rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  grid-column: 1 / -1;
+  width: 100%;
+  padding-top: 0.7rem;
 }
 .account-item > button,
 .account-item--password button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
-  min-height: 2.35rem;
+  min-height: 2.65rem;
+  min-width: 0;
+  width: 100%;
   border: 1px solid var(--br-accent);
   background: transparent;
   color: var(--br-accent) !important;
-  padding: 0.45rem 0.6rem;
-  font: 800 0.58rem "Courier New", monospace;
+  padding: 0.5rem 0.7rem;
+  font: 800 0.64rem "Courier New", monospace;
   cursor: pointer;
   transition: background 180ms ease, color 180ms ease;
+  text-align: center;
+  white-space: nowrap;
 }
 .account-item--password button:hover {
   background: var(--br-accent);
   color: var(--br-accent-ink, #101010) !important;
+}
+.account-item--password button:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 .account-item > button span,
 .account-item--password button span { color: inherit !important; font-size: inherit !important; }
@@ -2347,6 +2499,23 @@ async function createUser() {
 .account-grid p {
   color: var(--br-muted) !important;
 }
+.reset-options-overlay{position:fixed;inset:0;z-index:1700;display:grid;place-items:center;padding:1rem;background:rgba(7,7,6,.86);backdrop-filter:blur(5px)}
+.reset-options-dialog{display:grid;width:min(42rem,100%);max-height:calc(100dvh - 2rem);grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;border:1px solid var(--br-line-strong);background:var(--br-panel);color:var(--br-text);box-shadow:9px 9px 0 var(--br-accent)}
+.reset-options-dialog>header{position:relative;padding:1.2rem 4.5rem 1.1rem 1.25rem;border-bottom:1px solid var(--br-line);background:var(--br-bg)}
+.reset-options-dialog>header p{margin:0 0 .35rem;color:var(--br-accent);font:800 .68rem "Courier New",monospace;letter-spacing:.1em}
+.reset-options-dialog>header h2{margin:0;color:var(--br-text);font:900 clamp(1.45rem,4vw,2.25rem)/.95 Arial,sans-serif;text-transform:uppercase}
+.reset-options-dialog>header button{position:absolute;right:0;top:0;width:3.6rem;height:3.6rem;border:0;border-left:1px solid var(--br-line);border-bottom:1px solid var(--br-line);background:var(--br-accent);color:var(--br-accent-text);font-size:1.9rem;cursor:pointer}
+.reset-options-body{display:grid;align-content:start;gap:1rem;min-height:0;overflow:auto;padding:1.25rem}
+.reset-options-body>p{margin:0;color:var(--br-muted);font:700 .82rem/1.5 "Courier New",monospace}
+.reset-link-box{display:grid;gap:.5rem;border:1px solid var(--br-line);background:var(--br-bg);padding:.85rem}
+.reset-link-box span{color:var(--br-accent);font:800 .65rem "Courier New",monospace;text-transform:uppercase}
+.reset-link-box input{width:100%;min-width:0;border:1px solid var(--br-line-strong);border-radius:0;background:var(--br-control);color:#141413;padding:.75rem;font:700 .76rem "Courier New",monospace}
+.reset-link-box button,.reset-option{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.8rem;border:1px solid var(--br-line-strong);border-radius:0;background:var(--br-panel-2);color:var(--br-text);padding:.65rem .9rem;font:800 .72rem "Courier New",monospace;text-transform:uppercase;cursor:pointer}
+.reset-link-box button:hover:not(:disabled),.reset-option:hover:not(:disabled){border-color:var(--br-accent);background:var(--br-accent);color:var(--br-accent-text)}
+.reset-option--primary{background:var(--br-accent);color:var(--br-accent-text);border-color:var(--br-accent)}
+.reset-option--ghost{background:transparent}
+.reset-option:disabled{cursor:not-allowed;opacity:.5}
+.reset-options-dialog>footer{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;padding:1rem 1.25rem;border-top:1px solid var(--br-line)}
 
 @media (max-width: 1180px) {
   .settings-hero {
@@ -2384,6 +2553,7 @@ async function createUser() {
   .account-grid,
   .permissions-grid { grid-template-columns: 1fr !important; }
   .account-grid > div + div { border-top: 1px solid var(--br-line); border-left: 0; }
+  .account-actions { grid-template-columns: 1fr; }
   .permission-row { border-right: 0; }
   .detail-profile {
     grid-template-columns: 4.5rem minmax(0, 1fr);
@@ -2448,5 +2618,8 @@ async function createUser() {
   .account-grid__heading > small { display: none; }
   .user-detail-modal .detail-profile { border-right: 0; }
   .user-detail-modal .status-control { border-right: 0; }
+  .reset-options-overlay{place-items:stretch;padding:0}
+  .reset-options-dialog{width:100vw;max-height:100dvh;height:100dvh;border:0;box-shadow:none}
+  .reset-options-dialog>footer{grid-template-columns:1fr;padding:1rem}
 }
 </style>

@@ -86,6 +86,23 @@ class UsuarioService {
       throw error;
     }
   }
+
+  async createPasswordReset(id_usuario: string | number, sendEmail = false) {
+    try {
+      const response = await this.axios.post(
+        `${this.serverip}/usuarios/${id_usuario}/password-reset`,
+        { sendEmail },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default UsuarioService;
