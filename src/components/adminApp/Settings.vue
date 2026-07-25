@@ -51,6 +51,10 @@
             class="w-full text-2xl font-semibold border-b border-gray-300 focus:outline-none focus:border-black" />
           <p class="text-sm text-gray-500 mt-1">Haz clic para editar tu nombre y clic afuera para guardar</p>
           <p class="font-semibold">Tu nombre de usuario es: {{ userName }}</p>
+          <button type="button" class="profile-password-button" @click="changeOwnPassword">
+            <i class="pi pi-lock"></i>
+            <span>Cambiar contraseña</span>
+          </button>
         </div>
       </section>
 
@@ -357,9 +361,20 @@
                 <button type="button" @click="changeSelectedUserPassword" aria-label="Cambiar contraseña">
                   <i class="pi pi-lock"></i><span>Cambiar</span>
                 </button>
-                <button v-if="isAdmin" type="button" @click="openPasswordResetDialog" aria-label="Restablecer contraseña">
-                  <i class="pi pi-send"></i><span>Reset</span>
+              </div>
+              <div v-if="isAdmin" class="password-more-menu" @click.stop>
+                <button type="button" class="password-more-trigger" aria-label="Más opciones de contraseña"
+                  @click="passwordResetMenuOpen = !passwordResetMenuOpen">
+                  <i class="pi pi-ellipsis-v"></i>
                 </button>
+                <div v-if="passwordResetMenuOpen" class="password-more-dropdown">
+                  <button type="button" :disabled="passwordResetBusy" @click="generatePasswordResetLink">
+                    <i class="pi pi-link"></i><span>{{ passwordResetBusy ? 'Generando…' : 'Generar enlace' }}</span>
+                  </button>
+                  <button type="button" :disabled="passwordResetBusy || !usuarioSeleccionado?.email" @click="sendPasswordResetEmail">
+                    <i class="pi pi-envelope"></i><span>{{ passwordResetBusy ? 'Enviando…' : 'Enviar correo' }}</span>
+                  </button>
+                </div>
               </div>
             </article>
             <article class="account-item">
@@ -390,40 +405,6 @@
         </div>
       </div>
     </transition>
-
-    <!-- PASSWORD RESET OPTIONS -->
-    <transition name="fade-scale">
-      <div v-if="passwordResetDialogOpen" class="reset-options-overlay" @click.self="closePasswordResetDialog">
-        <section class="reset-options-dialog" role="dialog" aria-modal="true" aria-labelledby="reset-options-title">
-          <header>
-            <div>
-              <p>CUENTA / RESTABLECER</p>
-              <h2 id="reset-options-title">Contraseña de {{ usuarioSeleccionado?.nombre }}</h2>
-            </div>
-            <button type="button" aria-label="Cerrar" @click="closePasswordResetDialog">×</button>
-          </header>
-          <div class="reset-options-body">
-            <p>El enlace caduca en 30 minutos. Al generar uno nuevo se invalidan enlaces anteriores que no se hayan usado.</p>
-            <div v-if="generatedResetLink" class="reset-link-box">
-              <span>Enlace generado</span>
-              <input :value="generatedResetLink" readonly @focus="$event.target.select()" />
-              <button type="button" @click="copyGeneratedResetLink"><i class="pi pi-copy"></i> Copiar</button>
-            </div>
-          </div>
-          <footer>
-            <button type="button" class="reset-option reset-option--ghost" :disabled="passwordResetBusy" @click="closePasswordResetDialog">
-              Cancelar
-            </button>
-            <button type="button" class="reset-option" :disabled="passwordResetBusy" @click="generatePasswordResetLink">
-              <i class="pi pi-link"></i>{{ passwordResetBusy ? 'Generando…' : 'Generar enlace' }}
-            </button>
-            <button type="button" class="reset-option reset-option--primary" :disabled="passwordResetBusy || !usuarioSeleccionado?.email" @click="sendPasswordResetEmail">
-              <i class="pi pi-envelope"></i>{{ passwordResetBusy ? 'Enviando…' : 'Enviar correo' }}
-            </button>
-          </footer>
-        </section>
-      </div>
-    </transition>
   </main>
   <!-- Confirmación para eliminación -->
   <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'¿Estás seguro de eliminar este usuario permanentemente? Se eliminaran los datos de este usuario y las tareas que se le hayan asignado seran regresadas a estado Disponible.'" @confirm="confirmDelete(userToDelete)"
@@ -452,7 +433,7 @@ const buildTime = ref();
 const usuarioSeleccionado = ref()
 const passwordVisible = ref(false)
 const passwordRevealBusy = ref(false)
-const passwordResetDialogOpen = ref(false)
+const passwordResetMenuOpen = ref(false)
 const passwordResetBusy = ref(false)
 const generatedResetLink = ref("")
 
@@ -603,7 +584,7 @@ function abrirModal(u) {
   passwordVisible.value = false
   passwordRevealBusy.value = false
   generatedResetLink.value = ""
-  passwordResetDialogOpen.value = false
+  passwordResetMenuOpen.value = false
   modalAbierto.value = true
   selectedLevel.value = u.puesto;
 }
@@ -733,16 +714,44 @@ async function changeSelectedUserPassword() {
   }
 }
 
-function openPasswordResetDialog() {
-  if (!usuarioSeleccionado.value) return;
-  generatedResetLink.value = "";
-  passwordResetDialogOpen.value = true;
-}
-
-function closePasswordResetDialog() {
-  if (passwordResetBusy.value) return;
-  passwordResetDialogOpen.value = false;
-  generatedResetLink.value = "";
+async function changeOwnPassword() {
+  const currentPassword = await promptDialog({
+    title: 'Confirmar contraseña actual',
+    message: 'Escribe tu contraseña actual antes de cambiarla.',
+    inputLabel: 'Contraseña actual',
+    inputType: 'password',
+    placeholder: 'Contraseña actual',
+    confirmLabel: 'Continuar',
+  });
+  if (!currentPassword) return;
+  const password = await promptDialog({
+    title: 'Cambiar contraseña',
+    message: 'La nueva contraseña se guardará cifrada.',
+    inputLabel: 'Nueva contraseña',
+    inputType: 'password',
+    placeholder: 'Mínimo 8 caracteres',
+    confirmLabel: 'Continuar',
+  });
+  if (!password) return;
+  const confirmPassword = await promptDialog({
+    title: 'Confirmar contraseña',
+    message: 'Repite la nueva contraseña.',
+    inputLabel: 'Confirmación',
+    inputType: 'password',
+    placeholder: 'Repite la contraseña',
+    confirmLabel: 'Guardar',
+  });
+  if (confirmPassword === null) return;
+  if (password !== confirmPassword) {
+    toast.add({ severity: 'warn', summary: 'No coincide', detail: 'Las contraseñas no coinciden.', life: 3000 });
+    return;
+  }
+  try {
+    await us.editUsuario(currentUserId, { password, currentPassword });
+    toast.add({ severity: 'success', summary: 'Contraseña actualizada', detail: 'Tu contraseña se guardó correctamente.', life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No guardada', detail: error?.response?.data?.error || 'No se pudo cambiar tu contraseña.', life: 3500 });
+  }
 }
 
 async function copyText(value) {
@@ -783,16 +792,7 @@ async function generatePasswordResetLink() {
     });
   } finally {
     passwordResetBusy.value = false;
-  }
-}
-
-async function copyGeneratedResetLink() {
-  if (!generatedResetLink.value) return;
-  try {
-    await copyText(generatedResetLink.value);
-    toast.add({ severity: "success", summary: "Copiado", detail: "Enlace copiado al portapapeles.", life: 2500 });
-  } catch (_error) {
-    toast.add({ severity: "error", summary: "No copiado", detail: "Copia el enlace manualmente.", life: 3000 });
+    passwordResetMenuOpen.value = false;
   }
 }
 
@@ -807,7 +807,6 @@ async function sendPasswordResetEmail() {
       detail: `Enlace enviado a ${usuarioSeleccionado.value.email}.`,
       life: 3500,
     });
-    passwordResetDialogOpen.value = false;
     generatedResetLink.value = "";
   } catch (error) {
     toast.add({
@@ -818,6 +817,7 @@ async function sendPasswordResetEmail() {
     });
   } finally {
     passwordResetBusy.value = false;
+    passwordResetMenuOpen.value = false;
   }
 }
 
@@ -1394,6 +1394,26 @@ async function createUser() {
 }
 .profile-panel p:last-child {
   color: var(--br-text) !important;
+}
+.profile-password-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.8rem;
+  margin-top: 1rem;
+  border: 1px solid var(--br-accent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--br-accent);
+  padding: 0.65rem 0.9rem;
+  font: 800 0.72rem "Courier New", monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.profile-password-button:hover {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
 }
 .create-user-panel {
   grid-column: 1 !important;
@@ -2447,7 +2467,7 @@ async function createUser() {
 }
 .account-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
   grid-column: 1 / -1;
   width: 100%;
@@ -2480,6 +2500,58 @@ async function createUser() {
   cursor: wait;
   opacity: 0.65;
 }
+.account-item--password {
+  overflow: visible;
+  z-index: 4;
+}
+.password-more-menu {
+  position: absolute;
+  right: 0.55rem;
+  top: 0.55rem;
+  z-index: 8;
+}
+.password-more-trigger {
+  display: grid !important;
+  width: 2.35rem !important;
+  min-height: 2.35rem !important;
+  place-items: center !important;
+  border: 1px solid var(--br-line-strong) !important;
+  background: var(--br-panel) !important;
+  color: var(--br-text) !important;
+  padding: 0 !important;
+}
+.password-more-trigger:hover {
+  border-color: var(--br-accent) !important;
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+}
+.password-more-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  display: grid;
+  width: min(15rem, calc(100vw - 2rem));
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel);
+  box-shadow: 6px 6px 0 var(--br-accent);
+}
+.password-more-dropdown button {
+  justify-content: flex-start !important;
+  width: 100% !important;
+  min-height: 2.8rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--br-line) !important;
+  color: var(--br-text) !important;
+  padding: 0.7rem 0.85rem !important;
+  text-align: left !important;
+}
+.password-more-dropdown button:last-child {
+  border-bottom: 0 !important;
+}
+.password-more-dropdown button:hover:not(:disabled) {
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+}
 .account-item > button span,
 .account-item--password button span { color: inherit !important; font-size: inherit !important; }
 .user-detail-modal .permissions-title { grid-column: 1 / -1; grid-row: 4; }
@@ -2499,23 +2571,6 @@ async function createUser() {
 .account-grid p {
   color: var(--br-muted) !important;
 }
-.reset-options-overlay{position:fixed;inset:0;z-index:1700;display:grid;place-items:center;padding:1rem;background:rgba(7,7,6,.86);backdrop-filter:blur(5px)}
-.reset-options-dialog{display:grid;width:min(42rem,100%);max-height:calc(100dvh - 2rem);grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;border:1px solid var(--br-line-strong);background:var(--br-panel);color:var(--br-text);box-shadow:9px 9px 0 var(--br-accent)}
-.reset-options-dialog>header{position:relative;padding:1.2rem 4.5rem 1.1rem 1.25rem;border-bottom:1px solid var(--br-line);background:var(--br-bg)}
-.reset-options-dialog>header p{margin:0 0 .35rem;color:var(--br-accent);font:800 .68rem "Courier New",monospace;letter-spacing:.1em}
-.reset-options-dialog>header h2{margin:0;color:var(--br-text);font:900 clamp(1.45rem,4vw,2.25rem)/.95 Arial,sans-serif;text-transform:uppercase}
-.reset-options-dialog>header button{position:absolute;right:0;top:0;width:3.6rem;height:3.6rem;border:0;border-left:1px solid var(--br-line);border-bottom:1px solid var(--br-line);background:var(--br-accent);color:var(--br-accent-text);font-size:1.9rem;cursor:pointer}
-.reset-options-body{display:grid;align-content:start;gap:1rem;min-height:0;overflow:auto;padding:1.25rem}
-.reset-options-body>p{margin:0;color:var(--br-muted);font:700 .82rem/1.5 "Courier New",monospace}
-.reset-link-box{display:grid;gap:.5rem;border:1px solid var(--br-line);background:var(--br-bg);padding:.85rem}
-.reset-link-box span{color:var(--br-accent);font:800 .65rem "Courier New",monospace;text-transform:uppercase}
-.reset-link-box input{width:100%;min-width:0;border:1px solid var(--br-line-strong);border-radius:0;background:var(--br-control);color:#141413;padding:.75rem;font:700 .76rem "Courier New",monospace}
-.reset-link-box button,.reset-option{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.8rem;border:1px solid var(--br-line-strong);border-radius:0;background:var(--br-panel-2);color:var(--br-text);padding:.65rem .9rem;font:800 .72rem "Courier New",monospace;text-transform:uppercase;cursor:pointer}
-.reset-link-box button:hover:not(:disabled),.reset-option:hover:not(:disabled){border-color:var(--br-accent);background:var(--br-accent);color:var(--br-accent-text)}
-.reset-option--primary{background:var(--br-accent);color:var(--br-accent-text);border-color:var(--br-accent)}
-.reset-option--ghost{background:transparent}
-.reset-option:disabled{cursor:not-allowed;opacity:.5}
-.reset-options-dialog>footer{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;padding:1rem 1.25rem;border-top:1px solid var(--br-line)}
 
 @media (max-width: 1180px) {
   .settings-hero {
@@ -2618,8 +2673,5 @@ async function createUser() {
   .account-grid__heading > small { display: none; }
   .user-detail-modal .detail-profile { border-right: 0; }
   .user-detail-modal .status-control { border-right: 0; }
-  .reset-options-overlay{place-items:stretch;padding:0}
-  .reset-options-dialog{width:100vw;max-height:100dvh;height:100dvh;border:0;box-shadow:none}
-  .reset-options-dialog>footer{grid-template-columns:1fr;padding:1rem}
 }
 </style>
