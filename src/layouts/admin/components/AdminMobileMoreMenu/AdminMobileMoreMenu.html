@@ -1,0 +1,27 @@
+<Transition name="slide-up">
+    <section v-if="isOpen" class="mobile-more fixed bottom-0 left-0 z-50 w-full" aria-label="Más opciones">
+      <header class="mobile-more__header">
+        <div class="mobile-more__profile">
+          <img v-image-fallback :src="profilePicture" alt="" />
+          <div>
+            <strong>{{ profileName }}</strong>
+            <span>{{ profileType }}</span>
+          </div>
+        </div>
+        <button type="button" aria-label="Cerrar menú" @click="emit('close')">×</button>
+      </header>
+
+      <h2>Más opciones</h2>
+      <ul class="mobile-more__list">
+        <li v-for="item in menuItems" :key="item.path">
+          <RouterLink :to="item.path" @click="emit('close')">
+            <i :class="item.icon" /><span>{{ item.name }}</span>
+          </RouterLink>
+        </li>
+        <li><button type="button" @click="emit('openNotes')"><i class="pi pi-book" /><span>Notas</span></button></li>
+        <li v-if="isAdmin"><button type="button" @click="emit('openLogs')"><i class="pi pi-list" /><span>Registros</span></button></li>
+        <li><RouterLink to="/app/settings" @click="emit('close')"><i class="pi pi-user" /><span>Cuenta</span></RouterLink></li>
+        <li><button type="button" class="mobile-more__logout" @click="emit('logout')"><i class="pi pi-sign-out" /><span>Cerrar sesión</span></button></li>
+      </ul>
+    </section>
+  </Transition>

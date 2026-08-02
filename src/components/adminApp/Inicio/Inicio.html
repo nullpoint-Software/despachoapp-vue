@@ -1,0 +1,75 @@
+<main ref="pageRef" class="home-dashboard">
+    <header class="page-hero"><div><p>OPERACI&Oacute;N / RESUMEN</p><h1>Inicio</h1><span>Ingresos, clientes y trabajo pendiente.</span></div><div class="hero-date"><b>{{ currentDay }}</b><span>{{ currentMonth }}</span></div></header>
+
+    <section id="operational-summary" class="operations-panel" aria-labelledby="operations-title">
+      <header class="operations-header">
+        <div><p>DESPACHO / ESTADO ACTUAL</p><h2 id="operations-title">Resumen operativo</h2></div>
+        <span>{{ operationalLoading ? "ACTUALIZANDO..." : "DATOS ACTUALIZADOS" }}</span>
+      </header>
+
+      <div class="kpi-strip" aria-label="Indicadores principales">
+        <router-link to="/app/clientes" class="kpi-cell">
+          <span>Clientes activos</span><strong>{{ operationalLoading ? "—" : activeClientsCount }}</strong><small>expedientes registrados</small>
+        </router-link>
+        <router-link to="/app/tareas" class="kpi-cell">
+          <span>Tareas pendientes</span><strong>{{ operationalLoading ? "—" : pendingTasks.length }}</strong><small>{{ taskGroups.length }} responsables</small>
+        </router-link>
+        <router-link to="/app/cumplimiento" class="kpi-cell">
+          <span>Opiniones revisadas</span><strong>{{ operationalLoading ? "—" : reviewedOpinions }}</strong><small>de {{ complianceSummary.total }} clientes</small>
+        </router-link>
+        <router-link to="/app/fiscal" class="kpi-cell accent">
+          <span>Reporte {{ previousPeriodShort }}</span><strong>{{ operationalLoading ? "—" : reportClientRows.length }}</strong><small>{{ missingReportClients }} clientes pendientes</small>
+        </router-link>
+      </div>
+
+      <p v-if="operationalErrors.length" class="dashboard-error operational-error">
+        Algunos datos no pudieron actualizarse: {{ operationalErrors.join(", ") }}.
+      </p>
+
+      <div class="operations-grid">
+        <article class="operations-detail">
+          <header><div><span>TRABAJO / EQUIPO</span><h3>Pendientes por empleado</h3></div><router-link to="/app/tareas">VER TAREAS <i class="pi pi-arrow-right" /></router-link></header>
+          <div v-if="operationalLoading" class="detail-loading">Cargando tareas...</div>
+          <ol v-else-if="taskGroups.length" class="metric-list">
+            <li v-for="group in taskGroups" :key="group.name">
+              <div><strong>{{ group.name }}</strong><span>{{ group.count }}</span></div>
+              <progress :value="group.count" :max="taskGroupMax">{{ group.count }}</progress>
+            </li>
+          </ol>
+          <div v-else class="detail-empty"><i class="pi pi-check-circle" /><span>No hay tareas pendientes.</span></div>
+        </article>
+
+        <article class="operations-detail">
+          <header><div><span>SAT / 32-D</span><h3>Resultado de opiniones</h3></div><router-link to="/app/cumplimiento">VER OPINIONES <i class="pi pi-arrow-right" /></router-link></header>
+          <div v-if="operationalLoading" class="detail-loading">Cargando opiniones...</div>
+          <ol v-else-if="opinionBreakdown.length" class="metric-list opinions-list">
+            <li v-for="item in opinionBreakdown" :key="item.key">
+              <div><strong>{{ item.label }}</strong><span>{{ item.count }}</span></div>
+              <progress :value="item.count" :max="opinionMax">{{ item.count }}</progress>
+            </li>
+          </ol>
+          <div v-else class="detail-empty"><i class="pi pi-minus-circle" /><span>No hay opiniones registradas.</span></div>
+        </article>
+
+        <article class="operations-detail reports-detail">
+          <header><div><span>FISCAL / {{ previousPeriodLabel }}</span><h3>Clientes con reporte mensual</h3></div><router-link to="/app/fiscal">VER REPORTES <i class="pi pi-arrow-right" /></router-link></header>
+          <div v-if="operationalLoading" class="detail-loading">Revisando cortes mensuales...</div>
+          <ul v-else-if="reportClientRows.length" class="report-clients">
+            <li v-for="client in reportClientRows" :key="client.key">
+              <i class="pi pi-check" /><strong>{{ client.name }}</strong><span>{{ client.directions.join(" + ") || "Reporte mensual" }}</span>
+            </li>
+          </ul>
+          <div v-else class="detail-empty"><i class="pi pi-folder-open" /><span>Ning&uacute;n cliente tiene reporte de {{ previousPeriodLabel }}.</span></div>
+          <footer v-if="!operationalLoading"><strong>{{ reportClientRows.length }} con reporte</strong><span>{{ missingReportClients }} pendientes de {{ activeClientsCount }} clientes activos</span></footer>
+        </article>
+      </div>
+    </section>
+
+    <section v-if="isAdmin" id="chart-section" class="revenue-panel">
+      <header class="panel-header"><div><p>PAGOS / COMPARATIVO</p><h2>Ingresos y costos</h2></div><div class="chart-actions"><label>Periodo<select id="periodo" v-model="periodo"><option value="dia">D&iacute;a</option><option value="mes">Mes</option><option value="anio">A&ntilde;o</option><option value="anios">A&ntilde;os</option></select></label><label class="check"><input v-model="zoomEnabled" type="checkbox"/><span>Zoom</span></label></div></header>
+      <div class="chart-legend"><span><i :style="{backgroundColor:paletteColors[0]}"/>Ingresos</span><span><i :style="{backgroundColor:paletteColors[1]}"/>Costos</span></div>
+      <div class="chart-wrap"><Line v-if="!loading" :key="chartKey" :data="chartData" :options="chartOptions" :plugins="[emptyDataPlugin]"/><div v-else class="chart-loading">Cargando movimientos...</div></div>
+      <p v-if="loadError" class="dashboard-error">{{ loadError }}</p>
+      <div id="resumen-ganancias" class="summary-grid"><article><span>Hoy</span><strong>{{ money(resumen.dia) }}</strong></article><article><span>Este mes</span><strong>{{ money(resumen.mes) }}</strong></article><article><span>Este a&ntilde;o</span><strong>{{ money(resumen.anio) }}</strong></article><article class="accent"><span>Hist&oacute;rico</span><strong>{{ money(resumen.anios) }}</strong></article></div>
+    </section>
+  </main>

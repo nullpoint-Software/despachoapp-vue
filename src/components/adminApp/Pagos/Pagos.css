@@ -1,0 +1,66 @@
+.records-view {
+  min-height: 100%;
+  padding: clamp(1rem, 2.5vw, 2rem);
+  background: transparent;
+  color: var(--br-text);
+}
+.records-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--br-line);
+  border-bottom: 1px solid var(--br-line);
+}
+.records-hero p {
+  margin: 0 0 0.5rem;
+  color: var(--br-accent);
+  font:
+    800 0.75rem "Courier New",
+    monospace;
+  letter-spacing: 0.12em;
+}
+.records-hero h1 {
+  margin: 0;
+  font:
+    900 clamp(3.2rem, 9vw, 7rem)/0.75 Arial,
+    sans-serif;
+  letter-spacing: -0.075em;
+  text-transform: uppercase;
+}
+.records-hero span {
+  display: block;
+  margin-top: 1rem;
+  color: var(--br-muted);
+  font:
+    700 0.9rem "Courier New",
+    monospace;
+}
+.records-actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.records-content {
+  min-height: 24rem;
+  padding-top: 1rem;
+}
+@media (max-width: 720px) {
+  .records-hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .records-actions {
+    justify-content: stretch;
+  }
+  .records-actions :deep(button) {
+    flex: 1;
+  }
+  .records-tabs a {
+    flex: 1;
+    text-align: center;
+    padding: 0.9rem 0.5rem;
+  }
+}

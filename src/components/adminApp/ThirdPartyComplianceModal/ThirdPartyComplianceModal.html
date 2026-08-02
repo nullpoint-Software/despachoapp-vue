@@ -1,0 +1,113 @@
+<Teleport to="body">
+    <div class="sat-overlay" @click.self="requestClose">
+      <section class="sat-modal" role="dialog" aria-modal="true" aria-labelledby="sat-third-party-title">
+        <header class="modal-heading">
+          <div>
+            <p>SAT / TERCERO AUTORIZADO</p>
+            <h2 id="sat-third-party-title">Consulta por terceros</h2>
+          </div>
+          <button type="button" aria-label="Cerrar" @click="requestClose">×</button>
+        </header>
+
+        <div class="browser-bar">
+          <span class="phase-indicator" :class="`phase-${currentPhase}`"><i /></span>
+          <div class="phase-copy">
+            <strong>{{ statusTitle }}</strong>
+            <span>{{ statusDetail }}</span>
+          </div>
+          <button v-if="currentPhase === 'error'" type="button" class="retry-link" @click="retryPortal">
+            <i class="pi pi-refresh" /> Reintentar
+          </button>
+          <span v-else-if="state" class="session-time">{{ state.expiresInSeconds }} s</span>
+        </div>
+
+        <div v-if="errorMessage && currentPhase !== 'error'" id="sat-login-error" class="a11y-form-status inline-error" role="alert">
+          <i class="pi pi-exclamation-triangle" /><span>{{ errorMessage }}</span>
+        </div>
+
+        <div
+          ref="viewport"
+          class="sat-viewport"
+          :class="{ interactive: Boolean(state?.image) && currentPhase !== 'error', blocked: syncing }"
+          tabindex="0"
+          @click="clickViewport"
+          @wheel.prevent="scrollViewport"
+        >
+          <form v-if="currentPhase === 'login'" class="native-login" autocomplete="off" :aria-busy="submittingLogin" @submit.prevent="submitNativeLogin">
+            <div class="login-intro">
+              <span>ACCESO SAT</span>
+              <h3>Inicia sesión sin retrasos</h3>
+              <p>Los datos se envían una sola vez al navegador temporal y se eliminan al cerrar.</p>
+            </div>
+            <label><span>RFC</span><input id="sat-rfc" v-model.trim="loginRfc" type="text" autocapitalize="characters" spellcheck="false" :aria-invalid="Boolean(errorMessage)" :aria-describedby="errorMessage ? 'sat-login-error' : undefined" maxlength="13" autocomplete="username" placeholder="RFC" required /></label>
+            <label><span>Contraseña</span><input id="sat-password" v-model="loginPassword" type="password" :aria-invalid="Boolean(errorMessage)" :aria-describedby="errorMessage ? 'sat-login-error' : undefined" maxlength="64" autocomplete="current-password" placeholder="Contraseña SAT" required /></label>
+            <div class="captcha-row">
+              <div class="captcha-image"><img v-if="state?.captchaImage" :src="state.captchaImage" alt="CAPTCHA del SAT" /><span v-else>Cargando CAPTCHA…</span></div>
+              <label><span>Texto del CAPTCHA</span><input id="sat-captcha" v-model.trim="loginCaptcha" type="text" :aria-invalid="Boolean(errorMessage)" :aria-describedby="errorMessage ? 'sat-login-error' : undefined" maxlength="16" autocomplete="off" placeholder="Captura la imagen" required /></label>
+            </div>
+            <button type="submit" :disabled="submittingLogin || !state?.captchaImage">
+              <i :class="submittingLogin ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-right'" />
+              {{ submittingLogin ? 'Validando con el SAT…' : 'Iniciar sesión' }}
+            </button>
+          </form>
+
+          <img v-else-if="state?.image" :src="state.image" alt="Portal del SAT" draggable="false" />
+
+          <div v-if="currentPhase === 'loading' && !state?.image" class="portal-state loading-state" aria-live="polite">
+            <div class="browser-skeleton" aria-hidden="true">
+              <span class="skeleton-brand" />
+              <span class="skeleton-line wide" />
+              <span class="skeleton-line" />
+              <span class="skeleton-field" />
+              <span class="skeleton-field" />
+              <span class="skeleton-field short" />
+            </div>
+            <div class="state-message">
+              <i class="pi pi-spin pi-spinner" />
+              <strong>Conectando con el SAT</strong>
+              <span>La sesión ya fue creada. Estamos esperando el formulario de acceso.</span>
+            </div>
+          </div>
+
+          <div v-else-if="currentPhase === 'error'" class="portal-state error-state" role="alert">
+            <i class="pi pi-exclamation-circle" />
+            <strong>El portal no respondió</strong>
+            <span>{{ state?.message || 'No se pudo cargar el formulario del SAT dentro del tiempo esperado.' }}</span>
+            <button type="button" @click.stop="retryPortal">Intentar de nuevo</button>
+          </div>
+
+          <div v-else-if="syncing" class="sync-cover" aria-live="polite">
+            <span>{{ progress.processed }}/{{ progress.total || '—' }}</span>
+            <strong>Consultando clientes</strong>
+            <small>No cierres esta ventana mientras recuperamos las opiniones.</small>
+          </div>
+
+          <input
+            ref="keyboardInput"
+            v-model="typedText"
+            class="keyboard-capture"
+            aria-label="Escribir en el campo seleccionado del portal SAT"
+            autocomplete="off"
+            @input="sendTypedText"
+            @keydown="sendKey"
+          />
+        </div>
+
+        <footer>
+          <div class="privacy-note">
+            <i class="pi pi-lock" />
+            <span>La sesión se elimina al cerrar. No guardamos contraseña, CAPTCHA ni cookies.</span>
+          </div>
+          <div class="footer-actions">
+            <AppButton label="Cerrar" outlined :disabled="closing" @click="requestClose" />
+            <AppButton
+              :label="syncing ? `Consultando ${progress.processed}/${progress.total || '?'}…` : 'Consultar ahora'"
+              icon="pi pi-search"
+              :disabled="!state?.ready || syncing || starting"
+              @click="syncClients"
+            />
+          </div>
+        </footer>
+      </section>
+    </div>
+  </Teleport>

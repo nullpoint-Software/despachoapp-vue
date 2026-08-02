@@ -7,7 +7,7 @@ const driverObjInicio = driver({
         {
             popover: {
                 title: 'Bienvenido a ContaApp!', description: `<img src="https://i.pinimg.com/originals/90/ee/8c/90ee8c7d852e53327dbde9fc252cf023.gif">
-                En este tour interactivo se te mostrará como usar la aplicacion y sus varias partes.
+                En este tour interactivo se te mostrarÃƒÆ’Ã‚Â¡ como usar la aplicacion y sus varias partes.
                 <br><strong>Puedes cancelar el tour dando clic en la X o presionando afuera</strong>`, side: "over", align: "center"
             }
         },
@@ -18,8 +18,8 @@ const driverObjInicio = driver({
         {
             element: '#periodo',
             popover: {
-                title: 'Selector de periodo', description: `Aqui puedes seleccionar el periodo de tiempo que deseas visualizar en el gráfico, 
-                <strong>Puedes observar los ingresos por hoy, mes actual, año actual, o todos los años</strong>`, side: 'top', align: 'start'
+                title: 'Selector de periodo', description: `Aqui puedes seleccionar el periodo de tiempo que deseas visualizar en el grÃƒÆ’Ã‚Â¡fico,
+                <strong>Puedes observar los ingresos por hoy, mes actual, aÃƒÆ’Ã‚Â±o actual, o todos los aÃƒÆ’Ã‚Â±os</strong>`, side: 'top', align: 'start'
             }
         },
         {
@@ -27,8 +27,8 @@ const driverObjInicio = driver({
             popover: { title: 'Resumen de ganancias', description: 'Aqui puedes ver un resumen de las ganancias en cada periodo', side: 'top', align: 'start' }
         },
         {
-            element: '#mini-kanban',
-            popover: { title: 'Tareas pendientes', description: 'Aqui puedes ver fácilmente las tareas pendientes de tu usuario', side: 'top', align: 'start' }
+            element: '#operational-summary',
+            popover: { title: 'Resumen operativo', description: 'Aqui puedes revisar clientes activos, tareas por empleado, opiniones y reportes mensuales.', side: 'top', align: 'start' }
         },
     ],
     onNextClick: (el, step, { driver }) => {

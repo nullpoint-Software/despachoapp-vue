@@ -1,0 +1,1 @@
+<button v-bind="$attrs" :type="type" :disabled="disabled" class="app-button" :class="{ 'app-button--icon-only':icon&&!label,'app-button--outlined':outlined }"><i v-if="icon" :class="icon" aria-hidden="true"></i><span v-if="label" class="app-button__label">{{ label }}</span><slot /></button>

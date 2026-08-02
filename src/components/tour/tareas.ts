@@ -7,7 +7,7 @@ const driverObjTareasMain = driver({
     steps: [
         {
             popover: {
-                title: 'Tareas', description: `Aquí se muestran todas las tareas a realizar, organizadas en cuatro columnas: <strong>Disponible, 
+                title: 'Tareas', description: `Aquí se muestran todas las tareas a realizar, organizadas en cuatro columnas: <strong>Disponible,
                 Pendiente, En Progreso y Terminado.</strong> Las tarjetas se arrastran de una columna a otra conforme avanza su progreso.`, side: "over", align: "center"
             }
         },
@@ -20,7 +20,7 @@ const driverObjTareasMain = driver({
         {
             element: '.disponible-column',
             popover: {
-                title: 'Tareas disponibles', description: `Las tareas disponibles para realizar se ubican en esta columna, 
+                title: 'Tareas disponibles', description: `Las tareas disponibles para realizar se ubican en esta columna,
                 cuando arrastres una tarjeta a la siguiente columna, se asignará automáticamente a tu usuario. <img src='`+dragTareaGif+`'>`, side: 'right', align: 'center'
             }
         },
@@ -30,25 +30,25 @@ const driverObjTareasMain = driver({
         },
         {
             element: '.progreso-column',
-            popover: { 
-                title: 'Tareas en progreso', 
-                description: `En esta columna están las tareas en las que un usuario ya está trabajando actualmente. 
-                Se mueven aquí cuando comienzan a ejecutarse.`, 
-                side: 'right', 
-                align: 'center' 
+            popover: {
+                title: 'Tareas en progreso',
+                description: `En esta columna están las tareas en las que un usuario ya está trabajando actualmente.
+                Se mueven aquí cuando comienzan a ejecutarse.`,
+                side: 'right',
+                align: 'center'
             }
         },
         {
             element: '.terminado-column',
-            popover: { 
-                title: 'Tareas finalizadas', 
-                description: `Aquí se ubican todas las tareas que ya fueron completadas y cerradas. 
-                Funciona como un historial visual de los avances.`, 
-                side: 'right', 
-                align: 'center' 
+            popover: {
+                title: 'Tareas finalizadas',
+                description: `Aquí se ubican todas las tareas que ya fueron completadas y cerradas.
+                Funciona como un historial visual de los avances.`,
+                side: 'right',
+                align: 'center'
             }
         },
-        
+
     ],
     onDestroyed: () => {
         // This callback runs when the tour ends

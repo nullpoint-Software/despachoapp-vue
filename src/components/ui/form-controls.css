@@ -1,1 +1,129 @@
 .modal-content input[type="checkbox"],.modal-content input[type="radio"],.cut-modal input[type="checkbox"],.cut-modal input[type="radio"]{width:1.15rem!important;min-width:1.15rem!important;height:1.15rem!important;min-height:1.15rem!important;margin:0!important;padding:0!important;accent-color:var(--br-accent);box-shadow:none!important}
+
+/* Contrato A11Y para formularios (WCAG 2.2 AA). */
+:where(input:not([type="hidden"]),select,textarea,button,[role="button"]):focus-visible{
+  outline:2px solid var(--br-accent,#e34b32)!important;
+  outline-offset:2px!important;
+}
+:where(input:not([type="hidden"]),select,textarea)[aria-invalid="true"]{
+  border-color:var(--br-danger-line,#a52319)!important;
+  box-shadow:inset 4px 0 0 var(--br-danger-line,#a52319)!important;
+}
+:where(input:not([type="hidden"]),select,textarea)[aria-invalid="true"]:focus-visible{
+  outline-color:var(--br-danger-line,#a52319)!important;
+}
+:where(form,.a11y-form) :where(label,legend){font-weight:700}
+:where(form,.a11y-form) :where(.field-error,.task-field-error,.credential-error,.inline-error,.form-error,[data-field-error]){
+  color:var(--br-danger-line,#a52319);
+  font-weight:700;
+}
+:where(form,.a11y-form) :where(button,input:not([type="hidden"]),select,textarea){min-height:44px}
+:where(form,.a11y-form) :where(input[type="checkbox"],input[type="radio"]){min-width:24px;min-height:24px}
+:where(button,input,select,textarea):disabled{cursor:not-allowed}
+.a11y-required-note{margin:.25rem 0 .75rem;color:var(--br-muted,#666);font-size:.8rem}
+.a11y-form-status[role="alert"],.a11y-form-status[role="status"]{margin:.75rem 0}
+@media(prefers-reduced-motion:reduce){
+  :where(form,.a11y-form) *,:where(form,.a11y-form) *::before,:where(form,.a11y-form) *::after{
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+  }
+}
+
+/* Superficie única para todos los diálogos modales de la aplicación. */
+:where([role="dialog"][aria-modal="true"]){
+  --app-modal-ink:var(--br-control-text,#141413);
+  --app-modal-muted:var(--br-control-muted,#56534c);
+  background:var(--br-control,#e7e4dc)!important;
+  color:var(--app-modal-ink)!important;
+  border-color:var(--br-line-strong,#77736b)!important;
+}
+:where([role="dialog"][aria-modal="true"])>header,
+:where([role="dialog"][aria-modal="true"])>.standard-modal-header,
+:where([role="dialog"][aria-modal="true"])>.modal-header{
+  background:var(--br-bg,#10100f)!important;
+  color:var(--br-text,#eceae4)!important;
+  border-bottom-color:var(--br-control,#e7e4dc)!important;
+}
+:where([role="dialog"][aria-modal="true"])>header :where(h1,h2,h3,p),
+:where([role="dialog"][aria-modal="true"])>.standard-modal-header :where(h1,h2,h3,p),
+:where([role="dialog"][aria-modal="true"])>.modal-header :where(h1,h2,h3,p){color:inherit}
+:where([role="dialog"][aria-modal="true"]) :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+  background:color-mix(in srgb,var(--br-control,#e7e4dc) 72%,white)!important;
+  color:var(--app-modal-ink)!important;
+  border-color:var(--br-line-strong,#77736b)!important;
+}
+:where(.modal-overlay,.task-modal-overlay,.documents-overlay,.sat-overlay,.period-overlay,.cut-overlay,.editor-overlay,.user-wizard-overlay,.filter-modal-overlay,.appearance-modal-overlay,.thermal-overlay,.ticket-printer-overlay){
+  background:color-mix(in srgb,var(--br-bg,#10100f) 88%,transparent)!important;
+  backdrop-filter:blur(4px);
+}
+:where([role="dialog"][aria-modal="true"]) :where(.app-modal-footer,footer){
+  border-top-color:var(--br-line-strong,#77736b);
+}
+.note-editor small{display:block;color:var(--app-modal-muted);font:600 .7rem/1.4 "Courier New",monospace;text-transform:none}:where([role="dialog"][aria-modal="true"]):not(.dt-panel){
+  border-width:2px!important;
+  border-style:solid!important;
+  box-shadow:10px 10px 0 var(--br-accent)!important;
+}
+:where([role="dialog"][aria-modal="true"]) :where(.standard-modal-close,.modal-close,header>button[aria-label*="Cerrar"]){
+  background:var(--br-accent)!important;
+  color:var(--br-accent-text,#fff)!important;
+}
+:where([role="dialog"][aria-modal="true"]) :where(.app-modal-footer,footer){
+  background:var(--br-control,#e7e4dc)!important;
+  color:var(--app-modal-ink)!important;
+}
+@media(max-width:700px){
+  :where([role="dialog"][aria-modal="true"]):not(.dt-panel){box-shadow:none!important}
+}
+/* Los diálogos nunca pueden exceder el viewport; encabezado y acciones permanecen alcanzables. */
+:where(.app-dialog-overlay,.app-filter-modal-overlay,.modal-overlay,.task-modal-overlay,.documents-overlay,.sat-overlay,.period-overlay,.cut-overlay,.editor-overlay,.user-wizard-overlay,.filter-overlay,.appearance-modal-overlay,.thermal-overlay,.ticket-printer-overlay,.logs-overlay,.cash-cut-overlay,.user-detail-modal){
+  box-sizing:border-box!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+:where([role="dialog"][aria-modal="true"]):not(.dt-panel){
+  box-sizing:border-box!important;
+  max-width:calc(100vw - 2rem)!important;
+  max-height:calc(100vh - 2rem)!important;
+  max-height:calc(100dvh - 2rem)!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+:where([role="dialog"][aria-modal="true"]):not(.dt-panel)>header{
+  position:sticky!important;
+  top:0;
+  z-index:12;
+  flex:0 0 auto;
+}
+:where([role="dialog"][aria-modal="true"]):not(.dt-panel)>footer,
+:where([role="dialog"][aria-modal="true"]):not(.dt-panel)>form>footer{
+  position:sticky!important;
+  bottom:0;
+  z-index:11;
+  flex:0 0 auto;
+  background:var(--br-control,#e7e4dc)!important;
+}
+:where([role="dialog"][aria-modal="true"]) :where(.wizard-body,.task-modal__body,.documents-body,.sat-viewport,.logs-body,.app-filter-modal__body,.appearance-modal__body,.client-form-body){
+  min-height:0!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+}
+@media(max-width:700px),(max-height:620px){
+  :where(.app-dialog-overlay,.app-filter-modal-overlay,.modal-overlay,.task-modal-overlay,.documents-overlay,.sat-overlay,.period-overlay,.cut-overlay,.editor-overlay,.user-wizard-overlay,.filter-overlay,.appearance-modal-overlay,.thermal-overlay,.ticket-printer-overlay,.logs-overlay,.cash-cut-overlay,.user-detail-modal){
+    place-items:start center!important;
+    padding:max(.5rem,env(safe-area-inset-top)) max(.5rem,env(safe-area-inset-right)) max(.5rem,env(safe-area-inset-bottom)) max(.5rem,env(safe-area-inset-left))!important;
+  }
+  :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
+    width:100%!important;
+    max-width:100%!important;
+    max-height:calc(100dvh - 1rem)!important;
+    margin:0!important;
+    box-shadow:none!important;
+  }
+}

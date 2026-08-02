@@ -19,7 +19,6 @@ class NotasService {
   async getNotas(page?: { limit: number; offset: number }): Promise<any> {
     try {
       const response = await this.axios.get(`${this.serverip}/notas`, { params: page });
-      console.log("notas", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching notas:", error);
@@ -30,7 +29,6 @@ class NotasService {
   async addNota(nota: any) {
     try {
       const res = await this.axios.post(`${this.serverip}/notas`, nota);
-      console.log("Nota guardada:", res.data);
       return res.data;
     } catch (err) {
       console.error("Error al guardar nota:", err);
@@ -41,7 +39,6 @@ class NotasService {
   async deleteNota(id: any) {
     try {
       const res = await this.axios.delete(`${this.serverip}/notas/${id}`);
-      console.log("Nota eliminada:", res.data);
     } catch (err) {
       console.error("Error al guardar nota:", err);
     }

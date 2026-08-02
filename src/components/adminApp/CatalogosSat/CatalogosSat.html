@@ -1,0 +1,291 @@
+<main class="sat-view">
+    <header class="sat-hero">
+      <div class="hero-copy">
+        <p>CATALOGOS / CFDI 4.0</p>
+        <h1>Encuentra la clave SAT correcta</h1>
+        <span>Busca como hablas: escribe un producto, servicio, sinónimo o los 8 dígitos de una clave.</span>
+      </div>
+      <div class="catalog-stat" aria-label="Estado del catálogo">
+        <i class="pi pi-database" aria-hidden="true" />
+        <div>
+          <strong>{{ loading ? "Cargando..." : catalog.length.toLocaleString("es-MX") }}</strong>
+          <span>claves consultables</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="search-console" aria-labelledby="sat-search-title">
+      <div class="search-heading">
+        <span id="sat-search-title">01 / Describe lo que facturas</span>
+        <small>La búsqueda ignora acentos y revisa sinónimos del catálogo.</small>
+      </div>
+      <form class="search-row" role="search" @submit.prevent="runSearchNow">
+        <label for="sat-search" class="sr-only">Producto, servicio o clave SAT</label>
+        <i class="pi pi-search" aria-hidden="true" />
+        <input
+          id="sat-search"
+          ref="searchInput"
+          v-model="query"
+          type="search"
+          inputmode="search"
+          autocomplete="off"
+          placeholder="Ej. desarrollo de software, café tostado, 81111500..."
+          :disabled="loading"
+          @keydown.esc="clearSearch"
+        />
+        <button v-if="query" type="button" aria-label="Limpiar búsqueda" @click="clearSearch">×</button>
+      </form>
+      <div class="suggestions" aria-label="Búsquedas sugeridas">
+        <span>Prueba con</span>
+        <button v-for="suggestion in suggestions" :key="suggestion" type="button" @click="useSuggestion(suggestion)">
+          {{ suggestion }}
+        </button>
+      </div>
+      <section v-if="query.trim().length >= 2" class="nano-classifier" aria-live="polite">
+        <div class="classifier-heading">
+          <div>
+            <span><i class="pi pi-sparkles" /> CONSULTAR CON GEMINI NANO</span>
+            <p>{{ classificationStatusText }}</p>
+          </div>
+          <button
+            type="button"
+            :disabled="nanoAvailability === 'checking' || nanoAvailability === 'unavailable' || isClassifying || isGeneratingNano"
+            @click="classifyCurrentProduct"
+          >
+            <i :class="isClassifying ? 'pi pi-spin pi-spinner' : 'pi pi-sparkles'" />
+            {{ isClassifying ? "Analizando..." : "¿En qué claves puede entrar?" }}
+          </button>
+        </div>
+        <div v-if="isClassifying && nanoAvailability === 'downloading'" class="nano-progress">
+          <span :style="{ transform: `scaleX(${nanoProgress})` }" />
+        </div>
+        <div v-if="nanoClassification" class="classification-results">
+          <button
+            v-for="suggestion in nanoClassification.suggestions"
+            :key="suggestion.code"
+            type="button"
+            @click="openNanoSuggestion(suggestion.code)"
+          >
+            <code>{{ suggestion.code }}</code>
+            <span>
+              <strong>{{ recordByCode.get(suggestion.code)?.d }}</strong>
+              <small>{{ shorten(suggestion.reason, 96) }}</small>
+            </span>
+            <i class="pi pi-arrow-right" />
+          </button>
+          <p>{{ shorten(nanoClassification.note, 140) }}</p>
+        </div>
+        <p v-if="classificationError" class="classifier-error">{{ classificationError }}</p>
+        <a
+          v-if="nanoAvailability === 'unavailable'"
+          href="https://developer.chrome.com/docs/ai/get-started"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Cómo activar Gemini Nano <i class="pi pi-external-link" />
+        </a>
+    </section>
+    </section>
+
+    <div v-if="error" class="catalog-error" role="alert">
+      <i class="pi pi-exclamation-triangle" aria-hidden="true" />
+      <div><strong>No pudimos abrir el catálogo</strong><span>{{ error }}</span></div>
+      <button type="button" @click="loadCatalog(true)">Reintentar</button>
+    </div>
+
+    <section v-else-if="loading" class="catalog-loading" aria-label="Cargando catálogo">
+      <div v-for="item in 5" :key="item" class="skeleton-line"><span /><span /></div>
+    </section>
+
+    <section v-else class="catalog-workspace">
+      <div class="results-panel">
+        <header class="results-heading">
+          <div>
+            <span>02 / Revisa coincidencias</span>
+            <h2>{{ resultsTitle }}</h2>
+          </div>
+          <div v-if="query.trim().length >= 2" class="result-count">
+            <strong>{{ searchResults.length }}</strong><span>resultados</span>
+          </div>
+        </header>
+
+        <div v-if="query.trim().length < 2" class="search-empty intro-empty">
+          <div class="empty-index">8</div>
+          <div>
+            <strong>Empieza con dos caracteres</strong>
+            <p>Puedes buscar una actividad completa, como "mantenimiento de computadoras", o una palabra cotidiana como "tornillos".</p>
+          </div>
+        </div>
+
+        <div v-else-if="!searchResults.length" class="search-empty">
+          <i class="pi pi-search" aria-hidden="true" />
+          <div>
+            <strong>No encontramos una coincidencia directa</strong>
+            <p>Usa menos palabras, prueba un término general o revisa la ortografía.</p>
+          </div>
+        </div>
+
+        <div v-else class="result-list">
+          <button
+            v-for="record in visibleResults"
+            :key="record.i"
+            type="button"
+            class="result-row"
+            :class="{ active: selected?.i === record.i }"
+            :aria-pressed="selected?.i === record.i"
+            @click="selectRecord(record)"
+          >
+            <span class="code">{{ formatCode(record.i) }}</span>
+            <span class="result-copy">
+              <strong>{{ record.d }}</strong>
+              <small v-if="record.s">También: {{ shorten(record.s, 108) }}</small>
+              <small v-else>{{ levelLabel(record.i) }}</small>
+            </span>
+            <span class="row-kind">{{ levelLabel(record.i) }}</span>
+            <i class="pi pi-arrow-right" aria-hidden="true" />
+          </button>
+
+          <button v-if="hasMore" class="load-more" type="button" @click="visibleCount += pageSize">
+            Mostrar {{ Math.min(pageSize, searchResults.length - visibleCount) }} resultados más
+            <span>{{ visibleCount }} de {{ searchResults.length }}</span>
+          </button>
+        </div>
+      </div>
+
+      <aside class="detail-panel" :class="{ populated: selected }" aria-live="polite">
+        <template v-if="selected">
+          <header class="detail-heading">
+            <span>03 / Confirma la clasificación</span>
+            <button
+              type="button"
+              :aria-label="isFavorite(selected.i) ? 'Quitar de guardadas' : 'Guardar clave'"
+              :title="isFavorite(selected.i) ? 'Quitar de guardadas' : 'Guardar clave'"
+              @click="toggleFavorite(selected.i)"
+            >
+              <i :class="isFavorite(selected.i) ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'" />
+            </button>
+          </header>
+
+          <div class="selected-code">
+            <small>CLAVE PROD. / SERV.</small>
+            <strong>{{ formatCode(selected.i) }}</strong>
+            <button type="button" @click="copyCode(selected.i)">
+              <i :class="copiedCode === selected.i ? 'pi pi-check' : 'pi pi-copy'" />
+              {{ copiedCode === selected.i ? "Copiada" : "Copiar" }}
+            </button>
+          </div>
+
+          <h2>{{ selected.d }}</h2>
+          <p v-if="selected.s" class="aliases"><strong>Palabras similares</strong>{{ selected.s }}</p>
+
+          <section class="nano-panel" :data-state="nanoAvailability">
+            <div class="nano-heading">
+              <span class="nano-badge"><i class="pi pi-sparkles" /> GEMINI NANO</span>
+              <small>IA LOCAL / EN ESTE DISPOSITIVO</small>
+            </div>
+            <p>{{ nanoStatusText }}</p>
+            <div v-if="nanoAvailability === 'downloading'" class="nano-progress" aria-label="Descargando Gemini Nano">
+              <span :style="{ transform: `scaleX(${nanoProgress})` }" />
+            </div>
+            <button
+              type="button"
+              :disabled="nanoAvailability === 'checking' || nanoAvailability === 'unavailable' || isGeneratingNano || isClassifying"
+              @click="generateWithGeminiNano"
+            >
+              <i :class="isGeneratingNano ? 'pi pi-spin pi-spinner' : 'pi pi-sparkles'" />
+              {{ nanoActionLabel }}
+            </button>
+            <a
+              v-if="nanoAvailability === 'unavailable'"
+              href="https://developer.chrome.com/docs/ai/get-started"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Cómo activar Gemini Nano <i class="pi pi-external-link" />
+            </a>
+            <small v-if="currentNanoResult" class="nano-cache-note">Ejemplos guardados en este navegador.</small>
+            <p v-if="nanoError" class="nano-error">{{ nanoError }}</p>
+          </section>
+
+          <div class="usage-guide">
+            <div v-if="categoryUsage.examples.length" class="usage-examples">
+              <div class="block-title">
+                <span>Ejemplos que puedes incluir</span>
+                <small>MISMA CLAVE / ORIENTATIVOS</small>
+              </div>
+              <ul>
+                <li v-for="example in categoryUsage.examples" :key="example">
+                  <i class="pi pi-check" aria-hidden="true" />
+                  <span>{{ example }}</span>
+                </li>
+              </ul>
+              <p v-if="currentNanoResult?.note" class="ai-note">{{ currentNanoResult.note }}</p>
+            </div>
+
+            <div v-if="categoryUsage.children.length" class="category-products">
+              <div class="block-title">
+                <span>Productos que entran en la categoría</span>
+                <small>{{ categoryUsage.caption }}</small>
+              </div>
+              <p class="specific-note">Estos productos tienen una clave más específica. Úsala cuando describa mejor lo que vendes.</p>
+              <ul>
+                <li v-for="record in categoryUsage.children" :key="record.i">
+                  <button type="button" @click="selectRecord(record)">
+                    <code>{{ formatCode(record.i) }}</code>
+                    <span>
+                      <strong>{{ record.d }}</strong>
+                      <small v-if="record.s">{{ shorten(record.s, 82) }}</small>
+                    </span>
+                    <i class="pi pi-arrow-right" aria-hidden="true" />
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <p v-if="!categoryUsage.examples.length && !categoryUsage.children.length" class="category-empty">
+              El catálogo no publica ejemplos adicionales para esta clave. Usa la descripción exacta como referencia.
+            </p>
+          </div>
+
+          <dl class="tax-grid">
+            <div><dt>IVA trasladado</dt><dd>{{ selected.t || "Sin dato" }}</dd></div>
+            <div><dt>IEPS trasladado</dt><dd>{{ selected.e || "Sin dato" }}</dd></div>
+            <div><dt>Inicio de vigencia</dt><dd>{{ selected.v || "Sin dato" }}</dd></div>
+            <div><dt>Fin de vigencia</dt><dd>{{ selected.f || "Vigente" }}</dd></div>
+          </dl>
+
+          <p class="validation-note">
+            <i class="pi pi-info-circle" />
+            La descripción debe representar la operación real. Confirma la clave con el SAT o con tu especialista fiscal antes de emitir el CFDI.
+          </p>
+        </template>
+
+        <template v-else>
+          <div class="detail-empty">
+            <span>03</span><i class="pi pi-arrow-left" aria-hidden="true" />
+            <strong>Selecciona una clave</strong>
+            <p>Aquí verás su jerarquía, sinónimos y consideraciones de IVA e IEPS.</p>
+          </div>
+        </template>
+      </aside>
+    </section>
+
+    <section v-if="favoriteRecords.length" class="saved-section">
+      <header>
+        <div><span>GUARDADAS / CONSULTA RÁPIDA</span><h2>Tus claves frecuentes</h2></div>
+        <button type="button" @click="clearFavorites">Limpiar lista</button>
+      </header>
+      <div class="saved-grid">
+        <button v-for="record in favoriteRecords" :key="record.i" type="button" @click="openFavorite(record)">
+          <code>{{ record.i }}</code><strong>{{ record.d }}</strong><i class="pi pi-arrow-up-right" />
+        </button>
+      </div>
+    </section>
+
+    <footer class="source-note">
+      <p><strong>Fuente de referencia</strong> Catálogo c_ClaveProdServ convertido a JSON por Bambucode a partir de la publicación del SAT.</p>
+      <a href="https://github.com/bambucode/catalogos_sat_JSON" target="_blank" rel="noopener noreferrer">
+        Abrir repositorio <i class="pi pi-external-link" />
+      </a>
+    </footer>
+  </main>

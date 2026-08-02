@@ -1,0 +1,5 @@
+/* Resalta el ícono y texto del enlace activo */
+.router-link-active i,
+.router-link-active span {
+  color: var(--obj-important-1);
+}

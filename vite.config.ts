@@ -6,10 +6,12 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa';
+import { externalSfcSetupPlugin } from './build/externalSfcSetupPlugin'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [
+    externalSfcSetupPlugin(),
     vue(),
     vueJsx(),
     vueDevTools(),

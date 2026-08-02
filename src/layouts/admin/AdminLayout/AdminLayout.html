@@ -1,0 +1,16 @@
+<div class="admin-layout">
+  <GridBackground />
+  <PinnedNotesWindow @open-notes="openNotes" />
+  <template v-if="!isMobile">
+    <TopNavbar :profile-name="profileName" :profile-picture="profilePicture" :profile-type="profileType" :is-admin="isAdmin" :notes-active="isNotesModalOpen" :logs-active="isLogsModalOpen" @toggle-menu="toggleMenu" @open-notes="openNotes" @open-logs="openLogs" @logout="logout" />
+    <DesktopSidebar :menu-items="navigationItems" />
+    <MobileSidebar :is-open="isMenuOpen" :profile-name="profileName" :profile-picture="profilePicture" :profile-type="profileType" :menu-items="navigationItems" @close-menu="toggleMenu" @logout="logout" />
+  </template>
+  <main class="admin-layout__content" :class="{ 'admin-layout__content--mobile': isMobile, 'admin-layout__content--desktop': !isMobile }">
+    <Suspense><template #default><RouterView class="p-4 lg:p-6" :class="{ 'mt-16': !isMobile }" /></template><template #fallback><Loader /></template></Suspense>
+  </main>
+  <MobileBottomNav v-if="isMobile" :menu-items="primaryNavigationItems" @open-more-menu="toggleMoreMenu" />
+  <AdminMobileMoreMenu :is-open="isMobile && isMoreMenuOpen" :profile-name="profileName" :profile-picture="profilePicture" :profile-type="profileType" :is-admin="isAdmin" :menu-items="secondaryNavigationItems" @close="toggleMoreMenu" @open-notes="openNotesFromMoreMenu" @open-logs="openLogsFromMoreMenu" @logout="logout" />
+  <AdminNotesModal :visible="isNotesModalOpen" @close="closeNotes" />
+  <Suspense><LogsModal :key="logsRenderKey" :visible="isLogsModalOpen" @close="closeLogs" /></Suspense>
+</div>

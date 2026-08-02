@@ -1,0 +1,254 @@
+<main class="compliance-view">
+    <header class="compliance-hero">
+      <div>
+        <p>FISCAL / 32-D</p>
+        <h1>Opiniones de cumplimiento</h1>
+        <span>Consulta pública o como tercero autorizado, vigencia y pendientes de cada cliente.</span>
+      </div>
+      <div class="compliance-actions" aria-label="Modalidades de consulta">
+        <AppButton
+          :label="syncing ? `Consultando ${syncProgress.processed}/${syncProgress.total || '?'}...` : 'Consulta pública'"
+          icon="pi pi-globe"
+          :disabled="syncing || loading"
+          @click="syncAll"
+        />
+        <AppButton
+          label="Consulta por terceros"
+          icon="pi pi-users"
+          :disabled="syncing"
+          @click="openThirdPartyQuery"
+        />
+      </div>
+    </header>
+
+    <section class="compliance-note" aria-label="Alcance de la consulta">
+      <i class="pi pi-shield" aria-hidden="true" />
+      <div>
+        <strong>Consulta pública y segura</strong>
+        <span>Solo se consulta el RFC. La CIECF y la e.firma nunca salen del servidor ni se envían en este proceso.</span>
+      </div>
+      <button type="button" class="guide-trigger" @click="showGuide = !showGuide">
+        {{ showGuide ? 'Ocultar guía' : 'Cómo hacerla pública' }} <i class="pi pi-angle-down" aria-hidden="true" />
+      </button>
+    </section>
+
+    <section v-if="showGuide" class="publication-guide" aria-labelledby="publication-guide-title">
+      <header>
+        <div><h2 id="publication-guide-title">Publicar la opinión positiva</h2><p>El trámite es gratuito y requiere Contraseña o e.firma vigente.</p></div>
+        <a href="https://wwwmat.sat.gob.mx/tramites/37836/autoriza-al-sat-a-hacer-publica-tu-opinion-del-cumplimiento" target="_blank" rel="noopener noreferrer">Iniciar en SAT <i class="pi pi-external-link" /></a>
+      </header>
+      <ol>
+        <li><strong>Abre el trámite</strong><span>Entra a “Autoriza que el resultado de tu Opinión del cumplimiento sea público”.</span></li>
+        <li><strong>Inicia sesión</strong><span>Ingresa con la Contraseña o e.firma vigente del contribuyente.</span></li>
+        <li><strong>Resuelve el Captcha</strong><span>Captura el texto de la imagen y selecciona Enviar.</span></li>
+        <li><strong>Autoriza la publicación</strong><span>Marca “Autorizo hacer público el resultado de mi Opinión del cumplimiento”.</span></li>
+        <li><strong>Guarda la autorización</strong><span>Selecciona Guardar y conserva la confirmación emitida por el SAT.</span></li>
+        <li><strong>Actualiza esta vista</strong><span>Regresa y usa “Consultar todos en SAT”.</span></li>
+      </ol>
+    </section>
+
+    <section class="summary-grid" aria-label="Resumen de opiniones">
+      <article><span>Clientes</span><strong>{{ summary.total }}</strong></article>
+      <article class="positive"><span>Positivas</span><strong>{{ summary.positiva }}</strong></article>
+      <article class="negative"><span>Situación especial</span><strong>{{ summary.especial + summary.negativa }}</strong></article>
+      <article><span>No públicas</span><strong>{{ summary.no_publica }}</strong></article>
+      <article><span>Sin consultar</span><strong>{{ summary.sin_consulta }}</strong></article>
+      <article><span>PDF archivados</span><strong>{{ summary.con_documento }}</strong></article>
+    </section>
+
+    <section class="filter-strip" aria-label="Filtros de opiniones">
+      <div class="search-row">
+        <label class="search-field">
+          <span>Buscar cliente o RFC</span>
+          <span class="search-control">
+            <i class="pi pi-search" aria-hidden="true" />
+            <AppInput v-model="search" type="search" placeholder="Buscar..." />
+          </span>
+        </label>
+        <AppButton :label="filterButtonLabel" icon="pi pi-sliders-h" outlined @click="openFilters" />
+        <AppButton label="Limpiar filtros" icon="pi pi-filter-slash" outlined @click="clearFilters" />
+        <div class="filter-result">{{ filteredRecords.length }} resultados</div>
+      </div>
+    </section>
+
+    <div v-if="errorMessage" class="feedback error" role="alert">
+      <i class="pi pi-exclamation-triangle" aria-hidden="true" />
+      <span>{{ errorMessage }}</span>
+      <button type="button" @click="loadOpinions()">Reintentar</button>
+    </div>
+    <div v-else-if="successMessage" class="feedback success" role="status">
+      <i class="pi pi-check-circle" aria-hidden="true" />
+      <span>{{ successMessage }}</span>
+      <button type="button" aria-label="Cerrar aviso" @click="successMessage = ''">×</button>
+    </div>
+
+    <section class="compliance-workspace">
+      <div class="records-panel">
+        <header class="panel-heading">
+          <div>
+            <h2>Clientes</h2>
+            <span>Último resultado disponible en el SAT</span>
+          </div>
+        </header>
+
+        <div v-if="loading" class="records-list skeleton-list" aria-label="Cargando opiniones">
+          <article v-for="index in 6" :key="index" class="record-row skeleton-row">
+            <span /><span /><span />
+          </article>
+        </div>
+
+        <div v-else-if="!filteredRecords.length" class="empty-state">
+          <i class="pi pi-inbox" aria-hidden="true" />
+          <strong>No hay opiniones para mostrar</strong>
+          <span>{{ records.length ? 'Cambia los filtros para ver otros clientes.' : 'Sincroniza con el SAT para crear la primera consulta.' }}</span>
+        </div>
+
+        <div v-else class="records-list">
+          <section v-for="group in groupedRecords" :key="group.code" class="regime-group">
+            <header class="regime-heading">
+              <h3>{{ group.label }}</h3>
+              <span>{{ group.records.length }} {{ group.records.length === 1 ? 'cliente' : 'clientes' }}</span>
+            </header>
+            <button
+              v-for="record in group.records"
+              :key="record.id_cliente"
+              type="button"
+              class="record-row"
+              :class="{ active: selected?.id_cliente === record.id_cliente }"
+              @click="selected = record"
+            >
+              <span class="client-cell">
+                <strong>{{ record.nombre }}</strong>
+                <small>{{ record.rfc || 'RFC no registrado' }}</small>
+              </span>
+              <span class="status-cell" :class="statusClass(record.status)">
+                <i :class="statusIcon(record.status)" aria-hidden="true" />
+                {{ statusLabel(record.status) }}
+              </span>
+              <span class="date-cell">
+                <small>Última consulta</small>
+                <strong>{{ formatDate(record.fecha_consulta) }}</strong>
+              </span>
+              <i class="pi pi-angle-right row-arrow" aria-hidden="true" />
+            </button>
+          </section>
+        </div>
+      </div>
+
+      <aside class="detail-panel" aria-live="polite">
+        <template v-if="selected">
+          <header>
+            <span :class="['status-mark', statusClass(selected.status)]"><i :class="statusIcon(selected.status)" /></span>
+            <div><small>Opinión 32-D</small><h2>{{ selected.nombre }}</h2><p>{{ selected.rfc }}</p></div>
+          </header>
+
+          <dl class="opinion-meta">
+            <div><dt>Resultado</dt><dd>{{ statusLabel(selected.status) }}</dd></div>
+            <div><dt>Emitida por SAT</dt><dd>{{ formatDateTime(selected.fecha_emision) }}</dd></div>
+            <div><dt>Consultada</dt><dd>{{ formatDateTime(selected.fecha_consulta) }}</dd></div>
+            <div><dt>Documento</dt><dd>{{ selected.documento_guardado ? 'PDF archivado' : 'Sin PDF' }}</dd></div>
+            <div><dt>Régimen</dt><dd>{{ regimenFiscalLabel(selected.regimen_fiscal) }}</dd></div>
+            <div><dt>Vigencia</dt><dd>{{ vigenciaLabel(selected) }}</dd></div>
+          </dl>
+
+          <section class="issues-section">
+            <div class="issues-heading">
+              <div><h3>{{ selected.status === 'positiva' ? 'Sin omisiones detectadas' : 'Detalle del resultado' }}</h3><span>{{ issueSubtitle(selected) }}</span></div>
+              <strong>{{ selected.pendientes.length }}</strong>
+            </div>
+            <div v-if="selected.status === 'positiva'" class="all-clear">
+              <i class="pi pi-check" aria-hidden="true" />
+              <div><strong>Opinión positiva</strong><span>El resultado público del SAT está al corriente a la fecha consultada.</span></div>
+            </div>
+            <div v-else-if="selected.pendientes.length" class="issue-list">
+              <article v-for="issue in selected.pendientes" :key="issue.code">
+                <i :class="issue.confirmed ? 'pi pi-exclamation-circle' : 'pi pi-question-circle'" aria-hidden="true" />
+                <div>
+                  <span>{{ issue.confirmed ? 'Confirmado por el SAT' : 'Requiere verificación' }}</span>
+                  <strong>{{ issue.title }}</strong>
+                  <p>{{ issue.detail }}</p>
+                  <small v-if="issue.action">Siguiente acción: {{ issue.action }}</small>
+                </div>
+              </article>
+            </div>
+            <div v-else class="special-result"><i :class="statusIcon(selected.status)" /><div><strong>{{ statusLabel(selected.status) }}</strong><span>{{ statusDescription(selected.status) }}</span></div></div>
+          </section>
+
+          <div v-if="selected.mensaje" class="sat-message"><strong>Respuesta del SAT</strong><p>{{ selected.mensaje }}</p></div>
+
+          <footer>
+            <AppButton
+              label="Ver documentos"
+              icon="pi pi-folder-open"
+              outlined
+              @click="documentClient = selected"
+            />
+            <AppButton
+              :label="syncingClientId === selected.id_cliente ? 'Consultando...' : 'Actualizar cliente'"
+              icon="pi pi-refresh"
+              :disabled="syncing || syncingClientId === selected.id_cliente"
+              @click="syncClient(selected.id_cliente)"
+            />
+          </footer>
+        </template>
+        <div v-else class="empty-state detail-empty-state">
+          <i class="pi pi-file-check" aria-hidden="true" />
+          <strong>Selecciona un cliente</strong>
+          <span>Aquí verás su opinión, vigencia y acciones pendientes.</span>
+        </div>
+      </aside>
+    </section>
+    <Teleport to="body">
+      <div v-if="showFilters" class="filters-overlay" @click.self="closeFilters">
+        <section
+          ref="filtersModal"
+          class="filters-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="opinions-filter-title"
+          tabindex="-1"
+          @keydown.esc="closeFilters"
+        >
+          <header class="filters-modal-header">
+            <div>
+              <p>OPINIONES / FILTROS</p>
+              <h2 id="opinions-filter-title">Filtrar clientes</h2>
+            </div>
+            <button type="button" aria-label="Cerrar filtros" @click="closeFilters">×</button>
+          </header>
+
+          <div class="filters-modal-body">
+            <fieldset class="radio-filter status-filter">
+              <legend>Resultado</legend>
+              <div class="radio-options">
+                <label v-for="option in statusOptions" :key="option.value" class="radio-option" :class="{ active: draftStatusFilter === option.value }">
+                  <input v-model="draftStatusFilter" type="radio" name="opinion-status" :value="option.value" />
+                  <span>{{ option.label }}</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset class="radio-filter regime-filter">
+              <legend>Régimen fiscal</legend>
+              <div class="radio-options">
+                <label v-for="option in regimeOptions" :key="option.value" class="radio-option" :class="{ active: draftRegimeFilter === option.value }">
+                  <input v-model="draftRegimeFilter" type="radio" name="opinion-regime" :value="option.value" />
+                  <span>{{ option.label }}</span>
+                </label>
+              </div>
+            </fieldset>
+          </div>
+
+          <footer class="filters-modal-footer">
+            <button type="button" class="reset-filters" @click="resetDraftFilters">Restablecer</button>
+            <div>
+              <AppButton label="Cancelar" outlined @click="closeFilters" />
+              <AppButton label="Aplicar filtros" icon="pi pi-filter" @click="applyFilters" />
+            </div>
+          </footer>
+        </section>
+      </div>
+    </Teleport>
+    <ClientDocumentsModal v-if="documentClient" :client="documentClient" @close="documentClient = null" />
+    <ThirdPartyComplianceModal v-if="showThirdParty" @close="showThirdParty = false" @complete="completeThirdParty" />
+  </main>

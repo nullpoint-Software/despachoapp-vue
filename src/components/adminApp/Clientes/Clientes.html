@@ -1,0 +1,160 @@
+<!-- Contenedor principal de la vista -->
+  <main ref="pageRef" class="clients-view">
+    <!-- Título -->
+    <header class="clients-hero">
+      <div><p>ADMINISTRACIÓN / 01</p><h1>Clientes</h1><span>Expedientes, accesos y datos de contacto.</span></div>
+      <div class="hero-stat"><b>{{ totalCustomers }}</b><span>{{ loadingCustomers ? 'cargando...' : 'registros' }}</span></div>
+    </header>
+    <div id="clientes-table" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
+      <DataTable id="inner-info" :value="customers" :filters="filters" :globalFilterFields="[
+        'id_cliente',
+        'nombre',
+        'rfc',
+        'regimen_fiscal',
+        'fiel',
+        'ciecf',
+        'telefono',
+        'correo',
+      ]" :paginator="false" sortMode="multiple" removableSort :rows="10" :rowsPerPageOptions="[10, 20, 50]"
+        :rowClass="rowClass" class="w-full rounded-lg p-5">
+        <!-- Encabezado de la tabla -->
+        <template #header>
+          <div
+            class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
+            <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+              <!-- Buscador con ícono -->
+              <div class="flex space-x-2 border-2 border-solid">
+                <span>
+                  <i class="pi pi-search text-gray-400 text-xl"></i>
+                </span>
+              </div>
+              <div id="search-bar" class="relative w-full sm:w-auto">
+                <InputText v-model="filters.global.value" type="search" autocomplete="off" aria-label="Buscar clientes" placeholder="Buscar..."
+                  class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <!-- Botones -->
+              <div class="flex space-x-2">
+                <Button
+                  type="button"
+                  icon="pi pi-sliders-h"
+                  :label="isMobile ? activeFilterCount ? String(activeFilterCount) : '' : filterButtonLabel"
+                  aria-label="Abrir filtros de clientes"
+                  outlined class="p-2" @click="openFilters"
+                />
+                <Button type="button" icon="pi pi-filter-slash" :label="isMobile ? '' : 'Limpiar Filtros'" outlined
+                  class="p-2" @click="clearFilter" />
+                <Button icon="pi pi-plus" v-if="canAddCliente" :label="isMobile ? '' : 'Agregar Cliente'"
+                  class="p-button-success p-2" id="agregar-cliente-btn" @click="openCard(null)" />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Renderizado dinámico de columnas usando la página actual -->
+        <Column v-for="col in tableColumns" :key="col.field" :sortable="col.field !== 'actions'"
+          :field="col.field !== 'actions' ? col.field : undefined">
+          <!-- Encabezado de columna: color negro -->
+          <template #header>
+            <div class="p-1 text-black font-semibold text-center text-sm w-full">
+              {{ col.header }}
+            </div>
+          </template>
+          <template #body="{ data }">
+            <!-- Si la columna es de acciones, mostrar botones -->
+            <div v-if="col.field === 'actions'" class="client-actions flex justify-center space-x-2">
+              <Button v-if="canEditCliente" icon="pi pi-pencil" class="p-button-rounded p-button-warning" :aria-label="'Editar a ' + data.nombre"
+                @click="openCard(data)" />
+              <Button v-if="canEditCliente" icon="pi pi-folder" class="p-button-rounded p-button-info"
+                :aria-label="'Abrir documentos de ' + data.nombre" @click="openDocuments(data)" />
+              <Button v-if="canDeleteCliente" icon="pi pi-trash" class="p-button-rounded p-button-danger" :aria-label="'Eliminar a ' + data.nombre"
+                @click="openConfirmDialog(data)" />
+            </div>
+            <!-- Sino, mostrar el contenido de la celda -->
+            <button v-else type="button" :title="col.visible || isFieldVisible(data, col.field) ? String(col.field === 'regimen_fiscal' ? regimenFiscalLabel(data[col.field]) : data[col.field] ?? '') : 'Dato protegido'"
+              class="w-full p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+              :aria-label="col.header + ': ' + (col.visible || isFieldVisible(data, col.field) ? String(data[col.field] ?? 'Sin dato') : 'Dato protegido')"
+              @click="handleCellClick(data, col.field, col)">
+              <span v-if="col.visible || isFieldVisible(data, col.field)">
+                {{ col.field === 'regimen_fiscal' ? regimenFiscalLabel(data[col.field]) : data[col.field] }}
+              </span>
+              <!-- Caso contrario, mostrar enmascarado -->
+              <span v-else>
+                *****
+              </span>
+            </button>
+          </template>
+        </Column>
+      </DataTable>
+      <footer class="app-pager">
+        <span>{{ pagerLabel }}</span>
+        <div class="app-pager__controls">
+          <button type="button" class="app-pager__button" :disabled="currentPage === 0 || loadingCustomers"
+            aria-label="Página anterior" title="Página anterior" @click="previousPage">
+            <i class="pi pi-angle-left"></i>
+          </button>
+          <samp>{{ currentPage + 1 }} / {{ pageCount }}</samp>
+          <button type="button" class="app-pager__button" :disabled="currentPage >= pageCount - 1 || loadingCustomers"
+            aria-label="Página siguiente" title="Página siguiente" @click="nextPage">
+            <i class="pi pi-angle-right"></i>
+          </button>
+          <select v-model.number="pageSize" aria-label="Registros por página" :disabled="loadingCustomers">
+            <option v-for="option in pageSizeOptions" :key="option" :value="option">{{ option }} por página</option>
+          </select>
+        </div>
+      </footer>
+    </div>
+
+    <AppFilterModal
+      :visible="showFilters" title="Filtrar clientes" eyebrow="CLIENTES / FILTROS" title-id="clients-filter-title"
+      @close="closeFilters" @reset="resetDraftFilters" @apply="applyFilters"
+    >
+      <AppFilterOptions v-model="draftRegimeFilter" legend="Régimen fiscal" name="client-regime" :options="regimeOptions" />
+      <AppFilterOptions v-model="draftContactFilter" legend="Datos de contacto" name="client-contact" :options="contactOptions" />
+    </AppFilterModal>
+
+    <!-- Toast -->
+
+    <!-- Card para agregar/editar clientes -->
+    <CardDetailCliente v-if="cardVisible" :customer="selectedCustomer" @close="cardVisible = false"
+      @save="saveCustomer" />
+    <ClientDocumentsModal v-if="selectedDocumentClient" :client="selectedDocumentClient"
+      @close="selectedDocumentClient = null" />
+
+    <div v-if="credentialDialogVisible || passkeyBusy" class="credential-overlay" @click.self="closeCredentialDialog">
+      <section v-if="passkeyBusy" class="credential-dialog credential-dialog--loading" role="status" aria-live="polite">
+        <Loader contained aria-hidden="true" />
+        <p>VERIFICACIÓN DE IDENTIDAD</p>
+        <h2>Esperando passkey</h2>
+        <span>Completa la verificación en la ventana de tu dispositivo.</span>
+        <button type="button" class="credential-password-fallback" @click="usePasswordInstead">
+          <i class="pi pi-key"></i>
+          <span>Usar contraseña</span>
+        </button>
+      </section>
+      <form v-else class="credential-dialog" role="dialog" aria-modal="true" aria-labelledby="credential-dialog-title" :aria-busy="verificationBusy" @submit.prevent="verifyAndReveal">
+        <header>
+          <div>
+            <p>VERIFICACIÓN DE IDENTIDAD</p>
+            <h2 id="credential-dialog-title">Revelar credencial</h2>
+            <span>Confirma tu contraseña de acceso para consultar este dato protegido.</span>
+          </div>
+          <button type="button" aria-label="Cerrar" @click="closeCredentialDialog">×</button>
+        </header>
+        <label>
+          <span>Tu contraseña</span>
+          <InputText id="credential-password" v-model="verificationPassword" type="password" autocomplete="current-password" required :aria-invalid="Boolean(verificationError)" :aria-describedby="verificationError ? 'credential-error' : undefined"
+            autofocus placeholder="Escribe tu contraseña" />
+        </label>
+        <p v-if="verificationError" id="credential-error" class="a11y-form-status credential-error" role="alert">{{ verificationError }}</p>
+        <footer>
+          <Button type="button" label="Cancelar" outlined :disabled="verificationBusy || passkeyBusy" @click="closeCredentialDialog" />
+          <Button type="button" label="Passkey" icon="pi pi-shield"
+            :disabled="verificationBusy || passkeyBusy || !canUsePasskeyReveal" @click="verifyAndRevealWithPasskey" />
+          <Button type="submit" label="Verificar y mostrar" icon="pi pi-eye"
+            :disabled="!verificationPassword || verificationBusy || passkeyBusy" />
+        </footer>
+      </form>
+    </div>
+    <!-- Confirmación para eliminación -->
+    <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
+  </main>

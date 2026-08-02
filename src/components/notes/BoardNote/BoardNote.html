@@ -1,0 +1,76 @@
+<main ref="pageRef" class="notes-directory">
+    <header class="directory-header">
+      <div><p>ARCHIVO / NOTAS</p><h1>Directorio</h1></div>
+      <label class="directory-search"><span>Buscar //</span><input v-model="query" type="search" autocomplete="off" placeholder="CLIENTE, NÚMERO, ASUNTO…" /></label>
+      <div class="header-actions"><button type="button" @click="createFolder"><i class="pi pi-folder-plus"/> Carpeta</button><button type="button" class="accent" @click="createNote"><i class="pi pi-file-plus"/> Nota</button></div>
+    </header>
+
+    <div class="directory-layout">
+      <aside class="tree-panel">
+        <div class="panel-label"><span>Índice</span><b>{{ visibleNotes.length }} doc.</b></div>
+        <p class="shortcut-tip"><kbd>/</kbd><span>Abre u oculta las notas ancladas desde cualquier vista.</span></p>
+        <button
+          type="button"
+          class="tree-root"
+          :class="{active:currentPath==='General', 'drop-target':dropTarget==='General'}"
+          @click="selectRoot"
+          @dragover.prevent="setDropTarget('General')"
+          @dragleave="clearDropTarget('General')"
+          @drop.prevent="moveDraggedNote('General')"
+        >
+          <span class="branch">{{ rootExpanded ? '−' : '+' }}</span>
+          <i :class="currentPath==='General'?'pi pi-folder-open':'pi pi-folder'"/>
+          <span>General</span>
+        </button>
+        <template v-for="folder in directoryFolders" :key="folder">
+          <div
+            class="tree-item-row"
+            :class="{active:currentPath===folder, 'drop-target':dropTarget===folder}"
+            :style="treeIndent(folder)"
+            @dragover.prevent="setDropTarget(folder)"
+            @dragleave="clearDropTarget(folder)"
+            @drop.prevent="moveDraggedNote(folder)"
+          >
+            <button type="button" class="tree-item" @click="selectFolder(folder)">
+              <span class="branch">{{ branchMark(folder) }}</span>
+              <i :class="currentPath===folder?'pi pi-folder-open':'pi pi-folder'"/>
+              <span>{{ folderName(folder) }}</span>
+              <b>{{ countFolder(folder) }}</b>
+            </button>
+            <button type="button" class="folder-delete" title="Eliminar carpeta" @click="deleteFolder(folder)"><i class="pi pi-trash"/></button>
+          </div>
+        </template>
+        <button type="button" class="archive-link" :class="{active:currentPath==='__storage'}" @click="currentPath='__storage'"><i class="pi pi-inbox"/> Archivadas <b>{{ storageNotes.length }}</b></button>
+      </aside>
+
+      <section class="directory-content">
+        <div class="breadcrumb">
+          <span>Raíz</span><i>/</i><template v-for="part in breadcrumbs" :key="part"><b>{{ part }}</b><i>/</i></template>
+          <strong v-if="moveMessage" class="move-message">{{ moveMessage }}</strong>
+          <em>RUTA {{ currentLabel }}</em>
+        </div>
+        <div v-if="isLoading" class="empty-state"><b>··</b><h2>Cargando archivo</h2></div>
+        <div v-else-if="error" class="empty-state"><b>!!</b><h2>{{ error }}</h2><button @click="fetchNotes">Reintentar</button></div>
+        <div v-else-if="!visibleNotes.length" class="empty-state"><b>00</b><div><h2>Carpeta vacía</h2><p>Crea una nota o una subcarpeta para clasificar información.</p><button @click="createNote">+ Nueva nota aquí</button></div></div>
+        <div v-else class="file-list">
+          <div class="file-list-head"><span>Documento</span><span>Estado</span><span>Acciones</span></div>
+          <article
+            v-for="(note,index) in visibleNotes"
+            :key="note.id"
+            class="file-row"
+            :class="{dragging:draggedNoteId===note.id}"
+            draggable="true"
+            @dragstart="startNoteDrag($event,note)"
+            @dragend="finishNoteDrag"
+            @dblclick="openNote(note)"
+          >
+            <span class="file-index">{{ String(index+1).padStart(2,'0') }}</span><button class="file-name" @click="openNote(note)"><i class="pi pi-file"/><span><b>{{ note.titulo || 'Sin título' }}</b><small>{{ plain(note.descripcion) }}</small></span></button>
+            <span class="file-status"><i v-if="note.pinned" class="pi pi-thumbtack"/>{{ note.status==='storage'?'ARCHIVO':'ACTIVA' }}</span>
+            <span class="file-actions"><button title="Fijar" @click="togglePin(note)"><i class="pi pi-thumbtack"/></button><button :title="note.status==='storage'?'Restaurar':'Archivar'" @click="toggleArchive(note)"><i :class="note.status==='storage'?'pi pi-replay':'pi pi-inbox'"/></button><button title="Eliminar" @click="removeNote(note)"><i class="pi pi-trash"/></button></span>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <Teleport to="body"><div v-if="editorOpen" class="editor-overlay" @click.self="closeEditor"><form class="note-editor" role="dialog" aria-modal="true" aria-labelledby="note-editor-title" :aria-busy="saving" @submit.prevent="saveEditor"><header><p id="note-editor-title">{{ editing?.id ? 'EDITAR DOCUMENTO' : 'NUEVO DOCUMENTO' }}</p><button type="button" aria-label="Cerrar editor de notas" @click="closeEditor">×</button></header><label><span>Título</span><input id="note-title" v-model="draft.titulo" autocomplete="off" required autofocus /></label><label><span>Ruta</span><AppAutocomplete id="note-path" v-model="draft.folderPath" :options="folderOptions" placeholder="Busca una carpeta o escribe una nueva" aria-describedby="note-path-help" /><small id="note-path-help">Elige una ruta existente para evitar duplicados.</small></label><label><span>Contenido</span><textarea id="note-content" v-model="draft.descripcion" rows="12" placeholder="Escribe aquí. Se admite Markdown." /></label><footer><button type="button" @click="closeEditor">Cancelar</button><button class="accent" type="submit" :disabled="saving">{{ saving?'Guardando…':'Guardar nota' }}</button></footer></form></div></Teleport>
+  </main>

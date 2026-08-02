@@ -10,7 +10,8 @@ export interface AppDialogOptions {
   confirmLabel?: string;
   cancelLabel?: string;
   inputLabel?: string;
-  inputType?: "text" | "password";
+  inputType?: "text" | "password" | "email";
+  initialValue?: string;
   placeholder?: string;
 }
 

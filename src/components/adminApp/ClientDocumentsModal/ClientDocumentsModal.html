@@ -1,0 +1,134 @@
+<div class="documents-overlay" @click.self="emit('close')">
+    <section class="documents-modal" role="dialog" aria-modal="true" aria-labelledby="documents-title">
+      <header>
+        <div>
+          <p>EXPEDIENTE CIFRADO</p>
+          <h2 id="documents-title">Documentos del cliente</h2>
+          <span>{{ client.nombre }} - {{ client.rfc }}</span>
+        </div>
+        <AppButton icon="pi pi-times" aria-label="Cerrar" @click="emit('close')" />
+      </header>
+
+      <form v-if="!accessToken" class="documents-lock" :aria-busy="verifying" @submit.prevent="unlock">
+        <div class="lock-mark"><i class="pi pi-lock" aria-hidden="true"></i></div>
+        <p>ACCESO PROTEGIDO</p>
+        <h3>Verifica tu identidad</h3>
+        <span>Escribe tu contraseña de acceso para abrir este expediente durante cinco minutos.</span>
+        <label>
+          <b>Tu contraseña</b>
+          <AppInput id="documents-password" v-model="verificationPassword" type="password" autocomplete="current-password" required :aria-invalid="Boolean(error)" :aria-describedby="error ? 'documents-unlock-error' : undefined"
+            placeholder="Escribe tu contraseña" autofocus />
+        </label>
+        <p v-if="error" id="documents-unlock-error" class="a11y-form-status inline-error" role="alert">{{ error }}</p>
+        <AppButton type="submit" label="Desbloquear expediente" icon="pi pi-lock-open"
+          :disabled="!verificationPassword || verifying" />
+      </form>
+
+      <div v-else class="documents-body">
+        <section class="a11y-form upload-section" aria-labelledby="upload-title" :aria-busy="uploading">
+          <div class="section-heading">
+            <div>
+              <h3 id="upload-title">Agregar PDF</h3>
+              <p>El archivo se cifra antes de quedar guardado en el servidor.</p>
+            </div>
+            <i class="pi pi-lock" aria-hidden="true"></i>
+          </div>
+
+          <label class="field-label">
+            <span>Tipo de documento</span>
+            <AppSelect
+              v-model="documentType"
+              :options="documentTypes"
+              option-label="label"
+              option-value="value"
+            />
+          </label>
+
+          <div
+            class="pdf-dropzone"
+            :class="{ dragging, ready: pendingFile }"
+            role="button"
+            tabindex="0"
+            @click="fileInput?.click()"
+            @keydown.enter.prevent="fileInput?.click()"
+            @keydown.space.prevent="fileInput?.click()"
+            @dragover.prevent="dragging = true"
+            @dragleave.prevent="dragging = false"
+            @drop.prevent="dropFile"
+          >
+            <input ref="fileInput" type="file" accept="application/pdf,.pdf" hidden @change="selectFromInput" />
+            <i :class="pendingFile ? 'pi pi-file-pdf' : 'pi pi-cloud-upload'" aria-hidden="true"></i>
+            <template v-if="pendingFile">
+              <strong>{{ pendingFile.name }}</strong>
+              <span>{{ fileSize(pendingFile.size) }}</span>
+            </template>
+            <template v-else>
+              <strong>Arrastra un PDF aquí</strong>
+              <span>o haz clic para seleccionarlo, máximo 15 MB</span>
+            </template>
+          </div>
+
+          <p v-if="error" id="documents-unlock-error" class="a11y-form-status inline-error" role="alert">{{ error }}</p>
+          <div class="upload-actions">
+            <AppButton
+              v-if="pendingFile"
+              label="Quitar"
+              outlined
+              @click="pendingFile = null"
+            />
+            <AppButton
+              label="Cifrar y guardar"
+              icon="pi pi-lock"
+              class="p-button-primary"
+              :disabled="!pendingFile || uploading"
+              @click="upload"
+            />
+          </div>
+        </section>
+
+        <section class="document-list" aria-labelledby="stored-title">
+          <div class="section-heading">
+            <div>
+              <h3 id="stored-title">Archivos guardados</h3>
+              <p>{{ documents.length }} documentos en este expediente.</p>
+            </div>
+            <AppButton icon="pi pi-refresh" aria-label="Actualizar documentos" :disabled="loading" @click="load" />
+          </div>
+
+          <div v-if="loading" class="document-loading" role="status" aria-live="polite" aria-label="Cargando documentos">
+            <span v-for="item in 3" :key="item"></span>
+          </div>
+          <div v-else-if="!documents.length" class="document-empty">
+            <i class="pi pi-folder-open" aria-hidden="true"></i>
+            <strong>Expediente vacío</strong>
+            <span>Agrega el primer PDF desde el panel de carga.</span>
+          </div>
+          <div v-else class="document-rows">
+            <article v-for="document in documents" :key="document.id">
+              <div class="document-icon"><i class="pi pi-file-pdf" aria-hidden="true"></i></div>
+              <div class="document-copy">
+                <span>{{ typeLabel(document.tipo) }}</span>
+                <strong>{{ document.nombre_original }}</strong>
+                <small>{{ fileSize(document.tamano) }} - {{ formatDate(document.creado_en) }}</small>
+              </div>
+              <div class="document-actions">
+                <AppButton
+                  icon="pi pi-download"
+                  aria-label="Descargar documento"
+                  :disabled="busyId === document.id"
+                  @click="download(document)"
+                />
+                <AppButton
+                  icon="pi pi-trash"
+                  class="p-button-danger"
+                  aria-label="Eliminar documento"
+                  :disabled="busyId === document.id"
+                  @click="remove(document)"
+                />
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>

@@ -1,0 +1,32 @@
+<section
+  class="kanban-lane"
+  :class="{ 'is-drag-over': isDragOver, 'is-compact': compact }"
+  :data-status="lane.status"
+  @dragenter.prevent="isDragOver = true"
+  @dragover.prevent
+  @dragleave="handleDragLeave"
+  @drop="handleDrop"
+>
+  <header class="kanban-lane__header">
+    <div>
+      <span class="kanban-lane__marker" aria-hidden="true"></span>
+      <div><h3>{{ lane.label }}</h3><p>{{ lane.caption }}</p></div>
+    </div>
+    <strong>{{ String(lane.tasks.length).padStart(2, "0") }}</strong>
+  </header>
+
+  <div class="kanban-lane__tasks" role="list">
+    <KanbanCardComponent
+      v-for="task in lane.tasks"
+      :key="task.id_tarea"
+      :task="task"
+      @open="emit('selectTask', task)"
+    />
+
+    <div v-if="lane.tasks.length === 0" class="kanban-lane__empty">
+      <i class="pi pi-inbox" aria-hidden="true"></i>
+      <strong>Sin tareas</strong>
+      <span>No hay trabajo en esta etapa.</span>
+    </div>
+  </div>
+</section>

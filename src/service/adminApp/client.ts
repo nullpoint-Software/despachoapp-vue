@@ -2,7 +2,7 @@ import axios from "axios";
 const serverip = import.meta.env.VITE_API_SERVER_IP;
 import ClienteService from "./clienteService";
 import TareasService from "./tareasService";
-import authService from "./authService";
+import AuthService from "./authService";
 import PagosService from "./pagosService";
 import NotasService from "./notasService";
 import EstadisticaService from "./estadisticaService";
@@ -30,7 +30,9 @@ instance.interceptors.request.use((config) => {
 });
 export const cs = new ClienteService(serverip, instance);
 export const ts = new TareasService(serverip, instance);
-export const as = new authService(serverip, instance);
+export const authService = new AuthService(serverip, instance);
+/** @deprecated Use the expressive `authService` export. */
+export const as = authService;
 export const ps = new PagosService(serverip, instance);
 export const ns = new NotasService(serverip, instance);
 export const es = new EstadisticaService(serverip, instance);

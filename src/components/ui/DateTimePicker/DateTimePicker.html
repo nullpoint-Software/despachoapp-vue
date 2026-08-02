@@ -1,0 +1,49 @@
+<div class="dt-picker" :class="{ 'is-open': open }">
+    <button class="dt-trigger" type="button" :aria-expanded="open" :aria-label="title + ': ' + formattedValue" @click="toggle">
+      <span class="dt-value">{{ formattedValue }}</span>
+      <span class="dt-icon" aria-hidden="true">▣</span>
+    </button>
+
+    <Teleport to="body" :disabled="!modal">
+    <div v-if="open" :class="modal ? 'dt-overlay' : 'dt-inline'" @mousedown.self="cancel">
+    <div class="dt-panel" role="dialog" :aria-modal="modal || undefined" aria-label="Seleccionar fecha">
+      <header v-if="modal" class="dt-modal-header">
+        <div><span>CALENDARIO / REPORTE</span><strong>{{ title }}</strong></div>
+        <button type="button" aria-label="Cerrar calendario" @click="cancel">×</button>
+      </header>
+      <div class="dt-month-nav">
+        <button type="button" aria-label="Mes anterior" @click="changeMonth(-1)">←</button>
+        <strong>{{ monthLabel }}</strong>
+        <button type="button" aria-label="Mes siguiente" @click="changeMonth(1)">→</button>
+      </div>
+
+      <div class="dt-weekdays" aria-hidden="true">
+        <span v-for="day in weekDays" :key="day">{{ day }}</span>
+      </div>
+      <div class="dt-calendar">
+        <span v-for="blank in leadingBlanks" :key="`blank-${blank}`" class="dt-blank" />
+        <button
+          v-for="day in daysInMonth"
+          :key="day"
+          type="button"
+           :class="{ selected: day === draft.getDate() }"
+          :aria-label="dayLabel(day)"
+          :aria-pressed="day === draft.getDate()"
+          @click="selectDay(day)"
+        >{{ day }}</button>
+      </div>
+
+      <div v-if="showTime" class="dt-time">
+        <label><span>Hora</span><div class="dt-spinner"><button type="button" aria-label="Restar hora" @click="spin('hours',-1)">−</button><input v-model.number="hours" type="number" min="0" max="23" @change="normalize('hours')"/><button type="button" aria-label="Sumar hora" @click="spin('hours',1)">+</button></div></label>
+        <label><span>Minutos</span><div class="dt-spinner"><button type="button" aria-label="Restar minuto" @click="spin('minutes',-1)">−</button><input v-model.number="minutes" type="number" min="0" max="59" @change="normalize('minutes')"/><button type="button" aria-label="Sumar minuto" @click="spin('minutes',1)">+</button></div></label>
+        <label><span>Segundos</span><div class="dt-spinner"><button type="button" aria-label="Restar segundo" @click="spin('seconds',-1)">−</button><input v-model.number="seconds" type="number" min="0" max="59" @change="normalize('seconds')"/><button type="button" aria-label="Sumar segundo" @click="spin('seconds',1)">+</button></div></label>
+      </div>
+
+      <div class="dt-actions">
+        <button type="button" @click="cancel">Cancelar</button>
+        <button type="button" class="apply" @click="apply">{{ showTime ? "Aplicar fecha y hora" : "Aplicar fecha" }}</button>
+      </div>
+    </div>
+    </div>
+    </Teleport>
+  </div>

@@ -1,0 +1,71 @@
+/* ---------------------- Cambio: añadidas la propiedad estándar `line-clamp` y orden de vendor-prefixes para evitar la advertencia del linter ---------------------- */
+.truncate-multiline {
+  display: -webkit-box;            /* necesario para -webkit-line-clamp */
+  -webkit-box-orient: vertical;    /* orienta el box en vertical */
+  -webkit-line-clamp: 3;           /* prefijo WebKit (soporte amplio) */
+  line-clamp: 3;                   /* ---------------------- Cambio: propiedad estándar añadida ---------------------- */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+/* -------------------------------------------------------------------------------------------- */
+
+/* ---------------------- Cambio: estilos para truncamiento y paleta del modal secundario (misma paleta que el padre) ----------------------
+   - La clase .modal-content.full fuerza el mismo background y color de texto que el modal padre.
+   - Además se ajustan botones y el close-x para que coincidan con la paleta.
+-------------------------------------------------------------------------------------------- */
+.modal-content.full {
+  /* mismo fondo que .modal-content principal (#f9fafb) */
+  background-color: #f9fafb;
+  color: #1f2937; /* text-gray-800 */
+  border-radius: .5rem;
+  box-shadow: 0 0 20px rgba(0,0,0,.2);
+}
+
+/* Asegurar que el contenido largo use la misma paleta y sea legible */
+.full-text-content {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  color: #1f2937; /* text-gray-800 */
+  background: transparent; /* no fondo blanco */
+  padding: 0.25rem 0;
+}
+
+/* Close button más visible en la paleta */
+.modal-content.full .close-x {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+
+/* Cerrar botón y acciones heredan colores legibles */
+.modal-content.full button {
+  color: #1f2937;
+}
+
+.task-detail-actions button,
+.task-detail-actions button:hover,
+.task-detail-actions button:focus,
+.task-detail-actions button:active {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* ---------------------- Cambio: estilos para compatibilidad y paleta general ---------------------- */
+.modal-overlay{position:fixed;inset:0;backdrop-filter:blur(4px);background-color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;z-index:50}
+.modal-content{background-color:#f9fafb;border-radius:.5rem;box-shadow:0 0 20px rgba(0,0,0,.2);width:100%;max-width:26rem;padding:1.5rem;position:relative;animation:slideDown .3s ease-out}
+@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+.fade-enter-active,.fade-leave-active{transition:opacity .3s}
+.fade-enter-from,.fade-leave-to{opacity:0}
+/* -------------------------------------------------------------------------------------------- */

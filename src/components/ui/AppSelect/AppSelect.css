@@ -1,0 +1,1 @@
+select{min-height:3rem;width:100%;border:1px solid var(--br-line-strong);border-radius:0;background:var(--br-control);color:var(--br-control-text,#141413);padding:.7rem 2.3rem .7rem .8rem;font:700 .9rem/1.2 "Courier New",monospace}select:focus{outline:2px solid var(--br-accent);outline-offset:2px}

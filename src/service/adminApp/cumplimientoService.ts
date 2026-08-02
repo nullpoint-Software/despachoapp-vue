@@ -59,6 +59,26 @@ export interface ComplianceResponse {
   summary: ComplianceSummary;
 }
 
+
+export interface ThirdPartySessionState {
+  id: string;
+  image: string | null;
+  captchaImage: string | null;
+  width: number;
+  height: number;
+  title: string;
+  phase: "loading" | "login" | "ready" | "syncing" | "error";
+  ready: boolean;
+  message: string | null;
+  expiresInSeconds: number;
+}
+
+export type ThirdPartyInput =
+  | { type: "click"; x: number; y: number }
+  | { type: "text"; text: string }
+  | { type: "key"; key: string }
+  | { type: "scroll"; deltaY: number };
+
 export default class CumplimientoService {
   constructor(private serverip: string, private axios: AxiosInstance) {}
 
@@ -79,5 +99,40 @@ export default class CumplimientoService {
 
   async getHistorial(clientId: number) {
     return (await this.axios.get(`${this.serverip}/cumplimiento/${clientId}/history`)).data;
+  }
+
+  async iniciarSesionTerceros() {
+    return (await this.axios.post(`${this.serverip}/cumplimiento/terceros/sessions`, undefined, { timeout: 15000 })).data as ThirdPartySessionState;
+  }
+
+  async obtenerSesionTerceros(sessionId: string) {
+    return (await this.axios.get(`${this.serverip}/cumplimiento/terceros/sessions/${sessionId}`, { params: { _ts: Date.now() }, headers: { "Cache-Control": "no-cache" }, timeout: 10000 })).data as ThirdPartySessionState;
+  }
+
+  async iniciarAccesoTerceros(sessionId: string, credentials: { rfc: string; password: string; captcha: string }) {
+    return (await this.axios.post(`${this.serverip}/cumplimiento/terceros/sessions/${sessionId}/login`, credentials, { timeout: 15000 })).data as ThirdPartySessionState;
+  }
+
+  async recargarSesionTerceros(sessionId: string) {
+    return (await this.axios.post(`${this.serverip}/cumplimiento/terceros/sessions/${sessionId}/reload`, undefined, { timeout: 10000 })).data as ThirdPartySessionState;
+  }
+
+  async enviarEntradaTerceros(sessionId: string, input: ThirdPartyInput) {
+    return (await this.axios.post(`${this.serverip}/cumplimiento/terceros/sessions/${sessionId}/input`, input, { timeout: 10000 })).data as ThirdPartySessionState;
+  }
+
+  async sincronizarTerceros(sessionId: string, options: { offset: number; limit: number }) {
+    return (await this.axios.post(`${this.serverip}/cumplimiento/terceros/sessions/${sessionId}/sync`, options)).data as {
+      results: ComplianceRecord[];
+      total: number;
+      processed: number;
+      hasMore: boolean;
+      documents: number;
+      message: string;
+    };
+  }
+
+  async cerrarSesionTerceros(sessionId: string) {
+    await this.axios.delete(`${this.serverip}/cumplimiento/terceros/sessions/${sessionId}`);
   }
 }

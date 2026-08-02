@@ -1,0 +1,57 @@
+<Teleport to="body">
+  <Transition name="modal">
+    <div class="modal-overlay app-modal-overlay" role="presentation" @click.self="close">
+      <section class="modal-shell app-modal-surface" role="dialog" aria-modal="true" aria-labelledby="payment-title">
+        <header class="modal-header app-modal-header">
+          <p>REGISTRO / CAJA</p>
+          <button type="button" class="modal-close" aria-label="Cerrar formulario de pago" @click="close">×</button>
+          <h2 id="payment-title">{{ payment.id ? "Editar pago" : "Nuevo pago" }}</h2>
+          <span>Selecciona datos existentes y captura únicamente los importes.</span>
+        </header>
+
+        <form class="payment-form" @submit.prevent="save">
+          <fieldset class="form-block field--wide">
+            <legend><b>01</b><span><strong>Concepto y responsables</strong><small>Busca en los catálogos; no necesitas escribir nombres completos.</small></span></legend>
+            <div class="block-grid">
+              <label class="field field--wide" for="payment-client">
+                <span>Cliente *</span>
+                <AppAutocomplete id="payment-client" v-model="clientSearch" :options="clientOptions" :disabled="loadingOptions" :invalid="Boolean(errors.cliente)" placeholder="Busca por nombre o RFC" aria-describedby="payment-client-help" @update:model-value="onClientInput" />
+                <small id="payment-client-help" :class="{ 'field-help': !errors.cliente }" :role="errors.cliente ? 'alert' : undefined">{{ errors.cliente || "Empieza a escribir y elige una coincidencia." }}</small>
+              </label>
+
+              <div class="field field--wide">
+                <label for="payment-subject"><span>Asunto *</span></label>
+                <div class="quick-options" aria-label="Asuntos frecuentes">
+                  <button v-for="suggestion in subjectSuggestions.slice(0, 6)" :key="suggestion" type="button" :aria-pressed="payment.asunto === suggestion" @click="payment.asunto = suggestion">{{ suggestion }}</button>
+                </div>
+                <AppAutocomplete id="payment-subject" v-model="payment.asunto" :options="subjectSuggestions" :invalid="Boolean(errors.asunto)" placeholder="Elige arriba o busca otro asunto" aria-describedby="payment-subject-help" />
+                <small id="payment-subject-help" :class="{ 'field-help': !errors.asunto }" :role="errors.asunto ? 'alert' : undefined">{{ errors.asunto || "Puedes elegir una opción frecuente o completar una frase." }}</small>
+              </div>
+
+              <label class="field field--wide" for="payment-employee">
+                <span>Atendió *</span>
+                <AppAutocomplete id="payment-employee" v-model="employeeSearch" :options="employeeOptions" :disabled="loadingOptions" :invalid="Boolean(errors.atendio)" placeholder="Busca a la persona que atendió" aria-describedby="payment-employee-help" @update:model-value="onEmployeeInput" />
+                <small id="payment-employee-help" :class="{ 'field-help': !errors.atendio }" :role="errors.atendio ? 'alert' : undefined">{{ errors.atendio || "Se muestran usuarios registrados." }}</small>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-block field--wide">
+            <legend><b>02</b><span><strong>Importes y fecha</strong><small>Los importes pueden ser cero.</small></span></legend>
+            <div class="block-grid">
+              <label class="field" for="payment-charged"><span>Cobramos *</span><div class="money"><b aria-hidden="true">$</b><InputText id="payment-charged" v-model="payment.cobramos" type="number" inputmode="decimal" step="0.01" min="0" required :aria-invalid="Boolean(errors.cobramos)" :aria-describedby="errors.cobramos ? 'payment-charged-error' : undefined" /></div><small v-if="errors.cobramos" id="payment-charged-error" role="alert">{{ errors.cobramos }}</small></label>
+              <label class="field" for="payment-paid"><span>Pagamos *</span><div class="money"><b aria-hidden="true">$</b><InputText id="payment-paid" v-model="payment.pagamos" type="number" inputmode="decimal" step="0.01" min="0" required :aria-invalid="Boolean(errors.pagamos)" :aria-describedby="errors.pagamos ? 'payment-paid-error' : undefined" /></div><small v-if="errors.pagamos" id="payment-paid-error" role="alert">{{ errors.pagamos }}</small></label>
+              <div class="field field--wide"><span>Fecha y hora *</span><DateTimePicker id="payment-date" v-model="selectedDate" title="Fecha y hora del pago" :aria-invalid="Boolean(errors.fecha)" :aria-describedby="errors.fecha ? 'payment-date-error' : undefined" /><small v-if="errors.fecha" id="payment-date-error" role="alert">{{ errors.fecha }}</small></div>
+            </div>
+          </fieldset>
+
+          <p v-if="loadError || saveError" class="a11y-form-status form-error" role="alert" aria-live="assertive">{{ saveError || loadError }}</p>
+          <footer class="modal-actions field--wide app-modal-footer">
+            <Button type="button" label="Cancelar" icon="pi pi-times" outlined @click="close" />
+            <Button :label="saving ? 'Guardando…' : 'Guardar pago'" icon="pi pi-check" class="p-button-primary" type="submit" :disabled="saving || loadingOptions" />
+          </footer>
+        </form>
+      </section>
+    </div>
+  </Transition>
+</Teleport>

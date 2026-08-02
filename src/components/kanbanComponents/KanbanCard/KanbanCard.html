@@ -1,0 +1,31 @@
+<article
+  :id="`task-${task.id_tarea}`"
+  class="task-card"
+  :class="{ 'is-highlighted': task.highlight }"
+  role="listitem"
+  draggable="true"
+  tabindex="0"
+  @click="emit('open')"
+  @keydown.enter.prevent="emit('open')"
+  @keydown.space.prevent="emit('open')"
+  @dragstart="startDrag"
+>
+  <header class="task-card__meta">
+    <span>#{{ task.id_tarea }}</span>
+    <span><i :class="statusClass"></i>{{ displayedStatus }}</span>
+  </header>
+
+  <h4>{{ task.titulo || "Tarea sin t?tulo" }}</h4>
+  <p>{{ task.descripcion || "Sin descripci?n." }}</p>
+
+  <dl>
+    <div><dt>Creada</dt><dd>{{ formatDate(task.fecha_creacion) }}</dd></div>
+    <div><dt>Finalizada</dt><dd>{{ formatDate(task.fecha_vencimiento) }}</dd></div>
+  </dl>
+
+  <footer>
+    <img v-image-fallback :src="responsibleImage" :alt="task.nombre ? `Responsable: ${task.nombre}` : 'Sin responsable'" />
+    <div><small>Responsable</small><strong>{{ task.nombre || task.username || "Por asignar" }}</strong></div>
+    <i class="pi pi-arrow-up-right" aria-hidden="true"></i>
+  </footer>
+</article>

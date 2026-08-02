@@ -1,0 +1,33 @@
+<Transition name="app-dialog">
+    <div v-if="dialog" class="app-dialog-overlay" @mousedown.self="cancel">
+      <form class="app-dialog-shell" :data-tone="dialog.tone || 'info'" role="dialog" aria-modal="true"
+        aria-labelledby="app-dialog-title" aria-describedby="app-dialog-message" @submit.prevent="accept">
+        <header>
+          <p>{{ eyebrow }}</p>
+          <h2 id="app-dialog-title">{{ dialog.title }}</h2>
+          <button type="button" aria-label="Cerrar" @click="cancel">×</button>
+        </header>
+        <div class="app-dialog-body">
+          <p id="app-dialog-message">{{ dialog.message }}</p>
+          <template v-if="dialog.mode === 'prompt'">
+            <div v-if="dialog.inputType === 'email'" class="app-dialog-field">
+              <span>{{ dialog.inputLabel || 'Correo electrónico' }}</span>
+              <AppEmailInput id="app-dialog-input" v-model="inputValue" required :label="dialog.inputLabel || 'Correo electrónico'" :local-placeholder="dialog.placeholder || ''" autofocus />
+            </div>
+            <label v-else>
+              <span>{{ dialog.inputLabel || 'Dato requerido' }}</span>
+              <AppInput id="app-dialog-input" v-model="inputValue" required :type="dialog.inputType || 'text'"
+                :autocomplete="dialog.inputType === 'password' ? 'current-password' : 'off'"
+                :placeholder="dialog.placeholder || ''" autofocus />
+            </label>
+          </template>
+        </div>
+        <footer>
+          <AppButton v-if="dialog.mode !== 'alert'" type="button" :label="dialog.cancelLabel || 'Cancelar'" outlined @click="cancel" />
+          <AppButton type="submit" :label="dialog.confirmLabel || (dialog.mode === 'alert' ? 'Entendido' : 'Confirmar')"
+            :icon="dialog.mode === 'prompt' ? 'pi pi-lock' : 'pi pi-check'"
+            :disabled="dialog.mode === 'prompt' && !inputValue" />
+        </footer>
+      </form>
+    </div>
+  </Transition>

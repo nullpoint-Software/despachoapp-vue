@@ -1,0 +1,18 @@
+.desktop-sidebar{width:5rem;box-shadow:none!important;transition:width .3s ease-out}
+.desktop-sidebar:hover,.desktop-sidebar:focus-within{width:16rem}
+.desktop-sidebar nav{overflow-x:hidden;overscroll-behavior:contain}
+.sidebar-item{width:100%}
+.sidebar-link{display:grid;width:15rem;grid-template-columns:4rem minmax(0,1fr);align-items:center;min-height:3rem;margin:0 0 .35rem;border-radius:.375rem;color:var(--color-text);box-shadow:none!important;transition:background-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease}
+.sidebar-icon-shell{display:grid;width:4rem;height:3rem;place-items:center}
+.sidebar-label{display:block;padding-left:.5rem;white-space:nowrap;opacity:0;transform:translateX(-.625rem);transition:opacity .18s ease,transform .18s ease}
+.desktop-sidebar:hover .sidebar-label,.desktop-sidebar:focus-within .sidebar-label{opacity:1;transform:translateX(0)}
+.sidebar-footer{padding:.75rem .5rem}
+.desktop-sidebar a:hover{background:var(--btn-secondary-hover-bg);box-shadow:5px 5px 0 var(--br-control)!important;transform:translate(-1px,-1px)}
+.desktop-sidebar a:hover,
+.desktop-sidebar a.router-link-active,
+.desktop-sidebar a:hover i,
+.desktop-sidebar a.router-link-active i,
+.desktop-sidebar a:hover span,
+.desktop-sidebar a.router-link-active span{color:var(--br-accent-text)!important}
+.desktop-sidebar a:active{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--br-control)!important}
+@media (prefers-reduced-motion:reduce){.desktop-sidebar,.sidebar-label,.sidebar-link{transition:none}}

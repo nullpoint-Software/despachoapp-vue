@@ -25,6 +25,7 @@ export interface Note {
   color: "white" | "blue" | "red" | "yellow" | "green";
   status: "canvas" | "pinned" | "storage" | string;
   folderPath?: string;
+  archivedFromPath?: string;
   gs_x?: number;
   gs_y?: number;
   gs_w?: number;
@@ -77,14 +78,12 @@ export function useNotesStore() {
       // 1. Intentar cargar desde Local Storage PRIMERO
       const localNotesData = localStorage.getItem(NOTES_STATE_KEY);
       if (localNotesData && localNotesData !== "[]") {
-        console.log("Cargando notas desde Local Storage...");
         notes.value = JSON.parse(localNotesData);
         isLoading.value = false;
         return; // ¡Importante! No buscar en la DB si ya tenemos datos locales
       }
 
       // 2. Si no hay datos locales, buscar en la DB
-      console.log("No hay notas locales, cargando desde DB...");
       const pinnedIds = getPinnedIdsFromStorage();
 
       const normalizeNotes = (items: any[]) => items.map((raw) => {
@@ -100,6 +99,7 @@ export function useNotesStore() {
           color: raw.color ?? "white",
           status,
           folderPath: raw.folderPath ?? "General",
+          archivedFromPath: raw.archivedFromPath,
           gs_x: raw.gs_x !== undefined ? Number(raw.gs_x) : undefined,
           gs_y: raw.gs_y !== undefined ? Number(raw.gs_y) : undefined,
           gs_w: Number(gs_w),
@@ -147,6 +147,7 @@ export function useNotesStore() {
         color: addedRaw.color ?? "white",
         status,
         folderPath: addedRaw.folderPath ?? newNoteData.folderPath ?? "General",
+        archivedFromPath: addedRaw.archivedFromPath ?? newNoteData.archivedFromPath,
         gs_x: addedRaw.gs_x !== undefined ? Number(addedRaw.gs_x) : 0, // Default a 0,0
         gs_y: addedRaw.gs_y !== undefined ? Number(addedRaw.gs_y) : 0,
         gs_w: Number(addedRaw.gs_w ?? 2),

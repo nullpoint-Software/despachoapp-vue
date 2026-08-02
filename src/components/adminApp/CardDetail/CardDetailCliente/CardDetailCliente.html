@@ -1,0 +1,54 @@
+<transition name="fade">
+  <div class="modal-overlay app-modal-overlay" @click.self="close">
+    <form class="a11y-form modal-content app-modal-surface" role="dialog" aria-modal="true" aria-labelledby="client-form-title" :aria-describedby="`client-step-help-${currentStep}`" @submit.prevent="save" @keydown.esc="close">
+      <header class="standard-modal-header app-modal-header">
+        <p class="modal-kicker">CLIENTES / EXPEDIENTE</p>
+        <h3 id="client-form-title">{{ customer.id_cliente ? 'Editar cliente' : 'Agregar cliente' }}</h3>
+        <p>Completa un bloque a la vez. Tus avances se conservan al cambiar de paso.</p>
+        <button type="button" class="standard-modal-close" aria-label="Cerrar formulario de cliente" @click="close">×</button>
+      </header>
+
+      <nav class="form-steps" aria-label="Progreso del formulario">
+        <button v-for="step in steps" :key="step.id" type="button" :class="{ active: currentStep === step.id, complete: currentStep > step.id }" :aria-current="currentStep === step.id ? 'step' : undefined" :disabled="step.id > currentStep + 1" @click="goToStep(step.id)">
+          <span>{{ currentStep > step.id ? '✓' : step.id }}</span><strong>{{ step.label }}</strong>
+        </button>
+      </nav>
+
+      <div class="client-form-body">
+        <section v-show="currentStep === 1" class="form-section" aria-labelledby="client-step-1-title">
+          <div class="form-section-heading"><span>01</span><div><h4 id="client-step-1-title">Identidad fiscal</h4><p id="client-step-help-1">Datos que identifican al contribuyente ante el SAT.</p></div></div>
+          <div class="form-grid">
+            <label class="field field--wide" for="client-name"><span>Nombre o razón social *</span><InputText id="client-name" v-model="customer.nombre" required :aria-invalid="Boolean(errors.nombre)" :aria-describedby="errors.nombre ? 'client-name-error' : undefined" autocomplete="organization" placeholder="Ej. Comercializadora del Centro, S.A. de C.V." /><small v-if="errors.nombre" id="client-name-error" class="field-error" role="alert">{{ errors.nombre }}</small></label>
+            <label class="field" for="client-rfc"><span>RFC *</span><InputText id="client-rfc" v-model="customer.rfc" required :aria-invalid="Boolean(errors.rfc)" :aria-describedby="errors.rfc ? 'client-rfc-error' : 'client-rfc-help'" autocapitalize="characters" spellcheck="false" maxlength="13" placeholder="XAXX010101000" @input="normalizeRfcInput" /><small id="client-rfc-help" class="field-help">12 caracteres para persona moral; 13 para persona física.</small><small v-if="errors.rfc" id="client-rfc-error" class="field-error" role="alert">{{ errors.rfc }}</small></label>
+            <label class="field" for="client-tax-regime"><span>Régimen fiscal *</span><AppSelect id="client-tax-regime" v-model="customer.regimen_fiscal" required :aria-invalid="Boolean(errors.regimen_fiscal)" :aria-describedby="errors.regimen_fiscal ? 'client-tax-regime-error' : undefined" :options="regimenesFiscales" option-label="label" option-value="value" placeholder="Selecciona el régimen" /><small v-if="errors.regimen_fiscal" id="client-tax-regime-error" class="field-error" role="alert">{{ errors.regimen_fiscal }}</small></label>
+          </div>
+        </section>
+
+        <section v-show="currentStep === 2" class="form-section" aria-labelledby="client-step-2-title">
+          <div class="form-section-heading"><span>02</span><div><h4 id="client-step-2-title">Contacto</h4><p id="client-step-help-2">Usaremos estos datos para localizar al cliente con rapidez.</p></div></div>
+          <div class="form-grid">
+            <label class="field" for="client-phone"><span>Teléfono *</span><InputText id="client-phone" v-model="customer.telefono" required :aria-invalid="Boolean(errors.telefono)" :aria-describedby="errors.telefono ? 'client-phone-error' : 'client-phone-help'" autocomplete="tel" inputmode="tel" type="tel" placeholder="33 1234 5678" /><small id="client-phone-help" class="field-help">Puedes usar espacios, guiones o paréntesis.</small><small v-if="errors.telefono" id="client-phone-error" class="field-error" role="alert">{{ errors.telefono }}</small></label>
+            <div class="field"><span id="client-email-label">Correo electrónico *</span><AppEmailInput id="client-email" v-model="customer.email" label="Correo electrónico del cliente" required :invalid="Boolean(errors.email)" :describedby="errors.email ? 'client-email-error' : 'client-email-help'" /><small id="client-email-help" class="field-help">gmail.com aparece por defecto, pero puedes escribir otro dominio.</small><small v-if="errors.email" id="client-email-error" class="field-error" role="alert">{{ errors.email }}</small></div>
+          </div>
+        </section>
+
+        <section v-show="currentStep === 3" class="form-section" aria-labelledby="client-step-3-title">
+          <div class="form-section-heading"><span>03</span><div><h4 id="client-step-3-title">Acceso SAT</h4><p id="client-step-help-3">Credenciales protegidas para realizar trámites autorizados.</p></div></div>
+          <div class="security-notice" role="note"><i class="pi pi-lock" aria-hidden="true"></i><span>{{ customer.id_cliente ? 'Deja una contraseña vacía para conservar la actual.' : 'Ambas contraseñas son necesarias para crear el expediente.' }}</span></div>
+          <div class="form-grid">
+            <label class="field" for="client-fiel"><span>Contraseña FIEL {{ customer.id_cliente ? '' : '*' }}</span><InputText id="client-fiel" v-model="customer.fiel" :required="!customer.id_cliente" :aria-invalid="Boolean(errors.fiel)" :aria-describedby="errors.fiel ? 'client-fiel-error' : undefined" type="password" autocomplete="new-password" :placeholder="customer.id_cliente ? 'Conservar contraseña actual' : 'Escribe la contraseña FIEL'" /><small v-if="errors.fiel" id="client-fiel-error" class="field-error" role="alert">{{ errors.fiel }}</small></label>
+            <label class="field" for="client-ciecf"><span>Contraseña CIECF {{ customer.id_cliente ? '' : '*' }}</span><InputText id="client-ciecf" v-model="customer.ciecf" :required="!customer.id_cliente" :aria-invalid="Boolean(errors.ciecf)" :aria-describedby="errors.ciecf ? 'client-ciecf-error' : undefined" type="password" autocomplete="new-password" :placeholder="customer.id_cliente ? 'Conservar contraseña actual' : 'Escribe la contraseña CIECF'" /><small v-if="errors.ciecf" id="client-ciecf-error" class="field-error" role="alert">{{ errors.ciecf }}</small></label>
+          </div>
+        </section>
+      </div>
+
+      <footer class="app-modal-footer client-form-actions">
+        <Button v-if="currentStep === 1" type="button" label="Cancelar" icon="pi pi-times" outlined @click="close" />
+        <Button v-else type="button" label="Anterior" icon="pi pi-arrow-left" outlined @click="previousStep" />
+        <span class="step-count" aria-live="polite">Paso {{ currentStep }} de {{ steps.length }}</span>
+        <Button v-if="currentStep < steps.length" type="button" label="Continuar" icon="pi pi-arrow-right" icon-pos="right" class="p-button-primary" @click="nextStep" />
+        <Button v-else type="submit" label="Guardar cliente" icon="pi pi-check" class="p-button-primary" />
+      </footer>
+    </form>
+  </div>
+</transition>

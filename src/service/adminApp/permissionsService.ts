@@ -56,8 +56,7 @@ export async function hasPermission(permissionKey: string): Promise<boolean> {
   }
 
   // Fallback to role-based permissions
-  console.log("key: "+permissionKey)
-  
+
   if (perms && userLevel && perms[userLevel]) {
     return perms[userLevel][permissionKey] === true;
   }
@@ -77,7 +76,6 @@ export async function updatePermissions(newPerms: object) {
 export async function getPermissions(): Promise<any> {
   try {
       const response = await axios.get(`${serverip}/permissions`, { headers: authHeaders() });
-      console.log("perms got",response.data);
       return response.data;
   } catch (error) {
       console.error("Error fetching permissions:", error);
@@ -88,7 +86,6 @@ export async function getPermissions(): Promise<any> {
 export async function getUserPermissions(): Promise<any> {
   try {
       const response = await axios.get(`${serverip}/permissions/user`, { headers: authHeaders() });
-      console.log("perms got",response.data);
       return response.data;
   } catch (error) {
       console.error("Error fetching permissions:", error);

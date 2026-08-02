@@ -1,0 +1,44 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(4px);
+  background-color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-content {
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 26rem;
+  padding: 1.5rem;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.confirm-body{display:grid;gap:1rem;padding:1.5rem!important}.confirm-message{margin:0!important;font:700 1rem/1.5 Arial,sans-serif;text-align:left!important}.confirm-check{display:flex!important;width:100%;align-items:center!important;justify-content:flex-start!important;gap:.7rem;border:1px solid #77736b;background:#fff;padding:.85rem}.confirm-check label{color:#141413!important;font:800 .75rem/1.2 "Courier New",monospace!important;text-transform:uppercase}.confirm-check input{flex:0 0 1.15rem}.modal-content>.flex.justify-end{padding:1rem 1.5rem!important}@media(max-width:520px){.confirm-check{align-items:flex-start!important}.confirm-body{padding:1rem!important}}

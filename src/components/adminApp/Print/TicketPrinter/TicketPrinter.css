@@ -1,0 +1,37 @@
+.ticket-printer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.ticket-printer-modal {
+  background: #fff; padding: 20px; border-radius: 8px;
+  width: 460px; text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  /* forzar texto negro */
+  color: #000 !important;
+}
+.ticket-printer-modal * {
+  color: #000 !important;
+}
+.printer-selection {
+  margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.printer-selection select {
+  border: 1px solid #ccc; border-radius: 4px; padding: 5px 10px;
+}
+.ticket { margin-bottom: 20px; }
+.logo img { width: 70px; margin: 0 auto 10px; display: block; }
+.ticket-content {
+  font-family: monospace; font-size: 14px;
+  white-space: pre; line-height: 1.4;
+  background: #f9f9f9; padding: 10px;
+  border: 1px solid #ddd; border-radius: 4px; margin: 0;
+  text-align: left; overflow-x: auto;
+}
+.actions {
+  display: flex; justify-content: space-around; margin-top: 10px;
+}
+.ticket{width:fit-content;max-width:100%;margin:0 auto 20px;overflow:auto}.logo{padding:.45rem}.logo img{width:2.4rem}.ticket-content{box-sizing:border-box;width:max-content;max-width:none;min-height:0;padding:.6rem .75rem;overflow:visible;white-space:pre;font:700 .72rem/1.28 "Courier New",monospace}.ticket-barcode{display:grid;place-items:center;gap:.25rem;padding:.25rem .75rem .75rem;background:#fff;color:#141413}.ticket-barcode__bars{width:70%;height:2.1rem;background:repeating-linear-gradient(90deg,#141413 0 2px,transparent 2px 4px,#141413 4px 5px,transparent 5px 8px,#141413 8px 11px,transparent 11px 13px)}.ticket-barcode>span{font:700 .58rem "Courier New",monospace}
+@media(max-width:700px){.ticket-printer-overlay{align-items:stretch;justify-content:stretch;padding:0}.ticket-printer-modal{display:flex;width:100vw;height:100dvh;max-height:100dvh;flex-direction:column;overflow:hidden;border:0;border-radius:0;box-shadow:none}.ticket-printer-modal>div:not(.actions){min-height:0;flex:1;overflow:auto}.ticket{max-width:100%;width:100%;margin:0}.actions{display:grid;grid-template-columns:1fr;flex-shrink:0;padding:1rem}}

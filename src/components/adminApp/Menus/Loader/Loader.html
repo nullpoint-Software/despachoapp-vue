@@ -1,0 +1,27 @@
+<div
+    ref="loaderShell"
+    :class="[
+      'loader-shell',
+      contained ? 'loader-shell--contained' : 'loader-shell--overlay',
+    ]"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="loader-panel">
+      <div class="dot-face" aria-hidden="true">
+        <span
+          v-for="dot in faceDots"
+          :key="dot.key"
+          :class="[
+            'face-dot',
+            dot.active ? 'face-dot--active' : 'face-dot--idle',
+            dot.part ? 'face-dot--feature' : '',
+            dot.part ? `face-dot--${dot.part}` : '',
+          ]"
+        ></span>
+      </div>
+
+      <span class="loader-copy" aria-hidden="true">Cargando</span>
+      <span class="sr-only">Cargando</span>
+    </div>
+  </div>

@@ -1,0 +1,33 @@
+<Teleport to="body">
+<Transition name="task-modal">
+  <div class="task-modal-overlay" role="presentation" @click.self="close">
+    <section class="task-modal" role="dialog" aria-modal="true" :aria-labelledby="modalTitleId" @keydown.esc="close">
+      <header class="task-modal__header">
+        <div><p>Registro / tareas</p><h3 :id="modalTitleId">{{ isEdit ? "Editar tarea" : "Nueva tarea" }}</h3><span>Define el trabajo y la información necesaria para completarlo.</span></div>
+        <button type="button" aria-label="Cerrar formulario" @click="close">×</button>
+      </header>
+
+      <form class="task-modal__form" :aria-busy="isSaving" @submit.prevent="save">
+        <div class="task-modal__body">
+          <label for="task-title"><span>Título <b>*</b></span><AppAutocomplete id="task-title" v-model="localTask.titulo" :options="taskTitleSuggestions" required autofocus placeholder="Busca una tarea frecuente o escribe otra" :invalid="errors.titulo" :aria-describedby="errors.titulo ? 'task-title-error' : 'task-title-help'" /><small id="task-title-help" class="task-field-help">Al enfocar el campo verás tareas frecuentes.</small></label>
+          <p v-if="errors.titulo" id="task-title-error" class="task-field-error" role="alert">Escribe un título para continuar.</p>
+
+          <label for="task-description"><span>Descripción <b>*</b></span><textarea id="task-description" v-model.trim="localTask.descripcion" rows="6" required placeholder="Describe el resultado esperado y los datos necesarios" :aria-invalid="errors.descripcion" :aria-describedby="errors.descripcion ? 'task-description-error' : undefined"></textarea></label>
+          <p v-if="errors.descripcion" id="task-description-error" class="task-field-error" role="alert">Describe la tarea para continuar.</p>
+
+          <div class="task-modal__context">
+            <i class="pi pi-info-circle" aria-hidden="true"></i><p>Las tareas nuevas se guardan como <strong>Disponible</strong>. La asignación y el avance se gestionan desde el tablero.</p>
+          </div>
+
+          <div v-if="submitError" class="task-modal__error" role="alert"><i class="pi pi-exclamation-circle" aria-hidden="true"></i><span>{{ submitError }}</span></div>
+        </div>
+
+        <footer class="task-modal__actions">
+          <button type="button" class="task-button task-button--secondary" :disabled="isSaving" @click="close">Cancelar</button>
+          <button type="submit" class="task-button task-button--primary" :disabled="isSaving"><i class="pi" :class="isSaving ? 'pi-spin pi-spinner' : 'pi-check'"></i><span>{{ isSaving ? "Guardando" : isEdit ? "Guardar cambios" : "Crear tarea" }}</span></button>
+        </footer>
+      </form>
+    </section>
+  </div>
+</Transition>
+</Teleport>

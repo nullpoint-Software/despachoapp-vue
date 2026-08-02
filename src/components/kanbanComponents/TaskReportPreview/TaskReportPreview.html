@@ -1,0 +1,28 @@
+<Teleport to="body">
+  <Transition name="report-preview">
+    <div class="report-preview-overlay" role="presentation" @click.self="close">
+      <section class="report-preview" role="dialog" aria-modal="true" aria-labelledby="report-preview-title" @keydown.esc="close">
+        <header class="report-preview__header">
+          <div>
+            <p>Reporte / tareas</p>
+            <h3 id="report-preview-title">Vista previa</h3>
+            <span>{{ taskCount }} tareas finalizadas incluidas</span>
+          </div>
+          <button type="button" aria-label="Cerrar vista previa" @click="close">&times;</button>
+        </header>
+
+        <div class="report-preview__document">
+          <iframe :src="previewUrl" title="Vista previa del reporte de tareas" />
+        </div>
+
+        <footer class="report-preview__actions">
+          <button type="button" class="report-preview__button report-preview__button--secondary" @click="close">Cerrar</button>
+          <button type="button" class="report-preview__button report-preview__button--primary" @click="download">
+            <i class="pi pi-download" aria-hidden="true"></i>
+            Descargar PDF
+          </button>
+        </footer>
+      </section>
+    </div>
+  </Transition>
+</Teleport>

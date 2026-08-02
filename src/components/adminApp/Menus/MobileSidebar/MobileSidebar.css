@@ -1,0 +1,5 @@
+.mobile-menu-overlay{background:rgba(10,10,9,.58);backdrop-filter:blur(2px)}
+.mobile-menu-panel{box-shadow:8px 0 0 var(--br-accent);will-change:transform}
+.mobile-menu-item a{transition:background-color .16s ease,color .16s ease,transform .16s ease}
+.mobile-menu-item a:active{transform:translateX(3px)}
+@media (prefers-reduced-motion:reduce){.mobile-menu-overlay{backdrop-filter:none}.mobile-menu-panel{will-change:auto}.mobile-menu-item a{transition:none}}

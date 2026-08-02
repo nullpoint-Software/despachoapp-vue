@@ -1,0 +1,15 @@
+.excel-icon-button {
+  display: grid;
+  width: 3rem;
+  min-width: 3rem;
+  min-height: 3rem;
+  place-items: center;
+  border: 1px solid var(--br-line-strong);
+  border-radius: 0;
+  background: var(--br-bg);
+  color: var(--br-text);
+  cursor: pointer;
+}
+.excel-icon-button:hover,.excel-icon-button:focus-visible { border-color:var(--br-accent);outline:0;color:var(--br-accent) }
+.excel-icon-button:active { transform:translateY(1px) }
+.excel-icon-button i { font-size:1.15rem }

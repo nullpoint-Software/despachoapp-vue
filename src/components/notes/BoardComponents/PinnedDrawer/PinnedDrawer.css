@@ -1,0 +1,7 @@
+.slide-right-enter-active, .slide-right-leave-active { transition: transform .28s ease, opacity .28s ease; }
+.slide-right-enter-from { transform: translateX(100%); opacity: 0; }
+.slide-right-enter-to { transform: translateX(0); opacity: 1; }
+.slide-right-leave-from { transform: translateX(0); opacity: 1; }
+.slide-right-leave-to { transform: translateX(100%); opacity: 0; }
+
+.grid-stack-item-content { background-color: var(--color-bg-secondary); border-radius: 0.75rem; border: 1px solid var(--color-border); position: relative; overflow: hidden; }

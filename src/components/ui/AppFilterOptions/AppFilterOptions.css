@@ -1,0 +1,74 @@
+.app-filter-options {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.app-filter-options legend {
+  display: block;
+  margin-bottom: .45rem;
+  color: var(--br-muted);
+  font: 800 .62rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+
+.app-filter-options__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .45rem;
+}
+
+.app-filter-option {
+  display: flex;
+  min-width: 0;
+  min-height: 2.8rem;
+  align-items: center;
+  gap: .55rem;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-bg);
+  padding: .55rem .7rem;
+  color: var(--br-muted);
+  font: 800 .66rem/1.35 "Courier New", monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color .14s ease, border-color .14s ease, color .14s ease;
+}
+
+.app-filter-option:hover {
+  border-color: var(--br-text);
+  color: var(--br-text);
+}
+
+.app-filter-option.active {
+  border-color: var(--br-accent);
+  background: var(--br-panel-2);
+  box-shadow: inset 3px 0 0 var(--br-accent);
+  color: var(--br-text);
+}
+
+.app-filter-option input {
+  flex: 0 0 auto;
+  width: .9rem;
+  height: .9rem;
+  margin: 0;
+  appearance: none;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.app-filter-option input:checked {
+  border: 3px solid var(--br-panel-2);
+  background: var(--br-accent);
+  outline: 1px solid var(--br-accent);
+}
+
+.app-filter-option:focus-within {
+  outline: 2px solid var(--br-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 780px) {
+  .app-filter-options__grid { grid-template-columns: 1fr; }
+}

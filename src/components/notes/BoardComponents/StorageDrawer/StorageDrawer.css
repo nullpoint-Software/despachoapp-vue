@@ -1,0 +1,6 @@
+.slide-left-enter-active, .slide-left-leave-active { transition: transform .28s ease, opacity .28s ease; }
+.slide-left-enter-from { transform: translateX(-100%); opacity: 0; }
+.slide-left-enter-to { transform: translateX(0); opacity: 1; }
+.slide-left-leave-from { transform: translateX(0); opacity: 1; }
+.slide-left-leave-to { transform: translateX(-100%); opacity: 0; }
+.note-snippet :global(p) { margin: 0; color: var(--color-text-muted); }

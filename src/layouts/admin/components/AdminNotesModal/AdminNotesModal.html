@@ -1,0 +1,8 @@
+<Transition name="fade">
+    <div v-if="visible" class="notes-overlay" @click.self="emit('close')">
+      <div class="notes-frame">
+        <button class="notes-close" type="button" aria-label="Cerrar notas" @click="emit('close')">×</button>
+        <Suspense><BoardNote /></Suspense>
+      </div>
+    </div>
+  </Transition>

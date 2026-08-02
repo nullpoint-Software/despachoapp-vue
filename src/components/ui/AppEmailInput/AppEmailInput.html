@@ -1,0 +1,36 @@
+<div class="app-email-input" role="group" :aria-label="label">
+  <input
+    :id="id"
+    ref="localInput"
+    :value="localPart"
+    type="text"
+    inputmode="email"
+    autocapitalize="none"
+    spellcheck="false"
+    :autocomplete="autocomplete"
+    :required="required"
+    :disabled="disabled"
+    :aria-invalid="invalid ? 'true' : undefined"
+    :aria-describedby="describedby"
+    :placeholder="localPlaceholder"
+    aria-label="Usuario del correo"
+    @input="updateLocal"
+    @paste="pasteEmail"
+  />
+  <span class="app-email-input__separator" aria-hidden="true">@</span>
+  <input
+    :value="domain"
+    type="text"
+    inputmode="url"
+    autocapitalize="none"
+    spellcheck="false"
+    :required="required"
+    :disabled="disabled"
+    :aria-invalid="invalid ? 'true' : undefined"
+    :aria-describedby="describedby"
+    :placeholder="domainPlaceholder"
+    aria-label="Dominio del correo"
+    @input="updateDomain"
+    @paste="pasteEmail"
+  />
+</div>

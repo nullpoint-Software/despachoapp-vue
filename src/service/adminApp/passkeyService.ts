@@ -56,7 +56,17 @@ class PasskeyService {
     const options = (await this.axios.post(
       `${this.serverip}/auth/passkeys/registration/options`,
     )).data;
-    const response = await startRegistration({ optionsJSON: options });
+    const authenticatorSelection = {
+      ...(options.authenticatorSelection || {}),
+      residentKey: "required",
+      requireResidentKey: true,
+    };
+    delete authenticatorSelection.authenticatorAttachment;
+    const compatibleOptions = {
+      ...options,
+      authenticatorSelection,
+    };
+    const response = await startRegistration({ optionsJSON: compatibleOptions });
     await this.axios.post(`${this.serverip}/auth/passkeys/registration/verify`, {
       name,
       response,

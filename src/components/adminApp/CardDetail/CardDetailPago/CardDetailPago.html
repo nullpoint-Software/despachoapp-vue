@@ -1,0 +1,108 @@
+<transition name="fade">
+      <div class="modal-overlay" @click.self="close">
+        <div class="modal-content relative bg-gray-50">
+          <!-- Encabezado, mostrando datos del usuario -->
+          <div class="standard-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
+            <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="close">×</button>
+            <div>
+              <h3 class="text-2xl font-bold text-black">
+                <i class="pi pi-receipt text-3xl text-blue-500"></i>
+                {{ pago.nombreCompleto ? 'Editar pago' : 'Agregar pago' }}
+              </h3>
+            </div>
+          </div>
+
+          <!-- Formulario -->
+          <div class="space-y-4 px-4">
+            <!-- Nombre completo -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Nombre completo</label>
+              <InputText
+                v-model="pago.nombreCompleto"
+                class="p-2 border border-gray-300 rounded"
+                placeholder="Ingrese el nombre completo"
+              />
+              <span v-if="errors.nombreCompleto" class="text-red-500 text-sm">{{ errors.nombreCompleto }}</span>
+            </div>
+            <!-- Asunto o trámite -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Asunto o trámite</label>
+              <InputText
+                v-model="pago.asunto"
+                class="p-2 border border-gray-300 rounded"
+                placeholder="Ingrese el asunto o trámite"
+              />
+              <span v-if="errors.asunto" class="text-red-500 text-sm">{{ errors.asunto }}</span>
+            </div>
+            <!-- Quien atendió (deshabilitado, con imagen del usuario al inicio) -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Quien atendió</label>
+              <div class="flex items-center">
+                <img v-image-fallback :src="usuario.foto"
+                  alt="Foto"
+                  class="w-8 h-8 rounded-full mr-2"
+                />
+                <InputText
+                  v-model="pago.atendio"
+                  disabled
+                  class="p-2 border border-gray-300 rounded w-full"
+                  placeholder="Nombre del usuario"
+                />
+              </div>
+              <span v-if="errors.atendio" class="text-red-500 text-sm">{{ errors.atendio }}</span>
+            </div>
+            <!-- Campo 'cobramos' con prefijo "$" -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Cobramos</label>
+              <div class="flex">
+                <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+                <InputText
+                  v-model="pago.cobramos"
+                  @input="onMoneyInput('cobramos')"
+                  @blur="onMoneyBlur('cobramos')"
+                  class="p-2 border border-gray-300 rounded-r focus:outline-none"
+                  placeholder="Ingrese el monto cobrado"
+                />
+              </div>
+              <span v-if="errors.cobramos" class="text-red-500 text-sm">{{ errors.cobramos }}</span>
+            </div>
+            <!-- Campo 'pagamos' con prefijo "$" -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Pagamos</label>
+              <div class="flex">
+                <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+                <InputText
+                  v-model="pago.pagamos"
+                  @input="onMoneyInput('pagamos')"
+                  @blur="onMoneyBlur('pagamos')"
+                  class="p-2 border border-gray-300 rounded-r focus:outline-none"
+                  placeholder="Ingrese el monto pagado"
+                />
+              </div>
+              <span v-if="errors.pagamos" class="text-red-500 text-sm">{{ errors.pagamos }}</span>
+            </div>
+            <!-- Campo 'saldo' con prefijo "$" -->
+            <div class="flex flex-col">
+              <label class="font-semibold text-black">Saldo</label>
+              <div class="flex">
+                <span class="inline-flex items-center px-2 bg-gray-200 text-gray-600 rounded-l">$</span>
+                <InputText
+                  v-model="pago.saldo"
+                  @input="onMoneyInput('saldo')"
+                  @blur="onMoneyBlur('saldo')"
+                  class="p-2 border border-gray-300 rounded-r focus:outline-none"
+                  placeholder="Ingrese el saldo"
+                />
+              </div>
+              <span v-if="errors.saldo" class="text-red-500 text-sm">{{ errors.saldo }}</span>
+            </div>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex justify-end space-x-6 mt-6 px-4">
+            <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="close" />
+            <Button label="Guardar" icon="pi pi-check" class="p-button-primary" @click="save" />
+          </div>
+        </div>
+      </div>
+    </transition>

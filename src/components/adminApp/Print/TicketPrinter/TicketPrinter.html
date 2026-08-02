@@ -1,0 +1,56 @@
+<div
+    class="ticket-printer-overlay"
+    @mousedown.self="$emit('close')"
+  >
+    <div class="ticket-printer-modal">
+      <!-- Seccion para seleccionar la impresora -->
+      <div class="printer-selection" v-if="!showDownload">
+        <select id="printerSelect" v-model="selectedPrinter" aria-label="Impresora de tickets" required>
+          <option disabled value="">Seleccione una impresora</option>
+          <option v-for="impresora in printers" :key="impresora" :value="impresora">
+            {{ impresora }}
+          </option>
+        </select>
+        <Button
+          label="Refrescar"
+          icon="pi pi-refresh"
+          @click="fetchPrinters"
+          class="p-button-secondary"
+        />
+      </div>
+      <Button
+        icon="pi pi-download"
+        v-if="showDownload"
+        label="Descargar plugin de impresión"
+          @click="downloadPlugin"
+          class="p-button-info"
+        />
+      <!-- Vista previa del ticket -->
+      <div class="ticket">
+        <div class="logo">
+          <img :src="logo" alt="Logo" />
+        </div>
+        <pre class="ticket-content">{{ formattedTicket }}</pre>
+        <div v-if="barcodeValue" class="ticket-barcode" aria-label="Codigo de barras">
+          <div class="ticket-barcode__bars"></div>
+          <span>{{ barcodeValue }}</span>
+        </div>
+      </div>
+
+      <!-- Botones de accion -->
+      <div class="actions">
+        <Button
+          label="Imprimir"
+          icon="pi pi-print"
+          @click="doPrint"
+          class="p-button-info"
+        />
+        <Button
+          label="Cerrar"
+          icon="pi pi-times"
+          @click="$emit('close')"
+          class="p-button-secondary"
+        />
+      </div>
+    </div>
+  </div>

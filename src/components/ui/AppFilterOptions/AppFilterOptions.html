@@ -1,0 +1,20 @@
+<fieldset class="app-filter-options">
+    <legend>{{ legend }}</legend>
+    <div class="app-filter-options__grid">
+      <label
+        v-for="option in options"
+        :key="option.value"
+        class="app-filter-option"
+        :class="{ active: modelValue === option.value }"
+      >
+        <input
+          :name="name"
+          type="radio"
+          :value="option.value"
+          :checked="modelValue === option.value"
+          @change="$emit('update:modelValue', option.value)"
+        />
+        <span>{{ option.label }}</span>
+      </label>
+    </div>
+  </fieldset>

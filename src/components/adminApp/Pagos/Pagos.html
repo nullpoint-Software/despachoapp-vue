@@ -1,0 +1,24 @@
+<main ref="pageRef" class="records-view">
+    <header class="records-hero">
+      <div>
+        <p>ADMINISTRACIÓN / 02</p>
+        <h1>Pagos</h1>
+        <span>Conceptos, comprobantes y cierres de caja.</span>
+      </div>
+      <div class="records-actions">
+        <AppButton
+          label="Corte de caja"
+          icon="pi pi-calculator"
+          outlined
+          @click="cashCutVisible = true"
+        /><AppButton
+          label="Nuevo pago"
+          icon="pi pi-plus"
+          class="p-button-primary"
+          @click="newPayment"
+        />
+      </div>
+    </header>
+    <section class="records-content"><router-view /></section>
+    <CashCutModal v-if="cashCutVisible" @close="cashCutVisible = false" />
+  </main>

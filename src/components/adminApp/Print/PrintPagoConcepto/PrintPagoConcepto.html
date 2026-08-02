@@ -1,0 +1,62 @@
+<div class="ticket-printer-overlay" @mousedown.self="$emit('close')">
+    <div class="ticket-printer-modal">
+      <header class="ticket-modal-header">
+        <p>CAJA / IMPRESIÓN TÉRMICA</p>
+        <h2>Ticket de pago</h2>
+        <button type="button" aria-label="Cerrar" @click="$emit('close')">×</button>
+      </header>
+      <div class="ticket-modal-body">
+      <!-- Seccion para seleccionar la impresora -->
+      <div class="printer-selection" v-if="!showDownload">
+        <select id="printerSelect" v-model="selectedPrinter" aria-label="Impresora de tickets" required>
+          <option disabled value="">Seleccione una impresora</option>
+          <option
+            v-for="impresora in printers"
+            :key="impresora"
+            :value="impresora"
+          >
+            {{ impresora }}
+          </option>
+        </select>
+        <Button
+          label="Refrescar"
+          icon="pi pi-refresh"
+          @click="fetchPrinters"
+          outlined
+        />
+      </div>
+      <Button
+        icon="pi pi-download"
+        v-if="showDownload"
+        label="Descargar plugin de impresión"
+          @click="downloadPlugin"
+          outlined
+        />
+      <!-- Vista previa del ticket -->
+      <div class="ticket">
+        <span>Vista previa / 80 mm</span>
+        <div class="ticket-logo"><img :src="logo" alt="Logo" /></div>
+        <pre class="ticket-content">{{ formattedTicket }}</pre>
+        <div v-if="barcodeValue" class="ticket-barcode" aria-label="Codigo de barras">
+          <div class="ticket-barcode__bars"></div>
+          <span>{{ barcodeValue }}</span>
+        </div>
+      </div>
+      </div>
+
+      <!-- Botones de accion -->
+      <div class="actions">
+        <Button
+          label="Cancelar"
+          @click="$emit('close')"
+          outlined
+        />
+        <Button
+          label="Imprimir ticket"
+          icon="pi pi-print"
+          @click="doPrint"
+          class="p-button-primary"
+        />
+      </div>
+    </div>
+  </div>

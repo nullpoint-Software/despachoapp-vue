@@ -1,0 +1,109 @@
+<Teleport to="body">
+  <transition name="appearance-modal">
+    <div
+      v-if="visible"
+      class="appearance-overlay"
+      role="presentation"
+      @click.self="close"
+    >
+      <section
+        class="appearance-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="appearance-title"
+        tabindex="-1"
+        @keydown.esc="close"
+      >
+        <header class="appearance-header">
+          <div>
+            <p>INTERFAZ / PERSONALIZACIÓN</p>
+            <h2 id="appearance-title">Construye tu espacio</h2>
+            <span>Los cambios se aplican al instante y se guardan en este dispositivo.</span>
+          </div>
+          <button type="button" aria-label="Cerrar personalización" @click="close">×</button>
+        </header>
+
+        <div class="appearance-body">
+          <section class="appearance-section" aria-labelledby="appearance-palette-title">
+            <div class="appearance-section__heading">
+              <h3 id="appearance-palette-title">Paleta</h3>
+              <span>10 combinaciones</span>
+            </div>
+            <PaletteSelector inline />
+          </section>
+
+          <section class="appearance-section appearance-font" aria-labelledby="appearance-font-title">
+            <div class="appearance-section__heading">
+              <h3 id="appearance-font-title">Fuente de la aplicación</h3>
+              <span>Se aplica a toda la interfaz</span>
+            </div>
+            <div class="font-family-list" role="radiogroup" aria-labelledby="appearance-font-title">
+              <label v-for="font in fontFamilies" :key="font.id" :style="{ fontFamily: font.value }">
+                <input
+                  type="radio"
+                  name="app-font-family"
+                  :value="font.id"
+                  :checked="selectedFontFamily === font.id"
+                  @change="applyFontFamily(font.id)"
+                />
+                <span><b>{{ font.name }}</b><small>{{ font.description }}</small></span>
+                <i v-if="selectedFontFamily === font.id" class="pi pi-check" aria-hidden="true"></i>
+              </label>
+            </div>
+          </section>
+          <section class="appearance-section appearance-scale" aria-labelledby="appearance-scale-title">
+            <div>
+              <div class="appearance-section__heading">
+                <h3 id="appearance-scale-title">Escala del texto</h3>
+                <span>{{ selectedTextScale }}%</span>
+              </div>
+              <div class="text-scale-spinner" role="group" aria-label="Ajustar escala del texto">
+                <button
+                  type="button"
+                  aria-label="Reducir tamaño del texto"
+                  :disabled="selectedTextScale <= minTextScale"
+                  @click="decreaseTextScale"
+                >
+                  <b aria-hidden="true">A−</b>
+                </button>
+                <label>
+                  <span class="sr-only">Porcentaje de escala</span>
+                  <input
+                    type="number"
+                    inputmode="numeric"
+                    :min="minTextScale"
+                    :max="maxTextScale"
+                    :step="textScaleStep"
+                    :value="selectedTextScale"
+                    @change="updateTextScaleFromInput"
+                  />
+                  <b aria-hidden="true">%</b>
+                </label>
+                <button
+                  type="button"
+                  aria-label="Aumentar tamaño del texto"
+                  :disabled="selectedTextScale >= maxTextScale"
+                  @click="increaseTextScale"
+                >
+                  <b aria-hidden="true">A+</b>
+                </button>
+              </div>
+              <small>{{ minTextScale }}% mínimo · {{ maxTextScale }}% máximo</small>
+            </div>
+
+            <aside class="appearance-preview" aria-label="Vista previa del texto">
+              <span>VISTA PREVIA</span>
+              <strong>Trabajo claro, decisiones rápidas.</strong>
+              <p>La escala conserva el mismo diseño en pantallas normales, 2K y 4K.</p>
+            </aside>
+          </section>
+        </div>
+
+        <footer class="appearance-footer">
+          <span>Preferencias guardadas automáticamente</span>
+          <button type="button" @click="close">Aplicar estilo <i class="pi pi-arrow-right"></i></button>
+        </footer>
+      </section>
+    </div>
+  </transition>
+</Teleport>

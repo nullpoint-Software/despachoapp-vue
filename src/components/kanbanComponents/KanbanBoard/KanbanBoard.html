@@ -1,0 +1,90 @@
+<section class="kanban-workspace" aria-label="Tablero de tareas">
+  <header class="kanban-toolbar">
+    <div>
+      <span class="kanban-eyebrow">Vista general</span>
+      <h2>Tablero operativo</h2>
+      <p>{{ totalVisibleTasks }} tareas en esta p&aacute;gina</p>
+    </div>
+
+    <div class="kanban-toolbar__actions">
+      <label class="kanban-search">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input v-model="searchQuery" type="search" placeholder="Buscar por tarea o responsable" />
+      </label>
+
+      <label class="kanban-date">
+        <span>Fecha de corte</span>
+        <input v-model="reportDate" type="date" />
+      </label>
+
+      <button class="kanban-icon-button" type="button" :disabled="isLoading" aria-label="Actualizar tareas" @click="loadTasks(currentPage)">
+        <i class="pi pi-refresh" :class="{ 'is-spinning': isLoading }"></i>
+      </button>
+      <button class="kanban-button kanban-button--secondary" type="button" :disabled="isGeneratingReport" @click="openReportPreview">
+        <i class="pi" :class="isGeneratingReport ? 'pi-spin pi-spinner' : 'pi-file-pdf'"></i>
+        {{ isGeneratingReport ? "Generando" : "Reporte" }}
+      </button>
+      <button v-if="!mini" class="kanban-button kanban-button--primary" type="button" @click="openTaskForm('add')">
+        <i class="pi pi-plus"></i>
+        Nueva tarea
+      </button>
+    </div>
+  </header>
+
+  <div v-if="loadError" class="kanban-message" role="alert">
+    <div><strong>No se cargaron las tareas</strong><span>{{ loadError }}</span></div>
+    <button type="button" @click="loadTasks(currentPage)">Reintentar</button>
+  </div>
+
+  <div v-if="isLoading && tasks.length === 0" class="kanban-loading" aria-busy="true">
+    <article v-for="index in 3" :key="index"><span></span><i></i><i></i><i></i></article>
+  </div>
+
+  <div v-else class="kanban-board">
+    <KanbanColumn
+      v-for="lane in lanes"
+      :key="lane.status"
+      :lane="lane"
+      :compact="mini"
+      @move-task="moveTask"
+      @select-task="openTask"
+    />
+  </div>
+
+  <nav class="kanban-pagination" aria-label="Paginaci&oacute;n de tareas">
+    <button type="button" :disabled="isLoading || currentPage === 1" @click="changePage(currentPage - 1)">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+      Anterior
+    </button>
+    <span><small>P&aacute;gina</small><strong>{{ currentPage }}</strong></span>
+    <button type="button" :disabled="isLoading || !hasNextPage" @click="changePage(currentPage + 1)">
+      Siguiente
+      <i class="pi pi-arrow-right" aria-hidden="true"></i>
+    </button>
+  </nav>
+
+  <CardDetail
+    v-if="selectedTask"
+    :card="selectedTask"
+    @close="selectedTask = null"
+    @advance-state="advanceTask"
+    @edit="openTaskForm('edit', $event)"
+  />
+
+  <TaskFormModal
+    v-if="showTaskForm"
+    :mode="taskFormMode"
+    :task="currentTaskForm"
+    @close="showTaskForm = false"
+    @save="handleTaskSaved"
+  />
+
+  <TaskReportPreview
+    v-if="reportPreview?.previewUrl"
+    :preview-url="reportPreview.previewUrl"
+    :file-name="reportPreview.fileName"
+    :task-count="reportPreview.exportedTasks"
+    @close="closeReportPreview"
+  />
+
+</section>

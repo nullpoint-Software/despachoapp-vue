@@ -1,0 +1,119 @@
+.app-filter-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--br-bg) 82%, transparent);
+}
+
+.app-filter-modal {
+  display: grid;
+  width: min(48rem, 100%);
+  max-height: calc(100dvh - 2rem);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel);
+  box-shadow: 10px 10px 0 var(--br-accent);
+  color: var(--br-text);
+}
+
+.app-filter-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--br-line-strong);
+}
+
+.app-filter-modal__header p {
+  margin: 0 0 .35rem;
+  color: var(--br-accent);
+  font: 800 .62rem "Courier New", monospace;
+  letter-spacing: .08em;
+}
+
+.app-filter-modal__header h2 {
+  margin: 0;
+  font: 900 1.35rem Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+.app-filter-modal__header > button {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-bg);
+  color: var(--br-text);
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+
+.app-filter-modal__header > button:hover,
+.app-filter-modal__header > button:focus-visible {
+  border-color: var(--br-accent);
+  outline: 0;
+  color: var(--br-accent);
+}
+
+.app-filter-modal__body {
+  display: grid;
+  gap: 1.25rem;
+  overflow: auto;
+  padding: 1.1rem;
+}
+
+.app-filter-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-top: 1px solid var(--br-line-strong);
+}
+
+.app-filter-modal__footer > div {
+  display: flex;
+  gap: .65rem;
+}
+
+.app-filter-modal__reset {
+  padding: .3rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--br-line-strong);
+  background: transparent;
+  color: var(--br-muted);
+  font: 800 .65rem "Courier New", monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.app-filter-modal__reset:hover,
+.app-filter-modal__reset:focus-visible {
+  border-color: var(--br-accent);
+  outline: 0;
+  color: var(--br-text);
+}
+
+@media (max-width: 780px) {
+  .app-filter-overlay { padding: .65rem; }
+  .app-filter-modal { max-height: calc(100dvh - 1.3rem); }
+}
+
+@media (max-width: 480px) {
+  .app-filter-modal__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-filter-modal__footer > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .app-filter-modal__reset { align-self: flex-start; }
+}

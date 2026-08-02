@@ -1,0 +1,184 @@
+<transition name="logs-fade">
+    <div
+      v-if="visible"
+      class="logs-overlay"
+      role="presentation"
+      @click.self="closeModal"
+      @keydown.esc="closeModal"
+    >
+      <section
+        class="logs-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logs-title"
+      >
+        <header class="logs-header">
+          <div class="logs-heading">
+            <p>REGISTRO / SISTEMA</p>
+            <h2 id="logs-title">Registros de cambios</h2>
+            <div class="logs-context">
+              <strong>{{ currentPageTitle }}</strong>
+              <span>{{ filteredLogs.length }} visibles</span>
+              <span>{{ showAll ? "Historial completo" : "Últimos 90 días" }}</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="logs-close"
+            aria-label="Cerrar registros"
+            @click="closeModal"
+          >
+            <i class="pi pi-times" aria-hidden="true" />
+          </button>
+        </header>
+
+        <div class="logs-toolbar">
+          <label class="logs-search">
+            <span>Buscar registro</span>
+            <div>
+              <i class="pi pi-search" aria-hidden="true" />
+              <input
+                v-model="searchId"
+                type="search"
+                placeholder="Evento, objeto, usuario o movimiento"
+              />
+            </div>
+          </label>
+
+          <div class="logs-filter">
+            <span>Tipo de movimiento</span>
+            <button
+              type="button"
+              class="filter-trigger"
+              :aria-expanded="dropdownOpen"
+              aria-haspopup="listbox"
+              @click="dropdownOpen = !dropdownOpen"
+            >
+              <span>{{ selectedTypes.length ? selectedLabels.join(", ") : "Todos" }}</span>
+              <i
+                class="pi pi-chevron-down"
+                :class="{ rotated: dropdownOpen }"
+                aria-hidden="true"
+              />
+            </button>
+            <div v-if="dropdownOpen" class="filter-menu" role="listbox">
+              <button type="button" :class="{ active: !selectedTypes.length }" @click="selectAll">
+                <i :class="!selectedTypes.length ? 'pi pi-check-square' : 'pi pi-stop'" />
+                <span>Todos los movimientos</span>
+              </button>
+              <button
+                v-for="option in typeOptions"
+                :key="option.value"
+                type="button"
+                :class="{ active: selectedTypes.includes(option.value) }"
+                @click="toggleType(option.value)"
+              >
+                <i :class="selectedTypes.includes(option.value) ? 'pi pi-check-square' : 'pi pi-stop'" />
+                <span>{{ option.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <label class="history-toggle">
+            <input v-model="showAll" type="checkbox" />
+            <span class="toggle-track" aria-hidden="true"><i /></span>
+            <span><b>Historial completo</b><small>Ignora sección y límite de 90 días</small></span>
+          </label>
+        </div>
+
+        <div class="logs-body">
+          <div v-if="loading" class="logs-skeleton" aria-label="Cargando registros">
+            <span v-for="item in 5" :key="item" />
+          </div>
+
+          <div v-else-if="loadError" class="logs-state error" role="alert">
+            <i class="pi pi-exclamation-triangle" aria-hidden="true" />
+            <strong>No se pudieron cargar los registros</strong>
+            <span>{{ loadError }}</span>
+            <button type="button" @click="loadLogs">Reintentar</button>
+          </div>
+
+          <div v-else-if="!filteredLogs.length" class="logs-state">
+            <i class="pi pi-inbox" aria-hidden="true" />
+            <strong>Sin coincidencias</strong>
+            <span>Cambia la búsqueda o los filtros para ver más movimientos.</span>
+            <button type="button" @click="clearFilters">Limpiar filtros</button>
+          </div>
+
+          <div v-else class="logs-list">
+            <article
+              v-for="log in filteredLogs"
+              :key="log.id"
+              class="log-entry"
+              :class="cardClasses(log)"
+            >
+              <button
+                type="button"
+                class="log-summary"
+                :aria-expanded="Boolean(detailsVisible[log.id])"
+                @click="toggleDetails(log.id)"
+              >
+                <span class="operation-mark">{{ operationCode(log) }}</span>
+                <span class="log-copy">
+                  <span class="log-title">{{ humanizeType(log.type) }}</span>
+                  <span class="log-user">{{ getUser(log) }}</span>
+                  <span class="log-meta">
+                    <time :datetime="log.timestamp">{{ formatDate(log.timestamp) }}</time>
+                    <span>Evento {{ log.id }}</span>
+                    <span>Objeto {{ log.aggregate_id || "Sin ID" }}</span>
+                  </span>
+                </span>
+                <i
+                  class="pi pi-chevron-down expand-icon"
+                  :class="{ rotated: detailsVisible[log.id] }"
+                  aria-hidden="true"
+                />
+              </button>
+
+              <button
+                type="button"
+                class="undo-button"
+                title="Deshacer cambio"
+                :disabled="undoingIds.has(log.id)"
+                @click="onUndo(log.id)"
+              >
+                <i class="pi pi-undo" aria-hidden="true" />
+                <span class="sr-only">Deshacer cambio</span>
+              </button>
+
+              <div v-if="detailsVisible[log.id]" class="log-details">
+                <section v-if="log.oldpayload" class="payload-panel">
+                  <header><span>Antes</span><b>{{ fieldCount(log.oldpayload) }} campos</b></header>
+                  <dl>
+                    <div v-for="(value, key) in log.oldpayload" :key="key">
+                      <dt>{{ key }}</dt>
+                      <dd>{{ displayValue(value) }}</dd>
+                    </div>
+                  </dl>
+                </section>
+                <section v-if="log.payload" class="payload-panel current">
+                  <header><span>Después</span><b>{{ fieldCount(log.payload) }} campos</b></header>
+                  <dl>
+                    <div v-for="(value, key) in log.payload" :key="key">
+                      <dt>{{ key }}</dt>
+                      <dd>{{ displayValue(value) }}</dd>
+                    </div>
+                  </dl>
+                </section>
+                <p v-if="!log.oldpayload && !log.payload" class="no-payload">
+                  Este movimiento no contiene datos comparables.
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <footer class="logs-footer">
+          <span>{{ filteredLogs.length }} de {{ logs.length }} registros cargados</span>
+          <button type="button" @click="closeModal">
+            <i class="pi pi-times" aria-hidden="true" /> Cerrar
+          </button>
+        </footer>
+      </section>
+    </div>
+  </transition>

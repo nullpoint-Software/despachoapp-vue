@@ -1,0 +1,797 @@
+<main class="fiscal-view">
+    <header class="fiscal-hero">
+      <div>
+        <p>IMPUESTOS / CFDI</p>
+        <h1>Fiscal</h1>
+        <span>Facturas emitidas y recibidas, clasificadas desde su XML.</span>
+      </div>
+      <div class="hero-actions">
+        <input
+          ref="fileInput"
+          class="sr-only" aria-label="Seleccionar archivos XML"
+          type="file"
+          accept=".xml,text/xml,application/xml"
+          multiple
+          @change="queueFiles"
+        />
+        <AppButton
+          label="Nuevo reporte"
+          icon="pi pi-file-plus"
+          outlined
+          :disabled="!selectedIds.size"
+          @click="openReportDialog"
+        />
+      </div>
+    </header>
+
+    <section class="filter-strip" aria-label="Filtros fiscales">
+      <label class="client-combobox"
+        ><span>Cliente</span
+        ><AppAutocomplete
+          v-model="clientSearch"
+          :options="clientOptions"
+          placeholder="Escribe nombre o RFC"
+          @update:model-value="onClientSearch"
+      /></label>
+      <label
+        ><span>Ejercicio</span
+        ><AppSelect v-model="filters.year" :options="years"
+      /></label>
+      <label
+        ><span>Mes</span
+        ><AppSelect
+          v-model="filters.month"
+          :options="months"
+          option-label="label"
+          option-value="value"
+      /></label>
+      <label class="search-field"
+        ><span>Buscar UUID, RFC o nombre</span
+        ><AppInput
+          v-model="filters.search"
+          type="search"
+          placeholder="Buscar factura"
+          @input="scheduleLoad"
+      /></label>
+      <AppButton label="Aplicar" icon="pi pi-filter" @click="loadInvoices" />
+      <AppButton
+        label="Limpiar"
+        icon="pi pi-times"
+        outlined
+        @click="clearFilters"
+      />
+    </section>
+
+    <section
+      class="xml-dropzone"
+      :class="{ dragging, disabled: !filters.clienteId || importing }"
+      role="button"
+      tabindex="0"
+      aria-label="Agregar archivos XML"
+      @click="openFilePicker"
+      @keydown.enter.prevent="openFilePicker"
+      @keydown.space.prevent="openFilePicker"
+      @dragenter.prevent="dragging = true"
+      @dragover.prevent
+      @dragleave.prevent="dragging = false"
+      @drop.prevent="dropFiles"
+    >
+      <div>
+        <i class="pi pi-cloud-upload" /><strong
+          >Arrastra tus XML aquí <em>o haz clic para buscarlos</em></strong
+        ><span
+          >Ingresos, egresos, nómina, pagos, traslados, notas de crédito y
+          sustituciones.</span
+        >
+      </div>
+      <div v-if="pendingFiles.length" class="file-preview">
+        <article
+          v-for="(file, index) in pendingFiles"
+          :key="`${file.name}-${file.size}`"
+          @click.stop
+        >
+          <i class="pi pi-file" /><span
+            ><strong>{{ file.name }}</strong
+            ><small>{{ fileSize(file.size) }}</small></span
+          ><button
+            type="button"
+            aria-label="Quitar archivo"
+            @click="pendingFiles.splice(index, 1)"
+          >
+            ×
+          </button>
+        </article>
+        <AppButton
+          :label="
+            importing ? 'Importando…' : `Importar ${pendingFiles.length} XML`
+          "
+          icon="pi pi-check"
+          :disabled="importing || !filters.clienteId"
+          @click.stop="uploadQueued"
+        />
+      </div>
+    </section>
+
+    <div v-if="notice" class="notice" :class="noticeTone" role="status">
+      <i
+        :class="
+          noticeTone === 'error'
+            ? 'pi pi-exclamation-triangle'
+            : 'pi pi-check-circle'
+        "
+      />
+      <span>{{ notice }}</span>
+      <button type="button" aria-label="Cerrar aviso" @click="notice = ''">
+        ×
+      </button>
+    </div>
+
+    <section class="summary-grid" aria-label="Resumen de impuestos">
+      <article>
+        <span>Documentos</span><strong>{{ invoices.length }}</strong>
+      </article>
+      <article>
+        <span>Base 16%</span><strong>{{ money(summary.base16) }}</strong>
+      </article>
+      <article class="accent">
+        <span>IVA 16%</span><strong>{{ money(summary.iva16) }}</strong>
+      </article>
+      <article>
+        <span>Tasa 0%</span><strong>{{ money(summary.zero) }}</strong>
+      </article>
+      <article>
+        <span>Exento</span><strong>{{ money(summary.exempt) }}</strong>
+      </article>
+      <article>
+        <span>Total</span><strong>{{ money(summary.total) }}</strong>
+      </article>
+    </section>
+
+    <div class="fiscal-tabs" role="tablist" aria-label="Tipo de facturas">
+      <button type="button" role="tab" aria-controls="fiscal-invoice-panel" :aria-selected="filters.direction === 'emitida'" :class="{ active: filters.direction === 'emitida' }" @click="filters.direction = 'emitida'">
+        Emitidas / ingresos
+      </button>
+      <button type="button" role="tab" aria-controls="fiscal-invoice-panel" :aria-selected="filters.direction === 'recibida'" :class="{ active: filters.direction === 'recibida' }" @click="filters.direction = 'recibida'">
+        Recibidas / egresos
+      </button>
+    </div>
+
+    <section class="workspace-grid">
+      <div id="fiscal-invoice-panel" class="invoice-panel" role="tabpanel">
+        <header class="panel-heading">
+          <div>
+            <h2>
+              {{
+                filters.direction === "emitida"
+                  ? "Ingresos emitidos"
+                  : "Egresos recibidos"
+              }}
+            </h2>
+            <p>
+              {{ selectedIds.size }} seleccionadas para el siguiente reporte
+            </p>
+            <strong class="selected-subtotal">Subtotal seleccionado: {{ money(selectedSubtotal) }}</strong>
+            <div class="row-legend"><span class="used">Usada en reporte</span><span class="blocked">No seleccionable</span></div>
+          </div>
+          <div class="selection-actions">
+            <button
+              class="reports-drawer-trigger"
+              type="button"
+              aria-haspopup="dialog"
+              :aria-expanded="showReportsDrawer"
+              @click="showReportsDrawer = true"
+            >
+              <i class="pi pi-folder-open" /> Reportes guardados
+              <strong>{{ reports.length }}</strong>
+            </button>
+            <button type="button" @click="selectVisible">
+              Seleccionar visibles
+            </button>
+            <button type="button" @click="selectedIds.clear()">
+              Limpiar selección
+            </button>
+          </div>
+        </header>
+
+        <div v-if="activeReport" class="active-report-bar">
+          <div>
+            <small>EDITANDO REPORTE</small>
+            <strong>{{ activeReport.nombre }}</strong>
+            <span>{{ activeReport.facturas_count }} CFDI vinculados</span>
+          </div>
+          <button type="button" @click="closeActiveReport">
+            <i class="pi pi-times" /> Cerrar edición
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="check-col">
+                  <input
+                    type="checkbox"
+                    :checked="allVisibleSelected"
+                    aria-label="Seleccionar todas"
+                    @change="toggleAll"
+                  />
+                </th>
+                <th class="actions-col">Acciones</th>
+                <th>Estatus</th>
+                <th>Forma de pago</th>
+                <th>Nombre</th>
+                <th>RFC</th>
+                <th class="number">Abonado</th>
+                <th class="number">Subtotal 16%</th>
+                <th class="number">Subtotal 8%</th>
+                <th class="number">IVA 16%</th>
+                <th class="number">IVA 8%</th>
+                <th class="number">Pendiente</th>
+                <th class="number">Exento</th>
+                <th class="number">0%</th>
+                <th class="number">Ret. IEPS</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody v-if="loading">
+              <tr v-for="index in 5" :key="index" class="skeleton-row">
+                <td colspan="16"><span /></td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="invoices.length">
+              <tr
+                v-for="invoice in invoices"
+                :key="invoice.id"
+                :class="{
+                  selected: selectedIds.has(Number(invoice.id)),
+                  'used-monthly': Number(invoice.usada_reporte_mensual) === 1,
+                  'report-blocked': !isSelectable(invoice),
+                }"
+                :title="invoice.motivo_no_seleccionable || undefined"
+              >
+                <td class="check-col">
+                  <input
+                    type="checkbox"
+                    :checked="selectedIds.has(Number(invoice.id))"
+                    :disabled="!isSelectable(invoice)"
+                    :aria-label="isSelectable(invoice) ? `Seleccionar ${invoice.uuid}` : invoice.motivo_no_seleccionable"
+                    @change="toggleInvoice(invoice)"
+                  />
+                </td>
+                <td class="row-actions">
+                  <button
+                    type="button"
+                    title="Previsualizar PDF"
+                    @click="previewInvoice(invoice)"
+                  >
+                    <i class="pi pi-file-pdf" /></button
+                  ><button
+                    type="button"
+                    title="Ver XML desglosado"
+                    @click="openDetail(invoice)"
+                  >
+                    <i class="pi pi-eye" /></button
+                  ><button
+                    type="button"
+                    title="Descargar XML"
+                    @click="downloadXml(invoice)"
+                  >
+                    <i class="pi pi-download" /></button
+                  ><button
+                    v-if="invoiceBelongsToActiveReport(invoice)"
+                    class="unlink"
+                    type="button"
+                    title="Quitar del reporte abierto"
+                    @click="removeInvoiceFromReport(invoice)"
+                  >
+                    <i class="pi pi-minus-circle" />
+                  </button
+                  ><button
+                    class="danger"
+                    type="button"
+                    title="Eliminar XML"
+                    @click="removeInvoice(invoice)"
+                  >
+                    <i class="pi pi-trash" />
+                  </button>
+                </td>
+                <td>
+                  <span
+                    class="status-pill"
+                    :class="invoice.estatus_calculado"
+                    >{{ invoice.estatus_calculado }}</span
+                  ><small>{{ typeLabel(invoice.tipo_comprobante) }}</small>
+                  <small v-if="!isSelectable(invoice)" class="blocked-label">No seleccionable: {{ invoice.motivo_no_seleccionable }}</small>
+                </td>
+                <td><strong>{{ paymentLabel(invoice) }}</strong></td>
+                <td>
+                  <button
+                    class="provider-link"
+                    type="button"
+                    :disabled="invoice.direccion !== 'recibida'"
+                    @click="openProvider(invoice)"
+                  >
+                    {{ counterpartName(invoice) || "Sin nombre" }}</button
+                  ><div v-if="invoice.reportes" class="report-badges">
+                    <small
+                      v-if="Number(invoice.usada_reporte_mensual) === 1"
+                      class="monthly-used-label"
+                      >Usada en:</small
+                    >
+                    <button
+                      v-for="report in parseReports(invoice.reportes)"
+                      :key="report.id"
+                      type="button"
+                      :title="`Abrir reporte ${report.name}`"
+                      @click="loadReport(report.id)"
+                    >
+                      {{ report.name }}
+                    </button>
+                  </div>
+                </td>
+                <td>
+                  <strong>{{ counterpartRfc(invoice) }}</strong>
+                </td>
+                <td class="number">
+                  {{ currencyMoney(invoice.abonado, invoice.moneda) }}
+                </td>
+                <td class="number">
+                  {{ currencyMoney(invoice.base_iva_16, invoice.moneda) }}
+                </td>
+                <td class="number">
+                  {{ currencyMoney(invoice.base_iva_8, invoice.moneda) }}
+                </td>
+                <td class="number">
+                  {{ currencyMoney(invoice.iva_16, invoice.moneda) }}
+                </td>
+                <td class="number">
+                  {{ currencyMoney(invoice.iva_8, invoice.moneda) }}
+                </td>
+                <td class="number">
+                  {{ currencyMoney(invoice.pendiente, invoice.moneda) }}
+                </td>
+                <td class="number">
+                  {{ currencyMoney(invoice.base_exento, invoice.moneda) }}
+                </td>
+                <td class="number">
+                  {{ currencyMoney(invoice.base_iva_0, invoice.moneda) }}
+                </td>
+                <td class="number">
+                  {{ currencyMoney(invoice.ieps_retenido, invoice.moneda) }}
+                </td>
+                <td>
+                  <time>{{ date(invoice.fecha_emision) }}</time
+                  ><small>{{ shortUuid(invoice.uuid) }}</small>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr>
+                <td colspan="16">
+                  <div class="empty-state">
+                    <i class="pi pi-file-import" /><strong>{{
+                      filters.clienteId
+                        ? "No hay CFDI en este periodo"
+                        : "Selecciona un cliente"
+                    }}</strong
+                    ><span>{{
+                      filters.clienteId
+                        ? "Importa los XML del cliente o cambia los filtros."
+                        : "Escribe el nombre o RFC para comenzar."
+                    }}</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <div
+      v-if="showReportsDrawer"
+      class="reports-drawer-overlay"
+      @click.self="showReportsDrawer = false"
+    >
+      <aside
+        class="reports-panel reports-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="saved-reports-title"
+      >
+        <header>
+          <div>
+            <small>ARCHIVO / FISCAL</small>
+            <h2 id="saved-reports-title">Reportes guardados</h2>
+          </div>
+          <span class="report-count">{{ reports.length }}</span>
+          <button
+            class="reports-drawer-close"
+            type="button"
+            aria-label="Cerrar reportes guardados"
+            @click="showReportsDrawer = false"
+          >
+            ×
+          </button>
+        </header>
+        <div v-if="reportsLoading" class="reports-loading">
+          Cargando cortes...
+        </div>
+        <div v-else class="calendar-reports">
+          <div class="annual-row">
+            <strong>{{ filters.year }}</strong>
+            <div
+              v-for="report in reportsFor(null, 'anual')"
+              :key="report.id"
+              class="report-chip"
+            >
+              <button @click="loadReport(Number(report.id))">
+                {{ report.nombre }}</button
+              ><button title="PDF" @click="previewReportPdf(report)">
+                <i class="pi pi-file-pdf" /></button
+              ><button title="Excel" @click="downloadReport(report)">
+                <i class="pi pi-download" />
+              </button
+              ><button
+                class="report-delete"
+                title="Eliminar reporte"
+                @click.stop="removeReport(report)"
+              >
+                <i class="pi pi-trash" />
+              </button>
+            </div>
+            <span v-if="!reportsFor(null, 'anual').length"
+              >Sin reporte anual</span
+            >
+          </div>
+          <article v-for="(month, index) in monthNames" :key="month">
+            <strong>{{ month }}</strong>
+            <div class="month-column">
+              <div
+                v-for="report in reportsFor(index + 1, 'mensual')"
+                :key="report.id"
+                class="report-chip"
+              >
+                <button @click="loadReport(Number(report.id))">
+                  {{
+                    report.direccion === "emitida" ? "Ingresos" : "Egresos"
+                  }}</button
+                ><button title="Excel" @click="downloadReport(report)">
+                  <i class="pi pi-download" />
+                </button
+                ><button
+                  class="report-delete"
+                  title="Eliminar reporte"
+                  @click.stop="removeReport(report)"
+                >
+                  <i class="pi pi-trash" />
+                </button>
+              </div>
+              <button
+                v-if="reportsFor(index + 1, 'mensual').length"
+                class="combined-pdf"
+                title="PDF mensual con emitidas y recibidas"
+                @click="previewMonthlyPdf(index + 1)"
+              >
+                <i class="pi pi-file-pdf" /> PDF conjunto</button
+              ><span v-else>Sin corte</span>
+            </div>
+            <div class="diot-column">
+              <div
+                v-for="report in reportsFor(index + 1, 'diot')"
+                :key="report.id"
+                class="report-chip"
+              >
+                <button @click="loadReport(Number(report.id))">DIOT</button
+                ><button
+                  title="TXT de carga masiva"
+                  @click="downloadReport(report)"
+                >
+                  <i class="pi pi-download" />
+                </button
+                ><button
+                  class="report-delete"
+                  title="Eliminar DIOT"
+                  @click.stop="removeReport(report)"
+                >
+                  <i class="pi pi-trash" />
+                </button>
+              </div>
+              <span v-if="!reportsFor(index + 1, 'diot').length"
+                >DIOT pendiente</span
+              >
+            </div>
+          </article>
+        </div>
+      </aside>
+    </div>
+
+    <div
+      v-if="showReportDialog"
+      class="modal-overlay"
+      @click.self="showReportDialog = false"
+    >
+      <section
+        class="modal-shell"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="report-title"
+      >
+        <header class="modal-header">
+          <p>SELECCIÓN / CORTE</p>
+          <h2 id="report-title">Guardar reporte</h2>
+          <button
+            type="button"
+            aria-label="Cerrar"
+            @click="showReportDialog = false"
+          >
+            ×
+          </button>
+        </header>
+        <div class="modal-body form-grid">
+          <label class="full"
+            ><span>Nombre del reporte</span
+            ><AppInput v-model="reportDraft.name"
+          /></label>
+          <label
+            ><span>Tipo</span
+            ><AppSelect
+              v-model="reportDraft.type"
+              :options="reportTypes"
+              option-label="label"
+              option-value="value"
+          /></label>
+          <label
+            ><span>Movimiento</span
+            ><AppSelect
+              v-model="reportDraft.direction"
+              :options="directions"
+              option-label="label"
+              option-value="value"
+              disabled
+          /></label>
+          <label
+            ><span>Ejercicio</span
+            ><AppSelect v-model="reportDraft.year" :options="years" disabled
+          /></label>
+          <label v-if="reportDraft.type !== 'anual'"
+            ><span>Mes de emisión</span
+            ><AppSelect
+              v-model="reportDraft.month"
+              :options="months.slice(1)"
+              option-label="label"
+              option-value="value"
+              disabled
+          /></label>
+          <div class="selection-note full">
+            <strong>{{ selectedIds.size }} CFDI</strong
+            ><span
+              >La selección quedará guardada y marcada para volver a generar
+              este corte.</span
+            >
+          </div>
+          <p v-if="matchingReport" class="fiscal-note full">
+            Este corte ya existe como “{{ matchingReport.nombre }}”. Las
+            facturas seleccionadas se agregarán a ese mismo reporte sin crear
+            otro.
+          </p>
+          <p
+            v-if="
+              reportDraft.type === 'mensual' &&
+              reportDraft.direction === 'recibida'
+            "
+            class="fiscal-note full"
+          >
+            La DIOT del mes se guardará automáticamente con exactamente los
+            mismos CFDI de este reporte mensual.
+          </p>
+          <p v-if="reportValidation" class="fiscal-note report-error full">
+            {{ reportValidation }}
+          </p>
+        </div>
+        <footer>
+          <AppButton
+            label="Cancelar"
+            outlined
+            @click="showReportDialog = false"
+          /><AppButton
+            :label="matchingReport ? 'Agregar al reporte existente' : 'Guardar reporte'"
+            class="p-button-primary"
+            :disabled="savingReport || !!reportValidation"
+            @click="saveReport"
+          />
+        </footer>
+      </section>
+    </div>
+
+    <div
+      v-if="showDetail && detail"
+      class="modal-overlay"
+      @click.self="showDetail = false"
+    >
+      <section
+        class="modal-shell detail-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="detail-title"
+      >
+        <header class="modal-header">
+          <p>CFDI / {{ detail.uuid }}</p>
+          <h2 id="detail-title">Detalle de factura</h2>
+          <button type="button" aria-label="Cerrar" @click="showDetail = false">
+            ×
+          </button>
+        </header>
+        <div class="modal-body">
+          <dl class="invoice-meta">
+            <div>
+              <dt>Emisor</dt>
+              <dd>
+                {{ detail.emisor_nombre }}<small>{{ detail.emisor_rfc }}</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Receptor</dt>
+              <dd>
+                {{ detail.receptor_nombre
+                }}<small>{{ detail.receptor_rfc }}</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Pago</dt>
+              <dd>
+                {{ detail.forma_pago || "Sin clave" }} /
+                {{ detail.metodo_pago || "Sin método" }}
+              </dd>
+            </div>
+            <div>
+              <dt>Total</dt>
+              <dd>{{ money(detail.total) }}</dd>
+            </div>
+          </dl>
+          <h3>Productos y servicios</h3>
+          <div class="concept-list">
+            <article v-for="concept in detail.concepts" :key="concept.id">
+              <div>
+                <strong>{{ concept.descripcion }}</strong
+                ><small
+                  >{{ concept.clave_prod_serv }} /
+                  {{
+                    concept.clave_unidad || concept.unidad || "Sin unidad"
+                  }}</small
+                >
+              </div>
+              <span
+                >{{ concept.cantidad }} ×
+                {{ money(concept.valor_unitario) }}</span
+              ><b>{{ money(concept.importe) }}</b>
+            </article>
+          </div>
+          <h3>Impuestos desglosados</h3>
+          <div class="tax-detail">
+            <span v-for="tax in detail.taxes" :key="tax.id"
+              >{{ tax.movimiento }} / {{ taxName(tax.impuesto) }} /
+              {{ tax.tipo_factor || "Sin factor" }}
+              {{ tax.tasa_cuota == null ? "" : percent(tax.tasa_cuota) }}:
+              {{ money(tax.importe) }}</span
+            >
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div
+      v-if="showDiotDialog && diotDraft"
+      class="modal-overlay"
+      @click.self="showDiotDialog = false"
+    >
+      <section
+        class="modal-shell"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="diot-title"
+      >
+        <header class="modal-header">
+          <p>DIOT / PROVEEDOR</p>
+          <h2 id="diot-title">{{ diotDraft.nombre }}</h2>
+          <button
+            type="button"
+            aria-label="Cerrar"
+            @click="showDiotDialog = false"
+          >
+            ×
+          </button>
+        </header>
+        <div class="modal-body form-grid">
+          <label
+            ><span>Tipo de tercero</span
+            ><AppSelect
+              v-model="diotDraft.tipoTercero"
+              :options="thirdPartyTypes"
+              option-label="label"
+              option-value="value"
+          /></label>
+          <label
+            ><span>Tipo de operación</span
+            ><AppSelect
+              v-model="diotDraft.tipoOperacion"
+              :options="availableOperationTypes"
+              option-label="label"
+              option-value="value"
+          /></label>
+          <label
+            ><span>Región fronteriza</span
+            ><AppSelect
+              v-model="diotDraft.region"
+              :options="regions"
+              option-label="label"
+              option-value="value"
+          /></label>
+          <label
+            ><span>Importación</span
+            ><AppSelect
+              v-model="diotDraft.importacion"
+              :options="importTypes"
+              option-label="label"
+              option-value="value"
+          /></label>
+          <label
+            ><span>Acreditamiento del IVA</span
+            ><AppSelect
+              v-model="diotDraft.acreditamiento"
+              :options="creditTypes"
+              option-label="label"
+              option-value="value"
+          /></label>
+          <label v-if="diotDraft.acreditamiento === 'proporcion'"
+            ><span>Proporción acreditable (0 a 1)</span
+            ><AppInput
+              v-model="diotDraft.proporcion"
+              type="number"
+              min="0"
+              max="1"
+              step="0.000001"
+          /></label>
+          <template v-if="diotDraft.tipoTercero === '05'"
+            ><label
+              ><span>ID fiscal extranjero</span
+              ><AppInput v-model="diotDraft.numeroIdFiscal" /></label
+            ><label
+              ><span>País SAT</span
+              ><AppInput v-model="diotDraft.pais" maxlength="3" /></label
+          ></template>
+          <label class="full check-label"
+            ><input v-model="diotDraft.efectoFiscal" type="checkbox" /><span
+              >Se dio efectos fiscales a los comprobantes del proveedor</span
+            ></label
+          >
+          <p class="fiscal-note full">
+            Estos campos controlan la posición de bases e IVA en el TXT de 54
+            campos del SAT.
+          </p>
+        </div>
+        <footer>
+          <AppButton
+            label="Cancelar"
+            outlined
+            @click="showDiotDialog = false"
+          /><AppButton
+            label="Guardar para este proveedor"
+            class="p-button-primary"
+            @click="saveProvider"
+          />
+        </footer>
+      </section>
+    </div>
+    <div v-if="pdfUrl" class="modal-overlay" @click.self="closePdf">
+      <section class="modal-shell pdf-modal" role="dialog" aria-modal="true">
+        <header class="modal-header">
+          <p>PREVISUALIZACIÓN</p>
+          <h2>{{ pdfTitle }}</h2>
+          <button type="button" aria-label="Cerrar" @click="closePdf">×</button>
+        </header>
+        <iframe :src="pdfUrl" title="Vista previa PDF" />
+      </section>
+    </div>
+  </main>
