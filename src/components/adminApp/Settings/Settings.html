@@ -11,9 +11,89 @@
           <span><small>INTERFAZ</small><strong>Personalizar apariencia</strong></span>
           <i class="pi pi-sliders-h"></i>
         </button>
+        <button v-if="isAdmin" type="button" class="appearance-launch backup-launch" @click="openBackupManager">
+          <span><small>SISTEMA</small><strong>Gestión de respaldos</strong></span>
+          <i class="pi pi-database"></i>
+        </button>
       </div>
     </header>
     <AppearancePreferencesModal :visible="showAppearanceModal" @close="showAppearanceModal = false" />
+    <transition name="fade-scale">
+      <div v-if="showBackupManager" class="backup-overlay" @click.self="closeBackupManager">
+        <section class="backup-dialog" role="dialog" aria-modal="true" aria-labelledby="backup-title" :aria-busy="backupBusy || backupLoading">
+          <header>
+            <div>
+              <p>RESPALDOS / SISTEMA</p>
+              <h2 id="backup-title">Gestión de respaldos</h2>
+            </div>
+            <button type="button" aria-label="Cerrar respaldos" :disabled="backupBusy" @click="closeBackupManager">×</button>
+          </header>
+
+          <div class="backup-toolbar">
+            <button type="button" class="backup-primary" :disabled="backupBusy || backupLoading" @click="createBackup">
+              <i class="pi pi-save"></i>
+              {{ backupBusy ? 'Procesando...' : 'Crear respaldo ahora' }}
+            </button>
+            <button type="button" :disabled="backupBusy || backupLoading" @click="chooseBackupImport">
+              <i class="pi pi-upload"></i>
+              Importar respaldo
+            </button>
+            <input ref="backupImportInput" type="file" accept=".tar.gz,application/gzip,application/x-gzip" hidden @change="importBackupFile" />
+            <button type="button" :disabled="backupBusy || backupLoading" @click="loadBackups">
+              <i class="pi pi-refresh"></i>
+              Actualizar
+            </button>
+            <button type="button" :disabled="backupBusy || backupLoading" @click="pruneBackups">
+              <i class="pi pi-filter-slash"></i>
+              Limpiar retención
+            </button>
+          </div>
+
+          <div v-if="backupConfig" class="backup-config">
+            <article><span>Programación</span><strong>{{ backupConfig.schedulerEnabled ? backupConfig.cron : 'Desactivada' }}</strong></article>
+            <article><span>Zona</span><strong>{{ backupConfig.timezone }}</strong></article>
+            <article><span>Retención</span><strong>{{ backupConfig.retentionDays }} días / {{ backupConfig.retentionMaxFiles }} archivos</strong></article>
+            <article><span>Estado</span><strong>{{ backupConfig.importing ? 'Importando' : backupConfig.creating ? 'Creando' : 'Listo' }}</strong></article>
+          </div>
+
+          <div class="backup-body">
+            <div v-if="backupLoading" class="backup-state">
+              <i class="pi pi-spin pi-spinner"></i>
+              <strong>Cargando respaldos</strong>
+            </div>
+            <div v-else-if="backupError" class="backup-state backup-state--error">
+              <i class="pi pi-exclamation-triangle"></i>
+              <strong>{{ backupError }}</strong>
+              <button type="button" @click="loadBackups">Reintentar</button>
+            </div>
+            <div v-else-if="!backups.length" class="backup-state">
+              <i class="pi pi-database"></i>
+              <strong>Sin respaldos todavía</strong>
+              <span>Crea el primer respaldo para guardar base de datos, CFDI y documentos de clientes.</span>
+            </div>
+            <div v-else class="backup-list">
+              <article v-for="backup in backups" :key="backup.filename" class="backup-row">
+                <i class="pi pi-file-archive"></i>
+                <div>
+                  <strong>{{ backup.filename }}</strong>
+                  <span>{{ formatBackupDate(backup.createdAt) }} · {{ formatBytes(backup.size) }}</span>
+                </div>
+                <button type="button" title="Descargar respaldo" :disabled="backupBusy" @click="downloadBackup(backup)">
+                  <i class="pi pi-download"></i>
+                </button>
+                <button type="button" title="Eliminar respaldo" :disabled="backupBusy" @click="deleteBackup(backup)">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </article>
+            </div>
+          </div>
+
+          <footer>
+            <span>Incluye `database.sql`, `storage/cfdi` y `storage/client-documents`.</span>
+          </footer>
+        </section>
+      </div>
+    </transition>
     <!-- Bento Grid Container -->
     <div class="settings-grid grid grid-cols-3 lg:grid-cols-2 grid-rows-3 lg:grid-rows-3 gap-2 m-4 h-full" :class="{ 'settings-grid--profile': !isAdmin }">
 

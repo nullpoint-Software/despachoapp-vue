@@ -11,6 +11,7 @@ import LogsService from "./logsService";
 import FiscalService from "./fiscalService";
 import CumplimientoService from "./cumplimientoService";
 import PasskeyService from "./passkeyService";
+import BackupService from "./backupService";
 
 const instance = axios.create();
 instance.interceptors.request.use((config) => {
@@ -41,6 +42,7 @@ export const ls = new LogsService(serverip, instance);
 export const fs = new FiscalService(serverip, instance);
 export const cos = new CumplimientoService(serverip, instance);
 export const pks = new PasskeyService(serverip, instance);
+export const bs = new BackupService(serverip, instance);
 export const formatFechaSQL = (dateStr: string): string => {
   const date = new Date(dateStr);
 

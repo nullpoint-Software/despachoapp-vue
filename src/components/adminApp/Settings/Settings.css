@@ -60,7 +60,7 @@
 .settings-hero-actions {
   display: grid;
   width: 100%;
-  grid-template-columns: minmax(10rem, 0.4fr) minmax(18rem, 0.6fr);
+  grid-template-columns: minmax(10rem, 0.35fr) repeat(2, minmax(16rem, 0.55fr));
   align-items: stretch;
   gap: 0.75rem;
 }
@@ -106,6 +106,10 @@
 }
 .appearance-launch:active {
   transform: translateY(1px);
+}
+.backup-launch {
+  background: var(--br-panel);
+  color: var(--br-text);
 }
 .settings-hero-actions > small {
   display: flex;
@@ -714,11 +718,12 @@
 
 .user-wizard-overlay {
   position: fixed;
-  inset: 0;
+  inset: var(--admin-overlay-top, 5rem) 0 0;
   z-index: 1500;
   display: grid;
   place-items: center;
   padding: 1rem;
+  overflow: auto;
   background: color-mix(in srgb, var(--br-bg) 82%, transparent);
   backdrop-filter: blur(8px);
 }
@@ -726,7 +731,7 @@
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   width: min(62rem, calc(100vw - 2rem));
-  max-height: min(47rem, calc(100vh - 2rem));
+  max-height: min(47rem, calc(100dvh - var(--admin-overlay-top, 5rem) - 2rem));
   overflow: hidden;
   border: 1px solid var(--br-line-strong);
   background: var(--br-panel);
@@ -1508,5 +1513,232 @@
   .user-detail-modal .status-control { border-right: 0; }
 }
 
+
+.backup-overlay {
+  position: fixed;
+  inset: var(--admin-overlay-top, 5rem) 0 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.7rem, 2vw, 1.5rem);
+  overflow: auto;
+  background: color-mix(in srgb, var(--br-bg) 88%, transparent);
+  backdrop-filter: blur(7px);
+}
+.backup-dialog {
+  display: grid;
+  width: min(74rem, 100%);
+  max-height: calc(100dvh - var(--admin-overlay-top, 5rem) - 2rem);
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel);
+  color: var(--br-text);
+  box-shadow: 12px 12px 0 var(--br-accent);
+}
+.backup-dialog > header {
+  position: relative;
+  min-height: 8rem;
+  border-bottom: 1px solid var(--br-line-strong);
+  background: var(--br-bg);
+  padding: 1.25rem 5rem 1rem 1.35rem;
+}
+.backup-dialog > header p {
+  margin: 0 0 0.45rem;
+  color: var(--br-accent);
+  font: 800 0.66rem "Courier New", monospace;
+  letter-spacing: 0.11em;
+}
+.backup-dialog > header h2 {
+  margin: 0;
+  font: 900 clamp(2rem, 5vw, 4rem)/0.85 Arial, sans-serif;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+}
+.backup-dialog > header > button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  border: 0;
+  border-left: 1px solid var(--br-line-strong);
+  border-bottom: 1px solid var(--br-line-strong);
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+.backup-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  border-bottom: 1px solid var(--br-line);
+  background: var(--br-panel-2);
+  padding: 0.9rem 1.2rem;
+}
+.backup-toolbar button,
+.backup-row button,
+.backup-state button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--br-line-strong);
+  background: transparent;
+  color: var(--br-text);
+  padding: 0.6rem 0.8rem;
+  font: 800 0.64rem "Courier New", monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.backup-toolbar .backup-primary {
+  border-color: var(--br-accent);
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+.backup-toolbar button:disabled,
+.backup-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.backup-config {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--br-line);
+}
+.backup-config article {
+  min-width: 0;
+  border-right: 1px solid var(--br-line);
+  padding: 0.75rem 1rem;
+}
+.backup-config article:last-child { border-right: 0; }
+.backup-config span,
+.backup-row span,
+.backup-dialog > footer {
+  color: var(--br-muted);
+  font: 700 0.62rem "Courier New", monospace;
+}
+.backup-config strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 0.25rem;
+  color: var(--br-text);
+  font: 800 0.72rem "Courier New", monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.backup-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem 1.2rem;
+}
+.backup-state {
+  display: grid;
+  min-height: 18rem;
+  place-items: center;
+  align-content: center;
+  gap: 0.65rem;
+  text-align: center;
+}
+.backup-state > i {
+  color: var(--br-accent);
+  font-size: 2rem;
+}
+.backup-state > strong {
+  font: 900 1.2rem Arial, sans-serif;
+  text-transform: uppercase;
+}
+.backup-state > span {
+  max-width: 30rem;
+  color: var(--br-muted);
+  font: 700 0.72rem/1.5 "Courier New", monospace;
+}
+.backup-state--error > i { color: var(--br-danger-line, #e06a5c); }
+.backup-list {
+  display: grid;
+  gap: 0.65rem;
+}
+.backup-row {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--br-line);
+  background: var(--br-bg);
+  padding: 0.75rem;
+}
+.backup-row > i {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid var(--br-line);
+  color: var(--br-accent);
+}
+.backup-row strong {
+  display: block;
+  overflow: hidden;
+  color: var(--br-text);
+  font: 800 0.76rem "Courier New", monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.backup-row span {
+  display: block;
+  margin-top: 0.2rem;
+}
+.backup-row button {
+  width: 2.55rem;
+  padding: 0;
+}
+.backup-row button:hover,
+.backup-state button:hover,
+.backup-toolbar button:hover:not(:disabled) {
+  border-color: var(--br-accent);
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+.backup-dialog > footer {
+  border-top: 1px solid var(--br-line-strong);
+  background: var(--br-bg);
+  padding: 0.8rem 1.2rem;
+  text-transform: uppercase;
+}
+@media (max-width: 900px) {
+  .settings-hero-actions { grid-template-columns: 1fr; }
+  .backup-config { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .backup-overlay {
+    inset: 0;
+    place-items: stretch;
+    padding: 0;
+  }
+  .backup-dialog {
+    width: 100vw;
+    max-height: 100dvh;
+    border: 0;
+    box-shadow: none;
+  }
+  .backup-config { grid-template-columns: 1fr; }
+  .backup-config article { border-right: 0; border-bottom: 1px solid var(--br-line); }
+  .backup-row {
+    grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+  }
+  .backup-row button:last-child {
+    grid-column: 3;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 621px) {
+  .backup-overlay,
+  .user-wizard-overlay {
+    place-items: start center;
+  }
+}
 
 .settings-view{max-width:100rem;margin-inline:auto}

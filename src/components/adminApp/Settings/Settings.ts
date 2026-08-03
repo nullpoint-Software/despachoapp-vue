@@ -1,4 +1,4 @@
-import { as, pks, us } from '@/service/adminApp/client'
+import { as, bs, pks, us } from '@/service/adminApp/client'
 import { ref, computed, onMounted, watch } from 'vue'
 import { USER_AVATAR_PLACEHOLDER as defaultAvatar } from '@/constants/brandAssets'
 import imageCompression from "browser-image-compression";
@@ -49,12 +49,34 @@ interface NewUserForm {
 }
 
 interface EmailParts { local: string; domain: string }
+interface BackupFile {
+  filename: string;
+  size: number;
+  createdAt: string;
+}
+interface BackupConfig {
+  backupDir: string;
+  storageRoot: string;
+  cron: string;
+  timezone: string;
+  retentionDays: number;
+  retentionMaxFiles: number;
+  schedulerEnabled: boolean;
+  creating: boolean;
+}
 
 const apiErrorMessage = (error: unknown): string | undefined =>
   (error as ApiErrorShape).response?.data?.error;
 // SEARCH MODAL STATE
 const showSearchModal = ref(false)
 const showAppearanceModal = ref(false);
+const showBackupManager = ref(false);
+const backupLoading = ref(false);
+const backupBusy = ref(false);
+const backupError = ref("");
+const backups = ref<BackupFile[]>([]);
+const backupConfig = ref<BackupConfig | null>(null);
+const backupImportInput = ref<HTMLInputElement | null>(null);
 
 // USER DETAILS MODAL
 const modalAbierto = ref(false)
@@ -193,6 +215,140 @@ function formatPasskeyDate(value: string | null): string {
 }
 
 onMounted(setupPasskeys);
+
+function formatBytes(bytes = 0): string {
+  if (!bytes) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+}
+
+function formatBackupDate(value: string): string {
+  return new Intl.DateTimeFormat('es-MX', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value));
+}
+
+async function loadBackups(): Promise<void> {
+  backupLoading.value = true;
+  backupError.value = "";
+  try {
+    const overview = await bs.getOverview();
+    backups.value = overview.backups;
+    backupConfig.value = overview.config;
+  } catch (error) {
+    backupError.value = apiErrorMessage(error) || 'No fue posible cargar los respaldos.';
+  } finally {
+    backupLoading.value = false;
+  }
+}
+
+async function openBackupManager(): Promise<void> {
+  showBackupManager.value = true;
+  await loadBackups();
+}
+
+function closeBackupManager(): void {
+  if (backupBusy.value) return;
+  showBackupManager.value = false;
+}
+
+async function createBackup(): Promise<void> {
+  backupBusy.value = true;
+  backupError.value = "";
+  try {
+    const backup = await bs.createBackup('manual-ui');
+    backups.value = [backup, ...backups.value.filter(item => item.filename !== backup.filename)];
+    toast.add({ severity: 'success', summary: 'Respaldo creado', detail: backup.filename, life: 3500 });
+    await loadBackups();
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No creado', detail: apiErrorMessage(error) || 'No fue posible crear el respaldo.', life: 4500 });
+  } finally {
+    backupBusy.value = false;
+  }
+}
+
+async function downloadBackup(backup: BackupFile): Promise<void> {
+  backupBusy.value = true;
+  try {
+    const blob = await bs.downloadBackup(backup.filename);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = backup.filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No descargado', detail: apiErrorMessage(error) || 'No fue posible descargar el respaldo.', life: 4000 });
+  } finally {
+    backupBusy.value = false;
+  }
+}
+
+async function deleteBackup(backup: BackupFile): Promise<void> {
+  const confirmed = window.confirm(`Eliminar el respaldo ${backup.filename}?`);
+  if (!confirmed) return;
+  backupBusy.value = true;
+  try {
+    await bs.deleteBackup(backup.filename);
+    backups.value = backups.value.filter(item => item.filename !== backup.filename);
+    toast.add({ severity: 'success', summary: 'Respaldo eliminado', detail: backup.filename, life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No eliminado', detail: apiErrorMessage(error) || 'No fue posible eliminar el respaldo.', life: 4000 });
+  } finally {
+    backupBusy.value = false;
+  }
+}
+
+async function pruneBackups(): Promise<void> {
+  backupBusy.value = true;
+  try {
+    const result = await bs.pruneBackups();
+    toast.add({ severity: 'success', summary: 'Limpieza completa', detail: `${result.deleted} respaldos eliminados.`, life: 3000 });
+    await loadBackups();
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No limpiado', detail: apiErrorMessage(error) || 'No fue posible limpiar respaldos antiguos.', life: 4000 });
+  } finally {
+    backupBusy.value = false;
+  }
+}
+
+function chooseBackupImport(): void {
+  if (backupBusy.value || backupLoading.value) return;
+  backupImportInput.value?.click();
+}
+
+async function importBackupFile(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
+  if (!file) return;
+  const confirmed = window.confirm(
+    `Importar ${file.name}? Se creará un respaldo de seguridad antes de restaurar, pero la base de datos y archivos actuales serán reemplazados.`
+  );
+  if (!confirmed) return;
+
+  backupBusy.value = true;
+  backupError.value = "";
+  try {
+    const response = await bs.importBackup(file);
+    const safetyName = response?.result?.safetyBackup?.filename;
+    toast.add({
+      severity: 'success',
+      summary: 'Respaldo importado',
+      detail: safetyName ? `Respaldo previo: ${safetyName}` : 'Restauración completada.',
+      life: 5000,
+    });
+    await loadBackups();
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No importado', detail: apiErrorMessage(error) || 'No fue posible importar el respaldo.', life: 5000 });
+  } finally {
+    backupBusy.value = false;
+  }
+}
 
 // USUARIOS
 const usuarios = ref<SettingsUser[]>(await us.getUsuarios())

@@ -89,7 +89,7 @@
   box-sizing:border-box!important;
   max-width:calc(100vw - 2rem)!important;
   max-height:calc(100vh - 2rem)!important;
-  max-height:calc(100dvh - 2rem)!important;
+  max-height:calc(100dvh - var(--admin-overlay-top,5rem) - 2rem)!important;
   overflow-x:hidden!important;
   overflow-y:auto!important;
   overscroll-behavior:contain;

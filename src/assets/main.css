@@ -285,7 +285,20 @@ body {
 }
 
 /* Brutalist application layer */
+:root{--admin-overlay-top:0px}
 body{margin:0;background:var(--br-bg);font-size:1rem;line-height:1.55}button,input,select,textarea{font:inherit}body.modal-open{overflow:hidden}.app-data-table th *{color:inherit!important}.app-data-table__header>div{border-radius:0!important}.app-data-table__header input{width:min(25rem,100%);font-size:1rem!important}.app-data-table__header .flex{gap:.65rem;flex-wrap:wrap}.app-data-table__header .border-2{display:grid;width:3rem;height:3rem;place-items:center;border:1px solid var(--br-line-strong)!important}.app-data-table__header .text-gray-400{color:var(--br-accent)!important}.app-data-table__table td div{font-size:.96rem!important;border:0!important;color:inherit!important}.app-data-table__table td .file-actions,.app-data-table__table td .flex{padding:.5rem!important}.app-data-table__table td button{min-width:3rem}.modal-overlay{z-index:1000!important;background:rgba(8,8,7,.84)!important;backdrop-filter:blur(3px)!important;padding:1rem!important}.modal-overlay>.modal-content{width:min(46rem,100%)!important;max-width:46rem!important;max-height:calc(100vh - 2rem)!important;overflow:auto!important;border:2px solid #111!important;border-radius:0!important;background:var(--br-control)!important;color:#141413!important;padding:1.4rem!important;box-shadow:10px 10px 0 var(--br-accent)!important}.modal-content>.bg-white,.modal-content>.flex.items-center:first-child{border:0!important;border-radius:0!important;border-bottom:2px solid #141413!important;background:#141413!important;color:#fff!important;box-shadow:none!important}.modal-content h3,.modal-content .text-black,.modal-content .text-gray-800,.modal-content .text-gray-700{color:inherit!important}.modal-content>.bg-white h3,.modal-content>.flex.items-center:first-child h3{color:#fff!important;font-size:1.8rem!important;text-transform:uppercase}.modal-content label{font:800 .78rem "Courier New",monospace!important;text-transform:uppercase}.modal-content input,.modal-content select,.modal-content textarea{width:100%;border:1px solid #56534c!important;border-radius:0!important;background:#fff!important;color:#141413!important;font-size:1rem!important}.modal-content .rounded,.modal-content .rounded-lg,.modal-content .rounded-l,.modal-content .rounded-r{border-radius:0!important}.modal-content .text-red-500{color:#a52319!important;font-weight:800}.fade-enter-active,.fade-leave-active{transition:opacity .18s ease!important}.fade-enter-active>.modal-content,.fade-leave-active>.modal-content{transition:transform .22s cubic-bezier(.2,.8,.2,1)!important}.fade-enter-from>.modal-content{transform:translateY(18px) scale(.98)!important}.fade-leave-to>.modal-content{transform:translateY(8px)!important}nav.fixed{border-bottom:1px solid var(--br-line)!important;background:rgba(16,16,15,.96)!important;box-shadow:none!important}aside.fixed{border-right:1px solid var(--br-line)!important;background:var(--br-panel)!important;box-shadow:none!important}aside.fixed a{border-radius:0!important}aside.fixed a:hover,aside.fixed a.router-link-active{background:var(--br-accent)!important;color:#fff!important}@media(max-width:700px){body{font-size:1rem}.modal-overlay>.modal-content{box-shadow:5px 5px 0 var(--br-accent)!important;padding:1rem!important}}
+
+@media(min-width:761px){
+  .modal-overlay{
+    inset:var(--admin-overlay-top,5rem) 0 0!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    overflow:auto!important;
+  }
+  .modal-overlay>.modal-content{
+    max-height:calc(100dvh - var(--admin-overlay-top,5rem) - 2rem)!important;
+  }
+}
 
 .bg-btn-danger {
   background-color: var(--btn-danger-bg);
@@ -441,7 +454,7 @@ html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
   box-sizing:border-box!important;
   max-width:calc(100vw - 2rem)!important;
   max-height:calc(100vh - 2rem)!important;
-  max-height:calc(100dvh - 2rem)!important;
+  max-height:calc(100dvh - var(--admin-overlay-top,5rem) - 2rem)!important;
   overflow-x:hidden!important;
   overflow-y:auto!important;
   overscroll-behavior:contain;

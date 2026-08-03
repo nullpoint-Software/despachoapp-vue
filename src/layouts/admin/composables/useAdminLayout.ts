@@ -37,6 +37,10 @@ export function useAdminLayout() {
   const openLogs = () => (isLogsModalOpen.value = true);
   const closeLogs = () => (isLogsModalOpen.value = false);
 
+  function syncOverlayTopOffset(): void {
+    document.documentElement.style.setProperty("--admin-overlay-top", isMobile.value ? "0px" : "5rem");
+  }
+
   function openNotesFromMoreMenu(): void { openNotes(); closeMoreMenu(); }
   function openLogsFromMoreMenu(): void { openLogs(); closeMoreMenu(); }
   function logout(): void { closeMoreMenu(); localStorage.clear(); void router.push("/"); }
@@ -49,7 +53,9 @@ export function useAdminLayout() {
     togglePinnedWindow();
   });
   watch(isLogsModalOpen, (isOpen) => { if (isOpen) logsRenderKey.value += 1; });
+  watch(isMobile, syncOverlayTopOffset);
   onMounted(async () => {
+    syncOverlayTopOffset();
     try {
       await authService.checkAuthRedirect(Boolean(localStorage.getItem("token")));
     } catch (error) {
