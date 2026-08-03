@@ -1529,10 +1529,10 @@
   display: grid;
   width: min(74rem, 100%);
   max-height: calc(100dvh - var(--admin-overlay-top, 5rem) - 2rem);
-  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
   overflow: hidden;
   border: 1px solid var(--br-line-strong);
-  background: var(--br-panel);
+  background: var(--br-bg);
   color: var(--br-text);
   box-shadow: 12px 12px 0 var(--br-accent);
 }
@@ -1608,28 +1608,170 @@
 .backup-config {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-bottom: 1px solid var(--br-line);
+  border-bottom: 1px solid var(--br-line-strong);
+  background: var(--br-control);
+  color: var(--br-control-text, #141413);
 }
 .backup-config article {
   min-width: 0;
-  border-right: 1px solid var(--br-line);
+  border-right: 1px solid var(--br-line-strong);
   padding: 0.75rem 1rem;
 }
 .backup-config article:last-child { border-right: 0; }
-.backup-config span,
+.backup-config span {
+  color: var(--br-control-muted, #4e4b45);
+  font: 800 0.62rem "Courier New", monospace;
+}
 .backup-row span,
 .backup-dialog > footer {
-  color: var(--br-muted);
+  color: color-mix(in srgb, var(--br-text) 76%, var(--br-bg));
   font: 700 0.62rem "Courier New", monospace;
 }
 .backup-config strong {
   display: block;
   overflow: hidden;
   margin-top: 0.25rem;
-  color: var(--br-text);
+  color: var(--br-control-text, #141413);
   font: 800 0.72rem "Courier New", monospace;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.backup-schedule-panel {
+  border-bottom: 1px solid var(--br-line-strong);
+  background: var(--br-panel);
+}
+.backup-schedule-toggle {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  border: 0;
+  background: var(--br-panel);
+  color: var(--br-text);
+  padding: 0.85rem 1.2rem;
+  text-align: left;
+  cursor: pointer;
+}
+.backup-schedule-toggle:hover,
+.backup-schedule-toggle:focus-visible {
+  background: var(--br-panel-2);
+  outline: 2px solid var(--br-accent);
+  outline-offset: -2px;
+}
+.backup-schedule-toggle strong,
+.backup-schedule-toggle small {
+  display: block;
+}
+.backup-schedule-toggle strong {
+  color: var(--br-text);
+  font: 900 0.82rem Arial, sans-serif;
+  text-transform: uppercase;
+}
+.backup-schedule-toggle small {
+  margin-top: 0.2rem;
+  color: color-mix(in srgb, var(--br-text) 78%, var(--br-bg));
+  font: 700 0.64rem "Courier New", monospace;
+}
+.backup-schedule-toggle i {
+  color: var(--br-accent);
+  transition: transform 0.18s ease;
+}
+.backup-schedule-toggle i.is-open {
+  transform: rotate(180deg);
+}
+.backup-schedule {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) repeat(3, minmax(8rem, 0.8fr)) auto;
+  gap: 0.75rem;
+  align-items: end;
+  border-top: 1px solid var(--br-line);
+  background: var(--br-bg);
+  padding: 0.9rem 1.2rem;
+}
+.backup-schedule label,
+.backup-toggle {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+}
+.backup-schedule label > span,
+.backup-toggle small {
+  color: color-mix(in srgb, var(--br-text) 76%, var(--br-bg));
+  font: 800 0.6rem "Courier New", monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.backup-schedule input,
+.backup-schedule select {
+  min-width: 0;
+  min-height: 2.65rem;
+  border: 1px solid var(--br-line-strong);
+  border-radius: 0;
+  background: var(--br-control);
+  color: var(--br-control-text, #141413);
+  padding: 0.55rem 0.65rem;
+  font: 800 0.72rem "Courier New", monospace;
+}
+.backup-schedule input:disabled,
+.backup-schedule select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.backup-schedule__cron {
+  grid-column: span 2;
+}
+.backup-toggle {
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: center;
+  min-height: 2.65rem;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel-2);
+  padding: 0.35rem 0.55rem;
+}
+.backup-toggle input {
+  width: 1.2rem;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  min-height: 1.2rem;
+  accent-color: var(--br-accent);
+}
+.backup-toggle span {
+  min-width: 0;
+}
+.backup-toggle strong,
+.backup-toggle small {
+  display: block;
+}
+.backup-toggle strong {
+  overflow: hidden;
+  color: var(--br-text);
+  font: 900 0.72rem Arial, sans-serif;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.backup-schedule button {
+  display: inline-flex;
+  min-height: 2.65rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--br-accent);
+  background: transparent;
+  color: var(--br-accent);
+  padding: 0.55rem 0.8rem;
+  font: 800 0.62rem "Courier New", monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.backup-schedule button:hover:not(:disabled) {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+.backup-schedule button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 .backup-body {
   min-height: 0;
@@ -1711,6 +1853,9 @@
 @media (max-width: 900px) {
   .settings-hero-actions { grid-template-columns: 1fr; }
   .backup-config { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .backup-schedule { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .backup-schedule button,
+  .backup-schedule__cron { grid-column: 1 / -1; }
 }
 @media (max-width: 620px) {
   .backup-overlay {
@@ -1726,6 +1871,7 @@
   }
   .backup-config { grid-template-columns: 1fr; }
   .backup-config article { border-right: 0; border-bottom: 1px solid var(--br-line); }
+  .backup-schedule { grid-template-columns: 1fr; padding: 0.8rem; }
   .backup-row {
     grid-template-columns: 2.6rem minmax(0, 1fr) auto;
   }

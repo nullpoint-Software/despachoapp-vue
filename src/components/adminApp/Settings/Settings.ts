@@ -59,10 +59,15 @@ interface BackupConfig {
   storageRoot: string;
   cron: string;
   timezone: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'custom';
+  time: string;
+  dayOfWeek: number;
+  dayOfMonth: number;
   retentionDays: number;
   retentionMaxFiles: number;
   schedulerEnabled: boolean;
   creating: boolean;
+  importing: boolean;
 }
 
 const apiErrorMessage = (error: unknown): string | undefined =>
@@ -77,6 +82,34 @@ const backupError = ref("");
 const backups = ref<BackupFile[]>([]);
 const backupConfig = ref<BackupConfig | null>(null);
 const backupImportInput = ref<HTMLInputElement | null>(null);
+const backupScheduleOpen = ref(false);
+const backupScheduleForm = ref({
+  schedulerEnabled: true,
+  frequency: 'daily' as BackupConfig['frequency'],
+  time: '02:00',
+  dayOfWeek: 1,
+  dayOfMonth: 1,
+  timezone: 'America/Mexico_City',
+  cron: '0 2 * * *',
+});
+
+const backupWeekdays = [
+  { value: 1, label: 'Lunes' },
+  { value: 2, label: 'Martes' },
+  { value: 3, label: 'Miércoles' },
+  { value: 4, label: 'Jueves' },
+  { value: 5, label: 'Viernes' },
+  { value: 6, label: 'Sábado' },
+  { value: 0, label: 'Domingo' },
+];
+
+const backupMonthDays = Array.from({ length: 28 }, (_, index) => index + 1);
+const backupFrequencyLabels: Record<BackupConfig['frequency'], string> = {
+  daily: 'Diario',
+  weekly: 'Semanal',
+  monthly: 'Mensual',
+  custom: 'Cron',
+};
 
 // USER DETAILS MODAL
 const modalAbierto = ref(false)
@@ -230,6 +263,18 @@ function formatBackupDate(value: string): string {
   }).format(new Date(value));
 }
 
+function backupScheduleSummary(config: BackupConfig | null): string {
+  if (!config?.schedulerEnabled) return 'Desactivada';
+  if (config.frequency === 'custom') return config.cron;
+  const frequency = backupFrequencyLabels[config.frequency] || 'Diario';
+  if (config.frequency === 'weekly') {
+    const day = backupWeekdays.find(item => item.value === Number(config.dayOfWeek))?.label || 'Lunes';
+    return `${frequency}, ${day} ${config.time}`;
+  }
+  if (config.frequency === 'monthly') return `${frequency}, día ${config.dayOfMonth} ${config.time}`;
+  return `${frequency}, ${config.time}`;
+}
+
 async function loadBackups(): Promise<void> {
   backupLoading.value = true;
   backupError.value = "";
@@ -237,10 +282,37 @@ async function loadBackups(): Promise<void> {
     const overview = await bs.getOverview();
     backups.value = overview.backups;
     backupConfig.value = overview.config;
+    syncBackupScheduleForm(overview.config);
   } catch (error) {
     backupError.value = apiErrorMessage(error) || 'No fue posible cargar los respaldos.';
   } finally {
     backupLoading.value = false;
+  }
+}
+
+function syncBackupScheduleForm(config: BackupConfig): void {
+  backupScheduleForm.value = {
+    schedulerEnabled: config.schedulerEnabled,
+    frequency: config.frequency || 'daily',
+    time: config.time || '02:00',
+    dayOfWeek: Number(config.dayOfWeek ?? 1),
+    dayOfMonth: Number(config.dayOfMonth ?? 1),
+    timezone: config.timezone || 'America/Mexico_City',
+    cron: config.cron || '0 2 * * *',
+  };
+}
+
+async function saveBackupSchedule(): Promise<void> {
+  backupBusy.value = true;
+  try {
+    const config = await bs.updateConfig(backupScheduleForm.value);
+    backupConfig.value = config;
+    syncBackupScheduleForm(config);
+    toast.add({ severity: 'success', summary: 'Programación actualizada', detail: 'Los próximos respaldos usarán este horario.', life: 3500 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'No actualizado', detail: apiErrorMessage(error) || 'No fue posible guardar la programación.', life: 4500 });
+  } finally {
+    backupBusy.value = false;
   }
 }
 

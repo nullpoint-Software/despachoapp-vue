@@ -50,11 +50,57 @@
           </div>
 
           <div v-if="backupConfig" class="backup-config">
-            <article><span>Programación</span><strong>{{ backupConfig.schedulerEnabled ? backupConfig.cron : 'Desactivada' }}</strong></article>
-            <article><span>Zona</span><strong>{{ backupConfig.timezone }}</strong></article>
+            <article><span>Programación</span><strong>{{ backupScheduleSummary(backupConfig) }}</strong></article>
+            <article><span>Hora</span><strong>Tiempo local</strong></article>
             <article><span>Retención</span><strong>{{ backupConfig.retentionDays }} días / {{ backupConfig.retentionMaxFiles }} archivos</strong></article>
             <article><span>Estado</span><strong>{{ backupConfig.importing ? 'Importando' : backupConfig.creating ? 'Creando' : 'Listo' }}</strong></article>
           </div>
+
+          <section v-if="backupConfig" class="backup-schedule-panel">
+            <button type="button" class="backup-schedule-toggle" :aria-expanded="backupScheduleOpen" @click="backupScheduleOpen = !backupScheduleOpen">
+              <span><strong>Ajustar programación</strong><small>{{ backupScheduleSummary(backupConfig) }} · tiempo local</small></span>
+              <i class="pi pi-chevron-down" :class="{ 'is-open': backupScheduleOpen }"></i>
+            </button>
+            <form v-if="backupScheduleOpen" class="backup-schedule" @submit.prevent="saveBackupSchedule">
+              <label class="backup-toggle">
+                <input v-model="backupScheduleForm.schedulerEnabled" type="checkbox" />
+                <span><strong>Respaldos automáticos</strong><small>{{ backupScheduleForm.schedulerEnabled ? 'Activos' : 'Desactivados' }}</small></span>
+              </label>
+              <label>
+                <span>Frecuencia</span>
+                <select v-model="backupScheduleForm.frequency" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled">
+                  <option value="daily">Diario</option>
+                  <option value="weekly">Semanal</option>
+                  <option value="monthly">Mensual</option>
+                  <option value="custom">Cron personalizado</option>
+                </select>
+              </label>
+              <label v-if="backupScheduleForm.frequency !== 'custom'">
+                <span>Hora local</span>
+                <input v-model="backupScheduleForm.time" type="time" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled" />
+              </label>
+              <label v-if="backupScheduleForm.frequency === 'weekly'">
+                <span>Día</span>
+                <select v-model.number="backupScheduleForm.dayOfWeek" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled">
+                  <option v-for="day in backupWeekdays" :key="day.value" :value="day.value">{{ day.label }}</option>
+                </select>
+              </label>
+              <label v-if="backupScheduleForm.frequency === 'monthly'">
+                <span>Día del mes</span>
+                <select v-model.number="backupScheduleForm.dayOfMonth" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled">
+                  <option v-for="day in backupMonthDays" :key="day" :value="day">{{ day }}</option>
+                </select>
+              </label>
+              <label v-if="backupScheduleForm.frequency === 'custom'" class="backup-schedule__cron">
+                <span>Cron</span>
+                <input v-model="backupScheduleForm.cron" placeholder="0 2 * * *" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled" />
+              </label>
+              <button type="submit" :disabled="backupBusy || backupLoading">
+                <i class="pi pi-clock"></i>
+                Guardar horario
+              </button>
+            </form>
+          </section>
 
           <div class="backup-body">
             <div v-if="backupLoading" class="backup-state">

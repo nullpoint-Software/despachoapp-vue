@@ -11,12 +11,18 @@ export interface BackupConfig {
   storageRoot: string;
   cron: string;
   timezone: string;
+  frequency: "daily" | "weekly" | "monthly" | "custom";
+  time: string;
+  dayOfWeek: number;
+  dayOfMonth: number;
   retentionDays: number;
   retentionMaxFiles: number;
   schedulerEnabled: boolean;
   creating: boolean;
   importing: boolean;
 }
+
+export type BackupSchedulePayload = Pick<BackupConfig, "schedulerEnabled" | "frequency" | "time" | "dayOfWeek" | "dayOfMonth" | "timezone" | "cron">;
 
 export interface BackupOverview {
   backups: BackupFile[];
@@ -32,6 +38,10 @@ class BackupService {
 
   async createBackup(reason = "manual"): Promise<BackupFile> {
     return (await this.axios.post(`${this.serverip}/backups`, { reason })).data.backup;
+  }
+
+  async updateConfig(config: BackupSchedulePayload): Promise<BackupConfig> {
+    return (await this.axios.put(`${this.serverip}/backups/config`, config)).data.config;
   }
 
   async deleteBackup(filename: string): Promise<void> {
