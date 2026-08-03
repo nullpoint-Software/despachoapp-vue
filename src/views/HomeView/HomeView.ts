@@ -13,7 +13,6 @@ type Feature = {
   summary: string;
   details: string[];
   icon: string;
-  placeholder: string;
   size?: "wide" | "tall";
 };
 
@@ -29,16 +28,16 @@ export default {
     let motionMedia: ReturnType<typeof gsap.matchMedia> | undefined;
 
     const features: Feature[] = [
-      { number: "01", title: "Resumen operativo", summary: "Ingresos, clientes activos, tareas pendientes y actividad fiscal en una sola portada.", details: ["Indicadores diarios, mensuales y anuales", "Trabajo pendiente por responsable", "Accesos directos a cada área"], icon: "pi pi-chart-bar", placeholder: "Captura del panel de Inicio", size: "wide" },
-      { number: "02", title: "Tareas y seguimiento", summary: "Un tablero Kanban para repartir trabajo, revisar avances y mantener responsables visibles.", details: ["Estados y prioridades", "Asignación a usuarios", "Detalle, fechas y reportes"], icon: "pi pi-th-large", placeholder: "Captura del tablero de tareas", size: "tall" },
-      { number: "03", title: "Expedientes de clientes", summary: "Datos fiscales, contacto, documentos y credenciales protegidas dentro del mismo expediente.", details: ["Búsqueda y filtros", "Documentos por cliente", "Revelado seguro de datos sensibles"], icon: "pi pi-id-card", placeholder: "Captura de la tabla de clientes" },
-      { number: "04", title: "Pagos y cobranza", summary: "Registro por concepto, historial y consultas por periodo para saber qué se cobró y cuándo.", details: ["Conceptos y movimientos", "Filtros por fecha o cliente", "Cortes e historial de pagos"], icon: "pi pi-wallet", placeholder: "Captura del módulo de pagos", size: "wide" },
-      { number: "05", title: "Operación fiscal", summary: "Control de facturas, conceptos, impuestos y reportes fiscales sin separar la información del cliente.", details: ["Importación y consulta de CFDI", "Reportes mensuales", "Proveedores y datos para DIOT"], icon: "pi pi-percentage", placeholder: "Captura del espacio fiscal", size: "tall" },
-      { number: "06", title: "Catálogos SAT", summary: "Consulta centralizada de claves y referencias del SAT para reducir capturas incorrectas.", details: ["Búsqueda por clave o descripción", "Vigencias visibles", "Selección desde formularios"], icon: "pi pi-search", placeholder: "Captura del buscador de catálogos SAT" },
-      { number: "07", title: "Cumplimiento", summary: "Seguimiento de opiniones y estado de clientes con una lectura clara de pendientes.", details: ["Resumen por estado", "Filtros por régimen fiscal", "Detalle por contribuyente"], icon: "pi pi-verified", placeholder: "Captura del panel de cumplimiento" },
-      { number: "08", title: "Notas de trabajo", summary: "Notas rápidas, tableros y elementos anclados para conservar contexto mientras trabajas.", details: ["Formato Markdown", "Notas ancladas", "Organización por tableros"], icon: "pi pi-file-edit", placeholder: "Captura del tablero de notas", size: "wide" },
-      { number: "09", title: "Documentos y salidas", summary: "Genera comprobantes, tickets y archivos de trabajo desde los mismos registros.", details: ["Impresión térmica", "Reportes y vistas previas", "Exportaciones a Excel"], icon: "pi pi-print", placeholder: "Captura de impresión o exportación" },
-      { number: "10", title: "Acceso y configuración", summary: "La administración mantiene usuarios, permisos y preferencias sin salir de la aplicación.", details: ["Roles y permisos", "Passkeys y recuperación de acceso", "Bitácora, paletas, fuente y escala"], icon: "pi pi-cog", placeholder: "Captura de configuración", size: "wide" },
+      { number: "01", title: "Resumen operativo", summary: "Ingresos, clientes activos, tareas pendientes y actividad fiscal en una sola portada.", details: ["Indicadores diarios, mensuales y anuales", "Trabajo pendiente por responsable", "Accesos directos a cada área"], icon: "pi pi-chart-bar", size: "wide" },
+      { number: "02", title: "Tareas y seguimiento", summary: "Un tablero Kanban para repartir trabajo, revisar avances y mantener responsables visibles.", details: ["Estados y prioridades", "Asignación a usuarios", "Detalle, fechas y reportes"], icon: "pi pi-th-large", size: "tall" },
+      { number: "03", title: "Expedientes de clientes", summary: "Datos fiscales, contacto, documentos y credenciales protegidas dentro del mismo expediente.", details: ["Búsqueda y filtros", "Documentos por cliente", "Revelado seguro de datos sensibles"], icon: "pi pi-id-card" },
+      { number: "04", title: "Pagos y cobranza", summary: "Registro por concepto, historial y consultas por periodo para saber qué se cobró y cuándo.", details: ["Conceptos y movimientos", "Filtros por fecha o cliente", "Cortes e historial de pagos"], icon: "pi pi-wallet", size: "wide" },
+      { number: "05", title: "Operación fiscal", summary: "Control de facturas, conceptos, impuestos y reportes fiscales sin separar la información del cliente.", details: ["Importación y consulta de CFDI", "Reportes mensuales", "Proveedores y datos para DIOT"], icon: "pi pi-percentage", size: "tall" },
+      { number: "06", title: "Catálogos SAT", summary: "Consulta centralizada de claves y referencias del SAT para reducir capturas incorrectas.", details: ["Búsqueda por clave o descripción", "Vigencias visibles", "Selección desde formularios"], icon: "pi pi-search" },
+      { number: "07", title: "Cumplimiento", summary: "Seguimiento de opiniones y estado de clientes con una lectura clara de pendientes.", details: ["Resumen por estado", "Filtros por régimen fiscal", "Detalle por contribuyente"], icon: "pi pi-verified" },
+      { number: "08", title: "Notas de trabajo", summary: "Notas rápidas, tableros y elementos anclados para conservar contexto mientras trabajas.", details: ["Formato Markdown", "Notas ancladas", "Organización por tableros"], icon: "pi pi-file-edit", size: "wide" },
+      { number: "09", title: "Documentos y salidas", summary: "Genera comprobantes, tickets y archivos de trabajo desde los mismos registros.", details: ["Impresión térmica", "Reportes y vistas previas", "Exportaciones a Excel"], icon: "pi pi-print" },
+      { number: "10", title: "Acceso y configuración", summary: "La administración mantiene usuarios, permisos y preferencias sin salir de la aplicación.", details: ["Roles y permisos", "Passkeys y recuperación de acceso", "Bitácora, paletas, fuente y escala"], icon: "pi pi-cog", size: "wide" },
     ];
 
     const workflow = [

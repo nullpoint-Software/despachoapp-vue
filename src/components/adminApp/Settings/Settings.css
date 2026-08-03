@@ -304,22 +304,6 @@
 .passkey-panel__status.unavailable {
   color: #ef4d3d;
 }
-.passkey-provider-hint {
-  display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
-  align-items: center;
-  gap: 0.65rem;
-  margin: 0;
-  border-left: 3px solid var(--br-accent);
-  background: var(--br-panel-2);
-  padding: 0.7rem 0.8rem;
-  color: var(--br-text);
-  font: 700 0.72rem/1.4 "Courier New", monospace;
-}
-.passkey-provider-hint i {
-  color: var(--br-accent);
-  text-align: center;
-}
 .passkey-list {
   display: grid;
   gap: 0.65rem;
@@ -1526,4 +1510,3 @@
 
 
 .settings-view{max-width:100rem;margin-inline:auto}
-

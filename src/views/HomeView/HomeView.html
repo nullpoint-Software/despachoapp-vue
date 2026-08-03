@@ -74,11 +74,6 @@
             <p>{{ feature.summary }}</p>
             <ul><li v-for="detail in feature.details" :key="detail">{{ detail }}</li></ul>
           </div>
-          <div class="home-feature__placeholder" role="img" :aria-label="feature.placeholder">
-            <i class="pi pi-image" aria-hidden="true"></i>
-            <span>{{ feature.placeholder }}</span>
-            <small>Reemplazar con imagen</small>
-          </div>
         </article>
       </div>
     </section>
@@ -91,11 +86,6 @@
     </section>
 
     <section id="seguridad" class="home-security" aria-labelledby="security-title">
-      <div class="home-security__visual home-placeholder" role="img" aria-label="Placeholder para una captura de permisos y seguridad">
-        <span>PLACEHOLDER / SEGURIDAD</span>
-        <i class="pi pi-lock" aria-hidden="true"></i>
-        <p>Agrega aquí una captura de usuarios, permisos o passkeys.</p>
-      </div>
       <div class="home-security__copy">
         <p>ACCESO Y TRAZABILIDAD</p>
         <h2 id="security-title">Cada persona ve lo que necesita.</h2>

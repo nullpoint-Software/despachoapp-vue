@@ -58,10 +58,6 @@
         <p class="passkey-panel__status" :class="{ unavailable: !passkeySupported }">
           {{ passkeyStatusLabel }}
         </p>
-        <p v-if="passkeySupported" class="passkey-provider-hint">
-          <i class="pi pi-key" aria-hidden="true"></i>
-          Al crearla, selecciona NordPass en la ventana del navegador para guardarla en tu bóveda.
-        </p>
         <div class="passkey-list">
           <div v-if="passkeysLoading" class="passkey-empty">Cargando passkeys...</div>
           <div v-else-if="!passkeys.length" class="passkey-empty">Sin passkeys registradas.</div>

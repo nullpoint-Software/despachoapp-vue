@@ -184,10 +184,10 @@
 .home-section-heading > p { max-width: 34rem; margin: 0 0 0 auto; color: var(--home-muted); line-height: 1.7; }
 
 .home-feature-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-flow: dense; gap: 0.85rem; }
-.home-feature { display: grid; min-height: 33rem; grid-column: span 6; grid-template-rows: auto 1fr auto; border: 1px solid var(--home-line); background: var(--home-surface); padding: clamp(1rem, 2.5vw, 1.8rem); transition: border-color 180ms ease, transform 180ms ease; }
+.home-feature { display: grid; min-height: 26rem; grid-column: span 6; grid-template-rows: auto 1fr; border: 1px solid var(--home-line); background: var(--home-surface); padding: clamp(1rem, 2.5vw, 1.8rem); transition: border-color 180ms ease, transform 180ms ease; }
 .home-feature:hover { border-color: var(--home-accent); transform: translateY(-0.25rem); }
 .home-feature--wide { grid-column: span 8; }
-.home-feature--tall { min-height: 42rem; grid-column: span 4; grid-row: span 2; }
+.home-feature--tall { min-height: 34rem; grid-column: span 4; grid-row: span 2; }
 .home-feature > header { display: flex; align-items: center; justify-content: flex-end; border-bottom: 1px solid var(--home-line); padding-bottom: 1rem; color: var(--home-accent); }
 .home-feature > header span { font-size: 0.67rem; font-weight: 900; letter-spacing: 0.12em; }
 .home-feature > header i { font-size: 1rem; }
@@ -197,13 +197,6 @@
 .home-feature__copy ul { display: grid; gap: 0.45rem; margin: 1.3rem 0 0; padding: 0; list-style: none; }
 .home-feature__copy li { color: var(--home-text); font-size: 0.78rem; }
 .home-feature__copy li::before { margin-right: 0.55rem; color: var(--home-accent); content: "↳"; }
-.home-feature__placeholder { position: relative; display: grid; overflow: hidden; transition: transform 220ms ease, border-color 220ms ease; min-height: 11rem; place-content: center; border: 1px dashed var(--home-line); background: repeating-linear-gradient(135deg, transparent 0 0.65rem, rgb(120 213 170 / 0.035) 0.65rem 0.75rem); padding: 1rem; text-align: center; }
-.home-feature--tall .home-feature__placeholder { min-height: 18rem; }
-.home-feature__placeholder::after { position: absolute; inset: 0 auto 0 -35%; width: 28%; background: linear-gradient(90deg, transparent, rgb(158 231 194 / 0.1), transparent); content: ""; pointer-events: none; }
-.home-feature:hover .home-feature__placeholder { border-color: rgb(158 231 194 / 0.55); transform: translateY(-0.2rem); }
-.home-feature__placeholder i { color: var(--home-accent); font-size: 1.5rem; }
-.home-feature__placeholder span { margin-top: 0.65rem; font-size: 0.75rem; font-weight: 800; }
-.home-feature__placeholder small { margin-top: 0.3rem; color: var(--home-muted); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
 
 .home-workflow { width: min(100% - 2rem, 92rem); margin-inline: auto; border-top: 1px solid var(--home-line); padding: clamp(5rem, 9vw, 9rem) 0; }
 .home-workflow > header { display: block; }
@@ -214,12 +207,8 @@
 .home-workflow li h3 { margin: 0; font-size: 1.6rem; }
 .home-workflow li p { max-width: 42rem; margin: 0.5rem 0 0; color: var(--home-muted); line-height: 1.6; }
 
-.home-security { display: grid; width: min(100% - 2rem, 92rem); grid-template-columns: minmax(0, 0.9fr) minmax(25rem, 1.1fr); gap: clamp(3rem, 8vw, 9rem); margin-inline: auto; padding: clamp(5rem, 10vw, 10rem) 0; }
-.home-security__visual { display: grid; min-height: 36rem; place-content: center; background: repeating-linear-gradient(45deg, var(--home-surface) 0 1.2rem, #15261f 1.2rem 2.4rem); padding: 2rem; text-align: center; }
-.home-security__visual > span { color: var(--home-accent); font-size: 0.65rem; font-weight: 900; letter-spacing: 0.12em; }
-.home-security__visual > i { margin: 2rem 0; color: var(--home-accent); font-size: 5rem; }
-.home-security__visual > p { max-width: 25rem; color: var(--home-muted); line-height: 1.6; }
-.home-security__copy { align-self: center; }
+.home-security { display: block; width: min(100% - 2rem, 92rem); margin-inline: auto; border-top: 1px solid var(--home-line); padding: clamp(5rem, 10vw, 10rem) 0; }
+.home-security__copy { max-width: 52rem; }
 .home-security__copy h2 { max-width: 12ch; margin: 0.8rem 0 1.5rem; font-size: clamp(3rem, 5.5vw, 6rem); letter-spacing: -0.07em; line-height: 0.9; }
 .home-security__copy > p:not(:first-child) { max-width: 40rem; color: var(--home-muted); line-height: 1.7; }
 .home-security__copy ul { display: grid; margin: 2.5rem 0 0; padding: 0; list-style: none; }
@@ -282,18 +271,16 @@
 @keyframes home-orbit-a { 50% { transform: translate3d(-7vw, 5vh, 0) scale(1.08); opacity: 0.7; } }
 @keyframes home-orbit-b { 50% { transform: translate3d(9vw, -6vh, 0) scale(0.9); opacity: 0.45; } }
 @keyframes home-marquee-shift { to { transform: translateX(-100%); } }
-@keyframes home-placeholder-scan { from { transform: translateX(-130%) skewX(-14deg); } to { transform: translateX(430%) skewX(-14deg); } }
 
 @media (prefers-reduced-motion: no-preference) {
   .home-ambient span:nth-child(1) { animation: home-orbit-a 18s ease-in-out infinite; }
   .home-ambient span:nth-child(2) { animation: home-orbit-b 24s ease-in-out infinite; }
   .home-ambient span:nth-child(3) { animation: home-orbit-a 28s ease-in-out infinite reverse; }
   .home-marquee p { animation: home-marquee-shift 24s linear infinite; }
-  .home-feature:hover .home-feature__placeholder::after, .home-feature:focus-within .home-feature__placeholder::after { animation: home-placeholder-scan 1.15s ease-out both; }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-page { scroll-behavior: auto; }
   .home-page *, .home-page *::before, .home-page *::after { scroll-behavior: auto !important; animation: none !important; transition-duration: 0.01ms !important; }
   .home-progress { display: none; }
-  .home-feature:hover, .home-feature:hover .home-feature__placeholder, .home-login:hover, .home-hero__actions button:hover, .home-cta button:hover { transform: none; }
+  .home-feature:hover, .home-login:hover, .home-hero__actions button:hover, .home-cta button:hover { transform: none; }
 }

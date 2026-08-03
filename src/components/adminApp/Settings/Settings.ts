@@ -115,8 +115,8 @@ const passkeySupported = ref(false);
 const platformPasskeyAvailable = ref(false);
 const passkeyStatusLabel = computed(() => {
   if (!passkeySupported.value) return "Este navegador no tiene passkeys disponibles.";
-  if (!platformPasskeyAvailable.value) return "Listo para usar NordPass, una llave de seguridad u otro gestor compatible.";
-  return "Puedes guardarla en NordPass o usar huella, rostro y Windows Hello.";
+  if (!platformPasskeyAvailable.value) return "Listo para usar una llave de seguridad o un gestor compatible.";
+  return "Puedes usar huella, rostro, Windows Hello o un gestor compatible.";
 });
 
 async function loadPasskeys() {
@@ -142,10 +142,10 @@ async function addPasskey() {
   if (!passkeySupported.value || passkeyBusy.value) return;
   const name = await promptDialog({
     title: 'Agregar passkey',
-    message: 'Ponle un nombre reconocible a NordPass, este dispositivo o tu llave de seguridad.',
+    message: 'Ponle un nombre reconocible a este dispositivo, gestor o llave de seguridad.',
     inputLabel: 'Nombre',
     inputType: 'text',
-    placeholder: 'NordPass personal',
+    placeholder: 'Dispositivo personal',
     confirmLabel: 'Crear passkey',
   });
   if (name === null) return;
@@ -153,7 +153,7 @@ async function addPasskey() {
   try {
     await pks.register(name || undefined);
     await loadPasskeys();
-    toast.add({ severity: 'success', summary: 'Passkey lista', detail: 'Ya puedes verificar datos protegidos con NordPass o el autenticador elegido.', life: 3000 });
+    toast.add({ severity: 'success', summary: 'Passkey lista', detail: 'Ya puedes verificar datos protegidos con el autenticador elegido.', life: 3000 });
   } catch (error) {
     toast.add({ severity: 'error', summary: 'No registrada', detail: apiErrorMessage(error) || 'No fue posible registrar la passkey.', life: 4000 });
   } finally {
