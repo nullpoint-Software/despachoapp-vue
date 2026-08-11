@@ -72,6 +72,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import utc from "dayjs/plugin/utc";
 import { formatFechaHoraFullPagoSQL, formatFechaMesAnoSQL } from "@/service/adminApp/client";
+import { useAppToast } from "@/composables/useAppToast";
 
 dayjs.extend(advancedFormat);
 dayjs.extend(localizedFormat);
@@ -81,6 +82,7 @@ dayjs.extend(utc);
 
 // permite emitir 'close'
 const emit = defineEmits(['close']);
+const toast = useAppToast();
 
 // estado
 const printers = ref([]);
@@ -169,7 +171,7 @@ const fetchPrinters = async () => {
     printers.value = list;
     if (!list.includes(selectedPrinter.value)) selectedPrinter.value = "";
   } catch (e) {
-    alert("Error al obtener impresoras: " + e.message);
+    toast.add({ severity: "error", summary: "Impresión no disponible", detail: e.message, life: 4500 });
     showDownload.value = true;
   }
 };
@@ -186,7 +188,8 @@ const downloadPlugin = async () =>{
 // imprimir
 const doPrint = async () => {
   if (!selectedPrinter.value) {
-    return alert("Por favor, seleccione una impresora.");
+    toast.add({ severity: "warn", summary: "Falta una impresora", detail: "Selecciona una impresora.", life: 3000 });
+    return;
   }
   try {
     const con = new connetor_plugin();
@@ -214,10 +217,10 @@ const doPrint = async () => {
     con.feed("5");
     con.cut("0");
     const resp = await con.imprimir(selectedPrinter.value, apiKey);
-    if (resp === true) alert("✅ Ticket enviado.");
-    else alert("❌ Error al imprimir: " + resp);
+    if (resp === true) toast.add({ severity: "success", summary: "Ticket enviado", detail: "La impresión fue solicitada.", life: 3000 });
+    else toast.add({ severity: "error", summary: "No se pudo imprimir", detail: String(resp), life: 4500 });
   } catch (err) {
-    alert("Error al imprimir: " + err.message);
+    toast.add({ severity: "error", summary: "No se pudo imprimir", detail: err.message, life: 4500 });
   }
 };
 </script>

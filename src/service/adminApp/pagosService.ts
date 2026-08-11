@@ -10,46 +10,6 @@ class PagosService {
     this.axios = axios;
   }
 
-  // ----------- PagoHistorial -----------
-
-  async getPagoHistorial(page?: { limit: number; offset: number }) {
-    try {
-      const response = await this.axios.get(`${this.serverip}/pagos/historial`, { params: page });
-      return response.data;
-// oxlint-disable-next-line no-useless-catch
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async addPagoHistorial(data: any) {
-    try {
-      const response = await this.axios.post(`${this.serverip}/pagos/historial`, data);
-      return response.data;
-// oxlint-disable-next-line no-useless-catch
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async updatePagoHistorial(id: number, data: any) {
-    try {
-      const response = await this.axios.put(`${this.serverip}/pagos/historial/${id}`, data);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async deletePagoHistorial(id: number) {
-    try {
-      const response = await this.axios.delete(`${this.serverip}/pagos/historial/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   // ----------- PagoMensual -----------
 
   async getPagoMensual(page?: { limit: number; offset: number }) {

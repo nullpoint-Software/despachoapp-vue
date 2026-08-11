@@ -28,7 +28,7 @@ onMounted(() => {
 .tasks-page {
   min-height: 100%;
   padding: clamp(1rem, 2.5vw, 2rem);
-  background: var(--br-bg);
+  background: transparent;
   color: var(--br-text);
 }
 .tasks-hero {

@@ -4,7 +4,7 @@
       <div>
         <p>ADMINISTRACIÓN / 02</p>
         <h1>Pagos</h1>
-        <span>Historial, conceptos y cierres de caja.</span>
+        <span>Conceptos, comprobantes y cierres de caja.</span>
       </div>
       <div class="records-actions">
         <AppButton
@@ -20,13 +20,6 @@
         />
       </div>
     </header>
-    <nav class="records-tabs" aria-label="Secciones de pagos">
-      <router-link to="/app/pagos/historial" active-class="is-active"
-        >01 / Historial</router-link
-      ><router-link to="/app/pagos/concepto" active-class="is-active"
-        >02 / Conceptos</router-link
-      >
-    </nav>
     <section class="records-content"><router-view /></section>
     <CashCutModal v-if="cashCutVisible" @close="cashCutVisible = false" />
   </main>
@@ -44,7 +37,6 @@ const cashCutVisible = ref(false);
 const { requestNewPayment } = usePaymentActions();
 useBrutalMotion(pageRef, [
   ".records-hero",
-  ".records-tabs",
   ".records-content",
 ]);
 async function newPayment() {
@@ -57,7 +49,7 @@ async function newPayment() {
 .records-view {
   min-height: 100%;
   padding: clamp(1rem, 2.5vw, 2rem);
-  background: var(--br-bg);
+  background: transparent;
   color: var(--br-text);
 }
 .records-hero {
@@ -98,24 +90,6 @@ async function newPayment() {
   gap: 0.65rem;
   flex-wrap: wrap;
   justify-content: flex-end;
-}
-.records-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--br-line);
-}
-.records-tabs a {
-  padding: 1rem 1.25rem;
-  border-right: 1px solid var(--br-line);
-  color: var(--br-muted);
-  font:
-    800 0.8rem "Courier New",
-    monospace;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-.records-tabs a.is-active {
-  background: var(--br-control);
-  color: #141413;
 }
 .records-content {
   min-height: 24rem;

@@ -194,6 +194,17 @@
           </div>
         </header>
 
+        <div v-if="activeReport" class="active-report-bar">
+          <div>
+            <small>EDITANDO REPORTE</small>
+            <strong>{{ activeReport.nombre }}</strong>
+            <span>{{ activeReport.facturas_count }} CFDI vinculados</span>
+          </div>
+          <button type="button" @click="closeActiveReport">
+            <i class="pi pi-times" /> Cerrar edición
+          </button>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -267,6 +278,15 @@
                     @click="downloadXml(invoice)"
                   >
                     <i class="pi pi-download" /></button
+                  ><button
+                    v-if="invoiceBelongsToActiveReport(invoice)"
+                    class="unlink"
+                    type="button"
+                    title="Quitar del reporte abierto"
+                    @click="removeInvoiceFromReport(invoice)"
+                  >
+                    <i class="pi pi-minus-circle" />
+                  </button
                   ><button
                     class="danger"
                     type="button"
@@ -411,8 +431,15 @@
                 {{ report.nombre }}</button
               ><button title="PDF" @click="previewReportPdf(report)">
                 <i class="pi pi-file-pdf" /></button
-              ><button title="CSV" @click="downloadReport(report)">
+              ><button title="Excel" @click="downloadReport(report)">
                 <i class="pi pi-download" />
+              </button
+              ><button
+                class="report-delete"
+                title="Eliminar reporte"
+                @click.stop="removeReport(report)"
+              >
+                <i class="pi pi-trash" />
               </button>
             </div>
             <span v-if="!reportsFor(null, 'anual').length"
@@ -431,8 +458,15 @@
                   {{
                     report.direccion === "emitida" ? "Ingresos" : "Egresos"
                   }}</button
-                ><button title="CSV" @click="downloadReport(report)">
+                ><button title="Excel" @click="downloadReport(report)">
                   <i class="pi pi-download" />
+                </button
+                ><button
+                  class="report-delete"
+                  title="Eliminar reporte"
+                  @click.stop="removeReport(report)"
+                >
+                  <i class="pi pi-trash" />
                 </button>
               </div>
               <button
@@ -456,6 +490,13 @@
                   @click="downloadReport(report)"
                 >
                   <i class="pi pi-download" />
+                </button
+                ><button
+                  class="report-delete"
+                  title="Eliminar DIOT"
+                  @click.stop="removeReport(report)"
+                >
+                  <i class="pi pi-trash" />
                 </button>
               </div>
               <span v-if="!reportsFor(index + 1, 'diot').length"
@@ -531,6 +572,11 @@
               este corte.</span
             >
           </div>
+          <p v-if="matchingReport" class="fiscal-note full">
+            Este corte ya existe como “{{ matchingReport.nombre }}”. Las
+            facturas seleccionadas se agregarán a ese mismo reporte sin crear
+            otro.
+          </p>
           <p
             v-if="
               reportDraft.type === 'mensual' &&
@@ -541,6 +587,9 @@
             La DIOT del mes se guardará automáticamente con exactamente los
             mismos CFDI de este reporte mensual.
           </p>
+          <p v-if="reportValidation" class="fiscal-note report-error full">
+            {{ reportValidation }}
+          </p>
         </div>
         <footer>
           <AppButton
@@ -548,9 +597,9 @@
             outlined
             @click="showReportDialog = false"
           /><AppButton
-            label="Guardar reporte"
+            :label="matchingReport ? 'Agregar al reporte existente' : 'Guardar reporte'"
             class="p-button-primary"
-            :disabled="savingReport"
+            :disabled="savingReport || !!reportValidation"
             @click="saveReport"
           />
         </footer>
@@ -760,6 +809,7 @@ import {
 } from "vue";
 import { jsPDF } from "jspdf";
 import autoTable, { type UserOptions } from "jspdf-autotable";
+import { saveAs } from "file-saver";
 import logo from "@/assets/img/logblack.png";
 import AppButton from "@/components/ui/AppButton.vue";
 import AppAutocomplete from "@/components/ui/AppAutocomplete.vue";
@@ -767,11 +817,13 @@ import AppInput from "@/components/ui/AppInput.vue";
 import AppSelect from "@/components/ui/AppSelect.vue";
 import { cs, fs } from "@/service/adminApp/client";
 import { loadProgressively } from "@/service/adminApp/progressiveLoader";
+import { useAppDialog } from "@/composables/useAppDialog";
 
 type Direction = "emitida" | "recibida";
 type ReportType = "mensual" | "anual" | "diot";
 type Invoice = Record<string, any>;
 const now = new Date();
+const { confirm: confirmDialog } = useAppDialog();
 const clients = ref<any[]>([]),
   invoices = ref<Invoice[]>([]),
   reports = ref<any[]>([]);
@@ -783,7 +835,8 @@ const notice = ref(""),
   noticeTone = ref<"success" | "error">("success"),
   activeReportId = ref<number | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null),
-  selectedIds = reactive(new Set<number>());
+  selectedIds = reactive(new Set<number>()),
+  activeReportInvoiceIds = reactive(new Set<number>());
 const showReportDialog = ref(false),
   showDetail = ref(false),
   showDiotDialog = ref(false),
@@ -981,6 +1034,23 @@ const reportsFor = (month: number | null, type: ReportType) =>
       report.tipo === type &&
       (type === "anual" || Number(report.mes) === month),
   );
+const activeReport = computed(() =>
+  reports.value.find((report) => Number(report.id) === activeReportId.value),
+);
+const matchingReport = computed(() =>
+  reports.value.find(
+    (report) =>
+      Number(report.id_cliente) === Number(filters.clienteId) &&
+      report.tipo === reportDraft.type &&
+      report.direccion === reportDraft.direction &&
+      Number(report.ejercicio) === Number(reportDraft.year) &&
+      (reportDraft.type === "anual" ||
+        Number(report.mes) === Number(reportDraft.month)),
+  ),
+);
+function invoiceBelongsToActiveReport(invoice: Invoice) {
+  return !!activeReportId.value && activeReportInvoiceIds.has(Number(invoice.id));
+}
 
 function setNotice(message: string, tone: "success" | "error" = "success") {
   notice.value = message;
@@ -1000,6 +1070,7 @@ function clearFilters() {
   filters.search = "";
   clientSearch.value = "";
   selectedIds.clear();
+  activeReportInvoiceIds.clear();
   activeReportId.value = null;
   invoices.value = [];
   reports.value = [];
@@ -1012,6 +1083,11 @@ function toggleInvoice(invoice:Invoice) {
 }
 function selectVisible() {
   selectableInvoices.value.forEach((invoice) => selectedIds.add(Number(invoice.id)));
+}
+function closeActiveReport() {
+  activeReportId.value = null;
+  selectedIds.clear();
+  activeReportInvoiceIds.clear();
 }
 function toggleAll() {
   allVisibleSelected.value
@@ -1073,11 +1149,12 @@ async function loadInvoices() {
   }
   const version = ++invoiceLoadVersion;
   loading.value = true;
+  const selectedMonth = Number(filters.month);
   const baseFilters = {
     clienteId: Number(filters.clienteId),
     direction: filters.direction,
     year: Number(filters.year),
-    month: filters.month || undefined,
+    month: selectedMonth > 0 ? selectedMonth : undefined,
     search: filters.search || undefined,
   };
   try {
@@ -1164,11 +1241,59 @@ function suggestedReportName() {
 function syncReportName() {
   reportDraft.name = suggestedReportName();
 }
+const selectedInvoices = computed(() =>
+  invoices.value.filter((invoice) => selectedIds.has(Number(invoice.id))),
+);
+function invoicePeriod(invoice: Invoice) {
+  const match = String(invoice.fecha_emision || "").match(/^(\d{4})-(\d{2})/);
+  return match
+    ? { year: Number(match[1]), month: Number(match[2]) }
+    : null;
+}
+function inferSelectedPeriod() {
+  const periods = new Map<string, { year: number; month: number }>();
+  selectedInvoices.value.forEach((invoice) => {
+    const period = invoicePeriod(invoice);
+    if (period) periods.set(`${period.year}-${period.month}`, period);
+  });
+  return periods.size === 1 ? [...periods.values()][0] : null;
+}
+const reportValidation = computed(() => {
+  if (!selectedIds.size)
+    return "Selecciona al menos un CFDI para guardar el reporte.";
+  if (!reportDraft.name.trim()) return "Escribe un nombre para el reporte.";
+  const selected = selectedInvoices.value;
+  if (selected.length !== selectedIds.size)
+    return "Espera a que termine de cargar la selección antes de guardar.";
+  const year = Number(reportDraft.year);
+  const month = Number(reportDraft.month);
+  if (reportDraft.type === "mensual" && (month < 1 || month > 12))
+    return "Selecciona un mes válido para el reporte mensual.";
+  const outsidePeriod = selected.some((invoice) => {
+    const period = invoicePeriod(invoice);
+    return (
+      !period ||
+      period.year !== year ||
+      (reportDraft.type === "mensual" && period.month !== month)
+    );
+  });
+  if (outsidePeriod)
+    return reportDraft.type === "mensual"
+      ? "Todos los CFDI seleccionados deben pertenecer al mismo mes y año. Filtra el mes y vuelve a seleccionarlos."
+      : "Todos los CFDI seleccionados deben pertenecer al ejercicio elegido.";
+  if (
+    selected.some((invoice) => invoice.direccion !== reportDraft.direction)
+  )
+    return "La selección contiene CFDI de un movimiento distinto.";
+  return "";
+});
 function openReportDialog() {
-  reportDraft.type = filters.month ? "mensual" : "anual";
+  const selectedMonth = Number(filters.month);
+  reportDraft.type = selectedMonth > 0 ? "mensual" : "anual";
   reportDraft.direction = filters.direction;
-  reportDraft.year = filters.year;
-  reportDraft.month = filters.month || now.getMonth() + 1;
+  reportDraft.year = Number(filters.year);
+  reportDraft.month =
+    selectedMonth > 0 ? selectedMonth : now.getMonth() + 1;
   syncReportName();
   showReportDialog.value = true;
 }
@@ -1180,7 +1305,15 @@ watch(
     () => reportDraft.month,
   ],
   () => {
-    if (showReportDialog.value) syncReportName();
+    if (!showReportDialog.value) return;
+    if (reportDraft.type === "mensual" && Number(filters.month) === 0) {
+      const period = inferSelectedPeriod();
+      if (period) {
+        reportDraft.year = period.year;
+        reportDraft.month = period.month;
+      }
+    }
+    syncReportName();
   },
 );
 watch(
@@ -1198,6 +1331,10 @@ watch(
   },
 );
 async function saveReport() {
+  if (reportValidation.value) {
+    setNotice(reportValidation.value, "error");
+    return;
+  }
   savingReport.value = true;
   try {
     const response = await fs.createReport({
@@ -1211,6 +1348,11 @@ async function saveReport() {
     });
     showReportDialog.value = false;
     activeReportId.value = Number(response.id);
+    const savedReport = await fs.getReport(Number(response.id));
+    activeReportInvoiceIds.clear();
+    savedReport.invoices.forEach((invoice: Invoice) =>
+      activeReportInvoiceIds.add(Number(invoice.id)),
+    );
     setNotice(
       response.message || "Reporte guardado. Las facturas quedaron marcadas.",
     );
@@ -1227,15 +1369,19 @@ async function saveReport() {
 async function loadReport(id: number) {
   try {
     const data = await fs.getReport(id);
-    activeReportId.value = id;
     filters.clienteId = Number(data.report.id_cliente);
     filters.direction = data.report.direccion;
     filters.year = Number(data.report.ejercicio);
     filters.month = data.report.tipo === "anual" ? 0 : Number(data.report.mes);
     filters.search = "";
     selectedIds.clear();
+    activeReportInvoiceIds.clear();
+    data.invoices.forEach((invoice: Invoice) =>
+      activeReportInvoiceIds.add(Number(invoice.id)),
+    );
     data.invoices.filter(isSelectable).forEach((invoice: Invoice) => selectedIds.add(Number(invoice.id)));
     await Promise.all([loadInvoices(), loadReports()]);
+    activeReportId.value = id;
     showReportsDrawer.value = false;
     setNotice(
       `Corte “${data.report.nombre}” cargado con ${data.invoices.length} facturas.`,
@@ -1249,10 +1395,13 @@ async function loadReport(id: number) {
 }
 async function downloadReport(report: any) {
   try {
-    await fs.exportReport(
-      Number(report.id),
-      report.tipo === "diot" ? "DIOT.txt" : "Reporte.csv",
-    );
+    if (report.tipo === "diot") {
+      await fs.exportReport(Number(report.id), "DIOT.txt");
+      return;
+    }
+    const data = await fs.getReport(Number(report.id));
+    await exportReportWorkbook(data);
+    setNotice("Reporte Excel preparado con formatos y totales.");
   } catch (error: any) {
     setNotice(
       error.response?.data?.error || "No se pudo descargar el reporte.",
@@ -1471,17 +1620,42 @@ function reportRows(items: Invoice[]) {
     paymentLabel(invoice),
     counterpartName(invoice),
     counterpartRfc(invoice),
-    money(invoice.abonado),
-    money(invoice.base_iva_16),
-    money(invoice.base_iva_8),
-    money(invoice.iva_16),
-    money(invoice.iva_8),
-    money(invoice.pendiente),
-    money(invoice.base_exento),
-    money(invoice.base_iva_0),
-    money(invoice.ieps_retenido),
+    money(mxn(invoice, invoice.abonado)),
+    money(mxn(invoice, invoice.base_iva_16)),
+    money(mxn(invoice, invoice.base_iva_8)),
+    money(mxn(invoice, invoice.iva_16)),
+    money(mxn(invoice, invoice.iva_8)),
+    money(mxn(invoice, invoice.pendiente)),
+    money(mxn(invoice, invoice.base_exento)),
+    money(mxn(invoice, invoice.base_iva_0)),
+    money(mxn(invoice, invoice.ieps_retenido)),
     date(invoice.fecha_emision),
   ]);
+}
+function reportTotal(items: Invoice[], field: string) {
+  return items.reduce(
+    (total, invoice) => total + mxn(invoice, invoice[field]),
+    0,
+  );
+}
+function reportFoot(items: Invoice[]) {
+  return [[
+    {
+      content: `TOTALES (${items.length} CFDI)`,
+      colSpan: 4,
+      styles: { halign: "left" as const, cellPadding: { top: 2.2, right: 2, bottom: 2.2, left: 2 } },
+    },
+    money(reportTotal(items, "abonado")),
+    money(reportTotal(items, "base_iva_16")),
+    money(reportTotal(items, "base_iva_8")),
+    money(reportTotal(items, "iva_16")),
+    money(reportTotal(items, "iva_8")),
+    money(reportTotal(items, "pendiente")),
+    money(reportTotal(items, "base_exento")),
+    money(reportTotal(items, "base_iva_0")),
+    money(reportTotal(items, "ieps_retenido")),
+    "",
+  ]];
 }
 function reportTableOptions(data: any, startY: number): UserOptions {
   return {
@@ -1489,8 +1663,17 @@ function reportTableOptions(data: any, startY: number): UserOptions {
     margin: { top: 34, left: 8, right: 8 },
     head: reportHead,
     body: reportRows(data.invoices),
+    foot: reportFoot(data.invoices),
     styles: { fontSize: 6.5, cellPadding: 1.4 },
     headStyles: { fillColor: [20, 20, 19] },
+    footStyles: {
+      fillColor: [210, 210, 207],
+      textColor: [20, 20, 19],
+      fontStyle: "bold",
+      fontSize: 6.5,
+      cellPadding: { top: 2.2, right: 1.4, bottom: 2.2, left: 1.4 },
+      halign: "left",
+    },
     alternateRowStyles: { fillColor: [244, 242, 236] },
   };
 }
@@ -1573,12 +1756,13 @@ async function previewReportPdf(report: any) {
   }
 }
 async function removeInvoice(invoice: Invoice) {
-  if (
-    !window.confirm(
-      `¿Eliminar el CFDI ${invoice.uuid}? También dejará de aparecer en reportes guardados.`,
-    )
-  )
-    return;
+  const confirmed = await confirmDialog({
+    title: "Eliminar CFDI",
+    message: `Se eliminará el CFDI ${invoice.uuid} y dejará de aparecer en los reportes guardados.`,
+    tone: "danger",
+    confirmLabel: "Eliminar CFDI",
+  });
+  if (!confirmed) return;
   try {
     await fs.deleteInvoice(Number(invoice.id));
     selectedIds.delete(Number(invoice.id));
@@ -1587,6 +1771,161 @@ async function removeInvoice(invoice: Invoice) {
   } catch (error: any) {
     setNotice(
       error.response?.data?.error || "No se pudo eliminar el CFDI.",
+      "error",
+    );
+  }
+}
+async function exportReportWorkbook(data: any) {
+  const ExcelJS = await import("exceljs");
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "DespachoApp";
+  workbook.created = new Date();
+  const sheet = workbook.addWorksheet("Reporte fiscal", {
+    views: [{ state: "frozen", ySplit: 5 }],
+    pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+  });
+  const headers = [
+    "UUID", "Dirección", "Fecha", "Tipo", "RFC contraparte", "Nombre contraparte",
+    "Forma de pago", "Método de pago", "Moneda", "Tipo de cambio", "Subtotal",
+    "IVA 16 base", "IVA 16", "IVA 8 base", "IVA 8", "Tasa 0", "Exento",
+    "No objeto", "Retención IVA", "Retención ISR", "Total", "Total MXN", "Productos",
+  ];
+  const lastColumn = headers.length;
+  sheet.mergeCells(1, 1, 1, lastColumn);
+  const titleCell = sheet.getCell(1, 1);
+  titleCell.value = data.report.nombre || "Reporte fiscal";
+  titleCell.font = { name: "Arial", size: 18, bold: true, color: { argb: "FFFFFFFF" } };
+  titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF141413" } };
+  titleCell.alignment = { vertical: "middle", horizontal: "left" };
+  sheet.getRow(1).height = 34;
+
+  sheet.mergeCells(2, 1, 2, 12);
+  sheet.mergeCells(2, 13, 2, lastColumn);
+  sheet.getCell(2, 1).value = `Cliente: ${data.report.cliente || "Sin cliente"}`;
+  sheet.getCell(2, 13).value = `RFC: ${data.report.cliente_rfc || "Sin RFC"}`;
+  sheet.mergeCells(3, 1, 3, 12);
+  sheet.mergeCells(3, 13, 3, lastColumn);
+  sheet.getCell(3, 1).value = `Periodo: ${periodLabel(data.report)}`;
+  sheet.getCell(3, 13).value = `Movimiento: ${data.report.direccion === "emitida" ? "Ingresos" : "Egresos"}`;
+  [2, 3].forEach((rowNumber) => {
+    const row = sheet.getRow(rowNumber);
+    row.height = 22;
+    row.font = { name: "Arial", size: 10, bold: true, color: { argb: "FF242321" } };
+    row.alignment = { vertical: "middle", horizontal: "left" };
+  });
+
+  const headerRow = sheet.getRow(5);
+  headerRow.values = headers;
+  headerRow.height = 30;
+  for (let column = 1; column <= lastColumn; column += 1) {
+    const cell = headerRow.getCell(column);
+    cell.font = { name: "Arial", size: 9, bold: true, color: { argb: "FFFFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF242321" } };
+    cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+    cell.border = { bottom: { style: "medium", color: { argb: "FF38D996" } } };
+  }
+
+  data.invoices.forEach((invoice: Invoice, index: number) => {
+    const exchangeRate = invoice.moneda === "MXN" ? 1 : num(invoice.tipo_cambio) || 1;
+    const row = sheet.addRow([
+      invoice.uuid, invoice.direccion, invoice.fecha_emision, typeLabel(invoice.tipo_comprobante),
+      counterpartRfc(invoice), counterpartName(invoice), invoice.forma_pago || "", invoice.metodo_pago || "",
+      invoice.moneda || "MXN", exchangeRate, num(invoice.subtotal), num(invoice.base_iva_16), num(invoice.iva_16),
+      num(invoice.base_iva_8), num(invoice.iva_8), num(invoice.base_iva_0), num(invoice.base_exento),
+      num(invoice.base_no_objeto), num(invoice.iva_retenido), num(invoice.isr_retenido), num(invoice.total),
+      num(invoice.total) * exchangeRate, invoice.productos || "",
+    ]);
+    row.height = 23;
+    for (let column = 1; column <= lastColumn; column += 1) {
+      const cell = row.getCell(column);
+      cell.font = { name: "Arial", size: 9, color: { argb: "FF242321" } };
+      cell.alignment = { vertical: "middle" };
+      if (index % 2 === 1) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF4F2EC" } };
+    }
+  });
+
+  const firstDataRow = 6;
+  const lastDataRow = Math.max(firstDataRow, firstDataRow + data.invoices.length - 1);
+  const totalRow = sheet.addRow([]);
+  totalRow.getCell(1).value = `TOTALES (${data.invoices.length} CFDI)`;
+  sheet.mergeCells(totalRow.number, 1, totalRow.number, 10);
+  for (let column = 11; column <= 22; column += 1) {
+    const letter = sheet.getColumn(column).letter;
+    totalRow.getCell(column).value = data.invoices.length
+      ? { formula: `SUM(${letter}${firstDataRow}:${letter}${lastDataRow})` }
+      : 0;
+  }
+  totalRow.height = 28;
+  for (let column = 1; column <= lastColumn; column += 1) {
+    const cell = totalRow.getCell(column);
+    cell.font = { name: "Arial", size: 9, bold: true, color: { argb: "FFFFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF141413" } };
+    cell.alignment = { vertical: "middle", horizontal: column <= 10 ? "left" : "right" };
+  }
+
+  for (let column = 11; column <= 22; column += 1) sheet.getColumn(column).numFmt = '"$"#,##0.00';
+  sheet.getColumn(10).numFmt = "0.0000";
+  sheet.columns.forEach((column, index) => {
+    const preferred = [39, 12, 19, 14, 18, 32, 14, 14, 10, 13, 15, 15, 14, 15, 14, 14, 14, 14, 14, 14, 15, 16, 42][index];
+    column.width = preferred;
+  });
+  sheet.getColumn(23).alignment = { vertical: "top", wrapText: true };
+  sheet.autoFilter = { from: { row: 5, column: 1 }, to: { row: lastDataRow, column: lastColumn } };
+  sheet.properties.defaultRowHeight = 20;
+  const buffer = await workbook.xlsx.writeBuffer();
+  const safeName = String(data.report.nombre || `Reporte_${data.report.id}`).replace(/[\\/:*?"<>|]+/g, "-");
+  saveAs(new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${safeName}.xlsx`);
+}
+async function removeInvoiceFromReport(invoice: Invoice) {
+  if (!activeReportId.value || !activeReport.value) return;
+  const confirmed = await confirmDialog({
+    title: "Quitar factura del reporte",
+    message: `Se quitará el CFDI ${invoice.uuid} de “${activeReport.value.nombre}”. El XML y la factura seguirán disponibles.`,
+    tone: "danger",
+    confirmLabel: "Quitar del reporte",
+  });
+  if (!confirmed) return;
+  try {
+    const response = await fs.removeReportInvoice(
+      activeReportId.value,
+      Number(invoice.id),
+    );
+    selectedIds.delete(Number(invoice.id));
+    activeReportInvoiceIds.delete(Number(invoice.id));
+    if ((response.deletedReportIds || []).includes(activeReportId.value))
+      closeActiveReport();
+    setNotice(response.message || "Factura retirada del reporte.");
+    await Promise.all([loadInvoices(), loadReports()]);
+  } catch (error: any) {
+    setNotice(
+      error.response?.data?.error ||
+        "No se pudo quitar la factura del reporte.",
+      "error",
+    );
+  }
+}
+async function removeReport(report: any) {
+  const removesLinkedDiot =
+    report.tipo === "mensual" && report.direccion === "recibida";
+  const confirmed = await confirmDialog({
+    title: "Eliminar reporte",
+    message: removesLinkedDiot
+      ? `Se eliminará “${report.nombre}” y su DIOT vinculada. Las facturas y XML permanecerán disponibles.`
+      : `Se eliminará “${report.nombre}”. Las facturas y XML permanecerán disponibles.`,
+    tone: "danger",
+    confirmLabel: "Eliminar reporte",
+  });
+  if (!confirmed) return;
+  try {
+    const response = await fs.deleteReport(Number(report.id));
+    const deletedIds = (response.deletedReportIds || []).map(Number);
+    if (activeReportId.value && deletedIds.includes(activeReportId.value))
+      closeActiveReport();
+    setNotice(response.message || "Reporte eliminado.");
+    await Promise.all([loadInvoices(), loadReports()]);
+  } catch (error: any) {
+    setNotice(
+      error.response?.data?.error || "No se pudo eliminar el reporte.",
       "error",
     );
   }
@@ -1649,7 +1988,7 @@ watch(
 .fiscal-view {
   min-height: 100%;
   padding: clamp(1rem, 2.5vw, 2rem);
-  background: var(--br-bg);
+  background: transparent;
   color: var(--br-text);
 }
 .fiscal-hero {
@@ -1839,6 +2178,44 @@ label > span {
   max-width: 100%;
   overflow: auto;
 }
+.active-report-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--br-accent);
+  background: color-mix(in srgb, var(--br-accent) 10%, var(--br-panel));
+  padding: 0.8rem 1rem;
+}
+.active-report-bar > div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.active-report-bar small,
+.active-report-bar span {
+  color: var(--br-muted);
+  font: 800 0.62rem "Courier New", monospace;
+}
+.active-report-bar strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.active-report-bar button {
+  flex: 0 0 auto;
+  border: 1px solid var(--br-line-strong);
+  background: transparent;
+  color: var(--br-text);
+  padding: 0.55rem 0.7rem;
+  font: 800 0.62rem "Courier New", monospace;
+  cursor: pointer;
+}
+.active-report-bar button:hover {
+  border-color: var(--br-accent);
+  color: var(--br-accent);
+}
 table {
   width: 100%;
   min-width: 68rem;
@@ -1874,7 +2251,7 @@ tbody tr.selected {
   text-align: right;
 }
 .actions-col {
-  width: 8rem;
+  width: 12rem;
 }
 td time,
 td small {
@@ -1976,6 +2353,14 @@ td strong {
 }
 .row-actions .danger:hover {
   background: var(--br-danger, #96382e);
+}
+.row-actions .unlink {
+  border-color: var(--br-warning-line, #d0a928);
+  color: var(--br-warning-line, #d0a928);
+}
+.row-actions .unlink:hover {
+  background: var(--br-warning-line, #d0a928);
+  color: var(--br-accent-text);
 }
 .skeleton-row span {
   display: block;
@@ -2243,6 +2628,11 @@ td strong {
   color: #56534c;
   font-size: 0.78rem;
 }
+.fiscal-note.report-error {
+  border-color: #c43c2f;
+  color: #9f2f25;
+  font-weight: 700;
+}
 @keyframes skeleton {
   to {
     background-position: -200% 0;
@@ -2484,6 +2874,14 @@ td strong {
 .report-chip button:hover {
   background: var(--br-accent);
   color: var(--br-accent-text);
+}
+.report-chip .report-delete {
+  border-color: var(--br-danger-line, #e06a5c);
+  color: var(--br-danger-line, #e06a5c);
+}
+.report-chip .report-delete:hover {
+  background: var(--br-danger, #96382e);
+  color: #fff;
 }
 .pdf-modal {
   width: min(90rem, calc(100vw - 2rem));

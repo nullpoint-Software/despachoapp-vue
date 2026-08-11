@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import AppToast from '@/components/ui/AppToast.vue';
+import AppDialog from '@/components/ui/AppDialog.vue';
 
 </script>
 
 <template>
 
 <AppToast />
+<AppDialog />
 <Suspense>
   <RouterView :key="$route.path" />
 </Suspense>

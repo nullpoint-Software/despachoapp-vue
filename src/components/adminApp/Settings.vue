@@ -113,87 +113,17 @@
           <i class="pi pi-user-plus mr-2"></i> Añadir nuevo usuario
         </h2>
 
-        <!-- vista previa imagen -->
-        <div class="flex items-center space-x-4 mb-4">
-          <div class="new-user-avatar form-control relative">
-            <img :src="newUserPreview || defaultAvatar"
-              class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 pi pi-user" />
-            <label for="new-file"
-              class="absolute bottom-0 right-0 p-1 rounded-full cursor-pointer">
-              <i class="pi pi-camera text-lg"></i>
-            </label>
-            <input id="new-file" type="file" accept="image/*" @change="onNewFileChange" class="hidden" />
+        <div class="create-user-launch">
+          <div class="create-user-launch__mark"><i class="pi pi-user-plus" aria-hidden="true"></i></div>
+          <div>
+            <strong>Alta guiada del equipo</strong>
+            <p>Completa identidad, contacto y acceso en tres pasos breves.</p>
           </div>
-          <span class="text-black font-medium">Vista previa</span>
+          <button type="button" class="create-user-button" @click="openCreateUserModal">
+            Comenzar registro <i class="pi pi-arrow-right"></i>
+          </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-          <!-- Nombre completo -->
-          <div class="form-control relative">
-            <i class="pi pi-id-card absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-            <input type="text" v-model="newUser.nombre" placeholder="Nombre completo"
-              class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2" />
-          </div>
-          <!-- Correo -->
-          <div class="form-control relative">
-            <i class="pi pi-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-            <input type="email" v-model="newUser.email" placeholder="Correo electrónico" :class="[
-              'w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2',
-              isEmailValid ? 'border-gray-300' : 'border-red-500'
-            ]" />
-          </div>
-          <!-- Teléfono -->
-          <div class="form-control relative">
-            <i class="pi pi-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-            <input type="text" v-model="newUser.telefono" placeholder="Teléfono" :class="[
-              'w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2',
-              isPhoneValid ? 'border-gray-300' : 'border-red-500'
-            ]" />
-          </div>
-          <!-- Puesto -->
-          <div class="form-control relative">
-            <i class="pi pi-tags absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-            <select v-model="newUser.puesto"
-              class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2">
-              <option disabled value="">Seleccionar puesto</option>
-              <option>Administrador</option>
-              <option>Empleado</option>
-            </select>
-          </div>
-          <!-- Username -->
-          <div class="form-control relative">
-            <i class="pi pi-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-            <input type="text" v-model="newUser.username" placeholder="Nombre de usuario" autocomplete="new-password"
-              class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2" />
-          </div>
-          <!-- Password -->
-          <div class="form-control relative flex items-center">
-            <i class="pi pi-key absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-            <input :type="showNewPassword ? 'text' : 'password'" v-model="newUser.password" placeholder="Contraseña" autocomplete="new-password"
-              class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2" />
-            <button @click="showNewPassword = !showNewPassword"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-              <i :class="showNewPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
-            </button>
-          </div>
-          <!-- Confirmar Password -->
-          <div class="confirm-password-field form-control relative flex items-center">
-            <i class="pi pi-key absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-            <input :type="showConfirmPassword ? 'text' : 'password'" v-model="newUser.confirmPassword"
-              placeholder="Confirmar password"
-              class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2" />
-            <button @click="showConfirmPassword = !showConfirmPassword"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-              <i :class="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
-            </button>
-          </div>
-        </div>
-
-        <button @click="createUser" :disabled="!canCreateUser"
-          type="button"
-          class="create-user-button w-full flex items-center justify-center px-5 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition disabled:opacity-50">
-          <i class="pi pi-plus-circle mr-2"></i> Crear usuario
-        </button>
       </section>
     </div>
 
@@ -224,6 +154,79 @@
       </div>
     </transition>
 
+    <!-- CREATE USER / STEPPED MODAL -->
+    <transition name="fade-scale">
+      <div v-if="showCreateUserModal" class="user-wizard-overlay" @click.self="closeCreateUserModal">
+        <section class="user-wizard" role="dialog" aria-modal="true" aria-labelledby="user-wizard-title">
+          <header>
+            <div>
+              <p>CUENTA / NUEVO USUARIO</p>
+              <h2 id="user-wizard-title">{{ wizardTitles[createUserStep - 1] }}</h2>
+            </div>
+            <button type="button" aria-label="Cerrar" @click="closeCreateUserModal">×</button>
+          </header>
+
+          <nav class="wizard-progress" aria-label="Progreso del registro">
+            <button v-for="(title, index) in wizardTitles" :key="title" type="button"
+              :class="{ active: createUserStep === index + 1, complete: createUserStep > index + 1 }"
+              :disabled="index + 1 > createUserStep" @click="createUserStep = index + 1">
+              <b>{{ String(index + 1).padStart(2, '0') }}</b><span>{{ title }}</span>
+            </button>
+          </nav>
+
+          <div class="wizard-body">
+            <div v-if="createUserStep === 1" class="wizard-step identity-step">
+              <div class="wizard-avatar">
+                <div class="wizard-avatar__header">
+                  <span>IMAGEN / 01</span>
+                  <small>{{ newUserPreview ? 'VISTA PREVIA LISTA' : 'FOTO OPCIONAL' }}</small>
+                </div>
+                <div class="wizard-avatar__frame">
+                  <img :src="newUserPreview || defaultAvatar" alt="Vista previa del nuevo usuario" />
+                  <span class="wizard-avatar__scan" aria-hidden="true"></span>
+                  <label for="wizard-user-photo" class="wizard-avatar__camera" aria-label="Seleccionar foto de perfil">
+                    <i class="pi pi-camera"></i>
+                  </label>
+                </div>
+                <label for="wizard-user-photo" class="wizard-avatar__upload">
+                  <span><b>{{ newUserPreview ? 'Cambiar imagen' : 'Elegir imagen' }}</b><small>JPG o PNG · máximo 5 MB</small></span>
+                  <i class="pi pi-arrow-up-right"></i>
+                </label>
+                <input id="wizard-user-photo" type="file" accept="image/*" hidden @change="onNewFileChange" />
+              </div>
+              <div class="wizard-fields">
+                <label class="wizard-field wizard-field--wide"><span>Nombre completo</span><input v-model.trim="newUser.nombre" type="text" placeholder="Nombre y apellidos" /></label>
+                <label class="wizard-field"><span>Teléfono</span><input :value="newUser.telefono" type="tel" inputmode="numeric" placeholder="317 878 1234" maxlength="12" @input="formatNewUserPhone" /><small>10 dígitos, con formato automático.</small></label>
+                <label class="wizard-field"><span>Puesto</span><select v-model="newUser.puesto"><option disabled value="">Selecciona un puesto</option><option>Administrador</option><option>Empleado</option></select></label>
+                <div class="wizard-field wizard-field--wide"><span>Correo electrónico</span><div class="email-builder"><input v-model.trim="emailLocalPart" type="text" placeholder="nombre.apellido" aria-label="Usuario del correo" /><b>@</b><input v-model.trim="emailDomain" list="email-domains" type="text" placeholder="gmail.com" aria-label="Dominio del correo" /></div><datalist id="email-domains"><option value="gmail.com"/><option value="outlook.com"/><option value="hotmail.com"/><option value="yahoo.com"/></datalist><small>{{ newUser.email || 'Escribe el nombre antes del @' }}</small></div>
+              </div>
+            </div>
+
+            <div v-else-if="createUserStep === 2" class="wizard-step access-step">
+              <div class="access-intro"><i class="pi pi-key"></i><div><strong>Credenciales de acceso</strong><p>Usa una contraseña exclusiva para esta cuenta.</p></div></div>
+              <label class="wizard-field"><span>Nombre de usuario</span><input v-model.trim="newUser.username" type="text" autocomplete="off" placeholder="usuario" /></label>
+              <label class="wizard-field password-field"><span>Contraseña</span><div><input v-model="newUser.password" :type="showNewPassword ? 'text' : 'password'" autocomplete="new-password" placeholder="Mínimo 8 caracteres" /><button type="button" :aria-label="showNewPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="showNewPassword = !showNewPassword"><i :class="showNewPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i></button></div></label>
+              <div class="password-strength" :data-level="passwordStrength.level"><div><span v-for="index in 4" :key="index" :class="{ filled: index <= passwordStrength.bars }"></span></div><p><b>{{ passwordStrength.label }}</b><small>{{ passwordStrength.hint }}</small></p></div>
+              <label class="wizard-field password-field"><span>Confirmar contraseña</span><div><input v-model="newUser.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" autocomplete="new-password" placeholder="Repite la contraseña" /><button type="button" :aria-label="showConfirmPassword ? 'Ocultar confirmación' : 'Mostrar confirmación'" @click="showConfirmPassword = !showConfirmPassword"><i :class="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i></button></div><small :class="{ valid: isPasswordMatch }">{{ newUser.confirmPassword ? (isPasswordMatch ? 'Las contraseñas coinciden.' : 'Las contraseñas no coinciden.') : 'Confirma la contraseña.' }}</small></label>
+            </div>
+
+            <div v-else class="wizard-step review-step">
+              <div class="review-identity"><img :src="newUserPreview || defaultAvatar" alt="Nuevo usuario" /><div><span>LISTO PARA CREAR</span><h3>{{ newUser.nombre }}</h3><p>{{ newUser.puesto }}</p></div></div>
+              <dl><div><dt>Correo</dt><dd>{{ newUser.email }}</dd></div><div><dt>Teléfono</dt><dd>{{ newUser.telefono }}</dd></div><div><dt>Usuario</dt><dd>{{ newUser.username }}</dd></div><div><dt>Seguridad</dt><dd>{{ passwordStrength.label }}</dd></div></dl>
+              <p class="review-note"><i class="pi pi-info-circle"></i> La contraseña se enviará cifrada y no aparecerá en esta confirmación.</p>
+            </div>
+          </div>
+
+          <footer>
+            <button v-if="createUserStep > 1" type="button" class="wizard-secondary" @click="createUserStep--"><i class="pi pi-arrow-left"></i> Anterior</button>
+            <span v-else></span>
+            <button v-if="createUserStep < 3" type="button" class="wizard-primary" :disabled="!canContinueCreateUser" @click="createUserStep++">Continuar <i class="pi pi-arrow-right"></i></button>
+            <button v-else type="button" class="wizard-primary" :disabled="!canCreateUser || creatingUser" @click="createUser"><i class="pi pi-user-plus"></i> {{ creatingUser ? 'Creando…' : 'Crear usuario' }}</button>
+          </footer>
+        </section>
+      </div>
+    </transition>
+
     <!-- USER DETAILS MODAL -->
     <transition name="fade-scale">
       <div v-if="modalAbierto" @click.self="modalAbierto = false; isDropdown = false"
@@ -231,16 +234,20 @@
         <div
           class="modal-content bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[92vh] p-8 overflow-y-auto relative">
           <!-- HEADER with delete + close -->
-          <div class="settings-detail-header standard-modal-header flex justify-between items-center border-b pb-4 mb-6 space-x-4">
-            <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="modalAbierto=false;isDropdown=false">×</button>
-            <div class="flex-1">
+          <header class="settings-detail-header">
+            <div>
+              <p>CUENTA / EQUIPO</p>
               <h3 class="text-2xl font-bold">Detalles del usuario</h3>
             </div>
-            <button @click.stop="confirmDialogVisible = true; userToDelete = usuarioSeleccionado"
-              class="text-red-600 hover:text-red-800 mr-4 cursor-pointer" title="Eliminar usuario">
-              <i class="pi pi-trash text-2xl"></i>
-            </button>
-          </div>
+            <div class="detail-header-actions">
+              <button type="button" class="detail-delete-button"
+                @click.stop="confirmDialogVisible = true; userToDelete = usuarioSeleccionado">
+                <i class="pi pi-trash"></i><span>Eliminar</span>
+              </button>
+              <button type="button" class="detail-close-button" aria-label="Cerrar detalles del usuario"
+                @click="modalAbierto=false;isDropdown=false">×</button>
+            </div>
+          </header>
           <!-- USER INFO -->
           <div class="detail-profile flex flex-col items-center mb-2">
             <img :src="usuarioSeleccionado.imagen && usuarioSeleccionado.imagen !== 'null'
@@ -265,7 +272,7 @@
             </div>
           </div>
           <div class="status-control text-center mb-4">
-            <span class="font-semibold block mb-2">Activo</span>
+            <span class="font-semibold block mb-2">{{ usuarioSeleccionado.activo ? 'Cuenta activa' : 'Cuenta inactiva' }}</span>
             <button @click="usuarioSeleccionado.activo = !usuarioSeleccionado.activo; updateUserStatus(usuarioSeleccionado)"
               :class="usuarioSeleccionado.activo ? 'bg-blue-600' : 'bg-gray-300'"
               class="w-10 h-5 rounded-full relative transition-colors duration-200">
@@ -275,35 +282,32 @@
               </span>
             </button>
           </div>
-          <!-- Sección en dos columnas -->
-          <div class="account-grid flex flex-wrap justify-center gap-12 mb-6">
-            <!-- Columna izquierda -->
-            <div class="text-center">
-              <p class="font-medium mb-2">Nombre de usuario:</p>
-              <span class="text-lg block mb-4">{{ usuarioSeleccionado.username }}</span>
-
-              <p class="font-medium mb-2">Contraseña:</p>
-              <div class="flex items-center justify-center">
-                <span class="mr-2 text-lg">
-                  {{ passwordVisible ? usuarioSeleccionado.password : '••••••••' }}
-                </span>
-                <button @click="verPassword" class="text-blue-600 hover:underline text-sm focus:outline-none cursor-pointer">
-                  Ver
-                </button>
-              </div>
-
+          <!-- Datos de acceso y contacto -->
+          <section class="account-grid" aria-label="Datos de acceso y contacto">
+            <div class="account-grid__heading">
+              <div><span>FICHA / 02</span><h4>Acceso y contacto</h4></div>
+              <small>Información protegida de la cuenta</small>
             </div>
-
-
-            <!-- Columna derecha -->
-            <div class="text-center">
-              <p class="font-medium mb-2">Correo electrónico:</p>
-              <span class="text-lg block mb-4">{{ usuarioSeleccionado.email }}</span>
-
-              <p class="font-medium mb-2">Teléfono:</p>
-              <span class="text-lg">{{ usuarioSeleccionado.telefono }}</span>
-            </div>
-          </div>
+            <article class="account-item">
+              <i class="pi pi-user"></i>
+              <div><small>Nombre de usuario</small><strong>{{ usuarioSeleccionado.username }}</strong></div>
+            </article>
+            <article class="account-item">
+              <i class="pi pi-envelope"></i>
+              <div><small>Correo electrónico</small><strong>{{ usuarioSeleccionado.email || 'Sin registrar' }}</strong></div>
+            </article>
+            <article class="account-item account-item--password">
+              <i class="pi pi-key"></i>
+              <div><small>Contraseña</small><strong>{{ passwordVisible ? usuarioSeleccionado.password : '••••••••' }}</strong></div>
+              <button type="button" @click="verPassword" :aria-label="passwordVisible ? 'Volver a verificar contraseña' : 'Ver contraseña'">
+                <i :class="passwordVisible ? 'pi pi-eye-slash' : 'pi pi-eye'"></i><span>{{ passwordVisible ? 'Verificar otra vez' : 'Mostrar' }}</span>
+              </button>
+            </article>
+            <article class="account-item">
+              <i class="pi pi-phone"></i>
+              <div><small>Teléfono</small><strong>{{ formatPhoneValue(usuarioSeleccionado.telefono) || 'Sin registrar' }}</strong></div>
+            </article>
+          </section>
           <!-- PERMISOS in two columns -->
           <p class="permissions-title text-xl font-semibold mb-4"><i class="pi pi-shield mr-2"></i>Permisos para el rol "{{
             usuarioSeleccionado.puesto }}"</p>
@@ -331,10 +335,11 @@
 
 <script setup>
 import { as, ps, us } from '@/service/adminApp/client'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import defaultAvatar from '@/assets/img/user.jpg'
 import imageCompression from "browser-image-compression"; 
 import { useAppToast } from '@/composables/useAppToast';
+import { useAppDialog } from '@/composables/useAppDialog';
 import ConfirmDeleteDialog from '@/components/adminApp/Dialogs/ConfirmDeleteDialog.vue';
 import PaletteSelector from '@/components/ui/PaletteSelector.vue';
 import { useFontSize } from '@/composables/useFontSize';
@@ -364,6 +369,7 @@ async function cancelDelete() {
   userToDelete.value = null;
 }
 const toast = useAppToast();
+const { prompt: promptDialog } = useAppDialog();
 // PERFIL
 const userInfo = await as.getUserInfo();
 const isAdmin = userInfo && userInfo.level === 'Administrador';
@@ -403,7 +409,6 @@ const filteredUsers = computed(() =>
 )
 
 // -------------- CONTRASEÑA MAESTRA --------------
-const MASTER_PASSWORD = 'Hanekawa'
 // -------------- FIN CONTRASEÑA MAESTRA --------------
 
 function abrirModal(u) {
@@ -417,20 +422,25 @@ function openFromSearch(u) {
   showSearchModal.value = false
 }
 async function verPassword() {
-  const entrada = prompt('Por seguridad, ingresa tu contraseña:')
-  const userVerify = await as.loginUser({ username: localStorage.getItem("username"), password: entrada }); //check si contrasena es correcta
-  const userInfo = await as.getUserInfo() //actualiza la informacion del usuario para actualizar localstorage
-  if (entrada && userVerify) {
-    if (userInfo && localStorage.getItem('level') == "Administrador") { //si token es valido userinfo es true
-      const userbd = await us.getUsuarioPS(usuarioSeleccionado.value.id_usuario)
-      usuarioSeleccionado.value.password = userbd.password
-      passwordVisible.value = true
-    } else {
-      alert('No tienes permiso para hacer esto!')
-    }
-
-  } else {
-    alert('Contraseña incorrecta')
+  const entrada = await promptDialog({
+    title: 'Ver contraseña de usuario',
+    message: 'Confirma tu contraseña de acceso para consultar este dato protegido.',
+    inputLabel: 'Tu contraseña',
+    inputType: 'password',
+    placeholder: 'Escribe tu contraseña',
+    confirmLabel: 'Verificar y mostrar',
+  })
+  if (!entrada) return
+  try {
+    const userbd = await us.getUsuarioPS(usuarioSeleccionado.value.id_usuario, entrada)
+    usuarioSeleccionado.value.password = userbd.password
+    passwordVisible.value = true
+    window.setTimeout(() => {
+      passwordVisible.value = false
+      if (usuarioSeleccionado.value) delete usuarioSeleccionado.value.password
+    }, 20000)
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Verificación rechazada', detail: error?.response?.data?.error || 'No fue posible verificar tu identidad.', life: 4000 })
   }
 }
 
@@ -552,6 +562,59 @@ const newUser = ref({
 const newUserPreview = ref('')
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
+const showCreateUserModal = ref(false)
+const createUserStep = ref(1)
+const creatingUser = ref(false)
+const emailLocalPart = ref('')
+const emailDomain = ref('gmail.com')
+const wizardTitles = ['Identidad y contacto', 'Acceso', 'Confirmación']
+
+const resetNewUser = () => {
+  Object.assign(newUser.value, {
+    nombre: '',
+    email: '',
+    telefono: '',
+    username: '',
+    puesto: '',
+    imagen: '',
+    password: '',
+    confirmPassword: ''
+  })
+  emailLocalPart.value = ''
+  emailDomain.value = 'gmail.com'
+  newUserPreview.value = ''
+  showNewPassword.value = false
+  showConfirmPassword.value = false
+  createUserStep.value = 1
+}
+
+function openCreateUserModal() {
+  resetNewUser()
+  showCreateUserModal.value = true
+}
+
+function closeCreateUserModal() {
+  if (creatingUser.value) return
+  showCreateUserModal.value = false
+  resetNewUser()
+}
+
+function formatPhoneValue(value = '') {
+  const digits = String(value).replace(/\D/g, '').slice(0, 10)
+  return [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 10)].filter(Boolean).join(' ')
+}
+
+function formatNewUserPhone(event) {
+  newUser.value.telefono = formatPhoneValue(event.target.value)
+}
+
+watch([emailLocalPart, emailDomain], ([localPart, domain]) => {
+  const cleanLocal = localPart.replace(/\s|@/g, '')
+  const cleanDomain = domain.replace(/^@+|\s/g, '') || 'gmail.com'
+  if (cleanLocal !== localPart) emailLocalPart.value = cleanLocal
+  if (cleanDomain !== domain) emailDomain.value = cleanDomain
+  newUser.value.email = cleanLocal ? `${cleanLocal}@${cleanDomain}` : ''
+})
 
 async function compressToBase64(file) {
   const options = {
@@ -571,7 +634,7 @@ async function onFileChange(e) {
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
     if (f.size > maxSizeBytes) {
-      alert(`La imagen no debe superar los ${maxSizeMB}MB.`);
+      toast.add({ severity: 'warn', summary: 'Imagen demasiado grande', detail: `La imagen no debe superar los ${maxSizeMB} MB.`, life: 3500 });
       e.target.value = "";
       return;
     }
@@ -589,7 +652,7 @@ async function onNewFileChange(e) {
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
     if (f.size > maxSizeBytes) {
-      alert(`La imagen no debe superar los ${maxSizeMB}MB.`);
+      toast.add({ severity: 'warn', summary: 'Imagen demasiado grande', detail: `La imagen no debe superar los ${maxSizeMB} MB.`, life: 3500 });
       e.target.value = "";
       return;
     }
@@ -603,12 +666,32 @@ async function onNewFileChange(e) {
 }
 
 
-const isEmailValid = computed(() => /\S+@\S+\.\S+/.test(newUser.value.email))
-const isPhoneValid = computed(() => /^\d{7,}$/.test(newUser.value.telefono))
+const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newUser.value.email))
+const isPhoneValid = computed(() => newUser.value.telefono.replace(/\D/g, '').length === 10)
 const isPasswordMatch = computed(
   () =>
     newUser.value.password && newUser.value.password === newUser.value.confirmPassword
 )
+const passwordStrength = computed(() => {
+  const password = newUser.value.password
+  if (!password) return { bars: 0, level: 'empty', label: 'Sin evaluar', hint: 'Usa 8 caracteres o más.' }
+
+  let score = 0
+  if (password.length >= 8) score++
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
+  if (/\d/.test(password)) score++
+  if (/[^A-Za-z0-9]/.test(password)) score++
+  if (password.length >= 12 && score < 4) score++
+  const bars = Math.min(score, 4)
+  const levels = [
+    { level: 'weak', label: 'Muy débil', hint: 'Añade longitud, mayúsculas y números.' },
+    { level: 'weak', label: 'Débil', hint: 'Combina mayúsculas, números y símbolos.' },
+    { level: 'medium', label: 'Aceptable', hint: 'Un símbolo la hará más segura.' },
+    { level: 'good', label: 'Buena', hint: 'Cumple el nivel recomendado.' },
+    { level: 'strong', label: 'Fuerte', hint: 'Buena combinación y longitud.' },
+  ]
+  return { bars, ...levels[bars] }
+})
 const canCreateUser = computed(
   () =>
     newUser.value.nombre &&
@@ -616,8 +699,18 @@ const canCreateUser = computed(
     isPhoneValid.value &&
     newUser.value.puesto &&
     newUser.value.username &&
-    isPasswordMatch.value
+    isPasswordMatch.value &&
+    passwordStrength.value.bars >= 3
 )
+const canContinueCreateUser = computed(() => {
+  if (createUserStep.value === 1) {
+    return Boolean(newUser.value.nombre && isEmailValid.value && isPhoneValid.value && newUser.value.puesto)
+  }
+  if (createUserStep.value === 2) {
+    return Boolean(newUser.value.username && isPasswordMatch.value && passwordStrength.value.bars >= 3)
+  }
+  return canCreateUser.value
+})
 
 const updateLevel = async (level) => {
   // Tu lógica para actualizar el nivel
@@ -650,43 +743,42 @@ const updateLevel = async (level) => {
 
 async function createUser() {
   if (!canCreateUser.value) return
-  // usuarios.value.push({
-  //   ...newUser.value,
-  //   id_usuario: crypto.randomUUID(),
-  //   fecha_registro: new Date().toISOString(),
-  //   imagen: newUser.value.imagen || null
-  // })
-  console.log("trying to create user: ", newUser.value);
+  creatingUser.value = true
   try {
     const userInfo = await as.getUserInfo() //actualiza la informacion del usuario para actualizar localstorage
     if (localStorage.getItem('level') == "Administrador" && userInfo) {
-      await us.addUsuario(newUser.value)
-      window.location.reload();
+      const payload = { ...newUser.value }
+      delete payload.confirmPassword
+      await us.addUsuario(payload)
+      usuarios.value = await us.getUsuarios()
+      toast.add({
+        severity: 'success',
+        summary: 'Usuario creado',
+        detail: `${newUser.value.nombre} ya puede acceder a la aplicación.`,
+        life: 3500,
+      })
+      showCreateUserModal.value = false
+      resetNewUser()
     } else {
       toast.add({
         severity: "error",
-        summary: "Error",
-        detail: "No puedes realizar esta operacion!",
+        summary: "Acceso restringido",
+        detail: "Solo un administrador puede crear usuarios.",
         life: 3000,
       });
     }
 
   } catch (error) {
     console.error(error);
+    toast.add({
+      severity: 'error',
+      summary: 'No se creó el usuario',
+      detail: error?.response?.data?.error || 'Revisa los datos e inténtalo de nuevo.',
+      life: 4000,
+    })
+  } finally {
+    creatingUser.value = false
   }
-
-  Object.assign(newUser.value, {
-    nombre: '',
-    email: '',
-    telefono: '',
-    username: '',
-    puesto: '',
-    imagen: '',
-    password: '',
-    confirmPassword: ''
-  })
-  newUserPreview.value = ''
-
 }
 </script>
 
@@ -718,7 +810,7 @@ async function createUser() {
   margin-top: 5rem !important;
   overflow-x: clip;
   padding: clamp(1rem, 2.5vw, 2rem) !important;
-  background: var(--br-bg);
+  background: transparent;
   color: var(--br-text);
   box-sizing: border-box;
 }
@@ -1269,6 +1361,659 @@ async function createUser() {
   color: var(--br-control-text, #141413);
   font: 700 0.75rem/1.25 "Courier New", monospace;
 }
+
+.create-user-launch {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.25rem;
+  min-height: 9rem;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel-2);
+  padding: 1.25rem;
+}
+.create-user-launch__mark {
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  place-items: center;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-control);
+  color: var(--br-accent);
+  font-size: 1.6rem;
+}
+.create-user-launch strong {
+  display: block;
+  color: var(--br-control-text);
+  font: 900 1.05rem Arial, sans-serif;
+}
+.create-user-launch p {
+  max-width: 36rem;
+  margin: 0.35rem 0 0;
+  color: var(--br-control-muted);
+  font: 700 0.72rem/1.45 "Courier New", monospace;
+}
+.create-user-launch .create-user-button {
+  width: auto !important;
+  min-height: 3rem;
+  padding: 0.75rem 1rem !important;
+}
+
+.user-wizard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--br-bg) 82%, transparent);
+  backdrop-filter: blur(8px);
+}
+.user-wizard {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  width: min(62rem, calc(100vw - 2rem));
+  max-height: min(47rem, calc(100vh - 2rem));
+  overflow: hidden;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel);
+  color: var(--br-text);
+  box-shadow: 10px 10px 0 var(--br-accent);
+}
+.user-wizard > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 6.5rem;
+  border-bottom: 1px solid var(--br-line-strong);
+  padding: 1.35rem 1.5rem;
+}
+.user-wizard > header p {
+  margin: 0 0 0.4rem;
+  color: var(--br-accent);
+  font: 800 0.64rem "Courier New", monospace;
+  letter-spacing: 0.1em;
+}
+.user-wizard > header h2 {
+  margin: 0;
+  color: var(--br-text);
+  font: 900 clamp(1.75rem, 3.3vw, 2.75rem)/0.95 Arial, sans-serif;
+  letter-spacing: -0.045em;
+}
+.user-wizard > header button {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-accent);
+  color: var(--br-accent-ink, #101010);
+  font: 700 1.7rem/1 Arial, sans-serif;
+  cursor: pointer;
+}
+.wizard-progress {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--br-line-strong);
+}
+.wizard-progress button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 4rem;
+  border: 0;
+  border-right: 1px solid var(--br-line);
+  background: var(--br-panel-2);
+  color: var(--br-muted);
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+.wizard-progress button:last-child { border-right: 0; }
+.wizard-progress button.active {
+  background: var(--br-control);
+  color: var(--br-control-text);
+  box-shadow: inset 0 -4px 0 var(--br-accent);
+}
+.wizard-progress button.complete { color: var(--br-accent); cursor: pointer; }
+.wizard-progress b {
+  font: 900 1.1rem Arial, sans-serif;
+}
+.wizard-progress span {
+  font: 800 0.64rem/1.2 "Courier New", monospace;
+  text-transform: uppercase;
+}
+.wizard-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+.wizard-step { min-height: 18rem; }
+.identity-step {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+}
+.wizard-avatar {
+  align-self: start;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel-2);
+  padding: 0.7rem;
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--br-accent) 72%, transparent);
+}
+.wizard-avatar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2rem;
+  color: var(--br-text);
+  font: 800 0.56rem "Courier New", monospace;
+  letter-spacing: 0.07em;
+}
+.wizard-avatar__header small {
+  color: var(--br-accent);
+  font: inherit;
+  letter-spacing: 0;
+}
+.wizard-avatar__frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--br-line-strong);
+  background:
+    linear-gradient(var(--br-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--br-line) 1px, transparent 1px),
+    var(--br-control);
+  background-size: 1.5rem 1.5rem;
+}
+.wizard-avatar__frame::before,
+.wizard-avatar__frame::after {
+  position: absolute;
+  z-index: 2;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-color: var(--br-accent);
+  content: "";
+  pointer-events: none;
+}
+.wizard-avatar__frame::before {
+  top: 0.5rem;
+  left: 0.5rem;
+  border-top: 2px solid var(--br-accent);
+  border-left: 2px solid var(--br-accent);
+}
+.wizard-avatar__frame::after {
+  right: 0.5rem;
+  bottom: 0.5rem;
+  border-right: 2px solid var(--br-accent);
+  border-bottom: 2px solid var(--br-accent);
+}
+.wizard-avatar__frame img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  transition: transform 220ms ease, filter 220ms ease;
+}
+.wizard-avatar:hover .wizard-avatar__frame img {
+  transform: scale(1.025);
+  filter: contrast(1.04);
+}
+.wizard-avatar__scan {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0 5px, color-mix(in srgb, var(--br-bg) 8%, transparent) 5px 6px);
+  pointer-events: none;
+}
+.wizard-avatar .wizard-avatar__camera {
+  position: absolute;
+  right: 0.65rem;
+  bottom: 0.65rem;
+  display: grid;
+  width: 3rem;
+  min-height: 3rem;
+  margin: 0;
+  place-items: center;
+  border: 1px solid var(--br-accent-ink, #101010);
+  background: var(--br-accent);
+  color: var(--br-accent-ink, #101010);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.wizard-avatar .wizard-avatar__camera:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 3px 3px 0 var(--br-accent-ink, #101010);
+}
+.wizard-avatar .wizard-avatar__upload {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 3.7rem;
+  margin-top: 0.65rem;
+  border: 1px solid var(--br-line-strong);
+  background: transparent;
+  color: var(--br-text);
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+.wizard-avatar .wizard-avatar__upload:hover {
+  border-color: var(--br-accent);
+  background: color-mix(in srgb, var(--br-accent) 10%, transparent);
+}
+.wizard-avatar__upload > span {
+  display: grid;
+  gap: 0.18rem;
+  text-align: left;
+}
+.wizard-avatar__upload b {
+  font: 900 0.7rem Arial, sans-serif;
+}
+.wizard-avatar__upload small {
+  color: var(--br-muted);
+  font: 700 0.55rem "Courier New", monospace;
+}
+.wizard-avatar__upload > i { color: var(--br-accent); }
+.wizard-avatar > p {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.65rem 0 0;
+  color: var(--br-muted);
+  font: 700 0.55rem/1.35 "Courier New", monospace;
+}
+.wizard-avatar > p i { color: var(--br-accent); }
+.wizard-avatar label:focus-visible {
+  outline: 2px solid var(--br-accent);
+  outline-offset: 2px;
+}
+.wizard-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 1rem;
+}
+.wizard-field {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.wizard-field--wide { grid-column: 1 / -1; }
+.wizard-field > span,
+.wizard-field > label {
+  color: var(--br-muted);
+  font: 800 0.64rem "Courier New", monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.wizard-field input,
+.wizard-field select,
+.email-builder {
+  width: 100%;
+  min-height: 3.4rem;
+  border: 1px solid var(--br-line-strong);
+  border-radius: 0;
+  outline: 0;
+  background: var(--br-control);
+  color: var(--br-control-text);
+  font: 700 0.95rem "Courier New", monospace;
+}
+.wizard-field input,
+.wizard-field select { padding: 0.85rem 1rem; }
+.wizard-field input:focus,
+.wizard-field select:focus,
+.email-builder:focus-within { box-shadow: inset 0 -3px 0 var(--br-accent); }
+.wizard-field small {
+  min-height: 1em;
+  color: var(--br-muted);
+  font: 700 0.62rem/1.3 "Courier New", monospace;
+}
+.wizard-field small.valid { color: var(--br-success, #3bd68a); }
+.email-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(9rem, 0.8fr);
+  align-items: center;
+  overflow: hidden;
+}
+.email-builder input {
+  min-height: 3.3rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none !important;
+}
+.email-builder b { color: var(--br-accent); font: 900 1.15rem Arial, sans-serif; }
+.access-step {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+.access-intro {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-left: 4px solid var(--br-accent);
+  background: var(--br-panel-2);
+  padding: 1rem;
+}
+.access-intro > i { color: var(--br-accent); font-size: 1.4rem; }
+.access-intro strong { color: var(--br-text); font: 900 1rem Arial, sans-serif; }
+.access-intro p { margin: 0.2rem 0 0; color: var(--br-muted); font: 700 0.68rem "Courier New", monospace; }
+.password-field > div { position: relative; }
+.password-field input { padding-right: 3.25rem; }
+.password-field button {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  display: grid;
+  width: 3.15rem;
+  height: calc(100% - 2px);
+  place-items: center;
+  border: 0;
+  border-left: 1px solid var(--br-line);
+  background: var(--br-panel-2);
+  color: var(--br-accent);
+  cursor: pointer;
+}
+.password-strength {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 1fr);
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid var(--br-line);
+  padding: 0.85rem 1rem;
+}
+.password-strength > div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem; }
+.password-strength > div span { height: 0.45rem; background: var(--br-line); }
+.password-strength[data-level="weak"] .filled { background: var(--br-danger-line, #e85b4a); }
+.password-strength[data-level="medium"] .filled { background: #e8a83d; }
+.password-strength[data-level="good"] .filled,
+.password-strength[data-level="strong"] .filled { background: var(--br-success, #3bd68a); }
+.password-strength p { display: flex; justify-content: space-between; gap: 1rem; margin: 0; }
+.password-strength b { color: var(--br-text); font: 900 0.76rem Arial, sans-serif; }
+.password-strength small { color: var(--br-muted); font: 700 0.62rem "Courier New", monospace; text-align: right; }
+.review-step { max-width: 48rem; margin: 0 auto; }
+.review-identity {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1.25rem;
+  border-bottom: 1px solid var(--br-line-strong);
+  padding-bottom: 1.25rem;
+}
+.review-identity img { width: 6rem; height: 6rem; border: 1px solid var(--br-line-strong); object-fit: cover; }
+.review-identity span { color: var(--br-accent); font: 800 0.62rem "Courier New", monospace; letter-spacing: 0.08em; }
+.review-identity h3 { margin: 0.25rem 0; color: var(--br-text); font: 900 1.6rem Arial, sans-serif; }
+.review-identity p { margin: 0; color: var(--br-muted); font: 700 0.72rem "Courier New", monospace; }
+.review-step dl { display: grid; grid-template-columns: 1fr 1fr; margin: 1rem 0; border: 1px solid var(--br-line); }
+.review-step dl div { min-width: 0; padding: 0.9rem 1rem; border-right: 1px solid var(--br-line); border-bottom: 1px solid var(--br-line); }
+.review-step dt { color: var(--br-muted); font: 800 0.6rem "Courier New", monospace; text-transform: uppercase; }
+.review-step dd { margin: 0.25rem 0 0; overflow-wrap: anywhere; color: var(--br-text); font: 800 0.78rem "Courier New", monospace; }
+.review-note { display: flex; gap: 0.6rem; margin: 0; color: var(--br-muted); font: 700 0.66rem/1.4 "Courier New", monospace; }
+.review-note i { color: var(--br-accent); }
+.user-wizard > footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--br-line-strong);
+  padding: 1rem 1.5rem;
+}
+.wizard-primary,
+.wizard-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-width: 10rem;
+  min-height: 3rem;
+  border: 1px solid var(--br-line-strong);
+  border-radius: 0;
+  padding: 0.7rem 1rem;
+  font: 800 0.68rem "Courier New", monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.wizard-primary { background: var(--br-accent); color: var(--br-accent-ink, #101010); }
+.wizard-secondary { background: transparent; color: var(--br-text); }
+.wizard-primary:disabled { opacity: 0.38; cursor: not-allowed; }
+
+.settings-detail-header > .flex-1 p {
+  margin: 0 0 0.35rem;
+  color: var(--br-accent);
+  font: 800 0.62rem "Courier New", monospace;
+  letter-spacing: 0.08em;
+}
+.settings-detail-header h3 {
+  margin: 0;
+  color: var(--br-text) !important;
+  font: 900 clamp(1.7rem, 3vw, 2.45rem)/1 Arial, sans-serif !important;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+.user-detail-modal .modal-content {
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto;
+  width: min(64rem, calc(100vw - 2rem)) !important;
+  max-width: 64rem !important;
+  max-height: min(48rem, calc(100vh - 2rem)) !important;
+  overflow: auto;
+  border-radius: 0 !important;
+  background: var(--br-panel) !important;
+  box-shadow: 10px 10px 0 var(--br-accent) !important;
+}
+.user-detail-modal .settings-detail-header {
+  position: relative;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-height: 7rem;
+  border-bottom: 1px solid var(--br-line-strong);
+  padding: 1.25rem 1.4rem 1.25rem 1.6rem;
+}
+.settings-detail-header > div:first-child { min-width: 0; }
+.settings-detail-header > div:first-child p {
+  margin: 0 0 0.35rem;
+  color: var(--br-accent);
+  font: 800 0.62rem "Courier New", monospace;
+  letter-spacing: 0.08em;
+}
+.detail-header-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 0.55rem;
+  flex: 0 0 auto;
+}
+.detail-header-actions button {
+  min-height: 3rem;
+  border-radius: 0;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+.detail-header-actions button:hover { transform: translateY(-2px); }
+.detail-header-actions button:active { transform: translateY(0); }
+.detail-header-actions button:focus-visible { outline: 2px solid var(--br-accent); outline-offset: 2px; }
+.detail-delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 1px solid var(--br-danger-line, #e06a5c);
+  background: transparent;
+  color: var(--br-danger-line, #e06a5c);
+  padding: 0.65rem 0.85rem;
+  font: 800 0.65rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+.detail-delete-button:hover {
+  background: color-mix(in srgb, var(--br-danger-line, #e06a5c) 14%, transparent);
+}
+.detail-close-button {
+  display: grid;
+  width: 3rem;
+  place-items: center;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel-2);
+  color: var(--br-text);
+  font: 700 1.45rem/1 Arial, sans-serif;
+}
+.detail-close-button:hover {
+  border-color: var(--br-accent);
+  background: var(--br-accent);
+  color: var(--br-accent-ink, #101010);
+}
+.user-detail-modal .detail-profile {
+  grid-column: 1;
+  grid-row: 2;
+  grid-template-columns: 1fr !important;
+  align-content: start;
+  min-width: 0;
+  border-right: 1px solid var(--br-line);
+  background: var(--br-panel-2);
+  text-align: center;
+}
+.user-detail-modal .detail-profile > img { width: 8rem !important; height: 8rem !important; margin-inline: auto !important; border-radius: 0 !important; }
+.user-detail-modal .detail-profile__identity { text-align: center; }
+.user-detail-modal .detail-profile p { justify-content: center; }
+.user-detail-modal .status-control { grid-column: 1; grid-row: 3; border-right: 1px solid var(--br-line); background: var(--br-panel-2); }
+.user-detail-modal .account-grid {
+  grid-column: 2;
+  grid-row: 2 / span 2;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 0.75rem !important;
+  border-bottom: 1px solid var(--br-line);
+  background:
+    linear-gradient(var(--br-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--br-line) 1px, transparent 1px),
+    var(--br-panel);
+  background-size: 2rem 2rem;
+  padding: 1.2rem !important;
+}
+.account-grid > .account-grid__heading {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 0 !important;
+  border-bottom: 1px solid var(--br-line-strong) !important;
+  padding: 0 0 0.85rem !important;
+  text-align: left !important;
+}
+.account-grid__heading span {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--br-accent) !important;
+  font: 800 0.58rem "Courier New", monospace !important;
+  letter-spacing: 0.08em;
+}
+.account-grid__heading h4 {
+  margin: 0;
+  color: var(--br-text);
+  font: 900 1.15rem Arial, sans-serif;
+}
+.account-grid__heading > small {
+  max-width: 13rem;
+  color: var(--br-muted);
+  font: 700 0.58rem/1.3 "Courier New", monospace;
+  text-align: right;
+}
+.account-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.55rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 6.25rem;
+  border: 1px solid var(--br-line-strong);
+  background: color-mix(in srgb, var(--br-panel-2) 94%, transparent);
+  padding: 0.85rem;
+  overflow: hidden;
+}
+.account-item::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1.25rem;
+  height: 0.2rem;
+  background: var(--br-accent);
+  content: "";
+}
+.account-item > i {
+  display: grid;
+  width: 2.55rem;
+  height: 2.55rem;
+  place-items: center;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel);
+  color: var(--br-accent);
+  font-size: 1rem;
+}
+.account-item > div { min-width: 0; }
+.account-item small {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--br-muted);
+  font: 800 0.58rem "Courier New", monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.account-item strong {
+  display: block;
+  overflow: hidden;
+  color: var(--br-text);
+  font: 800 0.9rem Arial, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-item--password {
+  grid-template-columns: 2.55rem minmax(0, 1fr) auto;
+}
+.account-item--password button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  border: 1px solid var(--br-accent);
+  background: transparent;
+  color: var(--br-accent) !important;
+  padding: 0.45rem 0.6rem;
+  font: 800 0.58rem "Courier New", monospace;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease;
+}
+.account-item--password button:hover {
+  background: var(--br-accent);
+  color: var(--br-accent-ink, #101010) !important;
+}
+.account-item--password button span { color: inherit !important; font-size: inherit !important; }
+.user-detail-modal .permissions-title { grid-column: 1 / -1; grid-row: 4; }
+.user-detail-modal .permissions-grid { grid-column: 1 / -1; grid-row: 5; }
+.account-grid button { display: inline-flex; align-items: center; gap: 0.4rem; }
+.create-user-launch strong,
+.detail-profile h4,
+.status-control > span,
+.account-grid span,
+.permissions-title,
+.permission-row > span {
+  color: var(--br-text) !important;
+}
+.create-user-launch p,
+.detail-profile__identity > small,
+.detail-profile p,
+.account-grid p {
+  color: var(--br-muted) !important;
+}
+
 @media (max-width: 1180px) {
   .settings-hero {
     align-items: flex-start;
@@ -1323,5 +2068,48 @@ async function createUser() {
   .settings-hero-actions > small {
     grid-column: 1 / -1;
   }
+}
+
+@media (max-width: 760px) {
+  .create-user-launch {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+  }
+  .create-user-launch__mark { width: 3.5rem; height: 3.5rem; }
+  .create-user-launch .create-user-button { grid-column: 1 / -1; width: 100% !important; }
+  .user-wizard { width: calc(100vw - 1rem); max-height: calc(100vh - 1rem); box-shadow: 5px 5px 0 var(--br-accent); }
+  .user-wizard > header { min-height: 5.5rem; padding: 1rem; }
+  .wizard-progress button { display: flex; justify-content: center; min-height: 3.4rem; padding: 0.6rem; }
+  .wizard-progress button span { display: none; }
+  .wizard-body { padding: 1rem; }
+  .identity-step,
+  .access-step { grid-template-columns: 1fr; }
+  .wizard-avatar { display: grid; grid-template-columns: 6.25rem minmax(0, 1fr); align-items: stretch; gap: 0.65rem; }
+  .wizard-avatar__header,
+  .wizard-avatar > p { grid-column: 1 / -1; }
+  .wizard-avatar__frame { grid-column: 1; }
+  .wizard-avatar__frame img { width: 100%; }
+  .wizard-avatar .wizard-avatar__camera { width: 2.35rem; min-height: 2.35rem; right: 0.35rem; bottom: 0.35rem; }
+  .wizard-avatar .wizard-avatar__upload { grid-column: 2; min-height: 100%; margin-top: 0; }
+  .wizard-fields { grid-template-columns: 1fr; }
+  .wizard-field--wide,
+  .access-intro,
+  .password-strength { grid-column: 1; }
+  .password-strength { grid-template-columns: 1fr; }
+  .password-strength p { flex-direction: column; gap: 0.25rem; }
+  .password-strength small { text-align: left; }
+  .email-builder { grid-template-columns: minmax(0, 1fr) auto minmax(7.5rem, 0.8fr); }
+  .review-step dl { grid-template-columns: 1fr; }
+  .review-step dl div { border-right: 0; }
+  .user-wizard > footer { padding: 0.75rem 1rem; }
+  .wizard-primary,
+  .wizard-secondary { min-width: 0; }
+  .user-detail-modal .modal-content { display: block; width: calc(100vw - 1rem) !important; box-shadow: 5px 5px 0 var(--br-accent) !important; }
+  .user-detail-modal .settings-detail-header { min-height: 6rem; gap: 0.75rem; padding: 1rem; }
+  .settings-detail-header h3 { font-size: clamp(1.35rem, 7vw, 1.9rem) !important; }
+  .detail-delete-button span { display: none; }
+  .detail-delete-button { width: 3rem; padding-inline: 0; }
+  .account-grid__heading > small { display: none; }
+  .user-detail-modal .detail-profile { border-right: 0; }
+  .user-detail-modal .status-control { border-right: 0; }
 }
 </style>

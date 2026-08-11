@@ -39,11 +39,13 @@ import dayjs from "dayjs";
 import connetor_plugin from "@abrazasoft/thermal_printer_vuejs";
 import AppButton from "@/components/ui/AppButton.vue";
 import logoAsset from "@/assets/img/logsymbolblack.png";
+import { useAppToast } from "@/composables/useAppToast";
 
 const serverip=import.meta.env.VITE_API_SERVER_IP;
 const logo=logoAsset;
 const props=defineProps({movements:{type:Array,required:true},from:{type:Date,required:true},to:{type:Date,required:true}});
 const emit=defineEmits(["close"]);
+const toast=useAppToast();
 const printers=ref([]),selectedPrinter=ref(""),showDownload=ref(false);
 const apiKey="123456",width=48,line="-".repeat(width),doubleLine="=".repeat(width);
 const center=(text)=>{const value=String(text).slice(0,width);const left=Math.max(0,Math.floor((width-value.length)/2));return " ".repeat(left)+value};
@@ -63,9 +65,9 @@ const formattedTicket=computed(()=>{
   rows.push(valueRow("TOTAL NETO",`${netTotal.value<0?"-":"+"}$${amount(Math.abs(netTotal.value))}`),doubleLine,center(`IMPRESO ${dayjs().format("DD/MM/YYYY HH:mm")}`),"","");
   return rows.join("\n");
 });
-async function fetchPrinters(){try{const list=await connetor_plugin.obtenerImpresoras();printers.value=Array.isArray(list)?list:[];if(!printers.value.includes(selectedPrinter.value))selectedPrinter.value="";showDownload.value=false}catch(error){showDownload.value=true;alert("No se pudo conectar con el plugin de impresión térmica.")}}
+async function fetchPrinters(){try{const list=await connetor_plugin.obtenerImpresoras();printers.value=Array.isArray(list)?list:[];if(!printers.value.includes(selectedPrinter.value))selectedPrinter.value="";showDownload.value=false}catch(error){showDownload.value=true;toast.add({severity:"error",summary:"Impresión no disponible",detail:"No se pudo conectar con el plugin de impresión térmica.",life:4500})}}
 function downloadPlugin(){const anchor=document.createElement("a");anchor.href=`${serverip}/Plugin_Impresora_termica.exe`;anchor.download="Plugin_Impresora_termica.exe";document.body.appendChild(anchor);anchor.click();anchor.remove()}
-async function doPrint(){if(!selectedPrinter.value)return alert("Selecciona una impresora térmica.");try{const connector=new connetor_plugin();connector.textaling("center");connector.img_url(`${serverip}/sm.png`);connector.feed("1");connector.fontsize("2");connector.text("CORTE DE CAJA");connector.feed("1");connector.fontsize("1");connector.textaling("left");formattedTicket.value.split("\n").forEach(row=>connector.text(row));connector.feed("1");connector.textaling("center");connector.barcode_128(barcodeValue.value);connector.text(barcodeValue.value);connector.feed("5");connector.cut("0");const response=await connector.imprimir(selectedPrinter.value,apiKey);if(response===true){alert("Ticket de corte enviado.");emit("close")}else alert("Error al imprimir: "+response)}catch(error){alert("Error al imprimir: "+error.message)}}
+async function doPrint(){if(!selectedPrinter.value){toast.add({severity:"warn",summary:"Falta una impresora",detail:"Selecciona una impresora térmica.",life:3000});return}try{const connector=new connetor_plugin();connector.textaling("center");connector.img_url(`${serverip}/sm.png`);connector.feed("1");connector.fontsize("2");connector.text("CORTE DE CAJA");connector.feed("1");connector.fontsize("1");connector.textaling("left");formattedTicket.value.split("\n").forEach(row=>connector.text(row));connector.feed("1");connector.textaling("center");connector.barcode_128(barcodeValue.value);connector.text(barcodeValue.value);connector.feed("5");connector.cut("0");const response=await connector.imprimir(selectedPrinter.value,apiKey);if(response===true){toast.add({severity:"success",summary:"Ticket enviado",detail:"El corte se envió a la impresora.",life:3000});emit("close")}else toast.add({severity:"error",summary:"No se pudo imprimir",detail:String(response),life:4500})}catch(error){toast.add({severity:"error",summary:"No se pudo imprimir",detail:error.message,life:4500})}}
 onMounted(fetchPrinters);
 </script>
 

@@ -176,6 +176,7 @@ const menuItems = ref<MenuItem[]>([
   { name: "Clientes", path: "/app/clientes", icon: "pi pi-id-card" },
   { name: "Pagos", path: "/app/pagos", icon: "pi pi-wallet" },
   { name: "Fiscal", path: "/app/fiscal", icon: "pi pi-percentage" },
+  { name: "Cumplimiento", path: "/app/cumplimiento", icon: "pi pi-verified" },
 ]);
 
 const mainNavItems = computed(() => menuItems.value.slice(0, 3));

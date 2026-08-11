@@ -45,7 +45,9 @@
 import { computed, onMounted, ref } from "vue";
 import { useNotesStore, type Note } from "@/composables/useNotesStore";
 import { useBrutalMotion } from "@/composables/useBrutalMotion";
+import { useAppDialog } from "@/composables/useAppDialog";
 const {notes,storageNotes,isLoading,error,fetchNotes,addNote,updateNote,deleteNote}=useNotesStore();
+const {prompt:promptDialog,confirm:confirmDialog}=useAppDialog();
 const pageRef=ref<HTMLElement|null>(null);useBrutalMotion(pageRef,[".directory-header",".tree-panel",".directory-content"]);
 const FOLDERS_KEY="notesDirectoryFolders";const folders=ref<string[]>(loadFolders());const currentPath=ref("General"),query=ref(""),editorOpen=ref(false),editing=ref<Note|null>(null),saving=ref(false);
 const draft=ref({titulo:"",descripcion:"",folderPath:"General"});
@@ -63,15 +65,15 @@ function folderName(folder:string){const parts=normalizePath(folder).split("/");
 function folderDepth(folder:string){return Math.max(1,normalizePath(folder).split("/").length-1)}
 function treeIndent(folder:string){return {"--depth":String(folderDepth(folder))}}
 function branchMark(folder:string){const depth=folderDepth(folder);return depth>1?"├":"└"}
-function createFolder(){const name=window.prompt("Nombre de la subcarpeta");if(!name?.trim())return;const base=currentPath.value.startsWith("__")?"General":normalizePath(currentPath.value);const path=normalizePath(`${base}/${name}`);folders.value.push(...folderAncestors(path));saveFolders();currentPath.value=path}
+async function createFolder(){const name=await promptDialog({title:"Nueva subcarpeta",message:"Escribe el nombre de la carpeta que deseas crear.",inputLabel:"Nombre",placeholder:"Ej. Declaraciones",confirmLabel:"Crear carpeta"});if(!name?.trim())return;const base=currentPath.value.startsWith("__")?"General":normalizePath(currentPath.value);const path=normalizePath(`${base}/${name}`);folders.value.push(...folderAncestors(path));saveFolders();currentPath.value=path}
 function createNote(){const target=currentPath.value.startsWith("__")?"General":normalizePath(currentPath.value);editing.value=null;draft.value={titulo:"",descripcion:"",folderPath:target};editorOpen.value=true}
 function openNote(note:Note){editing.value=note;draft.value={titulo:note.titulo,descripcion:note.descripcion,folderPath:normalizePath(note.folderPath||"General")};editorOpen.value=true}
 function closeEditor(){if(!saving.value)editorOpen.value=false}
 async function saveEditor(){if(!draft.value.titulo.trim())return;saving.value=true;const path=normalizePath(draft.value.folderPath);if(path!=="General"){folders.value.push(...folderAncestors(path));saveFolders()}try{if(editing.value)await updateNote(editing.value.id,{...draft.value,folderPath:path});else await addNote({...draft.value,folderPath:path,pinned:false,color:"white",status:"canvas"});currentPath.value=path;editorOpen.value=false}finally{saving.value=false}}
-async function deleteFolder(folder:string){const target=normalizePath(folder);const affected=notes.value.filter(note=>{const path=normalizePath(note.folderPath||"General");return path===target||path.startsWith(`${target}/`)});const message=affected.length?`¿Eliminar la carpeta “${folderName(target)}”? ${affected.length} nota(s) pasarán a General.`:`¿Eliminar la carpeta “${folderName(target)}”?`;if(!window.confirm(message))return;folders.value=folders.value.filter(path=>{const normalized=normalizePath(path);return normalized!==target&&!normalized.startsWith(`${target}/`)});saveFolders();for(const note of affected)await updateNote(note.id,{folderPath:"General"});if(currentPath.value===target||normalizePath(currentPath.value).startsWith(`${target}/`))currentPath.value="General"}
+async function deleteFolder(folder:string){const target=normalizePath(folder);const affected=notes.value.filter(note=>{const path=normalizePath(note.folderPath||"General");return path===target||path.startsWith(`${target}/`)});const message=affected.length?`${affected.length} nota(s) pasarán a General al eliminar “${folderName(target)}”.`:`Se eliminará la carpeta “${folderName(target)}”.`;if(!await confirmDialog({title:"Eliminar carpeta",message,tone:"danger",confirmLabel:"Eliminar carpeta"}))return;folders.value=folders.value.filter(path=>{const normalized=normalizePath(path);return normalized!==target&&!normalized.startsWith(`${target}/`)});saveFolders();for(const note of affected)await updateNote(note.id,{folderPath:"General"});if(currentPath.value===target||normalizePath(currentPath.value).startsWith(`${target}/`))currentPath.value="General"}
 function togglePin(note:Note){updateNote(note.id,{pinned:!Boolean(note.pinned)})}
 function toggleArchive(note:Note){updateNote(note.id,{status:note.status==="storage"?"canvas":"storage"})}
-function removeNote(note:Note){if(window.confirm(`¿Eliminar “${note.titulo}”?`))deleteNote(note.id)}
+async function removeNote(note:Note){if(await confirmDialog({title:"Eliminar nota",message:`Se eliminará “${note.titulo}”.`,tone:"danger",confirmLabel:"Eliminar nota"}))await deleteNote(note.id)}
 onMounted(fetchNotes);
 </script>
 

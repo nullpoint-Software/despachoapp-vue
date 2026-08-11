@@ -11,6 +11,7 @@ import Loader from "./adminApp/Menus/Loader.vue";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "@/assets/img/logsymbolblack.png";
+import { useAppToast } from "@/composables/useAppToast";
 
 const props = defineProps({
   tasks: Array,
@@ -20,6 +21,7 @@ const props = defineProps({
   },
 });
 const emit = defineEmits(["done"]);
+const toast = useAppToast();
 
 //la cosa con obtener ISOString de una fecha vacia es que obtiene la fecha actual en el meridiano UTC
 //y si estas en una zona horaria atrasada te da el dia siguiente y la comparacion falla
@@ -48,7 +50,7 @@ async function generateReport() {
         dateToInputValue(new Date(t.fecha_vencimiento)) === selectedDate
     );
     if (!finished.length) {
-      alert(`No hay tareas terminadas para la fecha ${displayDate}.`);
+      toast.add({ severity: "info", summary: "Sin tareas terminadas", detail: `No hay tareas terminadas para la fecha ${displayDate}.`, life: 3500 });
       emit("done");
       return;
     }
