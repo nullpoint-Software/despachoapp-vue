@@ -2,11 +2,15 @@
   <header class="tasks-hero">
     <div class="tasks-hero__copy">
       <p class="tasks-kicker"><span>Operación</span><span>03</span></p>
-      <h1>Flujo de<br />trabajo</h1>
+      <h1>Trabajo del equipo</h1>
       <p class="tasks-intro">Organiza pendientes, responsables y fechas límite desde una sola mesa de control.</p>
+    </div>
+    <div class="tasks-hero__actions">
+      <AppButton label="Cómo usar tareas" icon="pi pi-question-circle" outlined class="app-help-button" @click="taskTutorialOpen = true" />
     </div>
   </header>
   <section id="kanban-board" class="board-frame" aria-label="Tablero de tareas">
     <KanbanBoard />
   </section>
+  <AppTutorial v-model="taskTutorialOpen" title="Cómo usar tareas" :steps="taskTutorialSteps" storage-key="tourTareasDone" />
 </main>

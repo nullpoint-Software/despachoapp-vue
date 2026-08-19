@@ -35,6 +35,8 @@ export interface ComplianceRecord {
   pendientes: ComplianceIssue[];
   documento_id: number | null;
   documento_guardado: boolean;
+  ultima_fecha_intento: string | null;
+  ultimo_error: string | null;
 }
 
 export interface ComplianceSummary {
@@ -52,11 +54,31 @@ export interface ComplianceSummary {
   error: number;
   especial: number;
   con_documento: number;
+  con_error_reciente: number;
 }
 
 export interface ComplianceResponse {
   records: ComplianceRecord[];
   summary: ComplianceSummary;
+}
+
+export type ComplianceScheduleFrequency = "daily" | "weekdays" | "weekly";
+
+export interface ComplianceScheduleConfig {
+  enabled: boolean;
+  frequency: ComplianceScheduleFrequency;
+  runTime: string;
+  dayOfWeek: number;
+  timezone: string;
+  regimes: string[];
+  lastRunAt: string | null;
+  lastStatus: "never" | "running" | "success" | "partial" | "error";
+  lastMessage: string | null;
+  lastTotal: number;
+  lastCompleted: number;
+  lastFailed: number;
+  pendingRetries: number;
+  exhaustedRetries: number;
 }
 
 
@@ -99,6 +121,17 @@ export default class CumplimientoService {
 
   async getHistorial(clientId: number) {
     return (await this.axios.get(`${this.serverip}/cumplimiento/${clientId}/history`)).data;
+  }
+
+  async getProgramacion() {
+    return (await this.axios.get(`${this.serverip}/cumplimiento/schedule`)).data as ComplianceScheduleConfig;
+  }
+
+  async guardarProgramacion(config: Pick<ComplianceScheduleConfig, "enabled" | "frequency" | "runTime" | "dayOfWeek" | "regimes">) {
+    return (await this.axios.put(`${this.serverip}/cumplimiento/schedule`, config)).data as {
+      config: ComplianceScheduleConfig;
+      message: string;
+    };
   }
 
   async iniciarSesionTerceros() {

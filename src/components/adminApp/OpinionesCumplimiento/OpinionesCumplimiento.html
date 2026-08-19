@@ -2,30 +2,48 @@
     <header class="compliance-hero">
       <div>
         <p>FISCAL / 32-D</p>
-        <h1>Opiniones de cumplimiento</h1>
-        <span>Consulta pública o como tercero autorizado, vigencia y pendientes de cada cliente.</span>
+        <h1>Cumplimiento fiscal</h1>
+        <span>Últimas opiniones almacenadas, vigencia y estado de consulta de cada cliente.</span>
       </div>
-      <div class="compliance-actions" aria-label="Modalidades de consulta">
+      <div class="compliance-actions" aria-label="Acciones de cumplimiento">
         <AppButton
+          label="Ayuda"
+          icon="pi pi-question-circle"
+          outlined
+          class="app-help-button"
+          @click="opinionsTutorialOpen = true"
+        />
+        <AppButton
+          v-if="isAdmin"
+          label="Programación"
+          icon="pi pi-calendar-clock"
+          outlined
+          :disabled="syncing"
+          @click="openSchedule"
+        />
+        <AppButton
+          v-if="isAdmin"
           :label="syncing ? `Consultando ${syncProgress.processed}/${syncProgress.total || '?'}...` : 'Consulta pública'"
           icon="pi pi-globe"
           :disabled="syncing || loading"
           @click="syncAll"
         />
         <AppButton
+          v-if="isAdmin"
           label="Consulta por terceros"
           icon="pi pi-users"
           :disabled="syncing"
           @click="openThirdPartyQuery"
         />
+        <span v-if="!isAdmin" class="read-only-note"><i class="pi pi-eye" /> Vista de consulta</span>
       </div>
     </header>
 
     <section class="compliance-note" aria-label="Alcance de la consulta">
       <i class="pi pi-shield" aria-hidden="true" />
       <div>
-        <strong>Consulta pública y segura</strong>
-        <span>Solo se consulta el RFC. La CIECF y la e.firma nunca salen del servidor ni se envían en este proceso.</span>
+        <strong>Dos modalidades, alcances distintos</strong>
+        <span>La consulta pública solo envía el RFC. La consulta por terceros envía las credenciales del despacho al servidor temporal para iniciar sesión en el SAT; no se guardan.</span>
       </div>
       <button type="button" class="guide-trigger" @click="showGuide = !showGuide">
         {{ showGuide ? 'Ocultar guía' : 'Cómo hacerla pública' }} <i class="pi pi-angle-down" aria-hidden="true" />
@@ -34,7 +52,7 @@
 
     <section v-if="showGuide" class="publication-guide" aria-labelledby="publication-guide-title">
       <header>
-        <div><h2 id="publication-guide-title">Publicar la opinión positiva</h2><p>El trámite es gratuito y requiere Contraseña o e.firma vigente.</p></div>
+        <div><h2 id="publication-guide-title">Publicar el resultado de la opinión</h2><p>El trámite es gratuito y requiere Contraseña o e.firma vigente.</p></div>
         <a href="https://wwwmat.sat.gob.mx/tramites/37836/autoriza-al-sat-a-hacer-publica-tu-opinion-del-cumplimiento" target="_blank" rel="noopener noreferrer">Iniciar en SAT <i class="pi pi-external-link" /></a>
       </header>
       <ol>
@@ -53,14 +71,14 @@
       <article class="negative"><span>Situación especial</span><strong>{{ summary.especial + summary.negativa }}</strong></article>
       <article><span>No públicas</span><strong>{{ summary.no_publica }}</strong></article>
       <article><span>Sin consultar</span><strong>{{ summary.sin_consulta }}</strong></article>
-      <article><span>PDF archivados</span><strong>{{ summary.con_documento }}</strong></article>
+      <article><span>Opiniones con PDF</span><strong>{{ summary.con_documento }}</strong></article>
     </section>
 
     <section class="filter-strip" aria-label="Filtros de opiniones">
       <div class="search-row">
         <label class="search-field">
-          <span>Buscar cliente o RFC</span>
-          <span class="search-control">
+          <span>Buscar cliente o RFC <AppFieldHelp label="Búsqueda de opiniones" text="Filtra los resultados almacenados por nombre del cliente o por RFC." /></span>
+          <span class="search-control app-search-control">
             <i class="pi pi-search" aria-hidden="true" />
             <AppInput v-model="search" type="search" placeholder="Buscar..." />
           </span>
@@ -87,7 +105,7 @@
         <header class="panel-heading">
           <div>
             <h2>Clientes</h2>
-            <span>Último resultado disponible en el SAT</span>
+            <span>Última opinión almacenada; un error de conexión no reemplaza un resultado válido.</span>
           </div>
         </header>
 
@@ -126,7 +144,7 @@
                 {{ statusLabel(record.status) }}
               </span>
               <span class="date-cell">
-                <small>Última consulta</small>
+                <small>Última opinión</small>
                 <strong>{{ formatDate(record.fecha_consulta) }}</strong>
               </span>
               <i class="pi pi-angle-right row-arrow" aria-hidden="true" />
@@ -151,14 +169,22 @@
             <div><dt>Vigencia</dt><dd>{{ vigenciaLabel(selected) }}</dd></div>
           </dl>
 
+          <div v-if="selected.ultimo_error" class="attempt-warning" role="status">
+            <i class="pi pi-wifi" aria-hidden="true" />
+            <div>
+              <strong>El último intento no reemplazó esta opinión</strong>
+              <span>{{ formatDateTime(selected.ultima_fecha_intento) }} · {{ selected.ultimo_error }}</span>
+            </div>
+          </div>
+
           <section class="issues-section">
             <div class="issues-heading">
-              <div><h3>{{ selected.status === 'positiva' ? 'Sin omisiones detectadas' : 'Detalle del resultado' }}</h3><span>{{ issueSubtitle(selected) }}</span></div>
+              <div><h3>{{ selected.status === 'positiva' ? 'Opinión positiva a la fecha de emisión' : 'Detalle del resultado' }}</h3><span>{{ issueSubtitle(selected) }}</span></div>
               <strong>{{ selected.pendientes.length }}</strong>
             </div>
             <div v-if="selected.status === 'positiva'" class="all-clear">
               <i class="pi pi-check" aria-hidden="true" />
-              <div><strong>Opinión positiva</strong><span>El resultado público del SAT está al corriente a la fecha consultada.</span></div>
+              <div><strong>Resultado positivo</strong><span>El SAT indicó que el contribuyente estaba al corriente en las obligaciones evaluadas cuando emitió el documento.</span></div>
             </div>
             <div v-else-if="selected.pendientes.length" class="issue-list">
               <article v-for="issue in selected.pendientes" :key="issue.code">
@@ -184,6 +210,7 @@
               @click="documentClient = selected"
             />
             <AppButton
+              v-if="isAdmin"
               :label="syncingClientId === selected.id_cliente ? 'Consultando...' : 'Actualizar cliente'"
               icon="pi pi-refresh"
               :disabled="syncing || syncingClientId === selected.id_cliente"
@@ -219,7 +246,7 @@
 
           <div class="filters-modal-body">
             <fieldset class="radio-filter status-filter">
-              <legend>Resultado</legend>
+              <legend>Resultado <AppFieldHelp label="Resultado de la opinión" text="Separa opiniones positivas, pendientes, situaciones especiales, consultas privadas o errores." /></legend>
               <div class="radio-options">
                 <label v-for="option in statusOptions" :key="option.value" class="radio-option" :class="{ active: draftStatusFilter === option.value }">
                   <input v-model="draftStatusFilter" type="radio" name="opinion-status" :value="option.value" />
@@ -229,7 +256,7 @@
             </fieldset>
 
             <fieldset class="radio-filter regime-filter">
-              <legend>Régimen fiscal</legend>
+              <legend>Régimen fiscal <AppFieldHelp label="Régimen fiscal" text="Muestra únicamente clientes registrados bajo el régimen seleccionado." /></legend>
               <div class="radio-options">
                 <label v-for="option in regimeOptions" :key="option.value" class="radio-option" :class="{ active: draftRegimeFilter === option.value }">
                   <input v-model="draftRegimeFilter" type="radio" name="opinion-regime" :value="option.value" />
@@ -249,6 +276,105 @@
         </section>
       </div>
     </Teleport>
+    <Teleport to="body">
+      <div v-if="scheduleOpen" class="schedule-overlay" @click.self="closeSchedule">
+        <section
+          ref="scheduleModal"
+          class="schedule-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="opinion-schedule-title"
+          tabindex="-1"
+          @keydown.esc="closeSchedule"
+        >
+          <header class="schedule-modal-header">
+            <div>
+              <p>OPINIONES / AUTOMATIZACIÓN</p>
+              <h2 id="opinion-schedule-title">Programar consultas</h2>
+              <span>El servidor consultará al SAT aunque cierres la aplicación.</span>
+            </div>
+            <button type="button" aria-label="Cerrar programación" @click="closeSchedule">×</button>
+          </header>
+
+          <div v-if="scheduleLoading" class="schedule-loading">
+            <i class="pi pi-spin pi-spinner" aria-hidden="true" />
+            <span>Cargando programación…</span>
+          </div>
+
+          <div v-else class="schedule-modal-body">
+            <label class="schedule-switch" :class="{ active: scheduleDraft.enabled }">
+              <span class="schedule-switch-copy">
+                <small>{{ scheduleDraft.enabled ? 'ACTIVA' : 'PAUSADA' }}</small>
+                <strong>Consulta automática de Opiniones</strong>
+                <span>{{ scheduleSummary }}</span>
+              </span>
+              <input v-model="scheduleDraft.enabled" type="checkbox" role="switch" />
+              <i aria-hidden="true" />
+            </label>
+
+            <div class="schedule-controls" :class="{ disabled: !scheduleDraft.enabled }">
+              <label>
+                <span>Frecuencia</span>
+                <AppSelect v-model="scheduleDraft.frequency" :options="frequencyOptions" option-label="label" option-value="value" :disabled="!scheduleDraft.enabled" />
+              </label>
+              <label>
+                <span>Hora del despacho</span>
+                <input v-model="scheduleDraft.runTime" type="time" :disabled="!scheduleDraft.enabled" />
+              </label>
+              <label v-if="scheduleDraft.frequency === 'weekly'">
+                <span>Día</span>
+                <AppSelect :model-value="scheduleDraft.dayOfWeek" :options="weekdayOptions" option-label="label" option-value="value" :disabled="!scheduleDraft.enabled" @update:model-value="scheduleDraft.dayOfWeek = Number($event)" />
+              </label>
+            </div>
+
+            <fieldset class="schedule-regimes" :disabled="!scheduleDraft.enabled">
+              <legend>
+                <span>Regímenes incluidos</span>
+                <strong>{{ scheduleRegimeSummary }}</strong>
+              </legend>
+              <p>Solo se consultarán clientes cuyo régimen coincida con esta selección.</p>
+              <div class="schedule-regime-grid">
+                <button type="button" :class="{ active: !scheduleDraft.regimes.length }" @click="selectAllScheduleRegimes">
+                  <i :class="!scheduleDraft.regimes.length ? 'pi pi-check' : 'pi pi-users'" />
+                  <span><strong>Todos</strong><small>Sin excluir regímenes</small></span>
+                </button>
+                <button
+                  v-for="regime in regimenesFiscales"
+                  :key="regime.value"
+                  type="button"
+                  :class="{ active: scheduleDraft.regimes.includes(regime.value) }"
+                  @click="toggleScheduleRegime(regime.value)"
+                >
+                  <i :class="scheduleDraft.regimes.includes(regime.value) ? 'pi pi-check' : 'pi pi-circle'" />
+                  <span><strong>{{ regime.value }}</strong><small>{{ regime.label.replace(`${regime.value} - `, '') }}</small></span>
+                </button>
+              </div>
+            </fieldset>
+
+            <section class="schedule-status" aria-label="Estado de la programación">
+              <div>
+                <small>ÚLTIMA EJECUCIÓN</small>
+                <strong>{{ formatDateTime(schedule?.lastRunAt || null) }}</strong>
+                <span>{{ schedule?.lastMessage || 'Todavía no se ha ejecutado una consulta programada.' }}</span>
+              </div>
+              <dl>
+                <div><dt>Reintentos</dt><dd>{{ schedule?.pendingRetries || 0 }}</dd></div>
+                <div><dt>Sin respuesta</dt><dd>{{ schedule?.exhaustedRetries || 0 }}</dd></div>
+              </dl>
+            </section>
+          </div>
+
+          <footer class="schedule-modal-footer">
+            <p><i class="pi pi-refresh" /> Si el SAT no responde, se reintenta a los 5, 15, 30 y 60 minutos.</p>
+            <div>
+              <AppButton label="Cancelar" outlined :disabled="scheduleSaving" @click="closeSchedule" />
+              <AppButton :label="scheduleSaving ? 'Guardando…' : 'Guardar programación'" icon="pi pi-check" :disabled="scheduleLoading || scheduleSaving" @click="saveSchedule" />
+            </div>
+          </footer>
+        </section>
+      </div>
+    </Teleport>
     <ClientDocumentsModal v-if="documentClient" :client="documentClient" @close="documentClient = null" />
     <ThirdPartyComplianceModal v-if="showThirdParty" @close="showThirdParty = false" @complete="completeThirdParty" />
+    <AppTutorial v-model="opinionsTutorialOpen" title="Cómo usar Opiniones" :steps="opinionsTutorialSteps" storage-key="tourOpinionesDone" />
   </main>

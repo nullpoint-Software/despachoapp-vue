@@ -43,6 +43,90 @@
   gap: 0.65rem;
   flex-wrap: wrap;
 }
+.sat-download-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-top: 1rem;
+  border: 1px solid var(--br-line-strong);
+  border-left: 5px solid var(--br-accent);
+  background: color-mix(in srgb, var(--br-accent) 7%, var(--br-panel));
+  padding: 1rem 1.15rem;
+}
+.sat-download-entry-copy {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+.sat-download-entry-copy > i {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  border: 1px solid var(--br-accent);
+  color: var(--br-accent);
+  font-size: 1.25rem;
+}
+.sat-download-entry-copy small,
+.sat-download-entry-copy strong,
+.sat-download-entry-copy span {
+  display: block;
+}
+.sat-download-entry-copy small {
+  margin-bottom: 0.25rem;
+  color: var(--br-accent);
+  font: 800 0.62rem "Courier New", monospace;
+  letter-spacing: 0.1em;
+}
+.sat-download-entry-copy strong {
+  color: var(--br-text);
+  font: 900 clamp(0.9rem, 1.4vw, 1.08rem) Arial, sans-serif;
+  text-transform: uppercase;
+}
+.sat-download-entry-copy span {
+  margin-top: 0.35rem;
+  max-width: 65rem;
+  color: var(--br-muted);
+  font: 700 0.72rem/1.45 "Courier New", monospace;
+}
+.sat-download-entry :deep(.sat-mass-download-launch) {
+  min-height: 3.25rem;
+  white-space: nowrap;
+}
+.sat-download-entry-hint {
+  grid-column: 1 / -1;
+  margin: -0.35rem 0 0 calc(3.25rem + 0.9rem);
+  color: var(--br-muted);
+  font: 800 0.63rem "Courier New", monospace;
+}
+.sat-download-entry-hint i {
+  margin-right: 0.35rem;
+  color: var(--br-accent);
+}
+@media (max-width: 1250px) {
+  .fiscal-hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .hero-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 720px) {
+  .sat-download-entry {
+    grid-template-columns: 1fr;
+  }
+  .sat-download-entry :deep(.sat-mass-download-launch) {
+    width: 100%;
+  }
+  .sat-download-entry-hint {
+    margin-left: 0;
+  }
+}
 .sr-only {
   position: absolute;
   width: 1px;

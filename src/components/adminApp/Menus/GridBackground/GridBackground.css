@@ -1,10 +1,63 @@
 .grid-background {
-  /* Toma dinámicamente el color del borde del tema y le aplica transparencia */
-  --grid-dot-color: color-mix(in srgb, var(--color-border), transparent 1%);
-  --grid-size: 25px;
-  --dot-size: 1px;
+  --grid-size: 32px;
+  --grid-line: color-mix(in srgb, var(--br-line) 28%, transparent);
+  position: fixed;
+  isolation: isolate;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--br-bg);
+  background-image:
+    radial-gradient(circle at 14% 10%, color-mix(in srgb, var(--br-accent) 12%, transparent) 0, transparent 30rem),
+    radial-gradient(circle at 88% 86%, color-mix(in srgb, var(--br-accent) 7%, transparent) 0, transparent 27rem);
+}
 
-  /* Crea el patrón de puntos usando un degradado radial */
-  background-image: radial-gradient(circle at center, var(--grid-dot-color) var(--dot-size), transparent var(--dot-size));
-  background-size: var(--grid-size) var(--grid-size);
+.grid-background::before {
+  position: absolute;
+  inset: calc(var(--grid-size) * -2);
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    radial-gradient(circle at center, color-mix(in srgb, var(--br-accent) 26%, transparent) 0 1px, transparent 2px);
+  background-size:
+    var(--grid-size) var(--grid-size),
+    var(--grid-size) var(--grid-size),
+    calc(var(--grid-size) * 2) calc(var(--grid-size) * 2);
+  content: "";
+  opacity: .72;
+  transform: translate3d(calc(var(--grid-size) * -1), calc(var(--grid-size) * -1), 0);
+  will-change: transform;
+}
+
+.grid-background::after {
+  position: absolute;
+  right: 0;
+  left: 0;
+  top: -12rem;
+  height: 12rem;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--br-accent) 7%, transparent), transparent);
+  content: "";
+  opacity: .72;
+  transform: translate3d(0, -15vh, 0);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .grid-background::before { animation: shape-grid-drift 18s linear infinite; }
+  .grid-background::after { animation: shape-grid-scan 13s ease-in-out infinite; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-background::before, .grid-background::after { animation: none; transform: none; }
+}
+
+@keyframes shape-grid-drift {
+  to { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes shape-grid-scan {
+  0%, 16% { opacity: 0; transform: translate3d(0, -15vh, 0); }
+  28% { opacity: .72; }
+  78% { opacity: .5; }
+  100% { opacity: 0; transform: translate3d(0, 125vh, 0); }
 }

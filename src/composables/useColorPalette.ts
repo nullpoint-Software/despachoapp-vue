@@ -14,16 +14,16 @@ export interface ColorPalette {
 export const paletteColorLabels = ["Fondo", "Componentes", "Texto", "Acento"] as const;
 
 export const colorPalettes: readonly ColorPalette[] = [
-  { id: "phantom", name: "Ladrones Fantasma", description: "Rojo editorial y negro cálido", colors: ["#120F11", "#1D181B", "#F4F1ED", "#E43D4F"] },
-  { id: "darkhour", name: "Hora Oscura", description: "Azul eléctrico y profundidad nocturna", colors: ["#081526", "#0D223B", "#EEF7FF", "#39A7FF"] },
-  { id: "golden", name: "Investigación dorada", description: "Amarillo gráfico y carbón cálido", colors: ["#18150A", "#26210D", "#FFF7CE", "#F1D33A"] },
-  { id: "tachyon", name: "Laboratorio Tachyon", description: "Menta experimental y ciruela", colors: ["#17131A", "#221C27", "#F5F0F4", "#62D4B1"] },
+  { id: "phantom", name: "Grafito", description: "Grafito cálido con acento rojo", colors: ["#120F11", "#1D181B", "#F4F1ED", "#E43D4F"] },
+  { id: "darkhour", name: "Azul noche", description: "Azul profundo para trabajo prolongado", colors: ["#081526", "#0D223B", "#EEF7FF", "#39A7FF"] },
+  { id: "golden", name: "Ámbar", description: "Ámbar sobrio sobre carbón cálido", colors: ["#18150A", "#26210D", "#FFF7CE", "#F1D33A"] },
+  { id: "tachyon", name: "Ciruela", description: "Ciruela oscura con acento menta", colors: ["#17131A", "#221C27", "#F5F0F4", "#62D4B1"] },
   { id: "ledger", name: "Libro mayor", description: "Verde sobrio para trabajo prolongado", colors: ["#0D1715", "#14231F", "#EEF5F2", "#6CC39A"] },
-  { id: "indigo", name: "Índigo ejecutivo", description: "Azul violeta de enfoque profesional", colors: ["#11131D", "#1A1D2B", "#F0F1F6", "#8EA2FF"] },
-  { id: "oled", name: "OLED absoluto", description: "Negro real y verde de alta eficiencia", colors: ["#000000", "#070A08", "#F2F7F4", "#46E38D"] },
-  { id: "ember", name: "Brasa operativa", description: "Naranja cálido sobre grafito", colors: ["#15110F", "#211A17", "#F6EFEA", "#FF7448"] },
-  { id: "sakura", name: "Sakura nocturna", description: "Rosa nítido y berenjena profunda", colors: ["#190F18", "#281824", "#F8EEF4", "#F06BA5"] },
-  { id: "steel", name: "Acero frío", description: "Cian técnico y gris mineral", colors: ["#0F161A", "#172329", "#EDF4F5", "#65C7D6"] },
+  { id: "indigo", name: "Índigo", description: "Azul violeta de enfoque profesional", colors: ["#11131D", "#1A1D2B", "#F0F1F6", "#8EA2FF"] },
+  { id: "oled", name: "OLED", description: "Negro real y verde de alta eficiencia", colors: ["#000000", "#070A08", "#F2F7F4", "#46E38D"] },
+  { id: "ember", name: "Terracota", description: "Naranja cálido sobre grafito", colors: ["#15110F", "#211A17", "#F6EFEA", "#FF7448"] },
+  { id: "sakura", name: "Granate", description: "Granate oscuro con acento rosa", colors: ["#190F18", "#281824", "#F8EEF4", "#F06BA5"] },
+  { id: "steel", name: "Acero", description: "Cian técnico y gris mineral", colors: ["#0F161A", "#172329", "#EDF4F5", "#65C7D6"] },
 ] as const;
 
 const legacyPaletteMap: Record<string, PaletteId> = {

@@ -290,13 +290,13 @@ body{margin:0;background:var(--br-bg);font-size:1rem;line-height:1.55}button,inp
 
 @media(min-width:761px){
   .modal-overlay{
-    inset:var(--admin-overlay-top,5rem) 0 0!important;
-    align-items:flex-start!important;
+    inset:5rem 0 0!important;
+    align-items:center!important;
     justify-content:center!important;
     overflow:auto!important;
   }
   .modal-overlay>.modal-content{
-    max-height:calc(100dvh - var(--admin-overlay-top,5rem) - 2rem)!important;
+    max-height:calc(100dvh - 5rem - 2rem)!important;
   }
 }
 
@@ -460,6 +460,11 @@ html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
   overscroll-behavior:contain;
   scrollbar-gutter:stable;
 }
+@media(min-width:761px){
+  html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
+    max-height:calc(100dvh - 5rem - 2rem)!important;
+  }
+}
 html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel)>header{position:sticky!important;top:0;z-index:12}
 html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel)>footer,
 html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel)>form>footer{position:sticky!important;bottom:0;z-index:11}
@@ -481,4 +486,253 @@ body #app :where(h1,h2,h3,h4,h5,h6,p,span,label,button,input,select,textarea,tab
 }
 body #app :where(aside.fixed a:hover,aside.fixed a.router-link-active,.app-data-table__table th.is-sortable:hover,.app-pager__button:hover:not(:disabled)) {
   color: var(--br-accent-text) !important;
+}
+
+/* Contrato visual v4: cada paleta conserva superficies de control con tinta propia. */
+:root,
+html[data-br-palette] {
+  --br-control-scheme: light;
+  --br-success: #69c79b;
+  --br-success-text: #071a12;
+  --br-warning: #dbbc66;
+  --br-warning-text: #211904;
+  --br-danger: #e78376;
+  --br-danger-text: #260b08;
+  --br-focus: color-mix(in srgb, var(--br-accent) 72%, white);
+  --color-bg: var(--br-bg);
+  --color-bg-secondary: var(--br-panel);
+  --color-text: var(--br-text);
+  --color-text-muted: var(--br-muted);
+  --color-border: var(--br-line);
+  --bg-modal: var(--br-control);
+  color-scheme: dark;
+}
+html[data-br-palette="oled"] { --br-control-scheme: dark; }
+
+body { min-height: 100dvh; background: var(--br-bg); color: var(--br-text); }
+body #app .admin-layout :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
+body > :where(.modal-overlay,.appearance-overlay) :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+  caret-color: var(--br-accent);
+  color-scheme: var(--br-control-scheme, light);
+}
+body #app .admin-layout :where(input,textarea)::placeholder,
+body > :where(.modal-overlay,.appearance-overlay) :where(input,textarea)::placeholder { color: var(--br-control-muted) !important; opacity: 1; }
+body #app .admin-layout option,
+body > :where(.modal-overlay,.appearance-overlay) option { background: var(--br-panel-2); color: var(--br-text); }
+
+body #app .admin-layout :where(.bg-white,.bg-gray-50,.bg-gray-100,.bg-gray-200):not(.ticket):not(.ticket *),
+body > .modal-overlay :where(.bg-white,.bg-gray-50,.bg-gray-100,.bg-gray-200) { background-color: var(--br-panel) !important; }
+body #app .admin-layout :where(.text-black,.text-gray-700,.text-gray-800,.text-gray-900):not(.ticket):not(.ticket *),
+body > .modal-overlay :where(.text-black,.text-gray-700,.text-gray-800,.text-gray-900) { color: var(--br-text) !important; }
+body #app .admin-layout :where(.text-gray-400,.text-gray-500,.text-gray-600):not(.ticket):not(.ticket *),
+body > .modal-overlay :where(.text-gray-400,.text-gray-500,.text-gray-600) { color: var(--br-muted) !important; }
+
+body > .modal-overlay > .modal-content,
+body #app :where(.modal-shell,.cut-modal,.thermal-modal,.ticket-printer-modal,.note-editor) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+}
+body > .modal-overlay :where(.standard-modal-header,.logs-modal-header),
+body #app :where(.standard-modal-header,.logs-modal-header) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-panel-2) !important;
+  color: var(--br-text) !important;
+}
+body > .modal-overlay :where(.note-content-display),
+body #app :where(.note-content-display) { background: var(--br-control) !important; color: var(--br-control-text) !important; }
+body > .modal-overlay button.app-button.app-button--outlined,
+body #app :where(.modal-shell,.cut-modal) button.app-button.app-button--outlined { border-color: var(--br-line-strong) !important; color: var(--br-text) !important; }
+
+body #app :where(button,a,input,select,textarea,[tabindex]):focus-visible {
+  outline: 3px solid var(--br-focus) !important;
+  outline-offset: 3px;
+}
+body #app ::selection { background: var(--br-accent); color: var(--br-accent-text); }
+
+body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  border-color: var(--br-line-strong) !important;
+  background:
+    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--br-accent) 13%, transparent), transparent 17rem),
+    color-mix(in srgb, var(--br-panel) 94%, var(--br-accent)) !important;
+  padding-inline: clamp(1rem, 2.5vw, 2rem) !important;
+  box-shadow: inset 4px 0 0 var(--br-accent);
+}
+body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) > * { position: relative; z-index: 1; }
+body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) h1 {
+  max-width: 19ch;
+  margin-block: .35rem .75rem !important;
+  color: var(--br-text) !important;
+  font-family: var(--font-family) !important;
+  font-size: clamp(2.35rem, 5vw, 5.6rem) !important;
+  font-weight: 800 !important;
+  line-height: .92 !important;
+  letter-spacing: -.055em !important;
+  text-transform: none !important;
+  text-wrap: balance;
+}
+body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) :where(p,.tasks-kicker) {
+  color: var(--br-accent) !important;
+  letter-spacing: .1em;
+}
+body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) > :first-child > span { color: var(--br-muted); text-wrap: pretty; }
+
+body #app .admin-layout :where(.app-data-table__table tbody tr,.p-datatable-tbody > tr) { background: color-mix(in srgb, var(--br-panel) 92%, transparent); color: var(--br-text); }
+body #app .admin-layout :where(.app-data-table__table tbody tr:hover,.p-datatable-tbody > tr:hover) { background: var(--br-panel-2); }
+body #app :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode) { background: #fff !important; color: #141413 !important; color-scheme: light; }
+
+@media (max-width: 700px) {
+  body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) { padding-inline: 1rem !important; }
+  body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) h1 { font-size: clamp(2.2rem, 11vw, 3.65rem) !important; }
+}
+
+/* Prioridad final para controles heredados dentro de modales. */
+body > .modal-overlay .modal-content :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
+body > .appearance-overlay .appearance-dialog :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+  caret-color: var(--br-accent);
+  color-scheme: var(--br-control-scheme, light);
+}
+body > .modal-overlay .modal-content :is(input,textarea)::placeholder,
+body > .appearance-overlay .appearance-dialog :is(input,textarea)::placeholder { color: var(--br-control-muted) !important; opacity: 1; }
+body #app nav.fixed { background: color-mix(in srgb, var(--br-bg) 94%, transparent) !important; color: var(--br-text) !important; backdrop-filter: blur(12px); }
+
+/* Segunda pasada: modales heredados, movimiento y jerarquía visual. */
+body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay,.bank-reconciliation-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.bank-reconciliation-modal){border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-control-text)!important;color-scheme:var(--br-control-scheme,light)}
+body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(.form-block,.period-grid>section,.period-summary>div,.range-field,.confirm-check,.security-notice){border-color:var(--br-line)!important;background:color-mix(in srgb,var(--br-control) 92%,var(--br-bg))!important;color:var(--br-control-text)!important}
+body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(label,legend,p,h2,h3,h4,strong){color:var(--br-control-text)}
+body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(small,.field-help,.modal-description){color:var(--br-control-muted)!important}
+body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea){border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-control-text)!important;caret-color:var(--br-accent)}
+body>.modal-overlay .modal-shell .quick-options button{border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-control-text)!important}
+body>.modal-overlay .modal-shell .quick-options button:is(:hover,[aria-pressed="true"]){border-color:var(--br-accent)!important;background:var(--br-accent)!important;color:var(--br-accent-text)!important}
+body>:is(.thermal-overlay,.ticket-printer-overlay) :is(.ticket,.ticket-preview,.ticket-content,.ticket-preview pre){background:#fff!important;color:#141413!important;color-scheme:light}
+@keyframes admin-page-enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+body #app .admin-layout__content>*{animation:admin-page-enter .34s cubic-bezier(.22,.8,.28,1) both}
+body #app .admin-layout :where(button,a,[role="button"]){transition:background-color .18s ease,color .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+body #app .admin-layout :where(button,a,[role="button"]):active{transform:translateY(1px)}
+@media(prefers-reduced-motion:reduce){body #app .admin-layout__content>*{animation:none!important}body #app .admin-layout :where(button,a,[role="button"]){transition:none!important}}
+
+/* Contraste final de acciones y superficies estadísticas heredadas. */
+html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(label,legend,p,h2,h3,h4,strong){color:var(--br-control-text)!important}
+html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) button.app-button:is(.p-button-text,.app-button--outlined){border-color:var(--br-control-text)!important;background:transparent!important;color:var(--br-control-text)!important}
+html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) button.app-button:is(.p-button-text,.app-button--outlined):hover:not(:disabled){border-color:var(--br-accent)!important;background:var(--br-accent)!important;color:var(--br-accent-text)!important}
+html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal)>header,
+html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(.standard-modal-header,.modal-header,.ticket-modal-header){background-color:var(--br-panel-2)!important;color:var(--br-text)!important}
+html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal)>header :is(h1,h2,h3,h4,p,span,strong),
+html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(.standard-modal-header,.modal-header,.ticket-modal-header) :is(h1,h2,h3,h4,p,span,strong){color:var(--br-text)!important}
+html body>.modal-overlay .modal-content :is(.bg-white,.bg-gray-50,.bg-gray-100,.bg-gray-200){background-color:var(--br-control)!important}
+html body>.modal-overlay .modal-content :is(.text-black,.text-gray-700,.text-gray-800,.text-gray-900){color:var(--br-control-text)!important}
+html body>.modal-overlay .modal-content :is(.text-gray-400,.text-gray-500,.text-gray-600){color:var(--br-control-muted)!important}
+html body>.modal-overlay .modal-content .standard-modal-header .modal-kicker,
+html body>.modal-overlay .modal-content .standard-modal-header::before{color:var(--br-accent)!important}
+html body>.cut-overlay .cut-modal :is(.metrics,.preview,.period-summary,.cut-modal>footer){border-color:var(--br-line-strong)!important}
+html body>.cut-overlay .cut-modal :is(.metrics article,.preview li){border-color:var(--br-line)!important}
+html body>.cut-overlay .cut-modal :is(.metrics .balance,.preview>div){background:var(--br-bg)!important;color:var(--br-text)!important}
+
+/* Contrato visual v5: contraste fuerte y determinista en todas las paletas. */
+:root,
+html[data-br-palette]{
+  --br-on-dark:var(--br-text);
+  --br-on-dark-muted:var(--br-muted);
+  --br-on-control:var(--br-control-text);
+  --br-on-control-muted:var(--br-control-muted);
+}
+
+/* Las utilidades heredadas nunca deben introducir tinta oscura en las vistas oscuras. */
+html body #app .admin-layout{color:var(--br-on-dark)!important}
+html body #app .admin-layout :where(.text-black,.text-gray-700,.text-gray-800,.text-gray-900,.text-slate-700,.text-slate-800,.text-slate-900,.text-neutral-700,.text-neutral-800,.text-neutral-900):not(.ticket):not(.ticket *){color:var(--br-on-dark)!important}
+html body #app .admin-layout :where(.text-gray-400,.text-gray-500,.text-gray-600,.text-slate-400,.text-slate-500,.text-slate-600,.text-neutral-400,.text-neutral-500,.text-neutral-600):not(.ticket):not(.ticket *){color:var(--br-on-dark-muted)!important}
+html body #app .admin-layout :where(.bg-white,.bg-gray-50,.bg-gray-100,.bg-gray-200,.bg-slate-50,.bg-slate-100,.bg-neutral-50,.bg-neutral-100):not(.ticket):not(.ticket *){background-color:var(--br-panel)!important}
+html body #app .admin-layout :where(h1,h2,h3,h4,h5,h6,label,legend,.field>span,.range-field>span){color:var(--br-on-dark)!important}
+
+/* Los formularios claros usan siempre tinta oscura; OLED conserva el inverso. */
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"]{
+  --app-modal-ink:var(--br-on-control);
+  --app-modal-muted:var(--br-on-control-muted);
+  background:var(--br-control)!important;
+  color:var(--app-modal-ink)!important;
+}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(h1,h2,h3,h4,h5,h6,p,span,small,strong,b,em,li,dt,dd,th,td,label,legend){
+  color:var(--app-modal-ink)!important;
+}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.field-help,.modal-description,.task-field-help,.muted,.form-block legend small,.file-name small){color:var(--app-modal-muted)!important}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+  border-color:var(--br-line-strong)!important;
+  background:var(--br-control)!important;
+  color:var(--br-on-control)!important;
+  -webkit-text-fill-color:var(--br-on-control)!important;
+  opacity:1!important;
+}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(input,textarea)::placeholder{
+  color:var(--br-on-control-muted)!important;
+  -webkit-text-fill-color:var(--br-on-control-muted)!important;
+  opacity:1!important;
+}
+
+/* Encabezados oscuros, botones de acento y bloques de vista previa recuperan su tinta correcta. */
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"]>header,
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.standard-modal-header,.modal-header,.task-modal__header,.dt-modal-header,.logs-modal-header,.metrics .balance,.preview>div,.dt-month-nav,.dt-icon,.dt-spinner button){
+  --app-modal-ink:var(--br-on-dark);
+  --app-modal-muted:var(--br-on-dark-muted);
+  color:var(--br-on-dark)!important;
+}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"]>header :where(h1,h2,h3,h4,span,strong),
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.standard-modal-header,.modal-header,.task-modal__header,.dt-modal-header,.logs-modal-header) :where(h1,h2,h3,h4,span,strong){color:var(--br-on-dark)!important}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"]>header>p:first-child,
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.modal-kicker,.standard-modal-header::before,.logs-modal-header::before){color:var(--br-accent)!important}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(button,a,[role="button"]) :where(span,strong,b,i){color:inherit!important}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.p-button-primary,.p-button-success,.p-button-warning,.p-button-danger,.task-button--primary,.accent,.standard-modal-close,.modal-close,button[type="submit"]:not(.app-button--outlined):not(.p-button-text)){
+  border-color:var(--br-accent)!important;
+  background:var(--br-accent)!important;
+  color:var(--br-accent-text)!important;
+  -webkit-text-fill-color:var(--br-accent-text)!important;
+}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.app-button--outlined,.p-button-text,.task-button--secondary){
+  border-color:var(--br-on-control)!important;
+  background:transparent!important;
+  color:var(--br-on-control)!important;
+  -webkit-text-fill-color:var(--br-on-control)!important;
+}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.app-button--outlined,.p-button-text,.task-button--secondary):hover:not(:disabled){
+  border-color:var(--br-accent)!important;
+  background:var(--br-accent)!important;
+  color:var(--br-accent-text)!important;
+  -webkit-text-fill-color:var(--br-accent-text)!important;
+}
+
+/* Alertas y documentos impresos mantienen pares de color independientes del tema. */
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor)[role="dialog"] :where(.form-error,.period-error,.task-modal__error,.error,[role="alert"]){
+  --app-modal-ink:var(--br-danger-text);
+  border-color:var(--br-danger)!important;
+  background:color-mix(in srgb,var(--br-danger) 34%,var(--br-control))!important;
+  color:var(--br-danger-text)!important;
+}
+html body :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode){--app-modal-ink:#141413;--app-modal-muted:#4e4b45;background:#fff!important;color:#141413!important;color-scheme:light}
+html body :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode) :where(*){color:inherit!important;-webkit-text-fill-color:currentColor!important}
+
+/* Deshabilitado sigue siendo distinguible, pero nunca ilegible. */
+html body #app :where(button,input,select,textarea):disabled,
+html body>[class*="overlay"] :where(button,input,select,textarea):disabled{opacity:.78!important}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] .p-button-success{
+  border-color:var(--br-success)!important;background:var(--br-success)!important;color:var(--br-success-text)!important;-webkit-text-fill-color:var(--br-success-text)!important
+}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] .p-button-warning{
+  border-color:var(--br-warning)!important;background:var(--br-warning)!important;color:var(--br-warning-text)!important;-webkit-text-fill-color:var(--br-warning-text)!important
+}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] .p-button-danger{
+  border-color:var(--br-danger)!important;background:var(--br-danger)!important;color:var(--br-danger-text)!important;-webkit-text-fill-color:var(--br-danger-text)!important
+}
+html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.p-button-success,.p-button-warning,.p-button-danger) :where(span,strong,b,i){color:inherit!important}
+
+/* Los mensajes secundarios conservan jerarquía sin caer por debajo de AA. */
+html body :where([role="dialog"][aria-modal="true"]) :where(.modal-description,.field-help,.task-field-help,.muted,small){
+  color:var(--app-modal-muted)!important
 }

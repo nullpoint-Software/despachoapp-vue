@@ -1,0 +1,1279 @@
+{
+  "format": "despachoapp-sat-recommendations",
+  "version": 1,
+  "updatedAt": "2026-08-07T00:00:00.000Z",
+  "recommendations": {
+    "servicios contables": {
+      "query": "Servicios contables",
+      "aliases": [
+        "honorarios contables",
+        "contador",
+        "contabilidad"
+      ],
+      "summary": "Prestación de servicios contables",
+      "suggestions": [
+        {
+          "code": "84111500",
+          "description": "Servicios contables",
+          "reason": "Coincide directamente con la descripción oficial del catálogo."
+        }
+      ],
+      "note": "Puede existir una clave más específica según el tipo de trabajo contable.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-06T00:00:00.000Z",
+      "updatedAt": "2026-08-06T00:00:00.000Z"
+    },
+    "calculo de nomina": {
+      "query": "Cálculo de nómina",
+      "aliases": [
+        "nómina",
+        "timbrado de nómina",
+        "sueldos y salarios"
+      ],
+      "summary": "Contabilidad de sueldos y salarios",
+      "suggestions": [
+        {
+          "code": "84111505",
+          "description": "Servicios de contabilidad de sueldos y salarios",
+          "reason": "Corresponde al procesamiento contable de sueldos y salarios."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "consultoria de negocios": {
+      "query": "Consultoría de negocios",
+      "aliases": [
+        "consultoría empresarial",
+        "asesoría administrativa",
+        "consultoría de administración"
+      ],
+      "summary": "Consultoría de negocios y administración",
+      "suggestions": [
+        {
+          "code": "80101500",
+          "description": "Servicios de consultoría de negocios y administración corporativa",
+          "reason": "La clave cubre consultoría de negocios y administración corporativa."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "desarrollo de software": {
+      "query": "Desarrollo de software",
+      "aliases": [
+        "programación de software",
+        "desarrollo de sistemas",
+        "desarrollo de aplicación"
+      ],
+      "summary": "Servicio de desarrollo de software",
+      "suggestions": [
+        {
+          "code": "81111500",
+          "description": "Ingeniería de software o hardware",
+          "reason": "Incluye servicios profesionales de ingeniería y desarrollo de software."
+        }
+      ],
+      "note": "Elige una subclave más específica cuando describa mejor el servicio.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-06T00:00:00.000Z",
+      "updatedAt": "2026-08-06T00:00:00.000Z"
+    },
+    "pagina web": {
+      "query": "Página web",
+      "aliases": [
+        "desarrollo web",
+        "plataforma web",
+        "sitio web"
+      ],
+      "summary": "Desarrollo de plataforma web",
+      "suggestions": [
+        {
+          "code": "43232408",
+          "description": "Software de desarrollo de plataformas web",
+          "reason": "La descripción oficial menciona plataformas y desarrollo web."
+        }
+      ],
+      "note": "Distingue entre vender software y prestar un servicio de desarrollo.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-06T00:00:00.000Z",
+      "updatedAt": "2026-08-06T00:00:00.000Z"
+    },
+    "servicio de internet": {
+      "query": "Servicio de internet",
+      "aliases": [
+        "internet empresarial",
+        "conexión a internet",
+        "servicio de banda ancha"
+      ],
+      "summary": "Servicio de conectividad a internet",
+      "suggestions": [
+        {
+          "code": "81112100",
+          "description": "Servicios de internet",
+          "reason": "Coincide con la prestación de servicios de internet."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "soporte de software": {
+      "query": "Soporte de software",
+      "aliases": [
+        "mantenimiento de sistemas",
+        "soporte técnico de software",
+        "actualización de sistema"
+      ],
+      "summary": "Mantenimiento y soporte de software",
+      "suggestions": [
+        {
+          "code": "81112200",
+          "description": "Mantenimiento y soporte de software",
+          "reason": "La clave agrupa mantenimiento y soporte de aplicaciones de software."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "publicidad en redes sociales": {
+      "query": "Publicidad en redes sociales",
+      "aliases": [
+        "anuncios en internet",
+        "campaña digital",
+        "publicidad digital"
+      ],
+      "summary": "Publicidad difundida por internet",
+      "suggestions": [
+        {
+          "code": "82101603",
+          "description": "Publicidad en internet",
+          "reason": "La operación corresponde a publicidad publicada en internet."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "limpieza de oficinas": {
+      "query": "Limpieza de oficinas",
+      "aliases": [
+        "servicio de limpieza",
+        "aseo de edificios",
+        "limpieza empresarial"
+      ],
+      "summary": "Limpieza de edificios",
+      "suggestions": [
+        {
+          "code": "76111501",
+          "description": "Servicios de limpieza de edificios",
+          "reason": "La clave describe servicios de limpieza prestados en edificios."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "renta de automovil": {
+      "query": "Renta de automóvil",
+      "aliases": [
+        "renta de carro",
+        "alquiler de vehículo",
+        "arrendamiento de auto"
+      ],
+      "summary": "Alquiler temporal de vehículos",
+      "suggestions": [
+        {
+          "code": "78111808",
+          "description": "Alquiler de vehículos",
+          "reason": "Coincide con el alquiler de vehículos."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "consumo en restaurante": {
+      "query": "Consumo en restaurante",
+      "aliases": [
+        "restaurante",
+        "comida preparada",
+        "alimentos en restaurante"
+      ],
+      "summary": "Servicio de restaurante",
+      "suggestions": [
+        {
+          "code": "90101501",
+          "description": "Restaurantes",
+          "reason": "La clave corresponde al servicio prestado por restaurantes."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "hospedaje en hotel": {
+      "query": "Hospedaje en hotel",
+      "aliases": [
+        "hotel",
+        "habitación de hotel",
+        "servicio de hospedaje"
+      ],
+      "summary": "Servicio de hospedaje en hotel",
+      "suggestions": [
+        {
+          "code": "90111501",
+          "description": "Hoteles",
+          "reason": "Coincide con la prestación de hospedaje en hoteles."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "gasolina regular": {
+      "query": "Gasolina regular",
+      "aliases": [
+        "gasolina magna",
+        "combustible regular",
+        "gasolina menor a 91 octanos"
+      ],
+      "summary": "Gasolina regular",
+      "suggestions": [
+        {
+          "code": "15101514",
+          "description": "Gasolina regular menor a 91 octanos",
+          "reason": "La clave identifica gasolina regular menor a 91 octanos."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "gasolina premium": {
+      "query": "Gasolina premium",
+      "aliases": [
+        "gasolina premium",
+        "combustible premium",
+        "gasolina de 91 octanos"
+      ],
+      "summary": "Gasolina premium",
+      "suggestions": [
+        {
+          "code": "15101515",
+          "description": "Gasolina premium mayor o igual a 91 octanos",
+          "reason": "La clave identifica gasolina premium de 91 octanos o más."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "botanas": {
+      "query": "Botanas",
+      "aliases": [
+        "papas fritas",
+        "frituras",
+        "snacks",
+        "Doritos",
+        "Sabritas"
+      ],
+      "summary": "Botanas preparadas",
+      "suggestions": [
+        {
+          "code": "50192100",
+          "description": "Botanas",
+          "reason": "Corresponde a la categoría oficial de botanas."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "cafe": {
+      "query": "Café",
+      "aliases": [
+        "café molido",
+        "café en grano",
+        "café tostado"
+      ],
+      "summary": "Café para consumo",
+      "suggestions": [
+        {
+          "code": "50201706",
+          "description": "Café",
+          "reason": "Coincide con la clave específica de café."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "papel para impresora": {
+      "query": "Papel para impresora",
+      "aliases": [
+        "papel bond",
+        "hojas para copiadora",
+        "papel de oficina"
+      ],
+      "summary": "Papel para impresión o fotocopiado",
+      "suggestions": [
+        {
+          "code": "14111507",
+          "description": "Papel para impresora o fotocopiadora",
+          "reason": "La clave describe papel utilizado en impresoras o fotocopiadoras."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "toner para impresora": {
+      "query": "Tóner para impresora",
+      "aliases": [
+        "cartucho de tóner",
+        "tóner láser",
+        "consumible de impresora"
+      ],
+      "summary": "Tóner para impresión",
+      "suggestions": [
+        {
+          "code": "44103103",
+          "description": "Tóner para impresoras o fax",
+          "reason": "Coincide con tóner para impresoras o fax."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "laptop": {
+      "query": "Laptop",
+      "aliases": [
+        "computadora portátil",
+        "notebook",
+        "equipo portátil"
+      ],
+      "summary": "Computadora notebook",
+      "suggestions": [
+        {
+          "code": "43211503",
+          "description": "Computadores notebook",
+          "reason": "La clave específica corresponde a computadores notebook."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "computadora de escritorio": {
+      "query": "Computadora de escritorio",
+      "aliases": [
+        "PC de escritorio",
+        "equipo de cómputo",
+        "computador desktop"
+      ],
+      "summary": "Computador de escritorio",
+      "suggestions": [
+        {
+          "code": "43211507",
+          "description": "Computadores de escritorio",
+          "reason": "Coincide con la clave específica de computadores de escritorio."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "impresora laser": {
+      "query": "Impresora láser",
+      "aliases": [
+        "impresora de oficina",
+        "impresora monocromática",
+        "equipo de impresión láser"
+      ],
+      "summary": "Impresora con tecnología láser",
+      "suggestions": [
+        {
+          "code": "43212105",
+          "description": "Impresoras láser",
+          "reason": "La clave identifica impresoras láser."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "escritorio de oficina": {
+      "query": "Escritorio de oficina",
+      "aliases": [
+        "mesa de oficina",
+        "escritorio ejecutivo",
+        "mueble de oficina"
+      ],
+      "summary": "Escritorio",
+      "suggestions": [
+        {
+          "code": "56101703",
+          "description": "Escritorios",
+          "reason": "Coincide con la clave específica de escritorios."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "flete local": {
+      "query": "Flete local",
+      "aliases": [
+        "transporte de carga",
+        "envío en camión",
+        "servicio de flete"
+      ],
+      "summary": "Transporte local de carga por carretera",
+      "suggestions": [
+        {
+          "code": "78101801",
+          "description": "Servicios de transporte de carga por carretera (en camión) en área local",
+          "reason": "La clave describe transporte local de carga por carretera en camión."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "capacitacion administrativa": {
+      "query": "Capacitación administrativa",
+      "aliases": [
+        "curso administrativo",
+        "capacitación de oficina",
+        "formación administrativa"
+      ],
+      "summary": "Formación profesional administrativa",
+      "suggestions": [
+        {
+          "code": "86101705",
+          "description": "Capacitación administrativa",
+          "reason": "La clave corresponde a capacitación administrativa."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "renta de oficina": {
+      "query": "Renta de oficina",
+      "aliases": [
+        "arrendamiento de local",
+        "alquiler de inmueble",
+        "renta de bodega"
+      ],
+      "summary": "Alquiler o arrendamiento de propiedad",
+      "suggestions": [
+        {
+          "code": "80131500",
+          "description": "Alquiler y arrendamiento de propiedades o edificaciones",
+          "reason": "La clave agrupa el alquiler y arrendamiento de propiedades o edificaciones."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "consulta medica": {
+      "query": "Consulta médica",
+      "aliases": [
+        "consulta con doctor",
+        "médico general",
+        "atención médica primaria"
+      ],
+      "summary": "Consulta médica de atención primaria",
+      "suggestions": [
+        {
+          "code": "85121502",
+          "description": "Servicios de consulta de médicos de atención primaria",
+          "reason": "La clave corresponde a servicios de consulta médica de atención primaria."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "servicio dental": {
+      "query": "Servicio dental",
+      "aliases": [
+        "dentista",
+        "consulta dental",
+        "tratamiento odontológico"
+      ],
+      "summary": "Servicios dentales",
+      "suggestions": [
+        {
+          "code": "85122000",
+          "description": "Servicios dentales",
+          "reason": "Coincide con la familia oficial de servicios dentales."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "mantenimiento de automovil": {
+      "query": "Mantenimiento de automóvil",
+      "aliases": [
+        "servicio mecánico",
+        "reparación de auto",
+        "mantenimiento de camioneta"
+      ],
+      "summary": "Reparación y mantenimiento automotor",
+      "suggestions": [
+        {
+          "code": "78181507",
+          "description": "Reparación y mantenimiento automotor y de camiones ligeros",
+          "reason": "La clave describe reparación y mantenimiento de automóviles y camiones ligeros."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "telefonia celular": {
+      "query": "Telefonía celular",
+      "aliases": [
+        "plan celular",
+        "servicio móvil",
+        "línea telefónica móvil"
+      ],
+      "summary": "Servicio de telefonía celular",
+      "suggestions": [
+        {
+          "code": "83111603",
+          "description": "Servicios de telefonía celular",
+          "reason": "Coincide con la prestación de servicios de telefonía celular."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "seguridad privada": {
+      "query": "Seguridad privada",
+      "aliases": [
+        "guardias de seguridad",
+        "vigilancia de oficina",
+        "servicio de guardia"
+      ],
+      "summary": "Servicio de guardas de seguridad",
+      "suggestions": [
+        {
+          "code": "92121504",
+          "description": "Servicios de guardas de seguridad",
+          "reason": "La clave corresponde a servicios prestados por guardas de seguridad."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "reparacion de plomeria": {
+      "query": "Reparación de plomería",
+      "aliases": [
+        "plomero",
+        "mantenimiento de tuberías",
+        "reparación de fuga"
+      ],
+      "summary": "Mantenimiento o reparación de plomería",
+      "suggestions": [
+        {
+          "code": "72101510",
+          "description": "Mantenimiento o reparación del sistema de plomería",
+          "reason": "Coincide con mantenimiento o reparación del sistema de plomería."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "mantenimiento de aire acondicionado": {
+      "query": "Mantenimiento de aire acondicionado",
+      "aliases": [
+        "servicio HVAC",
+        "reparación de clima",
+        "mantenimiento de minisplit"
+      ],
+      "summary": "Construcción y mantenimiento de HVAC",
+      "suggestions": [
+        {
+          "code": "72151200",
+          "description": "Servicios de construcción y mantenimiento de HVAC calefacción y enfriamiento y aire acondicionado",
+          "reason": "La clave incluye mantenimiento de calefacción, enfriamiento y aire acondicionado."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "construccion de casa": {
+      "query": "Construcción de casa",
+      "aliases": [
+        "construcción residencial",
+        "obra de vivienda",
+        "casa nueva"
+      ],
+      "summary": "Construcción de casa unifamiliar nueva",
+      "suggestions": [
+        {
+          "code": "72111006",
+          "description": "Servicio de construcción de casas unifamiliares nuevas",
+          "reason": "La clave describe la construcción de casas unifamiliares nuevas."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "mensajeria local": {
+      "query": "Mensajería local",
+      "aliases": [
+        "entrega de paquetes",
+        "servicio de mensajero",
+        "paquetería local"
+      ],
+      "summary": "Entrega local de cartas o paquetes",
+      "suggestions": [
+        {
+          "code": "78102205",
+          "description": "Servicios de entrega local de cartas o paquetes pequeños",
+          "reason": "La clave corresponde a servicios locales de entrega de cartas o paquetes pequeños."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "servicios legales de contratos": {
+      "query": "Servicios legales de contratos",
+      "aliases": [
+        "abogado de contratos",
+        "revisión de contrato",
+        "asesoría contractual"
+      ],
+      "summary": "Servicios legales sobre contratos",
+      "suggestions": [
+        {
+          "code": "80121704",
+          "description": "Servicios legales sobre contratos",
+          "reason": "La clave describe servicios legales relacionados con contratos."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "diseno grafico": {
+      "query": "Diseño gráfico",
+      "aliases": [
+        "diseño de logotipo",
+        "diseño de publicidad",
+        "arte gráfico"
+      ],
+      "summary": "Servicios de diseño artístico",
+      "suggestions": [
+        {
+          "code": "82141500",
+          "description": "Servicios de diseño artístico",
+          "reason": "La clave agrupa servicios profesionales de diseño artístico."
+        }
+      ],
+      "note": "Referencia inicial orientativa; confirma que la clave describa la operación real antes de emitir el CFDI.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-07T00:00:00.000Z",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "doritos": {
+      "query": "Doritos",
+      "aliases": [
+        "Doritos",
+        "Doritos 3D"
+      ],
+      "summary": "Botana preparada",
+      "suggestions": [
+        {
+          "code": "50192100",
+          "description": "Botanas",
+          "reason": "Es una botana preparada para consumo humano."
+        }
+      ],
+      "note": "Recomendación inicial; confirma que la clave describa la operación real.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-06T00:00:00.000Z",
+      "updatedAt": "2026-08-06T00:00:00.000Z"
+    },
+    "sabritas": {
+      "query": "Sabritas",
+      "aliases": [
+        "Sabritas",
+        "papas Sabritas",
+        "Cheetos",
+        "Takis"
+      ],
+      "summary": "Botana preparada",
+      "suggestions": [
+        {
+          "code": "50192100",
+          "description": "Botanas",
+          "reason": "Corresponde a la categoría oficial de botanas."
+        }
+      ],
+      "note": "Recomendación inicial; confirma la presentación específica del producto.",
+      "status": "confirmed",
+      "source": "seed",
+      "uses": 0,
+      "createdAt": "2026-08-06T00:00:00.000Z",
+      "updatedAt": "2026-08-06T00:00:00.000Z"
+    }
+  },
+  "codeExamples": {
+    "14111507": {
+      "code": "14111507",
+      "description": "Papel para impresora o fotocopiadora",
+      "examples": [
+        "Resma de papel carta",
+        "Papel bond oficio",
+        "Hojas para fotocopiadora"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "15101514": {
+      "code": "15101514",
+      "description": "Gasolina regular menor a 91 octanos",
+      "examples": [
+        "Gasolina Magna",
+        "Combustible regular",
+        "Carga de gasolina menor a 91 octanos"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "15101515": {
+      "code": "15101515",
+      "description": "Gasolina premium mayor o igual a 91 octanos",
+      "examples": [
+        "Gasolina Premium",
+        "Combustible de alto octanaje",
+        "Carga de gasolina de 91 octanos"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "43211503": {
+      "code": "43211503",
+      "description": "Computadores notebook",
+      "examples": [
+        "Laptop empresarial",
+        "Computadora portátil",
+        "Notebook para oficina"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "43211507": {
+      "code": "43211507",
+      "description": "Computadores de escritorio",
+      "examples": [
+        "PC administrativa",
+        "Computadora de escritorio",
+        "Estación de trabajo"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "43212105": {
+      "code": "43212105",
+      "description": "Impresoras láser",
+      "examples": [
+        "Impresora láser monocromática",
+        "Impresora láser a color",
+        "Multifuncional láser"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "43232408": {
+      "code": "43232408",
+      "description": "Software de desarrollo de plataformas web",
+      "examples": [
+        "Sitio corporativo",
+        "Tienda en línea",
+        "Portal de clientes"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "44103103": {
+      "code": "44103103",
+      "description": "Tóner para impresoras o fax",
+      "examples": [
+        "Cartucho de tóner negro",
+        "Tóner para impresora láser",
+        "Tóner de alto rendimiento"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "50192100": {
+      "code": "50192100",
+      "description": "Botanas",
+      "examples": [
+        "Papas fritas empacadas",
+        "Frituras de maíz",
+        "Botana con chile"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "50201706": {
+      "code": "50201706",
+      "description": "Café",
+      "examples": [
+        "Café tostado en grano",
+        "Café molido",
+        "Paquete de café"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "56101703": {
+      "code": "56101703",
+      "description": "Escritorios",
+      "examples": [
+        "Escritorio ejecutivo",
+        "Mesa de trabajo para oficina",
+        "Escritorio con cajones"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "72101510": {
+      "code": "72101510",
+      "description": "Mantenimiento o reparación del sistema de plomería",
+      "examples": [
+        "Reparación de fuga de agua",
+        "Destape de tubería",
+        "Mantenimiento de instalación hidráulica"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "72111006": {
+      "code": "72111006",
+      "description": "Servicio de construcción de casas unifamiliares nuevas",
+      "examples": [
+        "Construcción de vivienda",
+        "Obra de casa habitación",
+        "Casa unifamiliar nueva"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "72151200": {
+      "code": "72151200",
+      "description": "Servicios de construcción y mantenimiento de HVAC calefacción y enfriamiento y aire acondicionado",
+      "examples": [
+        "Limpieza de minisplit",
+        "Reparación de aire acondicionado",
+        "Mantenimiento preventivo HVAC"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "76111501": {
+      "code": "76111501",
+      "description": "Servicios de limpieza de edificios",
+      "examples": [
+        "Limpieza de oficina",
+        "Aseo de local comercial",
+        "Limpieza periódica de edificio"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "78101801": {
+      "code": "78101801",
+      "description": "Servicios de transporte de carga por carretera (en camión) en área local",
+      "examples": [
+        "Flete dentro de la ciudad",
+        "Entrega de mercancía en camión",
+        "Transporte local de carga"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "78102205": {
+      "code": "78102205",
+      "description": "Servicios de entrega local de cartas o paquetes pequeños",
+      "examples": [
+        "Entrega de documentos",
+        "Envío local de paquete",
+        "Mensajería dentro de la ciudad"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "78111808": {
+      "code": "78111808",
+      "description": "Alquiler de vehículos",
+      "examples": [
+        "Renta diaria de automóvil",
+        "Alquiler de camioneta",
+        "Vehículo sustituto"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "78181507": {
+      "code": "78181507",
+      "description": "Reparación y mantenimiento automotor y de camiones ligeros",
+      "examples": [
+        "Afinación de automóvil",
+        "Servicio preventivo",
+        "Reparación mecánica"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "80101500": {
+      "code": "80101500",
+      "description": "Servicios de consultoría de negocios y administración corporativa",
+      "examples": [
+        "Diagnóstico administrativo",
+        "Consultoría de procesos",
+        "Asesoría de gestión"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "80121704": {
+      "code": "80121704",
+      "description": "Servicios legales sobre contratos",
+      "examples": [
+        "Elaboración de contrato",
+        "Revisión de convenio",
+        "Asesoría contractual"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "80131500": {
+      "code": "80131500",
+      "description": "Alquiler y arrendamiento de propiedades o edificaciones",
+      "examples": [
+        "Renta mensual de oficina",
+        "Arrendamiento de local comercial",
+        "Alquiler de bodega"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "81111500": {
+      "code": "81111500",
+      "description": "Ingeniería de software o hardware",
+      "examples": [
+        "Sistema administrativo a la medida",
+        "Aplicación móvil",
+        "Integración de sistemas"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "81112100": {
+      "code": "81112100",
+      "description": "Servicios de internet",
+      "examples": [
+        "Internet de oficina",
+        "Enlace dedicado",
+        "Conectividad de banda ancha"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "81112200": {
+      "code": "81112200",
+      "description": "Mantenimiento y soporte de software",
+      "examples": [
+        "Soporte mensual de sistema",
+        "Corrección de errores",
+        "Actualización de aplicación"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "82101603": {
+      "code": "82101603",
+      "description": "Publicidad en internet",
+      "examples": [
+        "Campaña en redes sociales",
+        "Anuncios en buscadores",
+        "Pauta digital"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "82141500": {
+      "code": "82141500",
+      "description": "Servicios de diseño artístico",
+      "examples": [
+        "Diseño de identidad gráfica",
+        "Diseño de folleto",
+        "Diseño de piezas para redes sociales"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "83111603": {
+      "code": "83111603",
+      "description": "Servicios de telefonía celular",
+      "examples": [
+        "Plan mensual de celular",
+        "Servicio de voz y datos",
+        "Línea móvil empresarial"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "84111500": {
+      "code": "84111500",
+      "description": "Servicios contables",
+      "examples": [
+        "Contabilidad mensual",
+        "Registro de pólizas",
+        "Preparación de estados financieros"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "84111505": {
+      "code": "84111505",
+      "description": "Servicios de contabilidad de sueldos y salarios",
+      "examples": [
+        "Cálculo de nómina semanal",
+        "Timbrado de recibos de nómina",
+        "Procesamiento de sueldos"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "85121502": {
+      "code": "85121502",
+      "description": "Servicios de consulta de médicos de atención primaria",
+      "examples": [
+        "Consulta de medicina general",
+        "Valoración médica",
+        "Consulta de primer contacto"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "85122000": {
+      "code": "85122000",
+      "description": "Servicios dentales",
+      "examples": [
+        "Consulta odontológica",
+        "Limpieza dental",
+        "Tratamiento dental"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "86101705": {
+      "code": "86101705",
+      "description": "Capacitación administrativa",
+      "examples": [
+        "Curso de administración",
+        "Taller de procesos administrativos",
+        "Capacitación para personal de oficina"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "90101501": {
+      "code": "90101501",
+      "description": "Restaurantes",
+      "examples": [
+        "Consumo de alimentos",
+        "Servicio de comida en restaurante",
+        "Cuenta de restaurante"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "90111501": {
+      "code": "90111501",
+      "description": "Hoteles",
+      "examples": [
+        "Noche de hotel",
+        "Habitación ejecutiva",
+        "Hospedaje por viaje de trabajo"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    },
+    "92121504": {
+      "code": "92121504",
+      "description": "Servicios de guardas de seguridad",
+      "examples": [
+        "Guardia en acceso",
+        "Vigilancia de instalaciones",
+        "Seguridad para evento"
+      ],
+      "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
+      "source": "seed",
+      "updatedAt": "2026-08-07T00:00:00.000Z"
+    }
+  }
+}

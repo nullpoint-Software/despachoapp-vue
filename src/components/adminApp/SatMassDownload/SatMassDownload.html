@@ -1,0 +1,117 @@
+<AppButton
+  label="Descarga masiva SAT"
+  icon="pi pi-cloud-download"
+  class="sat-mass-download-launch"
+  :disabled="!clientId"
+  @click="showModal"
+/>
+
+<Teleport to="body">
+  <Transition name="sat-download-modal">
+    <div v-if="open" class="sat-download-overlay" @click.self="closeModal">
+      <section class="sat-download-shell" role="dialog" aria-modal="true" aria-labelledby="sat-download-title">
+        <header>
+          <div>
+            <p>SAT / DESCARGA OFICIAL</p>
+            <h2 id="sat-download-title">Descarga masiva de CFDI</h2>
+            <span>{{ clientLabel }}</span>
+          </div>
+          <button type="button" aria-label="Cerrar descarga masiva" @click="closeModal">×</button>
+        </header>
+
+        <div class="sat-download-body">
+          <section class="sat-download-form" aria-label="Nueva solicitud de descarga">
+            <div class="sat-download-intro">
+              <i class="pi pi-shield" aria-hidden="true" />
+              <div>
+                <strong>Descarga oficial de CFDI</strong>
+                <span>Los XML descargados se validan y aparecen automáticamente en Fiscal.</span>
+              </div>
+            </div>
+
+            <div class="sat-download-grid">
+              <div class="sat-date-field">
+                <span>Desde <AppFieldHelp label="Inicio del periodo" text="Primer día de emisión que solicitarás al SAT. Cada solicitud puede abarcar hasta 31 días." /></span>
+                <DateTimePicker v-model="startDateModel" :show-time="false" modal title="Inicio del periodo" />
+              </div>
+              <div class="sat-date-field">
+                <span>Hasta <AppFieldHelp label="Fin del periodo" text="Último día de emisión incluido en la descarga." /></span>
+                <DateTimePicker v-model="endDateModel" :show-time="false" modal title="Fin del periodo" />
+              </div>
+              <label class="full">
+                <span>Movimiento</span>
+                <AppSelect v-model="direction" :options="directionOptions" option-label="label" option-value="value" />
+              </label>
+            </div>
+
+            <div class="credential-heading">
+              <div><small>AUTENTICACIÓN</small><strong>e.firma del contribuyente</strong></div>
+              <span>Vigente y correspondiente al RFC del cliente</span>
+            </div>
+            <div class="credential-grid">
+              <label class="file-field" :class="{ selected: certificate }">
+                <input type="file" accept=".cer,application/pkix-cert" @change="chooseFile($event, 'certificate')" />
+                <i class="pi pi-id-card" />
+                <span><strong>{{ certificate?.name || "Certificado .cer" }}</strong><small>{{ certificate ? "Archivo seleccionado" : "Seleccionar archivo" }}</small></span>
+              </label>
+              <label class="file-field" :class="{ selected: privateKey }">
+                <input type="file" accept=".key,application/octet-stream" @change="chooseFile($event, 'privateKey')" />
+                <i class="pi pi-key" />
+                <span><strong>{{ privateKey?.name || "Llave privada .key" }}</strong><small>{{ privateKey ? "Archivo seleccionado" : "Seleccionar archivo" }}</small></span>
+              </label>
+              <label class="password-field full">
+                <span>Contraseña de la llave privada</span>
+                <AppInput v-model="password" type="password" autocomplete="off" placeholder="Contraseña de la e.firma" />
+              </label>
+            </div>
+            <p class="security-note"><i class="pi pi-lock" /> Las credenciales se cifran mientras el SAT procesa la solicitud y se eliminan automáticamente al terminar, cancelar o vencer.</p>
+
+            <div v-if="errorMessage" class="sat-message error" role="alert"><i class="pi pi-exclamation-triangle" /><span>{{ errorMessage }}</span></div>
+            <div v-if="successMessage" class="sat-message success" role="status"><i class="pi pi-check-circle" /><span>{{ successMessage }}</span></div>
+
+            <footer>
+              <div><span>{{ dateLabel(startDate) }}</span><i class="pi pi-arrow-right" /><span>{{ dateLabel(endDate) }}</span></div>
+              <AppButton
+                :label="submitting ? 'Conectando con el SAT…' : 'Solicitar descarga'"
+                :icon="submitting ? 'pi pi-spin pi-spinner' : 'pi pi-send'"
+                :disabled="!canSubmit"
+                @click="submit"
+              />
+            </footer>
+          </section>
+
+          <aside class="sat-download-history" aria-label="Seguimiento de solicitudes">
+            <header>
+              <div><small>SEGUIMIENTO</small><h3>Solicitudes recientes</h3></div>
+              <button type="button" :disabled="loading" aria-label="Actualizar solicitudes" @click="loadJobs()"><i class="pi pi-refresh" :class="{ 'pi-spin': loading }" /></button>
+            </header>
+            <div v-if="waitingJobs.length" class="sat-waiting-notice" role="status">
+              <i class="pi pi-clock" aria-hidden="true" />
+              <div>
+                <strong>El SAT sigue preparando {{ waitingJobs.length === 1 ? 'la solicitud' : 'las solicitudes' }}</strong>
+                <span>Puede tardar varios minutos. Puedes cerrar esta ventana; el servidor continuará revisando el avance.</span>
+              </div>
+            </div>
+            <div v-if="loading && !jobs.length" class="jobs-empty"><i class="pi pi-spin pi-spinner" /><span>Consultando el SAT…</span></div>
+            <div v-else-if="!jobs.length" class="jobs-empty"><i class="pi pi-inbox" /><strong>Aún no hay solicitudes</strong><span>Configura el periodo y envía la primera descarga.</span></div>
+            <div v-else class="job-list">
+              <article v-for="job in jobs" :key="job.id" :data-status="job.estado">
+                <div class="job-icon"><i :class="jobCopy(job).icon" /></div>
+                <div class="job-copy">
+                  <div><strong>{{ jobDirection(job) }}</strong><span>#{{ job.id }}</span></div>
+                  <b>{{ jobCopy(job).label }}</b>
+                  <p>{{ job.ultimo_error || job.mensaje_sat || jobCopy(job).detail }}</p>
+                  <small>{{ dateLabel(String(job.fecha_inicial).slice(0, 10)) }} — {{ dateLabel(String(job.fecha_final).slice(0, 10)) }}</small>
+                  <div v-if="job.estado === 'completada'" class="job-counts">
+                    <span><b>{{ job.importados }}</b> nuevos</span><span><b>{{ job.duplicados }}</b> existentes</span><span><b>{{ job.rechazados }}</b> rechazados</span>
+                  </div>
+                </div>
+                <button v-if="activeStates.has(job.estado)" class="job-cancel" type="button" @click="cancelJob(job)">Cancelar</button>
+              </article>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+  </Transition>
+</Teleport>

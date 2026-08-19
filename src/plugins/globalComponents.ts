@@ -1,4 +1,4 @@
-import type { App, Component } from "vue";
+import { defineAsyncComponent, type App, type Component } from "vue";
 import KanbanBoard from "@/components/kanbanComponents/KanbanBoard/KanbanBoard.vue";
 import KanbanCard from "@/components/kanbanComponents/KanbanCard/KanbanCard.vue";
 import KanbanColumn from "@/components/kanbanComponents/KanbanColumn/KanbanColumn.vue";
@@ -19,10 +19,15 @@ const REQUIRED_GLOBAL_COMPONENTS: Readonly<Record<string, Component>> = {
   KanbanColumn,
 };
 
-const componentModules: Record<string, ComponentModule> = {
-  ...import.meta.glob<ComponentModule>("../components/**/*.vue", { eager: true }),
-  ...import.meta.glob<ComponentModule>("../components/**/*.tsx", { eager: true }),
-  ...import.meta.glob<ComponentModule>("../layouts/**/*.vue", { eager: true }),
+const componentLoaders: Record<string, () => Promise<ComponentModule>> = {
+  ...import.meta.glob<ComponentModule>([
+    "../components/**/*.vue",
+    "!../components/kanbanComponents/KanbanBoard/KanbanBoard.vue",
+    "!../components/kanbanComponents/KanbanCard/KanbanCard.vue",
+    "!../components/kanbanComponents/KanbanColumn/KanbanColumn.vue",
+  ]),
+  ...import.meta.glob<ComponentModule>("../components/**/*.tsx"),
+  ...import.meta.glob<ComponentModule>("../layouts/**/*.vue"),
 };
 
 const GLOBAL_COMPONENT_ALIASES: GlobalComponentAlias[] = [
@@ -46,12 +51,18 @@ function componentNameFromPath(pathname: string): string {
 export function registerGlobalComponents(app: App): void {
   const componentsByName = new Map<string, Component>();
 
-  for (const [pathname, module] of Object.entries(componentModules)) {
+  for (const [componentName, component] of Object.entries(REQUIRED_GLOBAL_COMPONENTS)) {
+    componentsByName.set(componentName, component);
+    app.component(componentName, component);
+  }
+
+  for (const [pathname, loader] of Object.entries(componentLoaders)) {
     const componentName = componentNameFromPath(pathname);
     if (componentsByName.has(componentName)) {
       throw new Error(`Nombre de componente global duplicado: ${componentName}`);
     }
-    const component = REQUIRED_GLOBAL_COMPONENTS[componentName] ?? module.default;
+    const component = REQUIRED_GLOBAL_COMPONENTS[componentName]
+      ?? defineAsyncComponent(() => loader().then((module) => module.default));
     componentsByName.set(componentName, component);
     app.component(componentName, component);
   }

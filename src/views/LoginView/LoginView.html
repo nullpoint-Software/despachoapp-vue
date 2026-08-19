@@ -82,6 +82,7 @@
         </button>
       </form></section>
     </div>
+    <Teleport to="body">
     <div v-if="resetPanelOpen" class="reset-overlay">
       <form class="reset-panel" role="dialog" aria-modal="true" aria-labelledby="reset-title" @submit.prevent="resetMode === 'confirm' ? confirmResetPassword() : requestResetEmail()">
         <button type="button" class="reset-close" aria-label="Cerrar recuperación de contraseña" @click="closeResetPanel">×</button>
@@ -108,4 +109,5 @@
         </button>
       </form>
     </div>
+    </Teleport>
   </div>

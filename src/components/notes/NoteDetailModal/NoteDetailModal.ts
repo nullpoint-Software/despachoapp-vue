@@ -3,20 +3,12 @@ interface NoteDetailModalProps {
   isVisible: boolean;
 }
 
-import { ref, watchEffect } from 'vue';
-import { marked } from 'marked';
+import { computed } from 'vue';
 import type { Note } from '@/composables/useNotesStore';
+import { renderMarkdown } from '@/utils/markdown';
 
 const props = defineProps<NoteDetailModalProps>();
 
 defineEmits(['close']);
 
-const renderedContent = ref('');
-
-watchEffect(async () => {
-  if (props.note?.descripcion) {
-    renderedContent.value = await marked(props.note.descripcion);
-  } else {
-    renderedContent.value = '';
-  }
-});
+const renderedContent = computed(() => renderMarkdown(props.note?.descripcion));

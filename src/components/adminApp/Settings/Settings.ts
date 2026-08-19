@@ -1,10 +1,10 @@
 import { as, bs, pks, us } from '@/service/adminApp/client'
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import { USER_AVATAR_PLACEHOLDER as defaultAvatar } from '@/constants/brandAssets'
 import imageCompression from "browser-image-compression";
 import { useAppToast } from '@/composables/useAppToast';
 import { useAppDialog } from '@/composables/useAppDialog';
-import { getPermissions, hasPermission, updatePermissions, updateUserPermissions } from '@/service/adminApp/permissionsService';
+import { getPermissions, updatePermissions } from '@/service/adminApp/permissionsService';
 import router from '@/router';
 
 interface SettingsUser {
@@ -35,6 +35,17 @@ interface ApiErrorShape {
 
 interface PermissionMatrix {
   [role: string]: Record<string, boolean>;
+}
+
+type UserDetailTab = 'account' | 'permissions';
+type PermissionSaveState = 'idle' | 'saving' | 'saved' | 'error';
+
+interface PermissionMeta {
+  label: string;
+  description: string;
+  group: 'Tareas' | 'Clientes' | 'Cobranza' | 'Otros';
+  icon: string;
+  sensitive?: boolean;
 }
 
 interface NewUserForm {
@@ -72,8 +83,6 @@ interface BackupConfig {
 
 const apiErrorMessage = (error: unknown): string | undefined =>
   (error as ApiErrorShape).response?.data?.error;
-// SEARCH MODAL STATE
-const showSearchModal = ref(false)
 const showAppearanceModal = ref(false);
 const showBackupManager = ref(false);
 const backupLoading = ref(false);
@@ -113,6 +122,9 @@ const backupFrequencyLabels: Record<BackupConfig['frequency'], string> = {
 
 // USER DETAILS MODAL
 const modalAbierto = ref(false)
+const userDetailTab = ref<UserDetailTab>('account')
+const permissionTutorialOpen = ref(false)
+const selectedUserPhotoBusy = ref(false)
 const buildTime = ref<string>("");
 const usuarioSeleccionado = ref<SettingsUser | null>(null)
 const passwordVisible = ref(false)
@@ -140,9 +152,94 @@ const { prompt: promptDialog, confirm: confirmDialog } = useAppDialog();
 const userInfo = await as.getUserInfo();
 const isAdmin = userInfo && userInfo.level === 'Administrador';
 
+const settingsTutorialOpen = ref(false)
+const settingsTutorialSteps = computed(() => [
+  {
+    target: '.settings-hero',
+    eyebrow: 'Ajustes / inicio',
+    title: 'Tu centro de control',
+    body: 'Desde aquí administras tu cuenta, el acceso seguro, la apariencia y, si eres administrador, al equipo completo.',
+  },
+  {
+    target: '.settings-context-bar',
+    eyebrow: 'Ajustes / accesos',
+    title: 'Ve directo a cada área',
+    body: 'Estos accesos resumen el estado de tu cuenta y te llevan al bloque que quieres configurar.',
+  },
+  {
+    target: '.profile-panel',
+    eyebrow: 'Ajustes / perfil',
+    title: 'Mantén tu identidad actualizada',
+    body: 'Cambia tu foto, edita tu nombre o actualiza tu contraseña de acceso.',
+  },
+  {
+    target: '.passkey-panel',
+    eyebrow: 'Ajustes / seguridad',
+    title: 'Accede sin depender de contraseñas',
+    body: 'Registra una passkey con huella, rostro, Windows Hello, un gestor compatible o una llave física.',
+  },
+  ...(isAdmin ? [
+    {
+      target: '.users-panel',
+      eyebrow: 'Ajustes / equipo',
+      title: 'Consulta y administra usuarios',
+      body: 'Busca a una persona para editar sus datos, activar su cuenta o revisar los permisos de su rol.',
+    },
+    {
+      target: '.create-user-panel',
+      eyebrow: 'Ajustes / altas',
+      title: 'Agrega integrantes con una guía',
+      body: 'El registro separa identidad, credenciales y confirmación para reducir errores al crear una cuenta.',
+    },
+  ] : []),
+])
+
+const permissionTutorialSteps = [
+  {
+    target: '.permission-overview',
+    eyebrow: 'Permisos / alcance',
+    title: 'Configuras un rol, no una sola cuenta',
+    body: 'El resumen indica cuántos accesos están activos y cuántas personas comparten este rol.',
+  },
+  {
+    target: '.permission-impact-note',
+    eyebrow: 'Permisos / impacto',
+    title: 'Revisa a quién afectará',
+    body: 'Cada cambio se aplica de inmediato a todos los usuarios con el mismo rol. Esta nota te recuerda el alcance antes de editar.',
+  },
+  {
+    target: '.permission-group',
+    eyebrow: 'Permisos / categorías',
+    title: 'Decide por área de trabajo',
+    body: 'Los accesos están agrupados en tareas, clientes y cobranza, con una explicación clara de lo que habilita cada uno.',
+  },
+  {
+    target: '.permission-switch',
+    eyebrow: 'Permisos / guardado',
+    title: 'Activa sólo lo necesario',
+    body: 'Usa el interruptor de cada acceso. El estado de guardado confirma cuándo el cambio ya quedó aplicado.',
+  },
+]
+
+function startSettingsTutorial(): void {
+  settingsTutorialOpen.value = true
+}
+
+function scrollToSettings(target: string): void {
+  document.querySelector(target)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+onMounted(() => {
+  if (!localStorage.getItem('tourSettingsDone')) settingsTutorialOpen.value = true
+})
+
 const userFullName = ref(localStorage.getItem("fullname"))
 const userName = ref(localStorage.getItem("username"));
 const storedPhoto = localStorage.getItem("userphoto");
+const profileNameDraft = ref(userFullName.value || "")
+const profileEditingName = ref(false)
+const profileUpdateBusy = ref(false)
+const profilePhotoBusy = ref(false)
 const profileImage = ref(
   storedPhoto && storedPhoto !== "data:image/png;base64,null"
     ? storedPhoto
@@ -442,12 +539,14 @@ function abrirModal(u: SettingsUser): void {
   passwordRevealBusy.value = false
   generatedResetLink.value = ""
   passwordResetMenuOpen.value = false
+  userDetailTab.value = 'account'
   modalAbierto.value = true
   selectedLevel.value = u.puesto;
 }
-function openFromSearch(u: SettingsUser): void {
-  abrirModal(u)
-  showSearchModal.value = false
+async function openPermissionTab(): Promise<void> {
+  userDetailTab.value = 'permissions'
+  await nextTick()
+  if (!localStorage.getItem('tourSettingsPermissionsDone')) permissionTutorialOpen.value = true
 }
 async function verPassword() {
   if (passwordRevealBusy.value || !usuarioSeleccionado.value) return;
@@ -699,22 +798,38 @@ async function deleteUser(u: SettingsUser): Promise<void> {
 
 }
 
-async function updateName(u: string): Promise<void> {
-  try {
-    await localStorage.setItem("fullname", u);
-    await us.editUsuario(localStorage.getItem("userid"), { nombre: u })
-    localStorage.setItem("showToast", "nameSuccess");
-    window.location.reload()
+async function startProfileNameEdit(): Promise<void> {
+  profileNameDraft.value = userFullName.value || ""
+  profileEditingName.value = true
+  await nextTick()
+  document.querySelector<HTMLInputElement>('#profile-full-name')?.focus()
+}
 
-  } catch (error) {
-    toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: "No se pudo realizar la operacion",
-      life: 3000,
-    });
+function cancelProfileNameEdit(): void {
+  profileNameDraft.value = userFullName.value || ""
+  profileEditingName.value = false
+}
+
+async function saveProfileName(): Promise<void> {
+  const name = profileNameDraft.value.trim()
+  if (name.length < 2 || profileUpdateBusy.value) {
+    if (name.length < 2) {
+      toast.add({ severity: 'warn', summary: 'Nombre incompleto', detail: 'Escribe al menos dos caracteres.', life: 3000 })
+    }
+    return
   }
-
+  profileUpdateBusy.value = true
+  try {
+    await us.editUsuario(localStorage.getItem("userid"), { nombre: name })
+    userFullName.value = name
+    localStorage.setItem("fullname", name)
+    profileEditingName.value = false
+    toast.add({ severity: 'success', summary: 'Nombre actualizado', detail: 'Tu nombre se guardó correctamente.', life: 2800 })
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Nombre sin cambios', detail: apiErrorMessage(error) || 'No se pudo guardar tu nombre.', life: 3500 })
+  } finally {
+    profileUpdateBusy.value = false
+  }
 }
 
 async function updateUserStatus(u: SettingsUser): Promise<void>{
@@ -727,54 +842,206 @@ async function updateUserStatus(u: SettingsUser): Promise<void>{
 
 async function updateImage(u: string): Promise<void> {
   try {
-    await localStorage.setItem("userphoto", "data:image/png;base64," + u)
     await us.editUsuario(localStorage.getItem("userid"), { imagen: u })
+    const dataUrl = "data:image/png;base64," + u
+    profileImage.value = dataUrl
+    localStorage.setItem("userphoto", dataUrl)
     toast.add({
       severity: "success",
-      summary: "Agregado",
-      detail: "Imagen de perfil actualizada correctamente",
+      summary: "Foto actualizada",
+      detail: "La nueva foto ya aparece en tu cuenta.",
       life: 3000,
     });
-    window.location.reload()
-  } catch (_error) {
+  } catch (error) {
     toast.add({
       severity: "error",
-      summary: "Error",
-      detail: "No se pudo realizar la operacion",
+      summary: "Foto sin cambios",
+      detail: apiErrorMessage(error) || "No se pudo actualizar la foto.",
       life: 3000,
     });
   }
 }
 
 // PERMISOS JSON
+const permissionMetadata: Record<string, PermissionMeta> = {
+  canMoveAllCards: {
+    label: 'Mover cualquier tarea',
+    description: 'Permite cambiar de columna tareas propias, disponibles y asignadas a otras personas.',
+    group: 'Tareas',
+    icon: 'pi pi-arrows-alt',
+  },
+  canMoveOwnCard: {
+    label: 'Mover tareas propias',
+    description: 'Permite avanzar o regresar las tareas que tiene asignadas.',
+    group: 'Tareas',
+    icon: 'pi pi-arrow-right-arrow-left',
+  },
+  canMoveAvailableCard: {
+    label: 'Tomar tareas disponibles',
+    description: 'Permite mover y comenzar tareas que todavía no tienen responsable.',
+    group: 'Tareas',
+    icon: 'pi pi-inbox',
+  },
+  canAddCard: {
+    label: 'Crear tareas',
+    description: 'Permite registrar nuevas tareas para el despacho.',
+    group: 'Tareas',
+    icon: 'pi pi-plus-circle',
+  },
+  canEditCard: {
+    label: 'Editar tareas',
+    description: 'Permite cambiar datos, fechas y responsables de una tarea.',
+    group: 'Tareas',
+    icon: 'pi pi-pencil',
+  },
+  canDeleteCard: {
+    label: 'Eliminar tareas',
+    description: 'Permite borrar tareas y retirarlas del flujo de trabajo.',
+    group: 'Tareas',
+    icon: 'pi pi-trash',
+    sensitive: true,
+  },
+  canAddCliente: {
+    label: 'Agregar clientes',
+    description: 'Permite crear expedientes nuevos de clientes.',
+    group: 'Clientes',
+    icon: 'pi pi-user-plus',
+  },
+  canEditCliente: {
+    label: 'Editar clientes',
+    description: 'Permite actualizar datos fiscales, contacto y expediente.',
+    group: 'Clientes',
+    icon: 'pi pi-user-edit',
+  },
+  canDeleteCliente: {
+    label: 'Eliminar clientes',
+    description: 'Permite eliminar un expediente y sus relaciones disponibles.',
+    group: 'Clientes',
+    icon: 'pi pi-user-minus',
+    sensitive: true,
+  },
+  canAddPagoConcepto: {
+    label: 'Registrar pago por concepto',
+    description: 'Permite capturar cobros o pagos asociados a un concepto.',
+    group: 'Cobranza',
+    icon: 'pi pi-receipt',
+  },
+  canEditPagoConcepto: {
+    label: 'Editar pago por concepto',
+    description: 'Permite corregir importes y datos de pagos por concepto.',
+    group: 'Cobranza',
+    icon: 'pi pi-file-edit',
+  },
+  canDeletePagoConcepto: {
+    label: 'Eliminar pago por concepto',
+    description: 'Permite borrar registros de pagos por concepto.',
+    group: 'Cobranza',
+    icon: 'pi pi-trash',
+    sensitive: true,
+  },
+  canAddPagoMensual: {
+    label: 'Registrar pago mensual',
+    description: 'Permite capturar mensualidades de clientes.',
+    group: 'Cobranza',
+    icon: 'pi pi-calendar-plus',
+  },
+  canEditPagoMensual: {
+    label: 'Editar pago mensual',
+    description: 'Permite corregir importes, periodos y datos de mensualidades.',
+    group: 'Cobranza',
+    icon: 'pi pi-calendar-clock',
+  },
+  canDeletePagoMensual: {
+    label: 'Eliminar pago mensual',
+    description: 'Permite borrar registros de mensualidades.',
+    group: 'Cobranza',
+    icon: 'pi pi-calendar-times',
+    sensitive: true,
+  },
+}
+
+const permissionGroupDetails: Record<PermissionMeta['group'], { icon: string; description: string }> = {
+  Tareas: { icon: 'pi pi-list-check', description: 'Creación, edición y movimiento del trabajo diario.' },
+  Clientes: { icon: 'pi pi-address-book', description: 'Altas y cambios dentro de los expedientes.' },
+  Cobranza: { icon: 'pi pi-wallet', description: 'Mensualidades y pagos registrados en el sistema.' },
+  Otros: { icon: 'pi pi-sliders-h', description: 'Accesos adicionales disponibles para este rol.' },
+}
+
 const permissions = ref<PermissionMatrix>(await getPermissions());
+const permissionSaving = ref(false)
+const permissionSaveState = ref<PermissionSaveState>('idle')
+
+const activeRolePermissions = computed<Record<string, boolean>>(() => {
+  const role = usuarioSeleccionado.value?.puesto || ''
+  return permissions.value[role] || {}
+})
+
+const permissionSummary = computed(() => {
+  const values = Object.values(activeRolePermissions.value)
+  return {
+    enabled: values.filter(Boolean).length,
+    total: values.length,
+  }
+})
+
+const roleUserCount = computed(() => {
+  const role = usuarioSeleccionado.value?.puesto
+  return role ? usuarios.value.filter((user) => user.puesto === role).length : 0
+})
+
+const permissionGroups = computed(() => {
+  const grouped = new Map<PermissionMeta['group'], Array<PermissionMeta & { key: string; enabled: boolean }>>()
+  Object.entries(activeRolePermissions.value).forEach(([key, enabled]) => {
+    const meta = permissionMetadata[key] || {
+      label: key,
+      description: 'Acceso adicional configurado para este rol.',
+      group: 'Otros' as const,
+      icon: 'pi pi-key',
+    }
+    const entries = grouped.get(meta.group) || []
+    entries.push({ ...meta, key, enabled })
+    grouped.set(meta.group, entries)
+  })
+  return (['Tareas', 'Clientes', 'Cobranza', 'Otros'] as const)
+    .filter((name) => grouped.has(name))
+    .map((name) => ({ name, ...permissionGroupDetails[name], items: grouped.get(name) || [] }))
+})
+
+const permissionSaveLabel = computed(() => ({
+  idle: 'Los cambios se guardan al instante',
+  saving: 'Guardando cambios…',
+  saved: 'Permisos actualizados',
+  error: 'No se pudo guardar',
+})[permissionSaveState.value])
+
 async function togglePermission(role: string, key: string): Promise<void> {
-  permissions.value[role][key] = !permissions.value[role][key]
-  await updatePermissions(permissions.value)
+  const rolePermissions = permissions.value[role]
+  if (!rolePermissions || permissionSaving.value) return
+  const previousValue = rolePermissions[key]
+  rolePermissions[key] = !previousValue
+  permissionSaving.value = true
+  permissionSaveState.value = 'saving'
+  try {
+    await updatePermissions(permissions.value)
+    permissionSaveState.value = 'saved'
+    window.setTimeout(() => {
+      if (permissionSaveState.value === 'saved') permissionSaveState.value = 'idle'
+    }, 2200)
+  } catch {
+    rolePermissions[key] = previousValue
+    permissionSaveState.value = 'error'
+    toast.add({
+      severity: 'error',
+      summary: 'Permisos sin cambios',
+      detail: 'No se pudo actualizar el rol. Intenta de nuevo.',
+      life: 4000,
+    })
+  } finally {
+    permissionSaving.value = false
+  }
 }
 function traducirPermiso(k: string): string {
-  const map = {
-    canMoveAllCards: 'Puede mover todas las tareas',
-    canMoveOwnCard: 'Puede mover sus tareas',
-    canMoveAvailableCard: 'Puede mover tareas disponibles',
-    canAddCard: 'Puede crear tareas',
-    canEditCard: 'Puede editar tarea',
-    canDeleteCard: 'Puede eliminar tarea',
-
-    canAddCliente: 'Puede agregar cliente',
-    canEditCliente: 'Puede editar cliente',
-    canDeleteCliente: 'Puede eliminar cliente',
-
-    canAddPagoConcepto: 'Puede agregar pago por concepto',
-    canEditPagoConcepto: 'Puede editar pago por concepto',
-    canDeletePagoConcepto: 'Puede eliminar pago por concepto',
-
-    canAddPagoMensual: 'Puede agregar pago mensual',
-    canEditPagoMensual: 'Puede editar pago mensual',
-    canDeletePagoMensual: 'Puede eliminar pago mensual',
-  };
-
-  return map[k as keyof typeof map] || k;
+  return permissionMetadata[k]?.label || k;
 }
 
 
@@ -920,6 +1187,11 @@ async function onFileChange(e: Event): Promise<void> {
   const input = e.target as HTMLInputElement;
   const f = input.files?.[0];
   if (f) {
+    if (!f.type.startsWith('image/')) {
+      toast.add({ severity: 'warn', summary: 'Archivo no compatible', detail: 'Selecciona una imagen JPG, PNG o WebP.', life: 3500 })
+      input.value = ""
+      return
+    }
     const maxSizeMB = 5;
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
@@ -929,9 +1201,44 @@ async function onFileChange(e: Event): Promise<void> {
       return;
     }
 
-    profileImage.value = URL.createObjectURL(f);
-    const base64Only = await compressToBase64(f);
-    await updateImage(base64Only);
+    profilePhotoBusy.value = true
+    try {
+      const base64Only = await compressToBase64(f);
+      await updateImage(base64Only);
+    } finally {
+      profilePhotoBusy.value = false
+      input.value = ""
+    }
+  }
+}
+
+async function onSelectedUserFileChange(e: Event): Promise<void> {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file || !usuarioSeleccionado.value || selectedUserPhotoBusy.value) return
+  if (!file.type.startsWith('image/')) {
+    toast.add({ severity: 'warn', summary: 'Archivo no compatible', detail: 'Selecciona una imagen JPG, PNG o WebP.', life: 3500 })
+    input.value = ""
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    toast.add({ severity: 'warn', summary: 'Imagen demasiado grande', detail: 'La imagen no debe superar los 5 MB.', life: 3500 })
+    input.value = ""
+    return
+  }
+
+  selectedUserPhotoBusy.value = true
+  try {
+    const base64Only = await compressToBase64(file)
+    await us.editUsuario(usuarioSeleccionado.value.id_usuario, { imagen: base64Only })
+    syncSelectedUserPatch({ imagen: base64Only })
+    if (isSelectedUserSelf()) profileImage.value = `data:image/png;base64,${base64Only}`
+    toast.add({ severity: 'success', summary: 'Foto actualizada', detail: `La foto de ${usuarioSeleccionado.value.nombre} se guardó correctamente.`, life: 3000 })
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Foto sin cambios', detail: apiErrorMessage(error) || 'No se pudo actualizar la foto del usuario.', life: 3500 })
+  } finally {
+    selectedUserPhotoBusy.value = false
+    input.value = ""
   }
 }
 

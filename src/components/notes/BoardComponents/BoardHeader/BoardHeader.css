@@ -1,2 +1,3 @@
 header { box-sizing: border-box; }
 .range { accent-color: var(--obj-important-1); }
+header :global(u) { border: 0; background: #f3d34a; color: #181716; padding: 0 0.12em; text-decoration: none !important; text-decoration-line: none !important; }

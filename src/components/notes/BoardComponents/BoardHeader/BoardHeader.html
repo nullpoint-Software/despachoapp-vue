@@ -3,15 +3,16 @@
     <h1 class="text-xl font-semibold hidden sm:block">Mis Notas</h1>
 
     <div class="relative flex-1 max-w-[900px]">
-      <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-theme-muted"></i>
-      <input
-        :value="localValue"
-        @input="onInput"
-        type="text"
-        placeholder="Buscar notas..."
-        class="w-full pl-12 pr-4 py-3 border border-theme rounded-full bg-theme-secondary text-theme-main focus:outline-none focus:ring-2 focus:ring-[var(--obj-important-1)] transition-shadow"
-        aria-label="Buscar notas"
-      />
+      <label class="app-search-control">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input
+          :value="localValue"
+          @input="onInput"
+          type="search"
+          placeholder="Buscar notas..."
+          aria-label="Buscar notas"
+        />
+      </label>
       <div v-if="showSuggestions && suggestions.length" class="absolute left-0 right-0 mt-2 z-50">
         <div class="bg-theme-secondary border border-theme rounded-lg shadow-lg overflow-hidden">
           <ul>

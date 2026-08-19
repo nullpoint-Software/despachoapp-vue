@@ -1,5 +1,12 @@
 <main ref="pageRef" class="home-dashboard">
-    <header class="page-hero"><div><p>OPERACI&Oacute;N / RESUMEN</p><h1>Inicio</h1><span>Ingresos, clientes y trabajo pendiente.</span></div><div class="hero-date"><b>{{ currentDay }}</b><span>{{ currentMonth }}</span></div></header>
+    <header class="page-hero">
+      <div><p>OPERACI&Oacute;N / RESUMEN</p><h1>Panel del despacho</h1><span>Ingresos, clientes y trabajo pendiente en una sola lectura.</span></div>
+      <div class="hero-tools">
+        <AppButton label="Ayuda" icon="pi pi-question-circle" outlined class="app-help-button" @click="homeTutorialOpen = true" />
+        <div class="hero-date"><b>{{ currentDay }}</b><span>{{ currentMonth }}</span></div>
+      </div>
+    </header>
+
 
     <section id="operational-summary" class="operations-panel" aria-labelledby="operations-title">
       <header class="operations-header">
@@ -72,4 +79,5 @@
       <p v-if="loadError" class="dashboard-error">{{ loadError }}</p>
       <div id="resumen-ganancias" class="summary-grid"><article><span>Hoy</span><strong>{{ money(resumen.dia) }}</strong></article><article><span>Este mes</span><strong>{{ money(resumen.mes) }}</strong></article><article><span>Este a&ntilde;o</span><strong>{{ money(resumen.anio) }}</strong></article><article class="accent"><span>Hist&oacute;rico</span><strong>{{ money(resumen.anios) }}</strong></article></div>
     </section>
+    <AppTutorial v-model="homeTutorialOpen" title="C&oacute;mo usar el panel" :steps="homeTutorialSteps" storage-key="tourInicioDone" />
   </main>

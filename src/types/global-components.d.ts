@@ -15,6 +15,7 @@ declare module "vue" {
     AppDivider: typeof import("../components/ui/AppDivider/AppDivider.vue")["default"];
     AppFilterModal: typeof import("../components/ui/AppFilterModal/AppFilterModal.vue")["default"];
     AppFilterOptions: typeof import("../components/ui/AppFilterOptions/AppFilterOptions.vue")["default"];
+    AppFieldHelp: typeof import("../components/ui/AppFieldHelp/AppFieldHelp.vue")["default"];
     AppInput: typeof import("../components/ui/AppInput/AppInput.vue")["default"];
     AppSelect: typeof import("../components/ui/AppSelect/AppSelect.vue")["default"];
     AppToast: typeof import("../components/ui/AppToast/AppToast.vue")["default"];
@@ -24,6 +25,7 @@ declare module "vue" {
     Button: typeof import("../components/ui/AppButton/AppButton.vue")["default"];
     Calendar: typeof import("../components/ui/AppDateInput/AppDateInput.vue")["default"];
     CardDetail: typeof import("../components/kanbanComponents/CardDetail/CardDetail.vue")["default"];
+    AppTutorial: typeof import("../components/ui/AppTutorial/AppTutorial.vue")["default"];
     CardDetailCliente: typeof import("../components/adminApp/CardDetail/CardDetailCliente/CardDetailCliente.vue")["default"];
     CardDetailHistorial: typeof import("../components/adminApp/CardDetail/CardDetailHistorial/CardDetailHistorial.vue")["default"];
     CardDetailPago: typeof import("../components/adminApp/CardDetail/CardDetailPago/CardDetailPago.vue")["default"];

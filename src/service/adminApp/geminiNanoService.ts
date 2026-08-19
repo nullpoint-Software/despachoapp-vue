@@ -41,11 +41,10 @@ const responseSchema = {
       type: "array",
       items: { type: "string", minLength: 2, maxLength: 90 },
       minItems: 4,
-      maxItems: 12,
+      maxItems: 6,
     },
-    note: { type: "string", minLength: 2, maxLength: 220 },
   },
-  required: ["examples", "note"],
+  required: ["examples"],
   additionalProperties: false,
 };
 
@@ -110,7 +109,7 @@ export const generateSatUsageExamples = async (
       {
         role: "system",
         content:
-          "Eres un asistente mexicano de clasificación de productos y servicios para CFDI. Genera ejemplos cotidianos, concretos y breves que puedan corresponder a la descripción oficial proporcionada. No cambies la clave, no inventes reglas fiscales y no afirmes que el resultado sustituye una revisión profesional. Si la categoría es amplia, cubre tipos distintos. Si es específica, genera presentaciones o variantes comerciales realistas del mismo artículo.",
+          "Genera ejemplos mexicanos breves que pertenezcan directamente a la clave SAT indicada. No inventes claves ni reglas fiscales.",
       },
     ],
     monitor(monitor: EventTarget) {
@@ -125,7 +124,8 @@ export const generateSatUsageExamples = async (
 
   const childrenContext = input.officialChildren.length
     ? input.officialChildren
-        .map((child) => child.code + ": " + child.description)
+        .slice(0, 8)
+        .map((child) => child.code + ": " + child.description.slice(0, 70))
         .join("\n")
     : "No hay subclaves oficiales proporcionadas.";
 
@@ -137,10 +137,8 @@ export const generateSatUsageExamples = async (
     "Subclaves oficiales relacionadas:",
     childrenContext,
     "",
-    "Devuelve entre 6 y 12 ejemplos en español de México de productos o servicios concretos que una persona reconocería dentro de esta descripción.",
-    "No incluyas claves distintas dentro del texto de los ejemplos.",
-    "Evita repetir la descripción literal y evita ejemplos que pertenezcan claramente a otra categoría.",
-    "La nota debe recordar en una sola frase que los ejemplos son orientativos y que debe elegirse la clave más específica disponible.",
+    "Devuelve exactamente 4 ejemplos concretos y distintos en español de México.",
+    "No escribas claves ni artículos de otra categoría.",
   ].join("\n");
 
   try {
@@ -195,8 +193,8 @@ export const understandSatProduct = async (
       searchTerms: {
         type: "array",
         items: { type: "string", minLength: 2, maxLength: 45 },
-        minItems: 3,
-        maxItems: 5,
+        minItems: 2,
+        maxItems: 4,
       },
     },
     required: ["summary", "searchTerms"],
@@ -209,7 +207,7 @@ export const understandSatProduct = async (
       {
         role: "system",
         content:
-          "Identifica productos y servicios antes de clasificarlos fiscalmente. Reconoce marcas, modelos y nombres comerciales por su uso real. Devuelve una descripción genérica precisa y términos que aparecerían en un catálogo de productos. Prioriza la categoría comercial del artículo completo, no su forma, ingrediente ni el significado literal de una palabra aislada. Por ejemplo, Doritos 3D es una botana de maíz y Nintendo Switch es una consola de videojuegos. No propongas claves SAT todavía.",
+          "Identifica el producto completo, incluso si usa marca o modelo. Devuelve su categoría genérica y términos breves para buscarla en un catálogo. No propongas claves SAT.",
       },
     ],
     monitor(monitor: EventTarget) {
@@ -225,9 +223,8 @@ export const understandSatProduct = async (
       session,
       [
         `Producto o servicio: ${product}`,
-        "Primero identifica qué es, para qué sirve y su categoría comercial genérica.",
-        "Si contiene una marca o modelo conocido, interpreta el producto completo y no cada palabra por separado.",
-        "Los términos de búsqueda deben ser sustantivos o frases breves en español útiles para encontrarlo en un catálogo oficial.",
+        "Indica qué es y su categoría comercial.",
+        "Usa sustantivos o frases breves en español para searchTerms.",
       ].join("\n"),
       { responseConstraint: contextSchema, omitResponseConstraintInput: true },
     );
@@ -238,7 +235,7 @@ export const understandSatProduct = async (
           .map((term) => String(term).trim())
           .filter((term) => term.length >= 2 && term.length <= 45),
       ),
-    ).slice(0, 5);
+    ).slice(0, 4);
     if (searchTerms.length < 2) {
       throw new Error("Gemini Nano no pudo identificar suficientes características del producto.");
     }
@@ -285,20 +282,19 @@ export const classifySatProduct = async (
       suggestions: {
         type: "array",
         minItems: 0,
-        maxItems: 3,
+        maxItems: 2,
         items: {
           type: "object",
           properties: {
             code: { type: "string", enum: [...allowedCodes] },
-            reason: { type: "string", minLength: 4, maxLength: 96 },
+            reason: { type: "string", minLength: 4, maxLength: 72 },
+            confidence: { type: "string", enum: ["high", "low"] },
           },
-            directMatch: { type: "boolean" },
-            confidence: { type: "string", enum: ["high", "medium", "low"] },
-          required: ["code", "reason", "directMatch", "confidence"],
+          required: ["code", "reason", "confidence"],
           additionalProperties: false,
         },
       },
-      note: { type: "string", minLength: 2, maxLength: 140 },
+      note: { type: "string", minLength: 2, maxLength: 90 },
     },
     required: ["suggestions", "note"],
     additionalProperties: false,
@@ -310,7 +306,7 @@ export const classifySatProduct = async (
       {
         role: "system",
         content:
-          "Eres un clasificador estricto de productos y servicios para CFDI. Elige únicamente claves candidatas que describan directamente el producto real. Rechaza coincidencias basadas solo en una palabra compartida, un adjetivo, una marca o una interpretación indirecta. No incluyas una clave si tu propia explicación dice que no coincide, que no es específica o que solo podría relacionarse. Es preferible devolver cero resultados que uno incorrecto. No inventes claves ni reglas fiscales.",
+          "Elige solo claves SAT candidatas que describan directamente el producto completo. Devuelve cero resultados antes que una coincidencia dudosa. No inventes claves.",
       },
     ],
     monitor(monitor: EventTarget) {
@@ -326,8 +322,8 @@ export const classifySatProduct = async (
   const candidateText = input.candidates
     .map(
       (candidate) =>
-        `${candidate.code}: ${candidate.description.slice(0, 100)}${
-          candidate.similarWords ? ` | También: ${candidate.similarWords.slice(0, 80)}` : ""
+        `${candidate.code}: ${candidate.description.slice(0, 72)}${
+          candidate.similarWords ? ` | ${candidate.similarWords.slice(0, 42)}` : ""
         }`,
     )
     .join("\n");
@@ -340,10 +336,9 @@ export const classifySatProduct = async (
         "Claves oficiales candidatas:",
         candidateText,
         "",
-        "Devuelve como máximo tres coincidencias directas. No necesitas completar ninguna cuota.",
-        "Marca directMatch como true solamente si la clave describe realmente el producto, y confidence como high solo con evidencia clara.",
-        "Omite accesorios, componentes, homónimos y coincidencias por adjetivos salvo que el usuario los haya solicitado.",
-        "Explica cada coincidencia en una frase directa de máximo 12 palabras. Si ninguna es segura, devuelve suggestions vacío.",
+        "Devuelve máximo 2 coincidencias directas; confidence=high solo si son seguras.",
+        "Ignora accesorios, componentes y palabras parecidas no solicitadas.",
+        "Razón de máximo 8 palabras. Si dudas, suggestions debe quedar vacío.",
       ].join("\n"),
       {
         responseConstraint: classificationSchema,
@@ -352,8 +347,7 @@ export const classifySatProduct = async (
     );
     const parsed = JSON.parse(rawResult) as Partial<{
       suggestions: Array<GeminiNanoClassificationSuggestion & {
-        directMatch: boolean;
-        confidence: "high" | "medium" | "low";
+        confidence: "high" | "low";
       }>;
       note: string;
     }>;
@@ -364,7 +358,6 @@ export const classifySatProduct = async (
             Boolean(
               suggestion &&
                 allowedCodes.has(String(suggestion.code)) &&
-                suggestion.directMatch === true &&
                 suggestion.confidence === "high" &&
                 String(suggestion.reason || "").trim() &&
                 !rejectedReason.test(String(suggestion.reason)),
@@ -374,7 +367,7 @@ export const classifySatProduct = async (
             code: String(suggestion.code),
             reason: String(suggestion.reason).trim().slice(0, 96),
           }))
-          .slice(0, 3)
+          .slice(0, 2)
       : [];
 
     return {

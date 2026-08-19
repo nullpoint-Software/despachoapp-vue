@@ -1,0 +1,289 @@
+<AppButton
+  label="Conciliar banco"
+  icon="pi pi-sync"
+  class="bank-reconciliation-launch"
+  outlined
+  :disabled="!props.clientId"
+  title="Comparar el estado de cuenta con los reportes mensuales"
+  @click="openDialog"
+/>
+
+<Teleport to="body">
+  <div
+    v-if="show"
+    class="bank-reconciliation-overlay"
+    @click.self="closeDialog"
+  >
+    <section
+      class="bank-reconciliation-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bank-reconciliation-title"
+    >
+      <header class="bank-reconciliation-header">
+        <div>
+          <p>ESTADO DE CUENTA / REPORTES</p>
+          <h2 id="bank-reconciliation-title">Conciliación bancaria</h2>
+          <span>Detecta abonos, cargos y diferencias contra los CFDI reportados.</span>
+          <button type="button" class="reconciliation-help-button" @click="openReconciliationTutorial">
+            <i class="pi pi-question-circle"></i>
+            {{ result ? "Cómo leer resultados" : "Ver guía de conciliación" }}
+          </button>
+        </div>
+        <button type="button" aria-label="Cerrar" @click="closeDialog">×</button>
+      </header>
+
+      <div class="bank-reconciliation-body">
+        <template v-if="!result">
+          <section class="reconciliation-context" aria-label="Contexto de conciliación">
+            <div><span>Cliente</span><strong>{{ props.clientLabel || "Cliente seleccionado" }}</strong></div>
+            <div><span>Periodo</span><strong>{{ periodLabel }}</strong></div>
+            <div><span>Reportes mensuales</span><strong>{{ monthlyReports.length }}</strong></div>
+          </section>
+
+          <p v-if="props.month === 0" class="reconciliation-alert" role="alert">
+            Selecciona un mes en los filtros de Fiscal. La conciliación se realiza por periodo mensual.
+          </p>
+          <p v-else-if="!monthlyReports.length" class="reconciliation-alert" role="alert">
+            Este periodo todavía no tiene reportes mensuales. Guarda el reporte de ingresos o egresos antes de comparar.
+          </p>
+
+          <ol class="reconciliation-readiness" aria-label="Requisitos para conciliar">
+            <li :class="{ complete: props.month > 0 }">
+              <span>01</span>
+              <div><strong>Periodo mensual</strong><small>{{ props.month > 0 ? periodLabel : "Selecciona un mes en Fiscal" }}</small></div>
+              <i :class="props.month > 0 ? 'pi pi-check' : 'pi pi-clock'"></i>
+            </li>
+            <li :class="{ complete: monthlyReports.length > 0 }">
+              <span>02</span>
+              <div><strong>Reportes fiscales</strong><small>{{ monthlyReports.length ? monthlyReports.length + " reporte(s) disponibles" : "Guarda ingresos o egresos" }}</small></div>
+              <i :class="monthlyReports.length ? 'pi pi-check' : 'pi pi-clock'"></i>
+            </li>
+            <li :class="{ complete: statementFile }">
+              <span>03</span>
+              <div><strong>Estado de cuenta</strong><small>{{ statementFile ? statementFile.name : "Carga el archivo del mismo periodo" }}</small></div>
+              <i :class="statementFile ? 'pi pi-check' : 'pi pi-clock'"></i>
+            </li>
+          </ol>
+
+          <section class="reconciliation-config" aria-label="Configuración del archivo">
+            <label>
+              <span>Banco <AppFieldHelp label="Banco del estado de cuenta" text="Usa detección automática o elige un banco si el formato no se reconoce correctamente." /></span>
+              <AppSelect
+                v-model="draft.bank"
+                :options="bankOptions"
+                option-label="label"
+                option-value="value"
+              />
+            </label>
+            <label>
+              <span>Contraseña del PDF <AppFieldHelp label="Contraseña temporal" text="Sólo se usa para abrir el PDF durante esta comparación. No se almacena." /></span>
+              <AppInput
+                v-model="draft.password"
+                type="password"
+                autocomplete="new-password"
+                placeholder="No se guarda"
+              />
+            </label>
+            <label>
+              <span>Tolerancia de importe <AppFieldHelp label="Tolerancia de importe" text="Diferencia máxima en pesos que todavía puede considerarse coincidencia." /></span>
+              <AppInput v-model="draft.amountTolerance" type="number" min="0" max="1000" step="0.01" />
+            </label>
+            <label>
+              <span>Ventana de fechas <AppFieldHelp label="Ventana de fechas" text="Número máximo de días entre la fecha bancaria y la fecha del CFDI." /></span>
+              <AppInput v-model="draft.dateWindow" type="number" min="0" max="31" step="1" />
+              <small>Días permitidos entre banco y CFDI.</small>
+            </label>
+          </section>
+
+          <input
+            ref="fileInput"
+            class="reconciliation-file-input"
+            type="file"
+            accept=".pdf,.xml,.csv,.txt,application/pdf,text/xml,application/xml,text/csv,text/plain"
+            @change="onFileChange"
+          />
+          <button
+            type="button"
+            class="statement-dropzone"
+            :class="{ dragging, selected: statementFile }"
+            @click="openFilePicker"
+            @dragenter.prevent="dragging = true"
+            @dragover.prevent
+            @dragleave.prevent="dragging = false"
+            @drop.prevent="dropFile"
+          >
+            <i :class="statementFile ? 'pi pi-file-check' : 'pi pi-cloud-upload'" />
+            <span v-if="statementFile">
+              <strong>{{ statementFile.name }}</strong>
+              <small>{{ fileSize(statementFile.size) }}. Haz clic para reemplazarlo.</small>
+            </span>
+            <span v-else>
+              <strong>Selecciona el estado de cuenta</strong>
+              <small>PDF digital, XML, CSV o TXT. Máximo 15 MB.</small>
+            </span>
+          </button>
+
+          <p v-if="errorMessage" class="reconciliation-error" role="alert">
+            <i class="pi pi-exclamation-triangle" /> {{ errorMessage }}
+          </p>
+          <aside class="reconciliation-privacy">
+            <i class="pi pi-lock" />
+            <div>
+              <strong>Procesamiento privado</strong>
+              <span>El servidor extrae el archivo en memoria y lo descarta. No guarda estados de cuenta ni contraseñas.</span>
+            </div>
+          </aside>
+          <p class="bank-support">
+            Perfiles incluidos: BBVA, HSBC, Banco Azteca, Santander, Banorte y Banamex. El modo genérico usa fecha, concepto, cargo, abono, referencia y saldo.
+          </p>
+        </template>
+
+        <template v-else>
+          <section class="reconciliation-result-head">
+            <div>
+              <span>{{ result.meta.bank.label }} / {{ result.meta.format }}</span>
+              <strong>{{ result.meta.client.name }}</strong>
+              <small>{{ periodLabel }}. {{ result.meta.reports.length }} reportes del periodo.</small>
+            </div>
+            <button type="button" @click="resetComparison">
+              <i class="pi pi-refresh" /> Nueva comparación
+            </button>
+          </section>
+
+          <section class="reconciliation-kpis" aria-label="Resultado de conciliación">
+            <article class="coverage">
+              <span>Cobertura</span><strong>{{ result.summary.coverage }}%</strong>
+            </article>
+            <article>
+              <span>Coincidencias</span><strong>{{ result.summary.exactMatches }}</strong>
+            </article>
+            <article>
+              <span>Por revisar</span><strong>{{ result.summary.reviewCount }}</strong>
+            </article>
+            <article class="difference">
+              <span>Discrepancias</span><strong>{{ result.summary.discrepancies }}</strong>
+            </article>
+          </section>
+
+          <section class="reconciliation-money" aria-label="Comparación de importes">
+            <div class="money-heading"><span>Movimiento</span><span>Banco</span><span>Reportes</span><span>Diferencia</span></div>
+            <div>
+              <strong>Abonos / ingresos</strong>
+              <span>{{ money(result.summary.bankCredits) }}</span>
+              <span>{{ money(result.summary.reportCredits) }}</span>
+              <b :class="{ balanced: Math.abs(result.summary.creditDifference) <= draft.amountTolerance }">{{ money(result.summary.creditDifference) }}</b>
+            </div>
+            <div>
+              <strong>Cargos / egresos</strong>
+              <span>{{ money(result.summary.bankDebits) }}</span>
+              <span>{{ money(result.summary.reportDebits) }}</span>
+              <b :class="{ balanced: Math.abs(result.summary.debitDifference) <= draft.amountTolerance }">{{ money(result.summary.debitDifference) }}</b>
+            </div>
+          </section>
+
+          <p v-if="result.meta.skipped.unpaidPpd" class="reconciliation-info">
+            {{ result.meta.skipped.unpaidPpd }} CFDI PPD no tenían complemento de pago en el periodo y no se consideraron como movimiento esperado.
+          </p>
+          <p v-if="result.meta.skipped.nonBankPayment" class="reconciliation-info">
+            {{ result.meta.skipped.nonBankPayment }} CFDI pagados en efectivo se excluyeron porque no deben aparecer en el estado bancario.
+          </p>
+
+          <div class="reconciliation-toolbar">
+            <label>
+              <span>Mostrar</span>
+              <AppSelect
+                v-model="draft.filter"
+                :options="filterOptions"
+                option-label="label"
+                option-value="value"
+              />
+            </label>
+            <span>{{ visibleRows.length }} de {{ result.rows.length }} resultados</span>
+          </div>
+
+          <div class="reconciliation-table-wrap">
+            <table class="reconciliation-table">
+              <thead>
+                <tr>
+                  <th>Resultado</th>
+                  <th>Estado de cuenta</th>
+                  <th>Explicación</th>
+                  <th>Reporte fiscal</th>
+                </tr>
+              </thead>
+              <tbody v-if="visibleRows.length">
+                <tr v-for="row in visibleRows" :key="row.id" :class="`row-${row.status}`">
+                  <td>
+                    <span class="reconciliation-status" :class="row.status">{{ statusLabel(row.status) }}</span>
+                    <small v-if="row.score">Confianza {{ row.score }}%</small>
+                  </td>
+                  <td>
+                    <template v-if="row.bank">
+                      <div class="movement-line">
+                        <span>{{ dateLabel(row.bank.date) }}</span>
+                        <strong>{{ movementLabel(row.bank.type) }} {{ money(row.bank.amount) }}</strong>
+                      </div>
+                      <p>{{ row.bank.description }}</p>
+                      <small v-if="row.bank.trackingKey || row.bank.reference">
+                        Ref. {{ row.bank.trackingKey || row.bank.reference }}
+                      </small>
+                    </template>
+                    <span v-else class="missing-movement">Sin movimiento bancario</span>
+                  </td>
+                  <td class="reconciliation-reason">{{ row.reason }}</td>
+                  <td>
+                    <div v-if="row.reportItems.length" class="report-matches">
+                      <article v-for="item in row.reportItems" :key="item.id">
+                        <div>
+                          <strong>{{ item.counterpart }}</strong>
+                          <span>{{ item.counterpartRfc }}</span>
+                        </div>
+                        <div>
+                          <strong>{{ money(item.amount) }}</strong>
+                          <span>{{ dateLabel(item.date) }} / {{ item.source }}</span>
+                        </div>
+                        <small>{{ item.uuid }}</small>
+                      </article>
+                      <b v-if="row.reportItems.length > 1">Total {{ money(reportTotal(row)) }}</b>
+                    </div>
+                    <span v-else class="missing-movement">Sin CFDI compatible</span>
+                  </td>
+                </tr>
+              </tbody>
+              <tbody v-else>
+                <tr><td colspan="4" class="reconciliation-empty">No hay resultados para este filtro.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+
+      <footer class="bank-reconciliation-footer">
+        <AppButton label="Cerrar" outlined @click="closeDialog" />
+        <AppButton
+          v-if="result"
+          label="Exportar hallazgos"
+          icon="pi pi-download"
+          :disabled="!result.summary.discrepancies"
+          @click="exportFindings"
+        />
+        <AppButton
+          v-else
+          :label="loading ? 'Extrayendo y comparando' : 'Extraer y comparar'"
+          class="reconciliation-run-button"
+          icon="pi pi-sync"
+          :disabled="!canRun"
+          @click="runComparison"
+        />
+      </footer>
+    </section>
+  </div>
+</Teleport>
+
+<AppTutorial
+  v-model="reconciliationTutorialOpen"
+  :title="reconciliationTutorialTitle"
+  :steps="reconciliationTutorialSteps"
+  :storage-key="reconciliationTutorialStorageKey"
+/>

@@ -76,3 +76,5 @@
   :deep(.app-data-table__table td div) { font-size: 11px !important; }
 }
 .clients-view{background:transparent}
+.clients-hero__tools{display:flex;align-items:stretch;gap:.65rem}.clients-hero__tools :deep(.p-button){align-self:stretch}
+@media(max-width:640px){.clients-hero__tools{width:100%;flex-direction:column-reverse}.clients-hero__tools :deep(.p-button){width:100%}.clients-hero__tools .hero-stat{width:100%}}

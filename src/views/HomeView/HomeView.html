@@ -1,6 +1,6 @@
 <div ref="pageRef" class="home-page">
+  <FaultyTerminal />
   <div class="home-progress" aria-hidden="true"></div>
-  <div class="home-ambient" aria-hidden="true"><span></span><span></span><span></span></div>
   <a class="home-skip" href="#contenido">Saltar al contenido principal</a>
 
   <header class="home-header">
@@ -10,11 +10,17 @@
         <span><b>Despacho</b><small>Sánchez</small></span>
       </router-link>
 
-      <div class="home-nav__links">
-        <a href="#funciones">Funciones</a>
-        <a href="#flujo">Cómo funciona</a>
-        <a href="#seguridad">Seguridad</a>
-        <a href="#contacto">Contacto</a>
+      <div class="home-nav__links" :style="{ '--nav-index': navIndicatorIndex }" @pointerleave="navHoverIndex = null">
+        <span class="home-nav__goo" aria-hidden="true"><i></i><b></b></span>
+        <a
+          v-for="(item, index) in navItems"
+          :key="item.href"
+          :href="item.href"
+          :class="{ active: navIndicatorIndex === index }"
+          @pointerenter="navHoverIndex = index"
+          @focus="navHoverIndex = index"
+          @blur="navHoverIndex = null"
+        >{{ item.label }}</a>
       </div>
 
       <button class="home-login home-login--desktop" type="button" @click="goLogin">
@@ -28,68 +34,102 @@
     </nav>
 
     <nav v-if="menuOpen" id="home-mobile-menu" class="home-mobile-menu" aria-label="Navegación móvil">
-      <a href="#funciones" @click="closeMenu">Funciones</a>
-      <a href="#flujo" @click="closeMenu">Cómo funciona</a>
-      <a href="#seguridad" @click="closeMenu">Seguridad</a>
-      <a href="#contacto" @click="closeMenu">Contacto</a>
+      <a v-for="item in navItems" :key="item.href" :href="item.href" @click="closeMenu">{{ item.label }}</a>
       <button type="button" @click="goLogin">{{ accessLabel }}</button>
     </nav>
   </header>
 
   <main id="contenido">
     <section class="home-hero" aria-labelledby="home-title">
-      <div class="home-hero__copy">
+      <div class="home-hero__copy" data-reveal>
         <p class="home-eyebrow">CONTROL CONTABLE / OPERACIÓN DIARIA</p>
-        <h1 id="home-title"><span class="hero-line">Todo el despacho.</span><em class="hero-line">Una sola vista.</em></h1>
-        <p class="home-lead">Clientes, cobros, tareas y obligaciones fiscales conectados para trabajar con menos pasos.</p>
+        <h1 id="home-title">
+          <span>Todo el despacho.</span>
+          <span class="home-rotating-text">
+            <Transition name="rotate-text" mode="out-in">
+              <em :key="rotatingIndex">{{ rotatingPhrases[rotatingIndex] }}</em>
+            </Transition>
+          </span>
+        </h1>
+        <p class="home-lead">Clientes, cobros, tareas y obligaciones fiscales conectados para operar con contexto, trazabilidad y menos pasos.</p>
         <div class="home-hero__actions">
           <button type="button" @click="goLogin">{{ accessLabel }} <i class="pi pi-arrow-up-right" aria-hidden="true"></i></button>
-          <a href="#funciones">Conocer las funciones</a>
+          <a href="#funciones">Conocer funciones</a>
         </div>
-
       </div>
 
-      <AsciiOrb class="home-hero__visual" />
-    </section>
-    <section class="home-marquee" aria-label="Áreas conectadas por la aplicación">
-      <p>Clientes <i>+</i> Pagos <i>+</i> Fiscal <i>+</i> Tareas <i>+</i> Cumplimiento <i>+</i> Notas</p>
-      <p aria-hidden="true">Clientes <i>+</i> Pagos <i>+</i> Fiscal <i>+</i> Tareas <i>+</i> Cumplimiento <i>+</i> Notas</p>
+      <aside class="home-hero__signal" data-reveal aria-label="Mapa de operación conectada">
+        <div class="signal-core"><i class="pi pi-sparkles" aria-hidden="true"></i><strong>Contexto común</strong></div>
+        <span class="signal-node signal-node--clients">Clientes</span>
+        <span class="signal-node signal-node--tasks">Tareas</span>
+        <span class="signal-node signal-node--fiscal">Fiscal</span>
+        <span class="signal-node signal-node--payments">Cobros</span>
+        <span class="signal-node signal-node--files">Documentos</span>
+      </aside>
     </section>
 
-    <section class="home-intro" aria-labelledby="intro-title">
-      <div><h2 id="intro-title">Menos hojas sueltas.<br />Menos búsquedas repetidas.</h2><p>La aplicación reúne la operación diaria del despacho y conserva cada dato cerca de la tarea, cliente o movimiento al que pertenece.</p></div>
+    <section class="home-marquee" aria-label="Áreas conectadas por la aplicación">
+      <p>Clientes <i>+</i> Pagos <i>+</i> Fiscal <i>+</i> Tareas <i>+</i> Cumplimiento <i>+</i> Respaldos</p>
+      <p aria-hidden="true">Clientes <i>+</i> Pagos <i>+</i> Fiscal <i>+</i> Tareas <i>+</i> Cumplimiento <i>+</i> Respaldos</p>
+    </section>
+
+    <section class="home-intro" aria-labelledby="intro-title" data-reveal>
+      <div><h2 id="intro-title">Menos hojas sueltas.<br />Menos búsquedas repetidas.</h2><p>Centraliza expedientes, tareas, pagos, CFDI, documentos y respaldos. Cada registro conserva su relación con el cliente y la operación que lo originó.</p></div>
     </section>
 
     <section id="funciones" class="home-features" aria-labelledby="features-title">
-      <header class="home-section-heading">
-        <div><p>FUNCIONES DEL SISTEMA</p><h2 id="features-title">Qué puedes hacer</h2></div>
-        <p>Diez espacios conectados cubren desde el primer registro del cliente hasta la entrega de reportes y comprobantes.</p>
+      <header class="home-section-heading" data-reveal>
+        <p>FUNCIONES DEL SISTEMA</p>
+        <h2 id="features-title">Una función a la vez.<br />Un mismo contexto.</h2>
+        <p>Selecciona un módulo para revisar qué resuelve y cómo se conecta con la operación del despacho.</p>
       </header>
 
-      <div class="home-feature-grid">
-        <article v-for="feature in features" :key="feature.number" class="home-feature" :class="feature.size ? `home-feature--${feature.size}` : ''">
-          <header><i :class="feature.icon" aria-hidden="true"></i></header>
-          <div class="home-feature__copy">
-            <h3>{{ feature.title }}</h3>
-            <p>{{ feature.summary }}</p>
-            <ul><li v-for="detail in feature.details" :key="detail">{{ detail }}</li></ul>
+      <div class="home-card-swap" data-reveal @keydown="handleFeatureKeys">
+        <div class="home-feature-index" role="tablist" aria-label="Funciones disponibles">
+          <button
+            v-for="(feature, index) in features"
+            :key="feature.number"
+            type="button"
+            role="tab"
+            :aria-selected="activeFeatureIndex === index"
+            :tabindex="activeFeatureIndex === index ? 0 : -1"
+            :class="{ active: activeFeatureIndex === index }"
+            @click="selectFeature(index)"
+          ><span>{{ feature.number }}</span>{{ feature.title }}</button>
+        </div>
+
+        <div class="home-feature-stage">
+          <TransitionGroup name="card-swap" tag="div" class="home-feature-deck">
+            <article v-for="card in featureDeck" :key="card.feature.number" class="home-feature-card" :class="`home-feature-card--${card.position}`" :aria-hidden="card.position !== 'active'">
+              <header><span>{{ card.feature.number }}</span><i :class="card.feature.icon" aria-hidden="true"></i></header>
+              <div><h3>{{ card.feature.title }}</h3><p>{{ card.feature.summary }}</p><ul><li v-for="detail in card.feature.details" :key="detail">{{ detail }}</li></ul></div>
+            </article>
+          </TransitionGroup>
+          <div class="home-feature-controls">
+            <button type="button" aria-label="Función anterior" @click="stepFeature(-1)"><i class="pi pi-arrow-left" aria-hidden="true"></i></button>
+            <output aria-live="polite">{{ String(activeFeatureIndex + 1).padStart(2, '0') }} / {{ features.length }}</output>
+            <button type="button" aria-label="Función siguiente" @click="stepFeature(1)"><i class="pi pi-arrow-right" aria-hidden="true"></i></button>
           </div>
-        </article>
+        </div>
       </div>
     </section>
 
     <section id="flujo" class="home-workflow" aria-labelledby="workflow-title">
-      <header><h2 id="workflow-title">Un flujo que conserva el contexto.</h2></header>
-      <ol>
-        <li v-for="step in workflow" :key="step.number"><span>{{ step.number }}</span><div><h3>{{ step.title }}</h3><p>{{ step.text }}</p></div></li>
-      </ol>
+      <header data-reveal><h2 id="workflow-title">El contexto avanza con el trabajo.</h2><p>Cada bloque aprovecha lo capturado antes y deja listo el siguiente movimiento.</p></header>
+      <div class="home-scroll-stack">
+        <article v-for="(step, index) in workflow" :key="step.title" class="home-stack-card" :style="{ top: `${5.7 + index * 0.7}rem`, zIndex: index + 1 }">
+          <div class="home-stack-card__icon"><i :class="step.icon" aria-hidden="true"></i></div>
+          <div><h3>{{ step.title }}</h3><p>{{ step.text }}</p></div>
+          <aside><span>Resultado</span><p>{{ step.result }}</p></aside>
+        </article>
+      </div>
     </section>
 
     <section id="seguridad" class="home-security" aria-labelledby="security-title">
-      <div class="home-security__copy">
+      <div class="home-security__copy" data-reveal>
         <p>ACCESO Y TRAZABILIDAD</p>
         <h2 id="security-title">Cada persona ve lo que necesita.</h2>
-        <p>Los roles y permisos controlan acciones sensibles. Las passkeys ayudan a verificar identidad y la bitácora permite revisar la actividad registrada.</p>
+        <p>Los roles y permisos controlan acciones sensibles. Las passkeys verifican identidad y la bitácora permite revisar la actividad registrada.</p>
         <ul>
           <li><i class="pi pi-key" aria-hidden="true"></i><span><b>Acceso protegido</b>Contraseña, recuperación de acceso y passkeys.</span></li>
           <li><i class="pi pi-users" aria-hidden="true"></i><span><b>Permisos por usuario</b>Control sobre consulta, edición y eliminación.</span></li>
@@ -99,19 +139,15 @@
       </div>
     </section>
 
-    <section class="home-cta" aria-labelledby="cta-title">
+    <section class="home-cta" aria-labelledby="cta-title" data-reveal>
       <h2 id="cta-title">Ponlo en orden.</h2>
       <button type="button" @click="goLogin">{{ accessLabel }} <i class="pi pi-arrow-right" aria-hidden="true"></i></button>
     </section>
   </main>
 
-  <footer id="contacto" class="home-footer">
+  <footer id="contacto" class="home-footer" data-reveal>
     <div class="home-footer__brand"><img :src="mainImageSrc" alt="" /><p>Despacho Contable y Fiscal Sánchez</p></div>
-    <address>
-      <span>L.C.P. Antonio Sánchez Gutiérrez</span>
-      <a href="mailto:contador_sanchez@yahoo.com.mx">contador_sanchez@yahoo.com.mx</a>
-      <a href="tel:+523163720279">316 372 0279</a>
-    </address>
+    <address><span>L.C.P. Antonio Sánchez Gutiérrez</span><a href="mailto:contador_sanchez@yahoo.com.mx">contador_sanchez@yahoo.com.mx</a><a href="tel:+523163720279">316 372 0279</a></address>
     <div class="home-footer__end"><router-link to="/aboutus">Sobre el despacho</router-link><small>© {{ currentYear }} · Todos los derechos reservados</small></div>
   </footer>
 </div>

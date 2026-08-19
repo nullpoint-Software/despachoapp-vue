@@ -1,6 +1,5 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useAppToast } from "@/composables/useAppToast";
-import { driverObjClientes } from "@/components/tour/clientes";
 import { hasPermission } from "@/service/adminApp/permissionsService";
 import { cs, pks } from "@/service/adminApp/client";
 import type { ColumnDef } from "@/types/ClientesTable";
@@ -11,6 +10,13 @@ useBrutalMotion(pageRef, [".clients-hero", "#clientes-table"]);
 const canAddCliente = ref(false)
 const canEditCliente = ref(false)
 const canDeleteCliente = ref(false)
+const clientTutorialOpen = ref(false);
+const clientTutorialSteps = [
+  { target: ".clients-hero", eyebrow: "Clientes / resumen", title: "Consulta los expedientes", body: "Aquí puedes buscar, filtrar y administrar la información fiscal y de contacto de cada cliente." },
+  { target: "#search-bar", eyebrow: "Clientes / búsqueda", title: "Encuentra por cualquier dato", body: "Busca por nombre, RFC, régimen, teléfono o correo. Los resultados se actualizan mientras escribes." },
+  { target: ".app-data-table__header", eyebrow: "Clientes / herramientas", title: "Filtra o agrega", body: "Usa los controles del encabezado para aplicar filtros, limpiar la búsqueda o crear un expediente si tienes permiso." },
+  { target: ".app-data-table__table", eyebrow: "Clientes / registros", title: "Abre las acciones de cada cliente", body: "Las acciones disponibles permiten editar, administrar documentos y consultar datos protegidos de forma segura." },
+];
 
 onMounted(async () => {
   canAddCliente.value = await hasPermission('canAddCliente')
@@ -204,10 +210,7 @@ onUnmounted(() => {
 onMounted(async () => {
   await loadCustomersPage();
   await refreshPasskeyAvailability();
-  const done = localStorage.getItem('tourClientesDone');
-  if (!done) {
-    driverObjClientes.drive()
-  }
+  if (!localStorage.getItem("tourClientesDone")) clientTutorialOpen.value = true;
 });
 
 watch(() => filters.value.global.value, () => {

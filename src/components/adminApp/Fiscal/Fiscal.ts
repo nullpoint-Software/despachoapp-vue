@@ -13,6 +13,8 @@ import logo from "@/assets/img/logblack.png";
 import { cs, fs } from "@/service/adminApp/client";
 import { loadProgressively } from "@/service/adminApp/progressiveLoader";
 import { useAppDialog } from "@/composables/useAppDialog";
+import BankReconciliation from "@/components/adminApp/BankReconciliation/BankReconciliation.vue";
+import SatMassDownload from "@/components/adminApp/SatMassDownload/SatMassDownload.vue";
 
 type Direction = "emitida" | "recibida";
 type ReportType = "mensual" | "anual" | "diot";
@@ -43,6 +45,16 @@ const clientSearch = ref(""),
   dragging = ref(false);
 const pdfUrl = ref(""),
   pdfTitle = ref("");
+const fiscalTutorialOpen = ref(false);
+const fiscalTutorialSteps = [
+  { target: ".fiscal-hero", eyebrow: "Fiscal / inicio", title: "Organiza el periodo de trabajo", body: "Selecciona cliente, ejercicio y mes antes de importar o revisar comprobantes." },
+  { target: ".filter-strip", eyebrow: "Fiscal / filtros", title: "Acota la consulta", body: "Los filtros controlan los CFDI, reportes y datos usados en la conciliación." },
+  { target: ".sat-mass-download-launch", eyebrow: "Fiscal / SAT", title: "Descarga los CFDI", body: "Conecta la e.firma con el servicio oficial del SAT. La aplicación descarga e importa automáticamente los XML del periodo." },
+  { target: ".bank-reconciliation-launch", eyebrow: "Fiscal / banco", title: "Compara el banco con tus reportes", body: "Abre la conciliación para cargar el estado de cuenta del periodo. Dentro encontrarás una guía específica para preparar la comparación y leer sus resultados." },
+  { target: ".xml-dropzone", eyebrow: "Fiscal / XML", title: "Importa los comprobantes", body: "Arrastra los XML o abre el selector. La aplicación valida y relaciona los documentos con el cliente elegido." },
+  { target: ".fiscal-tabs", eyebrow: "Fiscal / dirección", title: "Separa ingresos y egresos", body: "Cambia entre CFDI emitidos y recibidos para revisar impuestos y seleccionar documentos." },
+  { target: ".invoice-panel", eyebrow: "Fiscal / reportes", title: "Revisa y prepara el reporte", body: "Selecciona comprobantes válidos, consulta su detalle y abre los reportes guardados cuando necesites retomarlos." },
+];
 const filters = reactive({
   clienteId: 0,
   direction: "emitida" as Direction,
@@ -428,6 +440,14 @@ async function uploadQueued() {
     importing.value = false;
   }
 }
+async function handleSatImport(counts: { imported: number; duplicate: number; rejected: number }) {
+  setNotice(
+    `${counts.imported} CFDI descargados del SAT${counts.duplicate ? `, ${counts.duplicate} ya existían` : ""}${counts.rejected ? ` y ${counts.rejected} fueron rechazados` : ""}.`,
+    counts.rejected && !counts.imported ? "error" : "success",
+  );
+  await Promise.all([loadInvoices(), loadReports()]);
+}
+
 function suggestedReportName() {
   const movement =
     reportDraft.direction === "emitida" ? "Emitidas" : "Recibidas";
@@ -1155,6 +1175,7 @@ onMounted(async () => {
   } catch {
     setNotice("No se pudieron cargar los clientes.", "error");
   }
+  if (!localStorage.getItem("tourFiscalDone")) fiscalTutorialOpen.value = true;
 });
 onBeforeUnmount(() => {
   closePdf();

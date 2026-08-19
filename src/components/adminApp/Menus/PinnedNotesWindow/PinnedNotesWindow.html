@@ -7,13 +7,13 @@
           <button type="button" title="Cerrar notas ancladas" aria-label="Cerrar notas ancladas" @pointerdown.stop @click="togglePinnedWindow"><i class="pi pi-times" /></button>
         </div>
       </header>
-      <label v-if="pinnedNotes.length" class="pinned-search"><i class="pi pi-search" aria-hidden="true" /><span class="sr-only">Buscar en notas ancladas</span><input v-model="searchQuery" type="search" placeholder="Filtrar notas ancladas..." /><small>{{ filteredNotes.length }}/{{ pinnedNotes.length }}</small></label>
+      <label v-if="pinnedNotes.length" class="pinned-search app-search-control"><i class="pi pi-search" aria-hidden="true" /><span class="sr-only">Buscar en notas ancladas</span><input v-model="searchQuery" type="search" placeholder="Filtrar notas ancladas..." /><small>{{ filteredNotes.length }}/{{ pinnedNotes.length }}</small></label>
       <main class="pinned-list">
         <div v-if="!pinnedNotes.length" class="pinned-empty"><b>00</b><div><strong>Aún no hay notas ancladas</strong><p>Ancla una nota desde el directorio para mantenerla siempre a la mano.</p><button type="button" @click="openNotesBoard">Abrir directorio</button></div></div>
         <div v-else-if="!filteredNotes.length" class="pinned-empty compact"><i class="pi pi-search" /><div><strong>Sin coincidencias</strong><p>Prueba con otra palabra del título o contenido.</p></div></div>
         <article v-for="(note, index) in filteredNotes" v-else :key="note.id" class="pinned-card" :data-color="note.color">
           <span class="card-index">{{ String(index + 1).padStart(2, "0") }}</span>
-          <div class="card-copy"><h3>{{ note.titulo || "Nota sin título" }}</h3><p>{{ notePreview(note.descripcion) }}</p><footer><span><i class="pi pi-folder" /> {{ note.folderPath || "General" }}</span><button type="button" :disabled="updatingId === note.id" @click="unpinNote(note.id)"><i :class="updatingId === note.id ? 'pi pi-spin pi-spinner' : 'pi pi-thumbtack'" /> Desanclar</button></footer></div>
+          <div class="card-copy"><h3>{{ note.titulo || "Nota sin título" }}</h3><div class="pinned-highlights"><p v-for="(highlight, highlightIndex) in note.highlights" :key="highlightIndex">{{ highlight }}</p></div><footer><span><i class="pi pi-folder" /> {{ note.folderPath || "General" }}</span><button type="button" :disabled="updatingId === note.id" @click="unpinNote(note.id)"><i :class="updatingId === note.id ? 'pi pi-spin pi-spinner' : 'pi pi-thumbtack'" /> Desanclar</button></footer></div>
         </article>
       </main>
       <footer class="pinned-footer"><span>Arrastra la cabecera para mover</span><span><kbd>/</kbd> mostrar u ocultar</span></footer>

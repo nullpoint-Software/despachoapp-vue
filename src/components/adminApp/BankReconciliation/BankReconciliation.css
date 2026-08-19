@@ -1,0 +1,1026 @@
+.bank-reconciliation-overlay {
+  position: fixed;
+  inset: var(--admin-overlay-top, 5rem) 0 0;
+  z-index: 1250;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 1rem;
+  background: rgba(8, 8, 7, 0.86);
+  backdrop-filter: blur(3px);
+}
+
+.bank-reconciliation-modal {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(92rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - var(--admin-overlay-top, 5rem) - 2rem);
+  overflow: hidden;
+  border: 2px solid #141413;
+  background: var(--br-control, #f4f2ec);
+  color: #141413;
+  box-shadow: 12px 12px 0 var(--br-accent);
+}
+
+.bank-reconciliation-header {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-height: 8.5rem;
+  padding: 1.4rem 5rem 1.4rem 1.5rem;
+  border-bottom: 2px solid #141413;
+  background: #141413;
+  color: #f4f2ec;
+}
+
+.bank-reconciliation-header p {
+  margin: 0 0 0.55rem;
+  color: var(--br-accent);
+  font: 800 0.68rem "Courier New", monospace;
+  letter-spacing: 0.1em;
+}
+
+.bank-reconciliation-header h2 {
+  margin: 0;
+  font: 900 clamp(2rem, 4vw, 3.6rem) / 0.92 Arial, sans-serif;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+}
+
+.bank-reconciliation-header span {
+  display: block;
+  margin-top: 0.75rem;
+  color: #c2beb5;
+  font: 700 0.76rem "Courier New", monospace;
+}
+
+.bank-reconciliation-header > button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4rem;
+  height: 4rem;
+  border: 0;
+  border-left: 2px solid #f4f2ec;
+  border-bottom: 2px solid #f4f2ec;
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+  font: 400 2rem Arial, sans-serif;
+  cursor: pointer;
+}
+
+.bank-reconciliation-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 1.35rem;
+}
+
+.reconciliation-context {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.8fr;
+  border: 1px solid #77736b;
+}
+
+.reconciliation-context div {
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border-right: 1px solid #aaa69c;
+}
+
+.reconciliation-context div:last-child {
+  border-right: 0;
+}
+
+.reconciliation-context span,
+.reconciliation-config label > span,
+.reconciliation-toolbar label > span {
+  display: block;
+  margin-bottom: 0.38rem;
+  color: #56534c;
+  font: 800 0.62rem "Courier New", monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.reconciliation-context strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 900 0.88rem Arial, sans-serif;
+}
+
+.reconciliation-alert,
+.reconciliation-error,
+.reconciliation-info {
+  margin: 1rem 0 0;
+  border-left: 5px solid #c43c2f;
+  background: #f4ded9;
+  padding: 0.8rem 1rem;
+  color: #7b261f;
+  font-weight: 800;
+}
+
+.reconciliation-info {
+  border-color: #9a741a;
+  background: #f3e8c7;
+  color: #60470d;
+}
+
+.reconciliation-config {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.reconciliation-config :deep(input),
+.reconciliation-config :deep(.p-select),
+.reconciliation-toolbar :deep(.p-select) {
+  width: 100%;
+}
+
+.reconciliation-config small {
+  display: block;
+  margin-top: 0.32rem;
+  color: #56534c;
+  font: 700 0.62rem "Courier New", monospace;
+}
+
+.reconciliation-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.statement-dropzone {
+  display: grid;
+  width: 100%;
+  min-height: 10rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.2rem;
+  border: 2px dashed #77736b;
+  background: transparent;
+  color: #141413;
+  padding: 1.4rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.statement-dropzone:hover,
+.statement-dropzone.dragging,
+.statement-dropzone:focus-visible {
+  border-color: var(--br-accent);
+  background: color-mix(in srgb, var(--br-accent) 10%, transparent);
+  outline: 0;
+}
+
+.statement-dropzone.selected {
+  border-style: solid;
+}
+
+.statement-dropzone > i {
+  font-size: 2.4rem;
+}
+
+.statement-dropzone strong,
+.statement-dropzone small {
+  display: block;
+}
+
+.statement-dropzone strong {
+  overflow-wrap: anywhere;
+  font: 900 1.05rem Arial, sans-serif;
+}
+
+.statement-dropzone small {
+  margin-top: 0.35rem;
+  color: #56534c;
+  font: 700 0.7rem "Courier New", monospace;
+}
+
+.reconciliation-error {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.reconciliation-privacy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+  border: 1px solid #77736b;
+  padding: 0.85rem 1rem;
+}
+
+.reconciliation-privacy i {
+  color: var(--br-accent);
+  font-size: 1.15rem;
+}
+
+.reconciliation-privacy strong,
+.reconciliation-privacy span {
+  display: block;
+}
+
+.reconciliation-privacy strong {
+  font-size: 0.82rem;
+}
+
+.reconciliation-privacy span,
+.bank-support {
+  margin-top: 0.22rem;
+  color: #56534c;
+  font: 700 0.66rem/1.45 "Courier New", monospace;
+}
+
+.bank-support {
+  margin: 0.8rem 0 0;
+}
+
+.reconciliation-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 2px solid #141413;
+  padding-bottom: 1rem;
+}
+
+.reconciliation-result-head span,
+.reconciliation-result-head strong,
+.reconciliation-result-head small {
+  display: block;
+}
+
+.reconciliation-result-head span {
+  color: #56534c;
+  font: 800 0.64rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+
+.reconciliation-result-head strong {
+  margin-top: 0.25rem;
+  font: 900 1.25rem Arial, sans-serif;
+}
+
+.reconciliation-result-head small {
+  margin-top: 0.2rem;
+  color: #56534c;
+  font: 700 0.66rem "Courier New", monospace;
+}
+
+.reconciliation-result-head button {
+  flex: 0 0 auto;
+  border: 1px solid #141413;
+  background: transparent;
+  color: #141413;
+  padding: 0.7rem 0.85rem;
+  font: 800 0.65rem "Courier New", monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.reconciliation-result-head button:hover {
+  background: #141413;
+  color: #f4f2ec;
+}
+
+.reconciliation-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 1rem;
+  border: 1px solid #77736b;
+}
+
+.reconciliation-kpis article {
+  padding: 1rem;
+  border-right: 1px solid #aaa69c;
+}
+
+.reconciliation-kpis article:last-child {
+  border-right: 0;
+}
+
+.reconciliation-kpis span,
+.reconciliation-kpis strong {
+  display: block;
+}
+
+.reconciliation-kpis span {
+  color: #56534c;
+  font: 800 0.62rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+
+.reconciliation-kpis strong {
+  margin-top: 0.65rem;
+  font: 900 2rem/1 Arial, sans-serif;
+}
+
+.reconciliation-kpis .coverage {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+
+.reconciliation-kpis .coverage span {
+  color: inherit;
+}
+
+.reconciliation-kpis .difference {
+  background: #f4ded9;
+  color: #7b261f;
+}
+
+.reconciliation-money {
+  margin-top: 1rem;
+  border: 1px solid #77736b;
+}
+
+.reconciliation-money > div {
+  display: grid;
+  grid-template-columns: 1.2fr repeat(3, 1fr);
+  border-top: 1px solid #aaa69c;
+}
+
+.reconciliation-money > div:first-child {
+  border-top: 0;
+}
+
+.reconciliation-money span,
+.reconciliation-money strong,
+.reconciliation-money b {
+  padding: 0.7rem 0.85rem;
+  border-right: 1px solid #aaa69c;
+  text-align: right;
+}
+
+.reconciliation-money > div > :last-child {
+  border-right: 0;
+}
+
+.reconciliation-money strong,
+.reconciliation-money .money-heading span:first-child {
+  text-align: left;
+}
+
+.reconciliation-money .money-heading {
+  background: #dedbd3;
+  color: #56534c;
+  font: 800 0.62rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+
+.reconciliation-money b {
+  color: #9f2f25;
+}
+
+.reconciliation-money b.balanced {
+  color: #25613b;
+}
+
+.reconciliation-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.reconciliation-toolbar label {
+  width: min(20rem, 100%);
+}
+
+.reconciliation-toolbar > span {
+  color: #56534c;
+  font: 800 0.65rem "Courier New", monospace;
+}
+
+.reconciliation-table-wrap {
+  margin-top: 0.8rem;
+  overflow: auto;
+  border: 1px solid #77736b;
+}
+
+.reconciliation-table {
+  width: 100%;
+  min-width: 75rem;
+  border-collapse: collapse;
+}
+
+.reconciliation-table th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background: #dedbd3;
+  color: #56534c;
+  padding: 0.75rem;
+  text-align: left;
+  font: 800 0.62rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+
+.reconciliation-table td {
+  padding: 0.8rem;
+  border-top: 1px solid #aaa69c;
+  vertical-align: top;
+  font-size: 0.78rem;
+}
+
+.reconciliation-table td:first-child {
+  width: 8rem;
+  box-shadow: inset 4px 0 0 #77736b;
+}
+
+.reconciliation-table .row-matched td:first-child {
+  box-shadow: inset 4px 0 0 #3f8558;
+}
+
+.reconciliation-table .row-review td:first-child {
+  box-shadow: inset 4px 0 0 #b4871d;
+}
+
+.reconciliation-table .row-bank_only td:first-child,
+.reconciliation-table .row-report_only td:first-child {
+  box-shadow: inset 4px 0 0 #c43c2f;
+}
+
+.reconciliation-status {
+  display: inline-block;
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.42rem;
+  font: 800 0.58rem "Courier New", monospace;
+  text-transform: uppercase;
+}
+
+.reconciliation-status.matched { color: #25613b; background: #d8ead9; }
+.reconciliation-status.review { color: #60470d; background: #f3e8c7; }
+.reconciliation-status.bank_only,
+.reconciliation-status.report_only { color: #7b261f; background: #f4ded9; }
+
+.reconciliation-table td:first-child small {
+  display: block;
+  margin-top: 0.45rem;
+  color: #56534c;
+  font: 700 0.6rem "Courier New", monospace;
+}
+
+.movement-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.movement-line span,
+.reconciliation-table td > small,
+.report-matches span,
+.report-matches small {
+  color: #56534c;
+  font: 700 0.62rem "Courier New", monospace;
+}
+
+.reconciliation-table p {
+  max-width: 35rem;
+  margin: 0.38rem 0;
+  line-height: 1.4;
+}
+
+.reconciliation-reason {
+  max-width: 20rem;
+  color: #3f3d38;
+  line-height: 1.45;
+}
+
+.report-matches {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.report-matches article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.3rem 1rem;
+  border-left: 3px solid #77736b;
+  padding-left: 0.6rem;
+}
+
+.report-matches article > div:nth-child(2) {
+  text-align: right;
+}
+
+.report-matches strong,
+.report-matches span,
+.report-matches small {
+  display: block;
+}
+
+.report-matches small {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+}
+
+.report-matches > b {
+  text-align: right;
+}
+
+.missing-movement {
+  color: #7b261f;
+  font-weight: 800;
+}
+
+.reconciliation-empty {
+  height: 8rem;
+  color: #56534c;
+  text-align: center;
+}
+
+.bank-reconciliation-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.35rem;
+  border-top: 2px solid #141413;
+}
+
+@media (max-width: 900px) {
+  .reconciliation-config {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reconciliation-context {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reconciliation-context div:first-child {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-bottom: 1px solid #aaa69c;
+  }
+
+  .reconciliation-kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reconciliation-kpis article:nth-child(2) {
+    border-right: 0;
+  }
+
+  .reconciliation-kpis article:nth-child(-n + 2) {
+    border-bottom: 1px solid #aaa69c;
+  }
+}
+
+@media (max-width: 700px) {
+  .bank-reconciliation-overlay {
+    inset: 0;
+    padding: 0;
+  }
+
+  .bank-reconciliation-modal {
+    width: 100vw;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .bank-reconciliation-header {
+    min-height: 9.5rem;
+    align-items: flex-start;
+  }
+
+  .reconciliation-config,
+  .reconciliation-context {
+    grid-template-columns: 1fr;
+  }
+
+  .reconciliation-context div,
+  .reconciliation-context div:first-child {
+    grid-column: auto;
+    border-right: 0;
+    border-bottom: 1px solid #aaa69c;
+  }
+
+  .reconciliation-context div:last-child {
+    border-bottom: 0;
+  }
+
+  .reconciliation-result-head,
+  .reconciliation-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .reconciliation-result-head button,
+  .reconciliation-toolbar label {
+    width: 100%;
+  }
+
+  .reconciliation-money {
+    overflow-x: auto;
+  }
+
+  .reconciliation-money > div {
+    min-width: 38rem;
+  }
+
+  .bank-reconciliation-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bank-reconciliation-overlay,
+  .bank-reconciliation-modal {
+    scroll-behavior: auto;
+  }
+}
+
+/* Contraste coherente con cualquier paleta activa. */
+.bank-reconciliation-modal{border-color:var(--br-line-strong);background:var(--br-panel);color:var(--br-text)}
+.bank-reconciliation-header{border-color:var(--br-line-strong);background:var(--br-bg);color:var(--br-text)}
+.bank-reconciliation-header span,.reconciliation-context span,.reconciliation-config label>span,.reconciliation-toolbar label>span,.reconciliation-config small,.statement-dropzone small,.reconciliation-privacy span,.bank-support,.reconciliation-result-head span,.reconciliation-result-head small,.reconciliation-kpis span,.reconciliation-toolbar>span,.reconciliation-table td:first-child small,.reconciliation-table td>small,.reconciliation-empty{color:var(--br-muted)}
+.reconciliation-context,.reconciliation-privacy,.reconciliation-kpis,.reconciliation-money,.reconciliation-table-wrap,.statement-dropzone,.reconciliation-result-head,.bank-reconciliation-footer{border-color:var(--br-line-strong)}
+.reconciliation-context div,.reconciliation-kpis article,.reconciliation-money>div,.reconciliation-money span,.reconciliation-money strong,.reconciliation-money b,.reconciliation-table td{border-color:var(--br-line)}
+.statement-dropzone,.reconciliation-result-head button{color:var(--br-text)}
+.reconciliation-result-head button{border-color:var(--br-line-strong)}
+.reconciliation-result-head button:hover{border-color:var(--br-accent);background:var(--br-accent);color:var(--br-accent-text)}
+.reconciliation-money .money-heading,.reconciliation-table th{background:var(--br-panel-2);color:var(--br-muted)}
+.reconciliation-alert,.reconciliation-error,.reconciliation-kpis .difference{border-color:var(--br-danger);background:color-mix(in srgb,var(--br-danger) 16%,var(--br-panel));color:color-mix(in srgb,var(--br-danger) 82%,white)}
+.reconciliation-info{border-color:var(--br-warning);background:color-mix(in srgb,var(--br-warning) 15%,var(--br-panel));color:color-mix(in srgb,var(--br-warning) 78%,white)}
+.reconciliation-money b{color:var(--br-danger)}.reconciliation-money b.balanced{color:var(--br-success)}.reconciliation-reason{color:var(--br-text)}
+.reconciliation-status.matched{background:color-mix(in srgb,var(--br-success) 18%,var(--br-panel));color:var(--br-success)}
+.reconciliation-status.review{background:color-mix(in srgb,var(--br-warning) 16%,var(--br-panel));color:var(--br-warning)}
+.reconciliation-status.bank_only,.reconciliation-status.report_only{background:color-mix(in srgb,var(--br-danger) 16%,var(--br-panel));color:var(--br-danger)}
+
+.bank-reconciliation-header .reconciliation-help-button {
+  display: inline-flex;
+  min-height: 2.6rem;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  border: 1px solid var(--br-accent);
+  background: transparent;
+  color: var(--br-accent);
+  padding: 0.55rem 0.75rem;
+  font: 800 0.62rem "Courier New", monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.bank-reconciliation-header .reconciliation-help-button:hover,
+.bank-reconciliation-header .reconciliation-help-button:focus-visible {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+  outline: 2px solid var(--br-accent);
+  outline-offset: 2px;
+}
+
+.bank-reconciliation-header .reconciliation-help-button:active {
+  transform: translateY(1px);
+}
+
+.reconciliation-readiness {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 1.2rem 0 0;
+  border: 1px solid var(--br-line-strong);
+  padding: 0;
+  list-style: none;
+}
+
+.reconciliation-readiness li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 5.25rem;
+  border-right: 1px solid var(--br-line);
+  background: var(--br-panel-2);
+  padding: 0.75rem;
+}
+
+.reconciliation-readiness li:last-child {
+  border-right: 0;
+}
+
+.reconciliation-readiness li > span {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid var(--br-line-strong);
+  color: var(--br-muted);
+  font: 900 0.65rem "Courier New", monospace;
+}
+
+.reconciliation-readiness strong,
+.reconciliation-readiness small {
+  display: block;
+}
+
+.reconciliation-readiness strong {
+  color: var(--br-text);
+  font: 900 0.78rem Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+.reconciliation-readiness small {
+  overflow: hidden;
+  margin-top: 0.25rem;
+  color: var(--br-muted);
+  font: 700 0.6rem "Courier New", monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reconciliation-readiness li > i {
+  color: var(--br-muted);
+}
+
+.reconciliation-readiness li.complete {
+  background: color-mix(in srgb, var(--br-success) 8%, var(--br-panel));
+}
+
+.reconciliation-readiness li.complete > span {
+  border-color: var(--br-success);
+  color: var(--br-success);
+}
+
+.reconciliation-readiness li.complete > i {
+  color: var(--br-success);
+}
+
+.reconciliation-config label > span {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.bank-reconciliation-footer :deep(.reconciliation-run-button:not(:disabled)) {
+  box-shadow: 4px 4px 0 var(--br-accent);
+}
+
+.bank-reconciliation-footer :deep(button:focus-visible) {
+  outline: 2px solid var(--br-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .reconciliation-readiness {
+    grid-template-columns: 1fr;
+  }
+
+  .reconciliation-readiness li {
+    border-right: 0;
+    border-bottom: 1px solid var(--br-line);
+  }
+
+  .reconciliation-readiness li:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .bank-reconciliation-header {
+    min-height: 11.5rem;
+    padding: 1rem 4.5rem 1rem 1rem;
+  }
+
+  .bank-reconciliation-header h2 {
+    font-size: clamp(1.75rem, 10vw, 2.6rem);
+  }
+
+  .bank-reconciliation-header .reconciliation-help-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .reconciliation-readiness li {
+    min-height: 4.6rem;
+  }
+}
+
+/* El modal se mide contra el espacio real del overlay, no contra un viewport escalado. */
+.bank-reconciliation-overlay {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.bank-reconciliation-modal {
+  box-sizing: border-box;
+  width: min(72rem, 100%);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.bank-reconciliation-header > div,
+.bank-reconciliation-body,
+.reconciliation-context,
+.reconciliation-readiness,
+.reconciliation-config,
+.statement-dropzone {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bank-reconciliation-body {
+  overflow-x: hidden;
+}
+
+.bank-reconciliation-header h2 {
+  max-width: 18ch;
+  font-size: clamp(2rem, 4.2vw, 3.25rem);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.reconciliation-config > label,
+.reconciliation-readiness li > div {
+  min-width: 0;
+}
+
+.reconciliation-config :deep(input),
+.reconciliation-config :deep(.p-select) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.reconciliation-table-wrap,
+.reconciliation-money {
+  max-width: 100%;
+}
+
+@media (max-width: 74rem) {
+  .bank-reconciliation-modal {
+    box-shadow: 7px 7px 0 var(--br-accent);
+  }
+
+  .reconciliation-config {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .reconciliation-config {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Contrato cromático: la conciliación pertenece al espacio oscuro de Fiscal. */
+.bank-reconciliation-overlay .bank-reconciliation-modal {
+  --app-modal-ink: var(--br-text);
+  --app-modal-muted: var(--br-muted);
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-panel) !important;
+  color: var(--br-text) !important;
+  color-scheme: dark !important;
+}
+
+.bank-reconciliation-modal .bank-reconciliation-header,
+.bank-reconciliation-modal .bank-reconciliation-footer {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-bg) !important;
+  color: var(--br-text) !important;
+}
+
+.bank-reconciliation-modal .bank-reconciliation-header h2,
+.bank-reconciliation-modal .bank-reconciliation-header > div > span {
+  color: var(--br-text) !important;
+}
+
+.bank-reconciliation-modal .bank-reconciliation-header > div > span {
+  color: var(--br-muted) !important;
+}
+
+.bank-reconciliation-modal .bank-reconciliation-body {
+  background: var(--br-panel);
+  color: var(--br-text);
+}
+
+.bank-reconciliation-modal .reconciliation-context,
+.bank-reconciliation-modal .reconciliation-readiness,
+.bank-reconciliation-modal .reconciliation-config,
+.bank-reconciliation-modal .reconciliation-privacy,
+.bank-reconciliation-modal .reconciliation-kpis,
+.bank-reconciliation-modal .reconciliation-money,
+.bank-reconciliation-modal .reconciliation-table-wrap {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-panel-2);
+  color: var(--br-text);
+}
+
+.bank-reconciliation-modal .reconciliation-context > div,
+.bank-reconciliation-modal .reconciliation-readiness > li,
+.bank-reconciliation-modal .reconciliation-kpis > article,
+.bank-reconciliation-modal .reconciliation-money > div,
+.bank-reconciliation-modal .reconciliation-table td {
+  border-color: var(--br-line) !important;
+  background: transparent;
+  color: var(--br-text);
+}
+
+.bank-reconciliation-modal .reconciliation-readiness > li.complete {
+  background: color-mix(in srgb, var(--br-success) 9%, var(--br-panel-2));
+}
+
+.bank-reconciliation-modal .reconciliation-context span,
+.bank-reconciliation-modal .reconciliation-config label > span,
+.bank-reconciliation-modal .reconciliation-config small,
+.bank-reconciliation-modal .reconciliation-readiness small,
+.bank-reconciliation-modal .reconciliation-privacy span,
+.bank-reconciliation-modal .bank-support,
+.bank-reconciliation-modal .reconciliation-toolbar > span,
+.bank-reconciliation-modal .reconciliation-table :is(th, small) {
+  color: var(--br-muted) !important;
+}
+
+.bank-reconciliation-modal .reconciliation-config :deep(input),
+.bank-reconciliation-modal .reconciliation-config :deep(select),
+.bank-reconciliation-modal .reconciliation-toolbar :deep(select) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-bg) !important;
+  color: var(--br-text) !important;
+  -webkit-text-fill-color: var(--br-text) !important;
+  color-scheme: dark;
+}
+
+.bank-reconciliation-modal .reconciliation-config :deep(input::placeholder) {
+  color: var(--br-muted) !important;
+  -webkit-text-fill-color: var(--br-muted) !important;
+  opacity: 1;
+}
+
+.bank-reconciliation-modal .statement-dropzone {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-panel-2);
+  color: var(--br-text) !important;
+}
+
+.bank-reconciliation-modal .statement-dropzone:hover,
+.bank-reconciliation-modal .statement-dropzone.dragging,
+.bank-reconciliation-modal .statement-dropzone:focus-visible {
+  border-color: var(--br-accent) !important;
+  background: color-mix(in srgb, var(--br-accent) 10%, var(--br-panel-2));
+}
+
+.bank-reconciliation-modal .reconciliation-alert,
+.bank-reconciliation-modal .reconciliation-error {
+  border-color: var(--br-danger) !important;
+  background: color-mix(in srgb, var(--br-danger) 12%, var(--br-panel-2)) !important;
+  color: color-mix(in srgb, var(--br-danger) 68%, var(--br-text)) !important;
+}
+
+.bank-reconciliation-modal .reconciliation-info {
+  border-color: var(--br-warning) !important;
+  background: color-mix(in srgb, var(--br-warning) 11%, var(--br-panel-2)) !important;
+  color: color-mix(in srgb, var(--br-warning) 68%, var(--br-text)) !important;
+}
+
+.bank-reconciliation-modal .reconciliation-money .money-heading,
+.bank-reconciliation-modal .reconciliation-table th {
+  background: var(--br-bg) !important;
+  color: var(--br-muted) !important;
+}
+
+.bank-reconciliation-modal .reconciliation-table td,
+.bank-reconciliation-modal .reconciliation-reason {
+  color: var(--br-text) !important;
+}
+
+.bank-reconciliation-modal .reconciliation-result-head button {
+  border-color: var(--br-line-strong);
+  background: var(--br-panel-2);
+  color: var(--br-text);
+}
+
+.bank-reconciliation-modal .reconciliation-result-head button:hover,
+.bank-reconciliation-modal .reconciliation-result-head button:focus-visible {
+  border-color: var(--br-accent);
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+
+.bank-reconciliation-modal .reconciliation-kpis .coverage {
+  border-color: var(--br-accent) !important;
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+
+.bank-reconciliation-modal .reconciliation-kpis .difference {
+  background: color-mix(in srgb, var(--br-danger) 13%, var(--br-panel-2));
+  color: color-mix(in srgb, var(--br-danger) 72%, var(--br-text));
+}

@@ -1,3 +1,4 @@
+<Teleport to="body">
 <Transition name="app-dialog">
     <div v-if="dialog" class="app-dialog-overlay" @mousedown.self="cancel">
       <form class="app-dialog-shell" :data-tone="dialog.tone || 'info'" role="dialog" aria-modal="true"
@@ -31,3 +32,4 @@
       </form>
     </div>
   </Transition>
+</Teleport>

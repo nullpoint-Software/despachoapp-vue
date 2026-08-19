@@ -37,7 +37,7 @@
             <div class="login-intro">
               <span>ACCESO SAT</span>
               <h3>Inicia sesión sin retrasos</h3>
-              <p>Los datos se envían una sola vez al navegador temporal y se eliminan al cerrar.</p>
+              <p>RFC, Contraseña y CAPTCHA se envían al servidor de la app y se usan una sola vez para autenticar el navegador temporal ante el SAT.</p>
             </div>
             <label><span>RFC</span><input id="sat-rfc" v-model.trim="loginRfc" type="text" autocapitalize="characters" spellcheck="false" :aria-invalid="Boolean(errorMessage)" :aria-describedby="errorMessage ? 'sat-login-error' : undefined" maxlength="13" autocomplete="username" placeholder="RFC" required /></label>
             <label><span>Contraseña</span><input id="sat-password" v-model="loginPassword" type="password" :aria-invalid="Boolean(errorMessage)" :aria-describedby="errorMessage ? 'sat-login-error' : undefined" maxlength="64" autocomplete="current-password" placeholder="Contraseña SAT" required /></label>
@@ -96,7 +96,7 @@
         <footer>
           <div class="privacy-note">
             <i class="pi pi-lock" />
-            <span>La sesión se elimina al cerrar. No guardamos contraseña, CAPTCHA ni cookies.</span>
+            <span>No guardamos Contraseña ni CAPTCHA. Las cookies solo viven en memoria durante esta sesión y se destruyen al cerrarla.</span>
           </div>
           <div class="footer-actions">
             <AppButton label="Cerrar" outlined :disabled="closing" @click="requestClose" />

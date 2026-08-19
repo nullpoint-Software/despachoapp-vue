@@ -8,7 +8,7 @@
     <div v-if="open" :class="modal ? 'dt-overlay' : 'dt-inline'" @mousedown.self="cancel">
     <div class="dt-panel" role="dialog" :aria-modal="modal || undefined" aria-label="Seleccionar fecha">
       <header v-if="modal" class="dt-modal-header">
-        <div><span>CALENDARIO / REPORTE</span><strong>{{ title }}</strong></div>
+        <div><span>CALENDARIO / SELECCIÓN</span><strong>{{ title }}</strong></div>
         <button type="button" aria-label="Cerrar calendario" @click="cancel">×</button>
       </header>
       <div class="dt-month-nav">

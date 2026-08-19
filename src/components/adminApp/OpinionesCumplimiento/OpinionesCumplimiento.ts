@@ -1,6 +1,6 @@
 import { computed, nextTick, onMounted, ref } from "vue";
 import { cos } from "@/service/adminApp/client";
-import type { ComplianceRecord, ComplianceStatus, ComplianceSummary } from "@/service/adminApp/cumplimientoService";
+import type { ComplianceRecord, ComplianceScheduleConfig, ComplianceScheduleFrequency, ComplianceStatus, ComplianceSummary } from "@/service/adminApp/cumplimientoService";
 import { regimenesFiscales, regimenFiscalLabel } from "@/constants/regimenesFiscales";
 
 const records = ref<ComplianceRecord[]>([]);
@@ -21,7 +21,37 @@ const draftStatusFilter = ref("todos");
 const draftRegimeFilter = ref("todos");
 const errorMessage = ref("");
 const successMessage = ref("");
-const emptySummary: ComplianceSummary = { total: 0, positiva: 0, negativa: 0, suspension_actividades: 0, inscrito_sin_obligaciones: 0, no_inscrito: 0, cancelado: 0, no_localizado: 0, no_publica: 0, otro: 0, sin_consulta: 0, error: 0, especial: 0, con_documento: 0 };
+const opinionsTutorialOpen = ref(false);
+const scheduleOpen = ref(false);
+const scheduleLoading = ref(false);
+const scheduleSaving = ref(false);
+const scheduleModal = ref<HTMLElement | null>(null);
+const schedule = ref<ComplianceScheduleConfig | null>(null);
+type ScheduleDraft = Pick<ComplianceScheduleConfig, "enabled" | "frequency" | "runTime" | "dayOfWeek" | "regimes">;
+const scheduleDraft = ref<ScheduleDraft>({ enabled: false, frequency: "weekdays", runTime: "07:00", dayOfWeek: 1, regimes: [] });
+const frequencyOptions: { label: string; value: ComplianceScheduleFrequency }[] = [
+  { label: "Todos los días", value: "daily" },
+  { label: "Lunes a viernes", value: "weekdays" },
+  { label: "Una vez por semana", value: "weekly" },
+];
+const weekdayOptions = [
+  { label: "Domingo", value: 0 },
+  { label: "Lunes", value: 1 },
+  { label: "Martes", value: 2 },
+  { label: "Miércoles", value: 3 },
+  { label: "Jueves", value: 4 },
+  { label: "Viernes", value: 5 },
+  { label: "Sábado", value: 6 },
+];
+const opinionsTutorialSteps = [
+  { target: ".compliance-hero", eyebrow: "Opiniones / consulta", title: "Revisa el cumplimiento", body: "Esta vista conserva la última opinión válida y distingue los errores recientes de un resultado fiscal almacenado." },
+  { target: ".compliance-note", eyebrow: "Opiniones / modalidades", title: "Elige el tipo de consulta", body: "La consulta pública usa el RFC; la consulta por terceros inicia sesión temporalmente con las credenciales autorizadas." },
+  { target: ".summary-grid", eyebrow: "Opiniones / resumen", title: "Detecta pendientes", body: "Los indicadores separan opiniones positivas, situaciones especiales, consultas privadas y clientes sin revisar." },
+  { target: ".filter-strip", eyebrow: "Opiniones / filtros", title: "Encuentra un cliente", body: "Busca por nombre o RFC y combina el resultado con filtros de estado y régimen fiscal." },
+  { target: ".compliance-workspace", eyebrow: "Opiniones / detalle", title: "Abre la evidencia", body: "Selecciona un cliente para consultar vigencia, PDF guardado, respuesta del SAT y acciones recomendadas." },
+];
+const isAdmin = computed(() => localStorage.getItem("level") === "Administrador");
+const emptySummary: ComplianceSummary = { total: 0, positiva: 0, negativa: 0, suspension_actividades: 0, inscrito_sin_obligaciones: 0, no_inscrito: 0, cancelado: 0, no_localizado: 0, no_publica: 0, otro: 0, sin_consulta: 0, error: 0, especial: 0, con_documento: 0, con_error_reciente: 0 };
 const summary = ref<ComplianceSummary>({ ...emptySummary });
 const statusOptions = [
   { label: "Todos", value: "todos" },
@@ -39,6 +69,17 @@ const statusOptions = [
 const regimeOptions = [{ label: "Todos", value: "todos" }, ...regimenesFiscales];
 const activeFilterCount = computed(() => Number(statusFilter.value !== "todos") + Number(regimeFilter.value !== "todos"));
 const filterButtonLabel = computed(() => activeFilterCount.value ? `Filtros (${activeFilterCount.value})` : "Filtros");
+const scheduleSummary = computed(() => {
+  if (!scheduleDraft.value.enabled) return "Las consultas automáticas están pausadas.";
+  const time = scheduleDraft.value.runTime;
+  if (scheduleDraft.value.frequency === "daily") return `Todos los días a las ${time}.`;
+  if (scheduleDraft.value.frequency === "weekdays") return `De lunes a viernes a las ${time}.`;
+  const day = weekdayOptions.find((option) => option.value === scheduleDraft.value.dayOfWeek)?.label || "Lunes";
+  return `Cada ${day.toLocaleLowerCase("es-MX")} a las ${time}.`;
+});
+const scheduleRegimeSummary = computed(() => scheduleDraft.value.regimes.length
+  ? `${scheduleDraft.value.regimes.length} ${scheduleDraft.value.regimes.length === 1 ? "régimen" : "regímenes"}`
+  : "Todos los regímenes");
 
 const filteredRecords = computed(() => {
   const term = search.value.trim().toLocaleLowerCase("es-MX");
@@ -108,6 +149,64 @@ function errorText(error: unknown, fallback: string) {
   return candidate?.response?.data?.error || fallback;
 }
 
+function applySchedule(config: ComplianceScheduleConfig) {
+  schedule.value = config;
+  scheduleDraft.value = {
+    enabled: config.enabled,
+    frequency: config.frequency,
+    runTime: config.runTime,
+    dayOfWeek: config.dayOfWeek,
+    regimes: [...config.regimes],
+  };
+}
+
+async function openSchedule() {
+  scheduleOpen.value = true;
+  scheduleLoading.value = true;
+  errorMessage.value = "";
+  await nextTick();
+  scheduleModal.value?.focus();
+  try {
+    applySchedule(await cos.getProgramacion());
+  } catch (error) {
+    scheduleOpen.value = false;
+    errorMessage.value = errorText(error, "No se pudo cargar la programación de Opiniones.");
+  } finally {
+    scheduleLoading.value = false;
+  }
+}
+
+function closeSchedule() {
+  if (!scheduleSaving.value) scheduleOpen.value = false;
+}
+
+function selectAllScheduleRegimes() {
+  scheduleDraft.value.regimes = [];
+}
+
+function toggleScheduleRegime(code: string) {
+  const selectedRegimes = scheduleDraft.value.regimes;
+  scheduleDraft.value.regimes = selectedRegimes.includes(code)
+    ? selectedRegimes.filter((item) => item !== code)
+    : [...selectedRegimes, code];
+}
+
+async function saveSchedule() {
+  scheduleSaving.value = true;
+  errorMessage.value = "";
+  successMessage.value = "";
+  try {
+    const result = await cos.guardarProgramacion(scheduleDraft.value);
+    applySchedule(result.config);
+    successMessage.value = result.message;
+    scheduleOpen.value = false;
+  } catch (error) {
+    errorMessage.value = errorText(error, "No se pudo guardar la programación de Opiniones.");
+  } finally {
+    scheduleSaving.value = false;
+  }
+}
+
 async function loadOpinions(preserveSelection = true) {
   loading.value = true;
   errorMessage.value = "";
@@ -153,7 +252,7 @@ async function syncAll() {
       offset = response.processed;
       hasMore = response.hasMore;
     }
-    successMessage.value = `Consulta masiva terminada: ${syncProgress.value.processed} clientes revisados y ${syncProgress.value.documents} PDF nuevos archivados.`;
+    successMessage.value = `Consulta masiva terminada: ${syncProgress.value.processed} clientes revisados y ${syncProgress.value.documents} PDF actualizados.`;
     await loadOpinions();
   } catch (error) {
     errorMessage.value = errorText(error, "No fue posible completar la consulta al SAT.");
@@ -185,7 +284,7 @@ function statusIcon(status: ComplianceStatus) {
   return ({ positiva: "pi pi-check-circle", negativa: "pi pi-exclamation-triangle", suspension_actividades: "pi pi-pause-circle", inscrito_sin_obligaciones: "pi pi-minus-circle", no_inscrito: "pi pi-user-minus", cancelado: "pi pi-ban", no_localizado: "pi pi-map-marker", no_publica: "pi pi-lock", otro: "pi pi-info-circle", sin_consulta: "pi pi-clock", error: "pi pi-times-circle" })[status];
 }
 function statusDescription(status: ComplianceStatus) {
-  return ({ suspension_actividades: "El SAT identifica al contribuyente con suspensión de actividades.", inscrito_sin_obligaciones: "El RFC está inscrito, pero actualmente no tiene obligaciones fiscales registradas.", no_inscrito: "El RFC consultado no aparece inscrito ante el SAT.", cancelado: "El RFC aparece con estatus cancelado.", no_localizado: "El SAT reporta un problema de localización del contribuyente.", otro: "El SAT devolvió un resultado distinto. Revisa el mensaje original.", sin_consulta: "Todavía no se ha consultado este RFC.", error: "La consulta no pudo completarse. Inténtalo nuevamente.", negativa: "La opinión contiene obligaciones o situaciones que requieren atención.", no_publica: "El contribuyente debe autorizar la consulta pública.", positiva: "La opinión pública está al corriente." })[status];
+  return ({ suspension_actividades: "El SAT identifica al contribuyente con suspensión de actividades.", inscrito_sin_obligaciones: "El RFC está inscrito, pero actualmente no tiene obligaciones fiscales registradas.", no_inscrito: "El RFC consultado no aparece inscrito ante el SAT.", cancelado: "El RFC aparece con estatus cancelado.", no_localizado: "El SAT reporta un problema de localización del contribuyente.", otro: "El SAT devolvió un resultado distinto. Revisa el mensaje original.", sin_consulta: "Todavía no se ha consultado este RFC.", error: "La consulta no pudo completarse y todavía no existe una opinión válida almacenada.", negativa: "La opinión contiene obligaciones o situaciones que requieren atención.", no_publica: "El contribuyente no autorizó que el SAT muestre públicamente el resultado.", positiva: "El SAT emitió una opinión positiva a la fecha indicada." })[status];
 }
 function formatDate(value: string | null) {
   if (!value) return "Nunca";
@@ -200,12 +299,16 @@ function formatDateTime(value: string | null) {
 function vigenciaLabel(record: ComplianceRecord) {
   if (record.vigente_hasta) return formatDate(record.vigente_hasta);
   if (!record.fecha_consulta) return "Sin consultar";
-  return "No indicada por el SAT";
+  if (record.status !== "positiva") return "No aplica";
+  return "Sin fecha de emisión";
 }
 function issueSubtitle(record: ComplianceRecord) {
-  if (record.status === "positiva") return "Resultado público vigente al momento de la consulta.";
+  if (record.status === "positiva") return "La opinión positiva tiene una vigencia general de 30 días naturales desde su emisión.";
   if (record.status === "no_publica") return "El SAT no permite ver el detalle mientras la opinión sea privada.";
   return "Las causas confirmadas se distinguen de las que aún deben revisarse.";
 }
 
-onMounted(() => loadOpinions(false));
+onMounted(async () => {
+  await loadOpinions(false);
+  if (!localStorage.getItem("tourOpinionesDone")) opinionsTutorialOpen.value = true;
+});

@@ -176,7 +176,7 @@ async function syncClients() {
       offset = response.processed;
       hasMore = response.hasMore;
     }
-    emit("complete", `Consulta por terceros terminada: ${progress.value.processed} clientes revisados y ${progress.value.documents} PDF nuevos archivados.`);
+    emit("complete", `Consulta por terceros terminada: ${progress.value.processed} clientes revisados y ${progress.value.documents} PDF actualizados.`);
     await close(false);
   } catch (error) {
     errorMessage.value = errorText(error, "No fue posible completar la consulta por terceros.");

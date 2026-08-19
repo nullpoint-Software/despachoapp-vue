@@ -4,7 +4,6 @@ import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, Ca
 import zoomPlugin from "chartjs-plugin-zoom";
 import { cos, cs, es, fs, ts } from "@/service/adminApp/client";
 import type { ComplianceSummary, ComplianceStatus } from "@/service/adminApp/cumplimientoService";
-import { driverObjInicio } from "@/components/tour/inicio";
 import { useColorPalette } from "@/composables/useColorPalette";
 import { useBrutalMotion } from "@/composables/useBrutalMotion";
 
@@ -18,7 +17,7 @@ type FiscalReport=Record<string,any>;
 type ReportClientRow={key:string;name:string;directions:string[]};
 
 const emptyData=()=>({dia:[],mes:[],anio:[],anios:[]} as Record<Period,Entry[]>);
-const emptyCompliance=():ComplianceSummary=>({total:0,positiva:0,negativa:0,suspension_actividades:0,inscrito_sin_obligaciones:0,no_inscrito:0,cancelado:0,no_localizado:0,no_publica:0,otro:0,sin_consulta:0,error:0,especial:0,con_documento:0});
+const emptyCompliance=():ComplianceSummary=>({total:0,positiva:0,negativa:0,suspension_actividades:0,inscrito_sin_obligaciones:0,no_inscrito:0,cancelado:0,no_localizado:0,no_publica:0,otro:0,sin_consulta:0,error:0,especial:0,con_documento:0,con_error_reciente:0});
 const datos=ref(emptyData());
 const periodo=ref<Period>("anio");
 const loading=ref(true);
@@ -34,6 +33,13 @@ const reports=ref<FiscalReport[]>([]);
 const complianceSummary=ref<ComplianceSummary>(emptyCompliance());
 const isAdmin=localStorage.getItem("level")==="Administrador";
 const {selectedPalette}=useColorPalette();
+const homeTutorialOpen=ref(false);
+const homeTutorialSteps=[
+  {target:".page-hero",eyebrow:"Inicio / resumen",title:"Lee el estado del despacho",body:"El panel concentra clientes, tareas, cumplimiento y reportes para que puedas detectar pendientes desde una sola vista."},
+  {target:".kpi-strip",eyebrow:"Inicio / indicadores",title:"Abre cada módulo",body:"Cada indicador también es un acceso directo. Selecciona uno para consultar el detalle correspondiente."},
+  {target:".operations-grid",eyebrow:"Inicio / operación",title:"Revisa el trabajo pendiente",body:"Estos bloques muestran responsables, opiniones y reportes mensuales que requieren seguimiento."},
+  {target:isAdmin?"#chart-section":".operations-panel",eyebrow:"Inicio / seguimiento",title:isAdmin?"Compara ingresos y costos":"Mantén los datos al día",body:isAdmin?"Cambia el periodo y activa el zoom cuando necesites revisar el comportamiento financiero.":"Los indicadores se actualizan con la información disponible para tu perfil."},
+];
 
 useBrutalMotion(pageRef,[".page-hero",".operations-panel",".revenue-panel"]);
 watch([selectedPalette,zoomEnabled],()=>chartKey.value++);
@@ -121,4 +127,7 @@ async function loadOperationalSummary(){
 }
 const emptyDataPlugin={id:"emptyData",beforeDraw(chart:any){if(chart.data.datasets.every((dataset:any)=>!dataset.data?.some((value:number)=>value!==0))){const{ctx,width,height}=chart;ctx.save();ctx.textAlign="center";ctx.fillStyle="#8e8b84";ctx.font="700 14px Courier New";ctx.fillText("NO HAY INFORMACION PARA ESTE PERIODO",width/2,height/2);ctx.restore()}}};
 
-onMounted(async()=>{await Promise.allSettled([loadFinancialSummary(),loadOperationalSummary()]);if(!localStorage.getItem("tourInicioDone"))driverObjInicio.drive()});
+onMounted(async()=>{
+  await Promise.allSettled([loadFinancialSummary(),loadOperationalSummary()]);
+  if(!localStorage.getItem("tourInicioDone"))homeTutorialOpen.value=true;
+});

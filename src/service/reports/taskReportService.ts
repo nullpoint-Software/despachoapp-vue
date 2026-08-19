@@ -53,13 +53,32 @@ function formatCutoff(value: string): string {
   return year && month && day ? `${day}/${month}/${year}` : value;
 }
 
-function completedTasksUntil(
+function selectedDayRange(value: string): { start: Date; end: Date } | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  const start = new Date(year, month, day);
+
+  if (
+    start.getFullYear() !== year ||
+    start.getMonth() !== month ||
+    start.getDate() !== day
+  ) return null;
+
+  const end = new Date(year, month, day + 1);
+  return { start, end };
+}
+
+function completedTasksOnDay(
   items: TaskReportItem[],
-  cutoff: string,
+  selectedDate: string,
   userId: TaskReportSession["userId"],
 ): TaskReportItem[] {
-  const limit = new Date(`${cutoff}T23:59:59`);
-  const validLimit = !Number.isNaN(limit.getTime());
+  const range = selectedDayRange(selectedDate);
+  if (!range) return [];
 
   return items.filter((task) => {
     if (task.estado !== "Terminado") return false;
@@ -67,7 +86,7 @@ function completedTasksUntil(
 
     const completedAt = parseDate(task.fecha_vencimiento);
     if (!completedAt) return false;
-    return !validLimit || completedAt <= limit;
+    return completedAt >= range.start && completedAt < range.end;
   });
 }
 
@@ -96,7 +115,7 @@ export function createTaskReportDocument(
   session: TaskReportSession,
   logoDataUrl: string | null = null,
 ): TaskReportDocument {
-  const reportTasks = completedTasksUntil(items, cutoff, session.userId);
+  const reportTasks = completedTasksOnDay(items, cutoff, session.userId);
   const fileName = `tareas-finalizadas-${cutoff || "actual"}.pdf`;
 
   if (reportTasks.length === 0) {
@@ -134,7 +153,7 @@ export function createTaskReportDocument(
   document.setFont("helvetica", "bold");
   document.setFontSize(8);
   document.text("RESPONSABLE", 14, 59);
-  document.text("FECHA DE CORTE", 116, 59);
+  document.text("FECHA DEL REPORTE", 116, 59);
 
   document.setDrawColor(202, 197, 187);
   document.setFillColor(246, 244, 238);

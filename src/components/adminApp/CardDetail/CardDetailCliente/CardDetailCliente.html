@@ -1,3 +1,4 @@
+<Teleport to="body">
 <transition name="fade">
   <div class="modal-overlay app-modal-overlay" @click.self="close">
     <form class="a11y-form modal-content app-modal-surface" role="dialog" aria-modal="true" aria-labelledby="client-form-title" :aria-describedby="`client-step-help-${currentStep}`" @submit.prevent="save" @keydown.esc="close">
@@ -51,4 +52,4 @@
       </footer>
     </form>
   </div>
-</transition>
+</transition></Teleport>

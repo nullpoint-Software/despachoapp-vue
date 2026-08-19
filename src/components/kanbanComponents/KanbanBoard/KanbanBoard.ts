@@ -38,7 +38,7 @@ const loadError = ref<string | null>(null);
 const searchQuery = ref("");
 const showTaskForm = ref(false);
 const taskFormMode = ref<"add" | "edit">("add");
-const reportDate = ref(new Date().toISOString().slice(0, 10));
+const reportDate = ref(new Date());
 const isGeneratingReport = ref(false);
 const currentPage = ref(1);
 const hasNextPage = ref(false);
@@ -192,7 +192,7 @@ async function moveTask(taskId: number | string, targetStatus: KanbanStatus): Pr
   task.username = targetStatus === "Disponible" ? null : task.username ?? localStorage.getItem("username");
   task.image = targetStatus === "Disponible" ? null : task.image ?? localStorage.getItem("userphoto");
   task.fecha_vencimiento = targetStatus === "Terminado"
-    ? task.fecha_vencimiento ?? new Date().toLocaleString("sv-SE")
+    ? new Date().toLocaleString("sv-SE")
     : null;
 
   try {
@@ -292,7 +292,7 @@ async function openReportPreview(): Promise<void> {
   try {
     closeReportPreview();
     const reportTasks = await loadTasksForReport();
-    const result = await prepareTaskReportPreview(reportTasks, reportDate.value, {
+    const result = await prepareTaskReportPreview(reportTasks, reportDate.value.toLocaleDateString("sv-SE"), {
       userId: localStorage.getItem("userid"),
       responsibleName: localStorage.getItem("fullname") || localStorage.getItem("username") || "Usuario",
     });
@@ -301,7 +301,7 @@ async function openReportPreview(): Promise<void> {
       toast.add({
         severity: "info",
         summary: "Sin tareas finalizadas",
-        detail: "No hay tareas finalizadas por este usuario hasta la fecha de corte.",
+        detail: "No hay tareas finalizadas por este usuario en la fecha seleccionada.",
         life: 3500,
       });
       return;

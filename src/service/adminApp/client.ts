@@ -11,6 +11,7 @@ import LogsService from "./logsService";
 import FiscalService from "./fiscalService";
 import CumplimientoService from "./cumplimientoService";
 import PasskeyService from "./passkeyService";
+import SatRecommendationsService from "./satRecommendationsService";
 import BackupService from "./backupService";
 
 const instance = axios.create();
@@ -40,6 +41,7 @@ export const es = new EstadisticaService(serverip, instance);
 export const us = new UsuarioService(serverip, instance);
 export const ls = new LogsService(serverip, instance);
 export const fs = new FiscalService(serverip, instance);
+export const satrs = new SatRecommendationsService(serverip, instance);
 export const cos = new CumplimientoService(serverip, instance);
 export const pks = new PasskeyService(serverip, instance);
 export const bs = new BackupService(serverip, instance);

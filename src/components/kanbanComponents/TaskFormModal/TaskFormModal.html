@@ -9,10 +9,10 @@
 
       <form class="task-modal__form" :aria-busy="isSaving" @submit.prevent="save">
         <div class="task-modal__body">
-          <label for="task-title"><span>Título <b>*</b></span><AppAutocomplete id="task-title" v-model="localTask.titulo" :options="taskTitleSuggestions" required autofocus placeholder="Busca una tarea frecuente o escribe otra" :invalid="errors.titulo" :aria-describedby="errors.titulo ? 'task-title-error' : 'task-title-help'" /><small id="task-title-help" class="task-field-help">Al enfocar el campo verás tareas frecuentes.</small></label>
+          <label for="task-title"><span>Título <b>*</b><AppFieldHelp label="Título de la tarea" text="Escribe una acción concreta y fácil de reconocer, por ejemplo: Presentar declaración mensual de agosto." /></span><AppAutocomplete id="task-title" v-model="localTask.titulo" :options="taskTitleSuggestions" required autofocus placeholder="Busca una tarea frecuente o escribe otra" :invalid="errors.titulo" :aria-describedby="errors.titulo ? 'task-title-error' : 'task-title-help'" /><small id="task-title-help" class="task-field-help">Al enfocar el campo verás tareas frecuentes.</small></label>
           <p v-if="errors.titulo" id="task-title-error" class="task-field-error" role="alert">Escribe un título para continuar.</p>
 
-          <label for="task-description"><span>Descripción <b>*</b></span><textarea id="task-description" v-model.trim="localTask.descripcion" rows="6" required placeholder="Describe el resultado esperado y los datos necesarios" :aria-invalid="errors.descripcion" :aria-describedby="errors.descripcion ? 'task-description-error' : undefined"></textarea></label>
+          <label for="task-description"><span>Descripción <b>*</b><AppFieldHelp label="Descripción" text="Indica el resultado esperado, documentos necesarios, periodo fiscal y cualquier dato que evite preguntas posteriores." /></span><textarea id="task-description" v-model.trim="localTask.descripcion" rows="6" required placeholder="Describe el resultado esperado y los datos necesarios" :aria-invalid="errors.descripcion" :aria-describedby="errors.descripcion ? 'task-description-error' : undefined"></textarea></label>
           <p v-if="errors.descripcion" id="task-description-error" class="task-field-error" role="alert">Describe la tarea para continuar.</p>
 
           <div class="task-modal__context">
@@ -24,9 +24,11 @@
 
         <footer class="task-modal__actions">
           <button type="button" class="task-button task-button--secondary" :disabled="isSaving" @click="close">Cancelar</button>
+          <button type="button" class="task-button task-button--help" :disabled="isSaving" @click="taskHelpOpen = true"><i class="pi pi-question-circle"></i><span>Ayuda</span></button>
           <button type="submit" class="task-button task-button--primary" :disabled="isSaving"><i class="pi" :class="isSaving ? 'pi-spin pi-spinner' : 'pi-check'"></i><span>{{ isSaving ? "Guardando" : isEdit ? "Guardar cambios" : "Crear tarea" }}</span></button>
         </footer>
       </form>
+      <AppTutorial v-model="taskHelpOpen" title="Cómo crear una tarea" :steps="taskFormTutorialSteps" storage-key="tutorialFormularioTarea" />
     </section>
   </div>
 </Transition>

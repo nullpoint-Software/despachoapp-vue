@@ -4,3 +4,4 @@
 .slide-left-leave-from { transform: translateX(0); opacity: 1; }
 .slide-left-leave-to { transform: translateX(-100%); opacity: 0; }
 .note-snippet :global(p) { margin: 0; color: var(--color-text-muted); }
+.note-snippet :global(u) { border: 0; background: #f3d34a; color: #181716; padding: 0 0.12em; text-decoration: none !important; text-decoration-line: none !important; }

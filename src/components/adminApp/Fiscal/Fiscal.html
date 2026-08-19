@@ -2,8 +2,8 @@
     <header class="fiscal-hero">
       <div>
         <p>IMPUESTOS / CFDI</p>
-        <h1>Fiscal</h1>
-        <span>Facturas emitidas y recibidas, clasificadas desde su XML.</span>
+        <h1>Control fiscal</h1>
+        <span>CFDI, reportes y conciliación bancaria por cliente y periodo.</span>
       </div>
       <div class="hero-actions">
         <input
@@ -13,6 +13,20 @@
           accept=".xml,text/xml,application/xml"
           multiple
           @change="queueFiles"
+        />
+        <AppButton
+          label="Ayuda"
+          icon="pi pi-question-circle"
+          outlined
+          class="app-help-button"
+          @click="fiscalTutorialOpen = true"
+        />
+        <BankReconciliation
+          :client-id="Number(filters.clienteId)"
+          :client-label="clientSearch"
+          :year="Number(filters.year)"
+          :month="Number(filters.month)"
+          :reports="reports"
         />
         <AppButton
           label="Nuevo reporte"
@@ -26,19 +40,22 @@
 
     <section class="filter-strip" aria-label="Filtros fiscales">
       <label class="client-combobox"
-        ><span>Cliente</span
-        ><AppAutocomplete
-          v-model="clientSearch"
-          :options="clientOptions"
-          placeholder="Escribe nombre o RFC"
-          @update:model-value="onClientSearch"
-      /></label>
+        ><span>Cliente <AppFieldHelp label="Cliente fiscal" text="Selecciona el expediente al que pertenecen los CFDI, estados de cuenta y reportes que vas a consultar." /></span
+        ><span class="app-search-control app-search-control--autocomplete">
+          <i class="pi pi-search" aria-hidden="true" />
+          <AppAutocomplete
+            v-model="clientSearch"
+            :options="clientOptions"
+            placeholder="Escribe nombre o RFC"
+            @update:model-value="onClientSearch"
+          />
+        </span></label>
       <label
-        ><span>Ejercicio</span
+        ><span>Ejercicio <AppFieldHelp label="Ejercicio" text="Año fiscal de los comprobantes y reportes que deseas revisar." /></span
         ><AppSelect v-model="filters.year" :options="years"
       /></label>
       <label
-        ><span>Mes</span
+        ><span>Mes <AppFieldHelp label="Mes" text="Periodo mensual usado para filtrar CFDI y generar reportes fiscales." /></span
         ><AppSelect
           v-model="filters.month"
           :options="months"
@@ -46,13 +63,16 @@
           option-value="value"
       /></label>
       <label class="search-field"
-        ><span>Buscar UUID, RFC o nombre</span
-        ><AppInput
-          v-model="filters.search"
-          type="search"
-          placeholder="Buscar factura"
-          @input="scheduleLoad"
-      /></label>
+        ><span>Buscar UUID, RFC o nombre <AppFieldHelp label="Búsqueda fiscal" text="Localiza comprobantes por folio fiscal, RFC o nombre del emisor o receptor." /></span
+        ><span class="app-search-control">
+          <i class="pi pi-search" aria-hidden="true" />
+          <AppInput
+            v-model="filters.search"
+            type="search"
+            placeholder="Buscar factura"
+            @input="scheduleLoad"
+          />
+        </span></label>
       <AppButton label="Aplicar" icon="pi pi-filter" @click="loadInvoices" />
       <AppButton
         label="Limpiar"
@@ -61,6 +81,28 @@
         @click="clearFilters"
       />
     </section>
+
+    <section class="sat-download-entry" aria-label="Descarga masiva de CFDI del SAT">
+      <div class="sat-download-entry-copy">
+        <i class="pi pi-cloud-download" aria-hidden="true" />
+        <div>
+          <small>CFDI / SERVICIO OFICIAL</small>
+          <strong>Trae los XML del SAT sin cargarlos uno por uno</strong>
+          <span>Elige el cliente y el periodo. El servidor descarga, valida e importa los comprobantes automáticamente.</span>
+        </div>
+      </div>
+      <SatMassDownload
+        :client-id="Number(filters.clienteId)"
+        :client-label="clientSearch || 'Cliente sin seleccionar'"
+        :year="Number(filters.year)"
+        :month="Number(filters.month)"
+        @imported="handleSatImport"
+      />
+      <p v-if="!filters.clienteId" class="sat-download-entry-hint">
+        <i class="pi pi-arrow-up" aria-hidden="true" /> Selecciona primero un cliente en los filtros.
+      </p>
+    </section>
+
 
     <section
       class="xml-dropzone"
@@ -389,6 +431,7 @@
 
     </section>
 
+    <Teleport to="body">
     <div
       v-if="showReportsDrawer"
       class="reports-drawer-overlay"
@@ -794,4 +837,6 @@
         <iframe :src="pdfUrl" title="Vista previa PDF" />
       </section>
     </div>
+    </Teleport>
+    <AppTutorial v-model="fiscalTutorialOpen" title="Cómo usar Control fiscal" :steps="fiscalTutorialSteps" storage-key="tourFiscalDone" />
   </main>

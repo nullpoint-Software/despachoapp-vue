@@ -31,13 +31,24 @@
   }
 }
 
-/* Superficie única para todos los diálogos modales de la aplicación. */
+/*
+ * Contrato de superficies modales.
+ * Los diálogos modernos son oscuros; sólo los formularios heredados de papel
+ * usan la superficie clara. Separarlos evita colisiones al cambiar de paleta.
+ */
 :where([role="dialog"][aria-modal="true"]){
+  --app-modal-ink:var(--br-text,#f4f1ed);
+  --app-modal-muted:var(--br-muted,#b8adb1);
+  background:var(--br-panel,#191918)!important;
+  color:var(--app-modal-ink)!important;
+  border-color:var(--br-line-strong,#77736b)!important;
+}
+:where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"]{
   --app-modal-ink:var(--br-control-text,#141413);
   --app-modal-muted:var(--br-control-muted,#56534c);
   background:var(--br-control,#e7e4dc)!important;
   color:var(--app-modal-ink)!important;
-  border-color:var(--br-line-strong,#77736b)!important;
+  color-scheme:var(--br-control-scheme,light);
 }
 :where([role="dialog"][aria-modal="true"])>header,
 :where([role="dialog"][aria-modal="true"])>.standard-modal-header,
@@ -51,8 +62,9 @@
 :where([role="dialog"][aria-modal="true"])>.modal-header :where(h1,h2,h3,p){color:inherit}
 :where([role="dialog"][aria-modal="true"]) :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
   background:color-mix(in srgb,var(--br-control,#e7e4dc) 72%,white)!important;
-  color:var(--app-modal-ink)!important;
+  color:var(--br-control-text,#141413)!important;
   border-color:var(--br-line-strong,#77736b)!important;
+  color-scheme:var(--br-control-scheme,light);
 }
 :where(.modal-overlay,.task-modal-overlay,.documents-overlay,.sat-overlay,.period-overlay,.cut-overlay,.editor-overlay,.user-wizard-overlay,.filter-modal-overlay,.appearance-modal-overlay,.thermal-overlay,.ticket-printer-overlay){
   background:color-mix(in srgb,var(--br-bg,#10100f) 88%,transparent)!important;
@@ -71,8 +83,12 @@
   color:var(--br-accent-text,#fff)!important;
 }
 :where([role="dialog"][aria-modal="true"]) :where(.app-modal-footer,footer){
-  background:var(--br-control,#e7e4dc)!important;
+  background:var(--br-panel,#191918)!important;
   color:var(--app-modal-ink)!important;
+}
+:where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor)[role="dialog"] :where(.app-modal-footer,footer){
+  background:var(--br-control,#e7e4dc)!important;
+  color:var(--br-control-text,#141413)!important;
 }
 @media(max-width:700px){
   :where([role="dialog"][aria-modal="true"]):not(.dt-panel){box-shadow:none!important}
@@ -84,6 +100,18 @@
   overflow-y:auto!important;
   overscroll-behavior:contain;
   scrollbar-gutter:stable;
+}
+@media(min-width:761px){
+  :where(.app-dialog-overlay,.app-filter-overlay,.modal-overlay,.task-modal-overlay,.documents-overlay,.sat-overlay,.period-overlay,.cut-overlay,.editor-overlay,.user-wizard-overlay,.filter-overlay,.filters-overlay,.manual-modal-overlay,.appearance-overlay,.thermal-overlay,.ticket-printer-overlay,.logs-overlay,.cash-cut-overlay,.user-detail-modal,.credential-overlay,.backup-overlay,.notes-overlay,.report-preview-overlay){
+    inset:5rem 0 0!important;
+    align-items:center!important;
+    justify-content:center!important;
+    place-items:center!important;
+    padding-block:clamp(1rem,3vh,2rem)!important;
+  }
+  :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
+    max-height:calc(100dvh - 5rem - 2rem)!important;
+  }
 }
 :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
   box-sizing:border-box!important;
@@ -107,6 +135,10 @@
   bottom:0;
   z-index:11;
   flex:0 0 auto;
+  background:var(--br-panel,#191918)!important;
+}
+:where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor)[role="dialog"]>footer,
+:where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor)[role="dialog"]>form>footer{
   background:var(--br-control,#e7e4dc)!important;
 }
 :where([role="dialog"][aria-modal="true"]) :where(.wizard-body,.task-modal__body,.documents-body,.sat-viewport,.logs-body,.app-filter-modal__body,.appearance-modal__body,.client-form-body){
@@ -114,8 +146,9 @@
   overflow-y:auto!important;
   overscroll-behavior:contain;
 }
-@media(max-width:700px),(max-height:620px){
+@media(max-width:760px){
   :where(.app-dialog-overlay,.app-filter-modal-overlay,.modal-overlay,.task-modal-overlay,.documents-overlay,.sat-overlay,.period-overlay,.cut-overlay,.editor-overlay,.user-wizard-overlay,.filter-overlay,.appearance-modal-overlay,.thermal-overlay,.ticket-printer-overlay,.logs-overlay,.cash-cut-overlay,.user-detail-modal){
+    inset:0!important;
     place-items:start center!important;
     padding:max(.5rem,env(safe-area-inset-top)) max(.5rem,env(safe-area-inset-right)) max(.5rem,env(safe-area-inset-bottom)) max(.5rem,env(safe-area-inset-left))!important;
   }
@@ -125,5 +158,150 @@
     max-height:calc(100dvh - 1rem)!important;
     margin:0!important;
     box-shadow:none!important;
+  }
+}
+@media(min-width:761px) and (max-height:620px){
+  :where(.app-dialog-overlay,.app-filter-modal-overlay,.modal-overlay,.task-modal-overlay,.documents-overlay,.sat-overlay,.period-overlay,.cut-overlay,.editor-overlay,.user-wizard-overlay,.filter-overlay,.appearance-modal-overlay,.thermal-overlay,.ticket-printer-overlay,.logs-overlay,.cash-cut-overlay,.user-detail-modal){
+    place-items:start center!important;
+    padding:max(.5rem,env(safe-area-inset-top)) max(.5rem,env(safe-area-inset-right)) max(.5rem,env(safe-area-inset-bottom)) max(.5rem,env(safe-area-inset-left))!important;
+  }
+  :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
+    width:100%!important;
+    max-width:100%!important;
+    max-height:calc(100dvh - 5rem - 1rem)!important;
+    margin:0!important;
+    box-shadow:none!important;
+  }
+}
+
+/* Buscador canónico de la aplicación. La etiqueta contextual vive fuera del control. */
+.app-search-control.app-search-control {
+  --app-search-size: 3.25rem;
+  box-sizing: border-box !important;
+  position: relative;
+  display: grid !important;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--app-search-size) !important;
+  grid-template-columns: var(--app-search-size) minmax(0, 1fr) auto !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--br-line-strong) !important;
+  border-radius: 0 !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.app-search-control.app-search-control > i {
+  position: static !important;
+  display: grid !important;
+  width: var(--app-search-size) !important;
+  height: 100% !important;
+  min-height: calc(var(--app-search-size) - 2px);
+  place-items: center !important;
+  align-self: stretch;
+  border: 0 !important;
+  border-right: 1px solid var(--br-line-strong) !important;
+  background: var(--br-bg) !important;
+  color: var(--br-muted) !important;
+  padding: 0 !important;
+  font-size: 1rem !important;
+  transform: none !important;
+  transition: color 180ms ease, background-color 180ms ease;
+}
+
+.app-search-control.app-search-control :where(input[type="search"], input[data-search-control], input) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: calc(var(--app-search-size) - 2px) !important;
+  min-height: calc(var(--app-search-size) - 2px) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+  -webkit-text-fill-color: var(--br-control-text) !important;
+  padding: 0.72rem 0.9rem !important;
+  box-shadow: none !important;
+  font: 700 0.84rem/1.2 Arial, sans-serif !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  color-scheme: var(--br-control-scheme, light);
+}
+
+.app-search-control.app-search-control :where(input)::placeholder {
+  color: var(--br-control-muted) !important;
+  -webkit-text-fill-color: var(--br-control-muted) !important;
+  opacity: 1 !important;
+}
+
+.app-search-control.app-search-control > :where(button, small) {
+  display: grid !important;
+  min-width: var(--app-search-size);
+  height: calc(var(--app-search-size) - 2px) !important;
+  place-items: center;
+  align-self: stretch;
+  border: 0 !important;
+  border-left: 1px solid var(--br-line-strong) !important;
+  border-radius: 0 !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-muted) !important;
+  padding: 0 0.7rem !important;
+  font: 800 0.62rem "Courier New", monospace !important;
+}
+
+.app-search-control.app-search-control > button {
+  cursor: pointer;
+}
+
+.app-search-control.app-search-control > button:hover {
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+}
+
+.app-search-control.app-search-control:focus-within {
+  border-color: var(--br-accent) !important;
+  outline: 2px solid var(--br-accent);
+  outline-offset: 2px;
+  box-shadow: inset 4px 0 0 var(--br-accent) !important;
+}
+
+.app-search-control.app-search-control:focus-within > i {
+  background: var(--br-panel-2) !important;
+  color: var(--br-accent) !important;
+}
+
+.app-search-control.app-search-control:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+
+.app-search-control.app-search-control.app-search-control--autocomplete {
+  overflow: visible;
+}
+
+.app-search-control.app-search-control.app-search-control--autocomplete > .app-autocomplete {
+  width: 100%;
+  min-width: 0;
+  height: calc(var(--app-search-size) - 2px);
+}
+
+.app-search-control.app-search-control.app-search-control--autocomplete .app-autocomplete__list {
+  top: calc(100% + 0.35rem);
+}
+.app-search-control.app-search-control.hidden {
+  display: none !important;
+}
+
+@media (min-width: 1024px) {
+  .app-search-control.app-search-control.hidden[class~="lg:block"] {
+    display: grid !important;
   }
 }

@@ -65,11 +65,14 @@ export async function hasPermission(permissionKey: string): Promise<boolean> {
 }
 
 export async function updatePermissions(newPerms: object) {
-  await fetch(`${serverip}/permissions`, {
+  const response = await fetch(`${serverip}/permissions`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify(newPerms)
   });
+  if (!response.ok) {
+    throw new Error(`Permissions update failed (${response.status})`);
+  }
   perms = null;
 }
 

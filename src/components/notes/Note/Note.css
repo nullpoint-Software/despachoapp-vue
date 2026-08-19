@@ -4,4 +4,5 @@
 .note-content { padding-top: 0.5rem; padding-bottom: 0.6rem; white-space: normal; }
 .note-content :global(pre) { background-color: var(--color-bg-secondary); padding: 0.75rem; border-radius: 0.5rem; overflow-x: auto; }
 .note-content :global(code) { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size: 0.95em; }
+.note-content :global(u) { border: 0; background: #f3d34a; color: #181716; padding: 0.03em 0.14em; text-decoration: none !important; text-decoration-line: none !important; }
 .coords-badge { position: absolute; right: 8px; bottom: 8px; font-size: 11px; background: rgba(0,0,0,0.35); color:#fff; padding:6px 8px; border-radius:8px; }

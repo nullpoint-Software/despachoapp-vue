@@ -113,7 +113,7 @@ class TareasService {
     try {
       const usuario = idUsuario ?? localStorage.getItem("userid");
       const payload: TareaInput = { estado, id_usuario: usuario };
-      payload.fecha_vencimiento = estado === "Terminado" ? fechaVencimiento : null;
+      if (estado === "Terminado") payload.fecha_vencimiento = fechaVencimiento;
       if (titulo !== undefined) payload.titulo = titulo;
       if (descripcion !== undefined) payload.descripcion = descripcion;
       const response = await this.axios.put(`${this.serverip}/tareas/${idTarea}`, payload);

@@ -1,3 +1,4 @@
+<Teleport to="body">
 <transition name="logs-fade">
     <div
       v-if="visible"
@@ -35,7 +36,7 @@
         <div class="logs-toolbar">
           <label class="logs-search">
             <span>Buscar registro</span>
-            <div>
+            <div class="app-search-control">
               <i class="pi pi-search" aria-hidden="true" />
               <input
                 v-model="searchId"
@@ -182,3 +183,4 @@
       </section>
     </div>
   </transition>
+</Teleport>

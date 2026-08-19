@@ -7,15 +7,15 @@
     </div>
 
     <div class="kanban-toolbar__actions">
-      <label class="kanban-search">
+      <label class="kanban-search app-search-control">
         <i class="pi pi-search" aria-hidden="true"></i>
         <input v-model="searchQuery" type="search" placeholder="Buscar por tarea o responsable" />
       </label>
 
-      <label class="kanban-date">
-        <span>Fecha de corte</span>
-        <input v-model="reportDate" type="date" />
-      </label>
+      <div class="kanban-date">
+        <span>Fecha del reporte <AppFieldHelp label="Fecha del reporte" text="El reporte incluirá únicamente las tareas terminadas durante el día seleccionado." /></span>
+        <DateTimePicker v-model="reportDate" :show-time="false" modal title="Fecha del reporte de tareas" />
+      </div>
 
       <button class="kanban-icon-button" type="button" :disabled="isLoading" aria-label="Actualizar tareas" @click="loadTasks(currentPage)">
         <i class="pi pi-refresh" :class="{ 'is-spinning': isLoading }"></i>

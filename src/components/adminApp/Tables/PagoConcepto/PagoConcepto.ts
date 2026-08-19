@@ -327,7 +327,7 @@ const openCard = (payment: ConceptPayment | null): void => {
   }
   cardVisible.value = true;
 };
-watch(newPaymentRequest, () => openCard(null));
+watch(newPaymentRequest, () => { if (canAddPagoConcepto.value) openCard(null); });
 const savePayment = async (payment: ConceptPayment): Promise<void> => {
   if (payment.id) {
     const index = payments.value.findIndex((p) => p.id === payment.id);

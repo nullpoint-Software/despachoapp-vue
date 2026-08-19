@@ -2,8 +2,8 @@
     <header class="records-hero">
       <div>
         <p>ADMINISTRACIÓN / 02</p>
-        <h1>Pagos</h1>
-        <span>Conceptos, comprobantes y cierres de caja.</span>
+        <h1>Cobranza y movimientos</h1>
+        <span>Pagos, conceptos, comprobantes y cierres de caja.</span>
       </div>
       <div class="records-actions">
         <AppButton
@@ -11,7 +11,16 @@
           icon="pi pi-calculator"
           outlined
           @click="cashCutVisible = true"
-        /><AppButton
+        />
+        <AppButton
+          label="Ayuda"
+          icon="pi pi-question-circle"
+          outlined
+          class="app-help-button"
+          @click="paymentTutorialOpen = true"
+        />
+        <AppButton
+          v-if="canAddPayment"
           label="Nuevo pago"
           icon="pi pi-plus"
           class="p-button-primary"
@@ -21,4 +30,5 @@
     </header>
     <section class="records-content"><router-view /></section>
     <CashCutModal v-if="cashCutVisible" @close="cashCutVisible = false" />
+    <AppTutorial v-model="paymentTutorialOpen" title="Cómo usar pagos" :steps="paymentTutorialSteps" storage-key="tourPagosDone" />
   </main>

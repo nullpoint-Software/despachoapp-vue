@@ -39,6 +39,14 @@ const errors = ref<FormErrors>({ titulo: false, descripcion: false });
 const isSaving = ref(false);
 const submitError = ref<string | null>(null);
 const isEdit = computed(() => localTask.value.id_tarea !== null);
+const taskHelpOpen = ref(false);
+
+const taskFormTutorialSteps = [
+  { target: ".task-modal__header", eyebrow: "Tareas / formulario", title: "Define un resultado", body: "Crea un título breve y una descripción suficiente para que otra persona pueda ejecutar el trabajo." },
+  { target: "#task-title", eyebrow: "Tareas / título", title: "Empieza con una acción", body: "Puedes elegir una tarea frecuente o escribir otra. Incluye el periodo o cliente cuando ayude a distinguirla." },
+  { target: "#task-description", eyebrow: "Tareas / detalle", title: "Deja instrucciones útiles", body: "Incluye el resultado esperado, documentos, periodo fiscal y cualquier dato necesario para ejecutar la tarea." },
+  { target: ".task-modal__actions", eyebrow: "Tareas / guardado", title: "Revisa y guarda", body: "La tarea nueva entra como Disponible. Después podrás asignarla o moverla desde el tablero." },
+];
 
 let previousDocumentOverflow = "";
 onMounted(() => {
@@ -70,7 +78,11 @@ const save = async (): Promise<void> => {
   isSaving.value = true;
   submitError.value = null;
   try {
-    const task = { ...localTask.value, titulo: localTask.value.titulo.trim(), descripcion: localTask.value.descripcion.trim() };
+    const task: TaskFormTask = {
+      ...localTask.value,
+      titulo: localTask.value.titulo.trim(),
+      descripcion: localTask.value.descripcion.trim(),
+    };
     if (task.id_tarea !== null) {
       const assignedUser = task.assignedEmployee ?? task.id_usuario;
       const nextStatus: TareaEstado = assignedUser && task.estado === "Disponible" ? "Pendiente" : assignedUser ? task.estado : "Disponible";

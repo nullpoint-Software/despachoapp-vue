@@ -2,8 +2,11 @@
   <main ref="pageRef" class="clients-view">
     <!-- Título -->
     <header class="clients-hero">
-      <div><p>ADMINISTRACIÓN / 01</p><h1>Clientes</h1><span>Expedientes, accesos y datos de contacto.</span></div>
-      <div class="hero-stat"><b>{{ totalCustomers }}</b><span>{{ loadingCustomers ? 'cargando...' : 'registros' }}</span></div>
+      <div><p>ADMINISTRACIÓN / 01</p><h1>Expedientes de clientes</h1><span>Identidad, accesos, documentos y datos de contacto.</span></div>
+      <div class="clients-hero__tools">
+        <AppButton label="Ayuda" icon="pi pi-question-circle" outlined class="app-help-button" @click="clientTutorialOpen = true" />
+        <div class="hero-stat"><b>{{ totalCustomers }}</b><span>{{ loadingCustomers ? 'cargando...' : 'registros' }}</span></div>
+      </div>
     </header>
     <div id="clientes-table" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
       <DataTable id="inner-info" :value="customers" :filters="filters" :globalFilterFields="[
@@ -23,15 +26,12 @@
             class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg">
             <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
               <!-- Buscador con ícono -->
-              <div class="flex space-x-2 border-2 border-solid">
-                <span>
-                  <i class="pi pi-search text-gray-400 text-xl"></i>
-                </span>
-              </div>
-              <div id="search-bar" class="relative w-full sm:w-auto">
+              <label id="search-bar" class="app-search-control w-full sm:w-auto">
+                <span class="sr-only">Buscar clientes</span>
+                <i class="pi pi-search" aria-hidden="true"></i>
                 <InputText v-model="filters.global.value" type="search" autocomplete="off" aria-label="Buscar clientes" placeholder="Buscar..."
-                  class="w-full pl-10 p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
+                  class="w-full" />
+              </label>
               <!-- Botones -->
               <div class="flex space-x-2">
                 <Button
@@ -120,6 +120,7 @@
     <ClientDocumentsModal v-if="selectedDocumentClient" :client="selectedDocumentClient"
       @close="selectedDocumentClient = null" />
 
+    <Teleport to="body">
     <div v-if="credentialDialogVisible || passkeyBusy" class="credential-overlay" @click.self="closeCredentialDialog">
       <section v-if="passkeyBusy" class="credential-dialog credential-dialog--loading" role="status" aria-live="polite">
         <Loader contained aria-hidden="true" />
@@ -155,6 +156,8 @@
         </footer>
       </form>
     </div>
+    </Teleport>
     <!-- Confirmación para eliminación -->
     <ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
+    <AppTutorial v-model="clientTutorialOpen" title="C&oacute;mo usar clientes" :steps="clientTutorialSteps" storage-key="tourClientesDone" />
   </main>
