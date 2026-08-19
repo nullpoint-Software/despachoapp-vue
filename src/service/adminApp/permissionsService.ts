@@ -1,106 +1,151 @@
-const serverip = import.meta.env.VITE_API_SERVER_IP;
 import axios from "axios";
-interface PermissionsService {
-  [level: string]: {
-    [permission: string]: boolean;
+
+const serverip = import.meta.env.VITE_API_SERVER_IP;
+
+export interface PermissionProfile {
+  user: {
+    id: number;
+    name: string;
+    role: "Administrador" | "Empleado";
+    active: boolean;
   };
+  template: Record<string, boolean>;
+  overrides: Record<string, boolean>;
+  effective: Record<string, boolean>;
 }
 
-interface UserPermissions {
-  [id_usuario: string]: {
-    [permission: string]: boolean;
-  };
-}
-
-let perms: PermissionsService | null = null;
-// oxlint-disable-next-line no-unused-vars
-let userPerms: UserPermissions | null = null;
-let loadingPermissions: Promise<void> | null = null;
+let currentProfile: PermissionProfile | null = null;
+let currentProfileRequest: Promise<PermissionProfile> | null = null;
+let currentProfileLoadedAt = 0;
+let permissionPollTimer: ReturnType<typeof window.setInterval> | null = null;
+const permissionListeners = new Set<(profile: PermissionProfile) => void>();
+const PERMISSION_REFRESH_MS = 3000;
 
 const authHeaders = (): Record<string, string> => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-async function loadPermissions() {
-  if (perms && userPerms) return;
-  if (!loadingPermissions) {
-    loadingPermissions = (async () => {
-      const [globalRes, userRes] = await Promise.all([
-        fetch(`${serverip}/permissions`, { headers: authHeaders() }),
-        fetch(`${serverip}/permissions/user`, { headers: authHeaders() }),
-      ]);
-      if (!globalRes.ok || !userRes.ok) throw new Error(`Permissions request failed (${globalRes.status}/${userRes.status})`);
-      perms = await globalRes.json();
-      userPerms = await userRes.json();
-    })().finally(() => { loadingPermissions = null; });
+export function clearPermissionCache(): void {
+  currentProfile = null;
+  currentProfileRequest = null;
+  currentProfileLoadedAt = 0;
+}
+
+const permissionSignature = (profile: PermissionProfile | null): string =>
+  profile ? JSON.stringify([profile.user.role, profile.user.active, profile.effective]) : "";
+
+function applyCurrentProfile(profile: PermissionProfile): PermissionProfile {
+  const changed = permissionSignature(currentProfile) !== permissionSignature(profile);
+  currentProfile = profile;
+  currentProfileLoadedAt = Date.now();
+  if (changed) {
+    permissionListeners.forEach((listener) => {
+      try {
+        listener(profile);
+      } catch (error) {
+        console.error("Permission subscriber failed:", error);
+      }
+    });
   }
-  await loadingPermissions;
+  return profile;
+}
+
+async function refreshCurrentPermissionProfile(): Promise<PermissionProfile> {
+  if (!currentProfileRequest) {
+    currentProfileRequest = axios
+      .get<PermissionProfile>(`${serverip}/permissions/me`, {
+        headers: authHeaders(),
+        params: { updatedAt: Date.now() },
+      })
+      .then((response) => applyCurrentProfile(response.data))
+      .finally(() => {
+        currentProfileRequest = null;
+      });
+  }
+  return currentProfileRequest;
+}
+
+function syncWhileVisible(): void {
+  if (document.visibilityState === "visible" && localStorage.getItem("token")) {
+    void refreshCurrentPermissionProfile().catch((error) => {
+      console.error("Failed to refresh permissions:", error);
+    });
+  }
+}
+
+function updatePermissionPolling(): void {
+  if (permissionListeners.size && permissionPollTimer === null) {
+    permissionPollTimer = window.setInterval(syncWhileVisible, PERMISSION_REFRESH_MS);
+    document.addEventListener("visibilitychange", syncWhileVisible);
+  } else if (!permissionListeners.size && permissionPollTimer !== null) {
+    window.clearInterval(permissionPollTimer);
+    permissionPollTimer = null;
+    document.removeEventListener("visibilitychange", syncWhileVisible);
+  }
+}
+
+export function subscribeToPermissions(listener: (profile: PermissionProfile) => void): () => void {
+  permissionListeners.add(listener);
+  updatePermissionPolling();
+  if (currentProfile) listener(currentProfile);
+  void refreshCurrentPermissionProfile().catch((error) => {
+    console.error("Failed to start permission sync:", error);
+  });
+  return () => {
+    permissionListeners.delete(listener);
+    updatePermissionPolling();
+  };
+}
+
+export function permissionDeniedMessage(error: unknown): string | null {
+  if (!axios.isAxiosError(error) || error.response?.status !== 403) return null;
+  clearPermissionCache();
+  const data = error.response.data as { error?: unknown } | undefined;
+  return typeof data?.error === "string" && data.error.trim()
+    ? data.error
+    : "No tienes permiso para realizar esta acción.";
+}
+
+export async function getMyPermissionProfile(): Promise<PermissionProfile> {
+  if (currentProfile && Date.now() - currentProfileLoadedAt < PERMISSION_REFRESH_MS) return currentProfile;
+  return refreshCurrentPermissionProfile();
 }
 
 export async function hasPermission(permissionKey: string): Promise<boolean> {
-
-  const userLevel = localStorage.getItem("level");
-// oxlint-disable-next-line no-unused-vars
-  const userId = localStorage.getItem("userid");
-
   try {
-    await loadPermissions();
+    const profile = await getMyPermissionProfile();
+    return profile.effective[permissionKey] === true;
   } catch (error) {
     console.error("Failed to load permissions:", error);
     return false;
   }
-
-  if (userPerms && userId && userPerms[userId] && userPerms[userId][permissionKey] !== undefined) {
-    return userPerms[userId][permissionKey] === true;
-  }
-
-  // Fallback to role-based permissions
-
-  if (perms && userLevel && perms[userLevel]) {
-    return perms[userLevel][permissionKey] === true;
-  }
-
-  return false;
 }
 
-export async function updatePermissions(newPerms: object) {
-  const response = await fetch(`${serverip}/permissions`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeaders() },
-    body: JSON.stringify(newPerms)
+export async function getUserPermissionProfile(userId: string | number): Promise<PermissionProfile> {
+  const response = await axios.get<PermissionProfile>(`${serverip}/permissions/users/${userId}`, {
+    headers: authHeaders(),
   });
-  if (!response.ok) {
-    throw new Error(`Permissions update failed (${response.status})`);
-  }
-  perms = null;
+  return response.data;
 }
 
-export async function getPermissions(): Promise<any> {
-  try {
-      const response = await axios.get(`${serverip}/permissions`, { headers: authHeaders() });
-      return response.data;
-  } catch (error) {
-      console.error("Error fetching permissions:", error);
-      throw error;
-  }
+export async function updateUserPermissionOverrides(
+  userId: string | number,
+  overrides: Record<string, boolean>,
+): Promise<PermissionProfile> {
+  const response = await axios.put<PermissionProfile>(
+    `${serverip}/permissions/users/${userId}`,
+    { overrides },
+    { headers: authHeaders() },
+  );
+  if (String(userId) === localStorage.getItem("userid")) applyCurrentProfile(response.data);
+  return response.data;
 }
 
-export async function getUserPermissions(): Promise<any> {
-  try {
-      const response = await axios.get(`${serverip}/permissions/user`, { headers: authHeaders() });
-      return response.data;
-  } catch (error) {
-      console.error("Error fetching permissions:", error);
-      throw error;
-  }
-}
-
-export async function updateUserPermissions(newUserPerms: object) {
-  await fetch(`${serverip}/permissions/user`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeaders() },
-    body: JSON.stringify(newUserPerms)
+export async function resetUserPermissionOverrides(userId: string | number): Promise<PermissionProfile> {
+  const response = await axios.delete<PermissionProfile>(`${serverip}/permissions/users/${userId}`, {
+    headers: authHeaders(),
   });
-  userPerms = null;
+  if (String(userId) === localStorage.getItem("userid")) applyCurrentProfile(response.data);
+  return response.data;
 }

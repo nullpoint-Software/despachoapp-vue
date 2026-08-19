@@ -7,7 +7,7 @@ import {
   formatFechaHoraFullPagoSQL,
 } from "@/service/adminApp/client";
 import { useAppToast } from "@/composables/useAppToast";
-import { hasPermission } from "@/service/adminApp/permissionsService";
+import { subscribeToPermissions } from "@/service/adminApp/permissionsService";
 import { usePaymentActions } from "@/composables/usePaymentActions";
 
 interface ConceptPayment {
@@ -37,6 +37,7 @@ const printDialogVisible = ref(false);
 const canAddPagoConcepto = ref(false);
 const canEditPagoConcepto = ref(false);
 const canDeletePagoConcepto = ref(false);
+let stopPermissionSync = () => {};
 const toast = useAppToast();
 const route = useRoute();
 const payments = ref<ConceptPayment[]>([]);
@@ -274,6 +275,7 @@ const handleResize = () => {
 };
 onMounted(() => window.addEventListener("resize", handleResize));
 onUnmounted(() => {
+  stopPermissionSync();
   window.removeEventListener("resize", handleResize);
   if (searchTimer) clearTimeout(searchTimer);
 });
@@ -285,9 +287,11 @@ onMounted(async () => {
     filters.value.global.value = queryText(searchParam);
   }
   await loadPaymentsPage();
-  canAddPagoConcepto.value = await hasPermission("canAddPagoConcepto");
-  canEditPagoConcepto.value = await hasPermission("canEditPagoConcepto");
-  canDeletePagoConcepto.value = await hasPermission("canDeletePagoConcepto");
+  stopPermissionSync = subscribeToPermissions(({ effective }) => {
+    canAddPagoConcepto.value = effective.canAddPagoConcepto === true;
+    canEditPagoConcepto.value = effective.canEditPagoConcepto === true;
+    canDeletePagoConcepto.value = effective.canDeletePagoConcepto === true;
+  });
 });
 watch(
   () => route.query.search,

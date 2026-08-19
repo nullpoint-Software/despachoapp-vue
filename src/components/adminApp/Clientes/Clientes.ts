@@ -1,6 +1,6 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useAppToast } from "@/composables/useAppToast";
-import { hasPermission } from "@/service/adminApp/permissionsService";
+import { subscribeToPermissions } from "@/service/adminApp/permissionsService";
 import { cs, pks } from "@/service/adminApp/client";
 import type { ColumnDef } from "@/types/ClientesTable";
 import { useBrutalMotion } from "@/composables/useBrutalMotion";
@@ -10,6 +10,7 @@ useBrutalMotion(pageRef, [".clients-hero", "#clientes-table"]);
 const canAddCliente = ref(false)
 const canEditCliente = ref(false)
 const canDeleteCliente = ref(false)
+let stopPermissionSync = () => {}
 const clientTutorialOpen = ref(false);
 const clientTutorialSteps = [
   { target: ".clients-hero", eyebrow: "Clientes / resumen", title: "Consulta los expedientes", body: "Aquí puedes buscar, filtrar y administrar la información fiscal y de contacto de cada cliente." },
@@ -18,10 +19,12 @@ const clientTutorialSteps = [
   { target: ".app-data-table__table", eyebrow: "Clientes / registros", title: "Abre las acciones de cada cliente", body: "Las acciones disponibles permiten editar, administrar documentos y consultar datos protegidos de forma segura." },
 ];
 
-onMounted(async () => {
-  canAddCliente.value = await hasPermission('canAddCliente')
-  canEditCliente.value = await hasPermission('canEditCliente')
-  canDeleteCliente.value = await hasPermission('canDeleteCliente')
+onMounted(() => {
+  stopPermissionSync = subscribeToPermissions(({ effective }) => {
+    canAddCliente.value = effective.canAddCliente === true
+    canEditCliente.value = effective.canEditCliente === true
+    canDeleteCliente.value = effective.canDeleteCliente === true
+  })
 })
 const toast = useAppToast();
 const customers = ref<any[]>([]);
@@ -203,6 +206,7 @@ const handleResize = () => {
 };
 onMounted(() => window.addEventListener("resize", handleResize));
 onUnmounted(() => {
+  stopPermissionSync();
   window.removeEventListener("resize", handleResize);
   if (searchTimer) clearTimeout(searchTimer);
 });

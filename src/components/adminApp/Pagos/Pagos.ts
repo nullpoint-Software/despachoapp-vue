@@ -1,12 +1,13 @@
-import { nextTick, onMounted, ref } from "vue";
+import { nextTick, onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { usePaymentActions } from "@/composables/usePaymentActions";
 import { useBrutalMotion } from "@/composables/useBrutalMotion";
-import { hasPermission } from "@/service/adminApp/permissionsService";
+import { subscribeToPermissions } from "@/service/adminApp/permissionsService";
 const router = useRouter();
 const pageRef = ref<HTMLElement | null>(null);
 const cashCutVisible = ref(false);
 const canAddPayment = ref(false);
+let stopPermissionSync = () => {};
 const paymentTutorialOpen = ref(false);
 const paymentTutorialSteps = [
   { target: ".records-hero", eyebrow: "Pagos / inicio", title: "Tu centro de movimientos", body: "Desde esta vista registras cobros, egresos, comprobantes y cortes de caja sin duplicar operaciones." },
@@ -20,10 +21,13 @@ useBrutalMotion(pageRef, [
   ".records-content",
 ]);
 onMounted(async () => {
-  canAddPayment.value = await hasPermission("canAddPagoConcepto");
+  stopPermissionSync = subscribeToPermissions(({ effective }) => {
+    canAddPayment.value = effective.canAddPagoConcepto === true;
+  });
   await nextTick();
   if (!localStorage.getItem("tourPagosDone")) paymentTutorialOpen.value = true;
 });
+onUnmounted(() => stopPermissionSync());
 async function newPayment() {
   if (!canAddPayment.value) return;
   await router.push("/app/pagos/concepto");

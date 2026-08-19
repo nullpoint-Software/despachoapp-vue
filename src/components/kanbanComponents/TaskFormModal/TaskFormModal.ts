@@ -1,6 +1,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ts } from "@/service/adminApp/client";
 import type { TareaEstado, TareaInput } from "@/service/adminApp/tareasService";
+import { permissionDeniedMessage } from "@/service/adminApp/permissionsService";
 
 interface TaskFormTask {
   id_tarea: string | number | null;
@@ -93,8 +94,9 @@ const save = async (): Promise<void> => {
       await ts.addTarea(payload, task.assignedEmployee ?? undefined);
     }
     emit("save", task);
-  } catch {
-    submitError.value = "No fue posible guardar la tarea. Revisa la conexión e intenta nuevamente.";
+  } catch (error) {
+    submitError.value = permissionDeniedMessage(error)
+      || "No fue posible guardar la tarea. Revisa la conexión e intenta nuevamente.";
   } finally {
     isSaving.value = false;
   }
