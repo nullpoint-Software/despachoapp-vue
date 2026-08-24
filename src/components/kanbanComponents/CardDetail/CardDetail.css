@@ -1,9 +1,9 @@
 /* ---------------------- Cambio: añadidas la propiedad estándar `line-clamp` y orden de vendor-prefixes para evitar la advertencia del linter ---------------------- */
 .truncate-multiline {
-  display: -webkit-box;            /* necesario para -webkit-line-clamp */
-  -webkit-box-orient: vertical;    /* orienta el box en vertical */
-  -webkit-line-clamp: 3;           /* prefijo WebKit (soporte amplio) */
-  line-clamp: 3;                   /* ---------------------- Cambio: propiedad estándar añadida ---------------------- */
+  display: -webkit-box; /* necesario para -webkit-line-clamp */
+  -webkit-box-orient: vertical; /* orienta el box en vertical */
+  -webkit-line-clamp: 3; /* prefijo WebKit (soporte amplio) */
+  line-clamp: 3; /* ---------------------- Cambio: propiedad estándar añadida ---------------------- */
   overflow: hidden;
   text-overflow: ellipsis;
   -webkit-hyphens: auto;
@@ -22,8 +22,8 @@
   /* mismo fondo que .modal-content principal (#f9fafb) */
   background-color: #f9fafb;
   color: #1f2937; /* text-gray-800 */
-  border-radius: .5rem;
-  box-shadow: 0 0 20px rgba(0,0,0,.2);
+  border-radius: 0.5rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Asegurar que el contenido largo use la misma paleta y sea legible */
@@ -63,9 +63,42 @@
 }
 
 /* ---------------------- Cambio: estilos para compatibilidad y paleta general ---------------------- */
-.modal-overlay{position:fixed;inset:0;backdrop-filter:blur(4px);background-color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;z-index:50}
-.modal-content{background-color:#f9fafb;border-radius:.5rem;box-shadow:0 0 20px rgba(0,0,0,.2);width:100%;max-width:26rem;padding:1.5rem;position:relative;animation:slideDown .3s ease-out}
-@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
-.fade-enter-active,.fade-leave-active{transition:opacity .3s}
-.fade-enter-from,.fade-leave-to{opacity:0}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(4px);
+  background-color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.modal-content {
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 26rem;
+  padding: 1.5rem;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+}
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 /* -------------------------------------------------------------------------------------------- */

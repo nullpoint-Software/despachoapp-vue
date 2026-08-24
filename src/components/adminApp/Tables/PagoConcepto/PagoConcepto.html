@@ -1,11 +1,9 @@
 <!-- Contenedor de la tabla -->
-  <div
-    class="flex-grow w-full overflow-hidden rounded-xl shadow-lg"
-  >
-    <DataTable
-      :value="payments"
-      :filters="filters"
-      :globalFilterFields="[
+<div class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
+  <DataTable
+    :value="payments"
+    :filters="filters"
+    :globalFilterFields="[
         'id',
         'cliente',
         'asunto',
@@ -14,200 +12,220 @@
         'pagamos',
         'fecha_legible',
       ]"
-      :paginator="false"
-      sortMode="multiple"
-      removableSort
-      :rows="10"
-      :rowsPerPageOptions="[10, 20, 50]"
-      :rowClass="rowClass"
-      class="w-full rounded-lg p-5"
-    >
-      <!-- Encabezado de la tabla -->
-      <template #header>
-        <div
-          class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
-        >
-          <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
-            <!-- Buscador -->
-            <label class="app-search-control w-full sm:w-auto">
-              <span class="sr-only">Buscar pagos</span>
-              <i class="pi pi-search" aria-hidden="true"></i>
-              <!-- no se porque pero solamente asi chrome le hace caso de no rellenar -->
-              <InputText
-                v-model="filters.global.value"
-                autocomplete="new-password"
-                placeholder="Buscar..."
-                aria-autocomplete="none"
-                class="w-full"
-              />
-            </label>
-            <!-- Botones -->
-            <div class="flex space-x-2">
-              <Button
-                type="button"
-                icon="pi pi-sliders-h"
-                :label="isMobile ? activeFilterCount ? String(activeFilterCount) : '' : filterButtonLabel"
-                aria-label="Abrir filtros de pagos"
-                outlined
-                class="p-2"
-                @click="openFilters"
-              />
-              <Button
-                type="button"
-                icon="pi pi-filter-slash"
-                :label="isMobile ? '' : 'Limpiar Filtros'"
-                outlined
-                class="p-2"
-                @click="clearFilter"
-              />
-              <ExportExcelButton />
-            </div>
+    :paginator="false"
+    sortMode="multiple"
+    removableSort
+    :rows="10"
+    :rowsPerPageOptions="[10, 20, 50]"
+    :rowClass="rowClass"
+    class="w-full rounded-lg p-5"
+  >
+    <!-- Encabezado de la tabla -->
+    <template #header>
+      <div
+        class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
+      >
+        <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+          <!-- Buscador -->
+          <label class="app-search-control w-full sm:w-auto">
+            <span class="sr-only">Buscar pagos</span>
+            <i class="pi pi-search" aria-hidden="true"></i>
+            <!-- no se porque pero solamente asi chrome le hace caso de no rellenar -->
+            <InputText
+              v-model="filters.global.value"
+              autocomplete="new-password"
+              placeholder="Buscar..."
+              aria-autocomplete="none"
+              class="w-full"
+            />
+          </label>
+          <!-- Botones -->
+          <div class="flex space-x-2">
+            <Button
+              type="button"
+              icon="pi pi-sliders-h"
+              :label="isMobile ? activeFilterCount ? String(activeFilterCount) : '' : filterButtonLabel"
+              aria-label="Abrir filtros de pagos"
+              outlined
+              class="p-2"
+              @click="openFilters"
+            />
+            <Button
+              type="button"
+              icon="pi pi-filter-slash"
+              :label="isMobile ? '' : 'Limpiar Filtros'"
+              outlined
+              class="p-2"
+              @click="clearFilter"
+            />
+            <ExportExcelButton />
           </div>
         </div>
-      </template>
+      </div>
+    </template>
 
-      <!-- Renderizado dinámico de columnas -->
-      <Column
-        v-for="col in tableColumns"
-        :key="col.field"
-        :sortable="col.field !== 'actions'"
-        :field="col.field !== 'actions' ? col.field : undefined"
-      >
-        <template #header>
-          <div class="p-1 text-black font-semibold text-center text-sm w-full">
-            {{ col.header }}
-          </div>
-        </template>
-        <template #body="{ data }">
-          <!-- Acciones -->
-          <div
-            v-if="col.field === 'actions'"
-            class="flex justify-center space-x-2"
-          >
-            <Button
-              v-if="canEditPagoConcepto"
-              icon="pi pi-pencil"
-              class="p-button-rounded p-button-warning"
-              @click="openCard(data)"
-            />
-            <Button
-              v-if="canDeletePagoConcepto"
-              icon="pi pi-trash"
-              class="p-button-rounded p-button-danger"
-              @click="openConfirmDialog(data)"
-            />
-            <!-- Botón Imprimir -->
-            <Button
-              icon="pi pi-print"
-              class="p-button-rounded p-button-info"
-              @click="openPrint(data)"
-            />
-          </div>
-          <!-- Celdas normales -->
-          <div
-            v-if="col.field === 'fecha'"
-            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="
+    <!-- Renderizado dinámico de columnas -->
+    <Column
+      v-for="col in tableColumns"
+      :key="col.field"
+      :sortable="col.field !== 'actions'"
+      :field="col.field !== 'actions' ? col.field : undefined"
+    >
+      <template #header>
+        <div class="p-1 text-black font-semibold text-center text-sm w-full">{{ col.header }}</div>
+      </template>
+      <template #body="{ data }">
+        <!-- Acciones -->
+        <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
+          <Button
+            v-if="canEditPagoConcepto"
+            icon="pi pi-pencil"
+            class="p-button-rounded p-button-warning"
+            @click="openCard(data)"
+          />
+          <Button
+            v-if="canDeletePagoConcepto"
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-danger"
+            @click="openConfirmDialog(data)"
+          />
+          <!-- Botón Imprimir -->
+          <Button
+            icon="pi pi-print"
+            class="p-button-rounded p-button-info"
+            @click="openPrint(data)"
+          />
+        </div>
+        <!-- Celdas normales -->
+        <div
+          v-if="col.field === 'fecha'"
+          class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+          @click="
               copyToClipboard(formatFechaHoraFullPagoSQL(data[col.field]))
             "
-          >
-            {{ formatFechaHoraFullPagoSQL(data[col.field]) }}
-          </div>
-          <div
-            v-if="col.field === 'cobramos'"
-            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard('$' + data[col.field])"
-          >
-            {{ "$" + data[col.field] }}
-          </div>
-          <div
-            v-if="col.field === 'pagamos'"
-            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard('$' + data[col.field])"
-          >
-            {{ "$" + data[col.field] }}
-          </div>
-          <div
-            v-else-if="
+        >
+          {{ formatFechaHoraFullPagoSQL(data[col.field]) }}
+        </div>
+        <div
+          v-if="col.field === 'cobramos'"
+          class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+          @click="copyToClipboard('$' + data[col.field])"
+        >
+          {{ "$" + data[col.field] }}
+        </div>
+        <div
+          v-if="col.field === 'pagamos'"
+          class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+          @click="copyToClipboard('$' + data[col.field])"
+        >
+          {{ "$" + data[col.field] }}
+        </div>
+        <div
+          v-else-if="
               col.field !== 'cobramos' &&
               col.field !== 'pagamos' &&
               col.field !== 'saldo' &&
               col.field !== 'fecha' &&
               col.field !== 'actions'
             "
-            class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            @click="copyToClipboard(data[col.field])"
-          >
-            {{ data[col.field] }}
-          </div>
-        </template>
-      </Column>
-    </DataTable>
-    <footer class="app-pager">
-      <span>{{ pagerLabel }}</span>
-      <div class="app-pager__controls">
-        <button type="button" class="app-pager__button" :disabled="currentPage === 0 || loadingPayments"
-          aria-label="Página anterior" title="Página anterior" @click="previousPage">
-          <i class="pi pi-angle-left"></i>
-        </button>
-        <samp>{{ currentPage + 1 }} / {{ pageCount }}</samp>
-        <button type="button" class="app-pager__button" :disabled="currentPage >= pageCount - 1 || loadingPayments"
-          aria-label="Página siguiente" title="Página siguiente" @click="nextPage">
-          <i class="pi pi-angle-right"></i>
-        </button>
-        <select v-model.number="pageSize" aria-label="Registros por página" :disabled="loadingPayments">
-          <option v-for="option in pageSizeOptions" :key="option" :value="option">{{ option }} por página</option>
-        </select>
-      </div>
-    </footer>
-  </div>
-  <AppFilterModal
-    :visible="showFilters && !showDateRangeModal" title="Filtrar pagos" eyebrow="PAGOS / FILTROS" title-id="payments-filter-title"
-    @close="closeFilters" @reset="resetDraftFilters" @apply="applyFilters"
-  >
-    <AppFilterOptions v-model="draftMovementFilter" legend="Tipo de movimiento" name="payment-movement" :options="movementOptions" />
-    <AppFilterOptions v-model="draftPeriodFilter" legend="Periodo" name="payment-period" :options="periodOptions" />
-    <fieldset v-if="draftPeriodFilter === 'personalizado'" class="payment-period-fields">
-      <legend>Rango personalizado</legend>
-      <button type="button" class="payment-period-trigger" @click="openDateRangeModal">
-        <span><small>Desde</small><strong>{{ formatFilterDate(draftDateFrom) }}</strong></span>
-        <i class="pi pi-arrow-right" aria-hidden="true"></i>
-        <span><small>Hasta</small><strong>{{ formatFilterDate(draftDateTo) }}</strong></span>
-        <i class="pi pi-calendar" aria-hidden="true"></i>
+          class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
+          @click="copyToClipboard(data[col.field])"
+        >
+          {{ data[col.field] }}
+        </div>
+      </template>
+    </Column>
+  </DataTable>
+  <footer class="app-pager">
+    <span>{{ pagerLabel }}</span>
+    <div class="app-pager__controls">
+      <button
+        type="button"
+        class="app-pager__button"
+        :disabled="currentPage === 0 || loadingPayments"
+        aria-label="Página anterior"
+        title="Página anterior"
+        @click="previousPage"
+      >
+        <i class="pi pi-angle-left"></i>
       </button>
-    </fieldset>
-  </AppFilterModal>
-  <DateRangeModal
-    v-if="showDateRangeModal"
-    :from="draftDateFrom"
-    :to="draftDateTo"
-    @close="closeDateRangeModal"
-    @apply="applyDateRange"
+      <samp>{{ currentPage + 1 }} / {{ pageCount }}</samp>
+      <button
+        type="button"
+        class="app-pager__button"
+        :disabled="currentPage >= pageCount - 1 || loadingPayments"
+        aria-label="Página siguiente"
+        title="Página siguiente"
+        @click="nextPage"
+      >
+        <i class="pi pi-angle-right"></i>
+      </button>
+      <select
+        v-model.number="pageSize"
+        aria-label="Registros por página"
+        :disabled="loadingPayments"
+      >
+        <option v-for="option in pageSizeOptions" :key="option" :value="option">
+          {{ option }} por página
+        </option>
+      </select>
+    </div>
+  </footer>
+</div>
+<AppFilterModal
+  :visible="showFilters && !showDateRangeModal"
+  title="Filtrar pagos"
+  eyebrow="PAGOS / FILTROS"
+  title-id="payments-filter-title"
+  @close="closeFilters"
+  @reset="resetDraftFilters"
+  @apply="applyFilters"
+>
+  <AppFilterOptions
+    v-model="draftMovementFilter"
+    legend="Tipo de movimiento"
+    name="payment-movement"
+    :options="movementOptions"
   />
-  <!-- Toast y modales -->
-  <CardDetailPagoConcepto
-    v-if="cardVisible"
-    :pago="selectedPayment"
-    :usuario="usuario"
-    @close="cardVisible = false"
-    @save="savePayment"
+  <AppFilterOptions
+    v-model="draftPeriodFilter"
+    legend="Periodo"
+    name="payment-period"
+    :options="periodOptions"
   />
-  <ConfirmDeleteDialog
-    v-if="confirmDialogVisible"
-    @confirm="confirmDelete"
-    @cancel="cancelDelete"
-  />
-  <!-- Modal de impresión -->
-  <PrintPagoConcepto
-    v-if="printVisible"
-    :payment="paymentToPrint"
-    @close="printVisible = false"
-  />
-  <PrintDialog
-    v-if="printDialogVisible"
-    @close="printDialogVisible = false"
-    @ok="
+  <fieldset v-if="draftPeriodFilter === 'personalizado'" class="payment-period-fields">
+    <legend>Rango personalizado</legend>
+    <button type="button" class="payment-period-trigger" @click="openDateRangeModal">
+      <span><small>Desde</small><strong>{{ formatFilterDate(draftDateFrom) }}</strong></span>
+      <i class="pi pi-arrow-right" aria-hidden="true"></i>
+      <span><small>Hasta</small><strong>{{ formatFilterDate(draftDateTo) }}</strong></span>
+      <i class="pi pi-calendar" aria-hidden="true"></i>
+    </button>
+  </fieldset>
+</AppFilterModal>
+<DateRangeModal
+  v-if="showDateRangeModal"
+  :from="draftDateFrom"
+  :to="draftDateTo"
+  @close="closeDateRangeModal"
+  @apply="applyDateRange"
+/>
+<!-- Toast y modales -->
+<CardDetailPagoConcepto
+  v-if="cardVisible"
+  :pago="selectedPayment"
+  :usuario="usuario"
+  @close="cardVisible = false"
+  @save="savePayment"
+/>
+<ConfirmDeleteDialog v-if="confirmDialogVisible" @confirm="confirmDelete" @cancel="cancelDelete" />
+<!-- Modal de impresión -->
+<PrintPagoConcepto v-if="printVisible" :payment="paymentToPrint" @close="printVisible = false" />
+<PrintDialog
+  v-if="printDialogVisible"
+  @close="printDialogVisible = false"
+  @ok="
       openPrint(payments[0]);
       printDialogVisible = false;
     "
-  />
+/>

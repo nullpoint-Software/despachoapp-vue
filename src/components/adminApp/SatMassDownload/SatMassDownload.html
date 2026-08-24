@@ -8,71 +8,410 @@
 
 <Teleport to="body">
   <Transition name="sat-download-modal">
-    <div v-if="open" class="sat-download-overlay" @click.self="closeModal">
-      <section class="sat-download-shell" role="dialog" aria-modal="true" aria-labelledby="sat-download-title">
+    <div v-if="open" class="sat-download-overlay">
+      <section
+        class="sat-download-shell"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sat-download-title"
+        aria-describedby="sat-download-description"
+      >
         <header>
-          <div>
-            <p>SAT / DESCARGA OFICIAL</p>
+          <div class="sat-download-title">
+            <p><span aria-hidden="true">CFDI</span> / SERVICIO OFICIAL DEL SAT</p>
             <h2 id="sat-download-title">Descarga masiva de CFDI</h2>
-            <span>{{ clientLabel }}</span>
+            <span id="sat-download-description">Descarga los XML del SAT al expediente.</span>
           </div>
-          <button type="button" aria-label="Cerrar descarga masiva" @click="closeModal">×</button>
+          <div class="sat-download-client">
+            <i class="pi pi-folder-open" aria-hidden="true" />
+            <span><small>EXPEDIENTE ACTIVO</small><strong>{{ clientLabel }}</strong></span>
+          </div>
+          <button type="button" aria-label="Cerrar descarga masiva" @click="closeModal">
+            <i class="pi pi-times" aria-hidden="true" />
+          </button>
         </header>
 
-        <div class="sat-download-body">
-          <section class="sat-download-form" aria-label="Nueva solicitud de descarga">
-            <div class="sat-download-intro">
-              <i class="pi pi-shield" aria-hidden="true" />
+        <div
+          class="sat-download-body"
+          :class="{ 'password-mode': authenticationMethod === 'password' }"
+        >
+          <section class="sat-download-form" aria-label="Acceso y descarga de CFDI">
+            <div class="sat-download-commandbar">
+              <div class="sat-auth-selector">
+                <div class="sat-auth-selector__heading">
+                  <span>Método de acceso</span><small>Elige una opción</small>
+                </div>
+                <div
+                  class="authentication-method"
+                  role="radiogroup"
+                  aria-label="Método de acceso al SAT"
+                >
+                  <label :class="{ active: authenticationMethod === 'efirma' }">
+                    <input
+                      type="radio"
+                      name="sat-authentication-method"
+                      value="efirma"
+                      :checked="authenticationMethod === 'efirma'"
+                      @change="selectAuthenticationMethod('efirma')"
+                    />
+                    <i class="pi pi-verified" />
+                    <span><strong>e.firma</strong><small>Sin CAPTCHA</small></span>
+                    <i class="pi pi-check method-check" />
+                  </label>
+                  <label :class="{ active: authenticationMethod === 'password' }">
+                    <input
+                      type="radio"
+                      name="sat-authentication-method"
+                      value="password"
+                      :checked="authenticationMethod === 'password'"
+                      @change="selectAuthenticationMethod('password')"
+                    />
+                    <i class="pi pi-lock" />
+                    <span><strong>RFC + Contraseña</strong><small>Requiere CAPTCHA</small></span>
+                    <i class="pi pi-check method-check" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <section class="sat-request-block" aria-labelledby="sat-request-title">
+              <header>
+                <div>
+                  <small>PASO 02 / CONSULTA</small
+                  ><strong id="sat-request-title">Periodo y movimiento</strong>
+                </div>
+                <span
+                  >{{ receivedOnly ? 'Las recibidas se consultan por mes.' : 'Define el alcance que enviarás al SAT.' }}</span
+                >
+              </header>
+              <div class="sat-download-grid" :class="{ 'received-month-grid': receivedOnly }">
+                <div v-if="receivedOnly" class="sat-date-field full">
+                  <span
+                    >Mes a consultar
+                    <AppFieldHelp
+                      label="Mes de recibidas"
+                      text="El portal del SAT consulta las facturas recibidas por año y mes, no mediante un rango de fechas."
+                  /></span>
+                  <DateTimePicker
+                    v-model="startDateModel"
+                    :show-time="false"
+                    month-only
+                    modal
+                    title="Mes de facturas recibidas"
+                  />
+                </div>
+                <template v-else>
+                  <div class="sat-date-field">
+                    <span
+                      >Desde
+                      <AppFieldHelp
+                        label="Inicio del periodo"
+                        text="Primer día de emisión que solicitarás al SAT. Cada solicitud puede abarcar hasta 31 días."
+                    /></span>
+                    <DateTimePicker
+                      v-model="startDateModel"
+                      :show-time="false"
+                      modal
+                      title="Inicio del periodo"
+                    />
+                  </div>
+                  <div class="sat-date-field">
+                    <span
+                      >Hasta
+                      <AppFieldHelp
+                        label="Fin del periodo"
+                        text="Último día de emisión incluido en la descarga."
+                    /></span>
+                    <DateTimePicker
+                      v-model="endDateModel"
+                      :show-time="false"
+                      modal
+                      title="Fin del periodo"
+                    />
+                  </div>
+                </template>
+                <label class="full">
+                  <span>Movimiento</span>
+                  <AppSelect
+                    v-model="direction"
+                    :options="directionOptions"
+                    option-label="label"
+                    option-value="value"
+                  />
+                </label>
+                <p class="sat-request-scope full">
+                  <i class="pi pi-info-circle" />{{ requestScopeLabel }}
+                </p>
+              </div>
+            </section>
+
+            <template v-if="authenticationMethod === 'efirma'">
+              <div class="credential-heading">
+                <div><small>CREDENCIAL DEL CLIENTE</small><strong>e.firma cifrada</strong></div>
+                <span>Validada contra el RFC antes de guardarse</span>
+              </div>
+              <div v-if="credentialLoading" class="credential-loading">
+                <i class="pi pi-spin pi-spinner" /><span>Verificando e.firma guardada…</span>
+              </div>
+              <article
+                v-else-if="credentialInfo.configured && !editingCredentials"
+                class="stored-credential"
+                :data-expired="credentialInfo.expired"
+              >
+                <div class="stored-credential__icon">
+                  <i
+                    :class="credentialInfo.expired ? 'pi pi-exclamation-triangle' : 'pi pi-verified'"
+                  />
+                </div>
+                <div class="stored-credential__copy">
+                  <small
+                    >{{ credentialInfo.expired ? "REQUIERE RENOVACIÓN" : "LISTA PARA USARSE"
+                    }}</small
+                  >
+                  <strong>{{ credentialInfo.rfc }}</strong>
+                  <span
+                    >Vigente hasta {{ credentialDate(credentialInfo.validTo) }} · Serie {{
+                    credentialInfo.serialNumber }}</span
+                  >
+                  <code :title="credentialInfo.fingerprint"
+                    >SHA-256 {{ shortFingerprint(credentialInfo.fingerprint) }}</code
+                  >
+                </div>
+                <div class="stored-credential__actions">
+                  <button type="button" @click="editCredential">
+                    <i class="pi pi-refresh" />Reemplazar
+                  </button>
+                  <button type="button" class="danger" @click="removeCredential">
+                    <i class="pi pi-trash" />{{ deletingCredential ? "Confirmar eliminación" :
+                    "Eliminar" }}
+                  </button>
+                </div>
+              </article>
+              <div v-if="editingCredentials || !credentialInfo.configured" class="credential-grid">
+                <label class="file-field" :class="{ selected: certificate }">
+                  <input
+                    type="file"
+                    accept=".cer,application/pkix-cert"
+                    @change="chooseFile($event, 'certificate')"
+                  />
+                  <i class="pi pi-id-card" />
+                  <span
+                    ><strong>{{ certificate?.name || "Certificado .cer" }}</strong
+                    ><small
+                      >{{ certificate ? "Archivo seleccionado" : "Seleccionar archivo" }}</small
+                    ></span
+                  >
+                </label>
+                <label class="file-field" :class="{ selected: privateKey }">
+                  <input
+                    type="file"
+                    accept=".key,application/octet-stream"
+                    @change="chooseFile($event, 'privateKey')"
+                  />
+                  <i class="pi pi-key" />
+                  <span
+                    ><strong>{{ privateKey?.name || "Llave privada .key" }}</strong
+                    ><small
+                      >{{ privateKey ? "Archivo seleccionado" : "Seleccionar archivo" }}</small
+                    ></span
+                  >
+                </label>
+                <label class="password-field full">
+                  <span>Contraseña de la llave privada</span>
+                  <AppInput
+                    v-model="password"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="Sólo se usará dentro del servidor"
+                  />
+                </label>
+                <div class="credential-edit-actions full">
+                  <span
+                    ><i class="pi pi-shield" />Certificado, llave y contraseña protegidos con
+                    AES-256-GCM.</span
+                  >
+                  <div>
+                    <button
+                      v-if="credentialInfo.configured"
+                      type="button"
+                      @click="cancelCredentialEdit"
+                    >
+                      Cancelar
+                    </button>
+                    <AppButton
+                      label="Guardar e.firma"
+                      icon="pi pi-lock"
+                      :loading="savingCredential"
+                      :disabled="!newCredentialComplete || savingCredential"
+                      @click="saveOnlyCredential"
+                    />
+                  </div>
+                </div>
+              </div>
+              <p class="security-note">
+                <i class="pi pi-lock" /> La llave privada y su contraseña no salen del servidor;
+                sólo se usan localmente para firmar la solicitud oficial.
+              </p>
+            </template>
+
+            <template v-else>
+              <div class="password-credential-heading">
+                <div>
+                  <small>CREDENCIAL DEL EXPEDIENTE</small><strong>RFC + Contraseña SAT</strong>
+                </div>
+                <span>Lista para el acceso</span>
+              </div>
+
+              <div v-if="passwordCredentialLoading" class="credential-loading">
+                <i class="pi pi-spin pi-spinner" /><span
+                  >Revisando los datos fiscales del cliente…</span
+                >
+              </div>
+              <article v-else-if="passwordCredential?.configured" class="password-credential-card">
+                <div class="password-credential-card__icon"><i class="pi pi-user" /></div>
+                <div>
+                  <small>DATOS DISPONIBLES</small>
+                  <strong>{{ passwordCredential.rfc }}</strong>
+                  <span>Credencial protegida en el servidor.</span>
+                </div>
+                <i class="pi pi-check-circle password-credential-card__check" />
+              </article>
+              <div
+                v-else-if="passwordCredentialError"
+                class="password-credential-missing password-credential-error"
+                role="alert"
+              >
+                <i class="pi pi-server" />
+                <div>
+                  <strong>No se pudo verificar la credencial</strong>
+                  <span>{{ passwordCredentialError }}</span>
+                  <button
+                    type="button"
+                    :disabled="passwordCredentialLoading"
+                    @click="loadPasswordCredential"
+                  >
+                    <i class="pi pi-refresh" /> Reintentar
+                  </button>
+                </div>
+              </div>
+              <div v-else class="password-credential-missing" role="status">
+                <i class="pi pi-exclamation-triangle" />
+                <div>
+                  <strong>Falta la Contraseña SAT</strong>
+                  <span
+                    >Guárdala en los datos fiscales del cliente para habilitar este acceso.</span
+                  >
+                </div>
+              </div>
+
+              <div v-if="!portalSessionId" class="password-session-start">
+                <div>
+                  <strong>Abrir sesión del SAT</strong>
+                  <span>Continúa con el CAPTCHA.</span>
+                </div>
+                <AppButton
+                  label="Continuar"
+                  icon="pi pi-arrow-right"
+                  :loading="portalStarting"
+                  :disabled="!passwordCredential?.configured || !startDate || !endDate || portalStarting"
+                  @click="startPortalSession"
+                />
+              </div>
+
+              <form
+                v-else-if="portalPhase === 'login'"
+                class="portal-captcha-form"
+                autocomplete="off"
+                @submit.prevent="submitPortalLogin"
+              >
+                <header class="portal-captcha-heading">
+                  <div><small>CAPTCHA DEL SAT</small><strong>Escribe el código</strong></div>
+                  <button
+                    type="button"
+                    :disabled="portalStarting || portalLoginSubmitting"
+                    @click="retryPortal"
+                  >
+                    <i
+                      class="pi pi-refresh"
+                      :class="{ 'pi-spin': portalStarting }"
+                      aria-hidden="true"
+                    />
+                    Otra imagen
+                  </button>
+                </header>
+                <div class="portal-captcha-image">
+                  <img
+                    v-if="portalState?.captchaImage"
+                    :src="portalState.captchaImage"
+                    alt="CAPTCHA del SAT"
+                  />
+                  <span v-else><i class="pi pi-spin pi-spinner" /> Cargando CAPTCHA…</span>
+                </div>
+                <div class="portal-captcha-entry">
+                  <label>
+                    <span>Código</span>
+                    <input
+                      v-model.trim="portalCaptcha"
+                      type="text"
+                      maxlength="16"
+                      autocomplete="off"
+                      autocapitalize="none"
+                      spellcheck="false"
+                      placeholder="Escribe el código"
+                      autofocus
+                      required
+                    />
+                  </label>
+                  <AppButton
+                    type="submit"
+                    :label="portalLoginSubmitting ? 'Validando…' : 'Continuar'"
+                    :icon="portalLoginSubmitting ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-right'"
+                    :disabled="!portalCaptcha || !portalState?.captchaImage || portalLoginSubmitting || portalStarting"
+                  />
+                </div>
+              </form>
+
+              <div
+                v-else-if="portalSessionId"
+                class="password-session-status"
+                :data-phase="portalPhase"
+              >
+                <i
+                  :class="portalPhase === 'error' ? 'pi pi-exclamation-circle' : portalPhase === 'loading' ? 'pi pi-spin pi-spinner' : 'pi pi-shield'"
+                />
+                <div>
+                  <strong>{{ portalStatusTitle }}</strong><span>{{ portalStatusDetail }}</span>
+                </div>
+                <div v-if="portalPhase === 'error'" class="password-session-actions">
+                  <button type="button" @click="retryPortal">Reintentar</button>
+                  <button
+                    v-if="portalState?.manualAvailable"
+                    type="button"
+                    @click="openPortalRecovery"
+                  >
+                    Recuperación manual
+                  </button>
+                </div>
+              </div>
+
+              <p class="security-note"><i class="pi pi-lock" /> La sesión se elimina al cerrar.</p>
+            </template>
+
+            <div v-if="errorMessage" class="sat-message error" role="alert">
+              <i class="pi pi-exclamation-triangle" /><span>{{ errorMessage }}</span>
+            </div>
+            <div v-if="successMessage" class="sat-message success" role="status">
+              <i class="pi pi-check-circle" /><span>{{ successMessage }}</span>
+            </div>
+
+            <footer v-if="authenticationMethod === 'efirma'">
               <div>
-                <strong>Descarga oficial de CFDI</strong>
-                <span>Los XML descargados se validan y aparecen automáticamente en Fiscal.</span>
+                <span>{{ dateLabel(startDate) }}</span><i class="pi pi-arrow-right" /><span
+                  >{{ dateLabel(endDate) }}</span
+                >
               </div>
-            </div>
-
-            <div class="sat-download-grid">
-              <div class="sat-date-field">
-                <span>Desde <AppFieldHelp label="Inicio del periodo" text="Primer día de emisión que solicitarás al SAT. Cada solicitud puede abarcar hasta 31 días." /></span>
-                <DateTimePicker v-model="startDateModel" :show-time="false" modal title="Inicio del periodo" />
-              </div>
-              <div class="sat-date-field">
-                <span>Hasta <AppFieldHelp label="Fin del periodo" text="Último día de emisión incluido en la descarga." /></span>
-                <DateTimePicker v-model="endDateModel" :show-time="false" modal title="Fin del periodo" />
-              </div>
-              <label class="full">
-                <span>Movimiento</span>
-                <AppSelect v-model="direction" :options="directionOptions" option-label="label" option-value="value" />
-              </label>
-            </div>
-
-            <div class="credential-heading">
-              <div><small>AUTENTICACIÓN</small><strong>e.firma del contribuyente</strong></div>
-              <span>Vigente y correspondiente al RFC del cliente</span>
-            </div>
-            <div class="credential-grid">
-              <label class="file-field" :class="{ selected: certificate }">
-                <input type="file" accept=".cer,application/pkix-cert" @change="chooseFile($event, 'certificate')" />
-                <i class="pi pi-id-card" />
-                <span><strong>{{ certificate?.name || "Certificado .cer" }}</strong><small>{{ certificate ? "Archivo seleccionado" : "Seleccionar archivo" }}</small></span>
-              </label>
-              <label class="file-field" :class="{ selected: privateKey }">
-                <input type="file" accept=".key,application/octet-stream" @change="chooseFile($event, 'privateKey')" />
-                <i class="pi pi-key" />
-                <span><strong>{{ privateKey?.name || "Llave privada .key" }}</strong><small>{{ privateKey ? "Archivo seleccionado" : "Seleccionar archivo" }}</small></span>
-              </label>
-              <label class="password-field full">
-                <span>Contraseña de la llave privada</span>
-                <AppInput v-model="password" type="password" autocomplete="off" placeholder="Contraseña de la e.firma" />
-              </label>
-            </div>
-            <p class="security-note"><i class="pi pi-lock" /> Las credenciales se cifran mientras el SAT procesa la solicitud y se eliminan automáticamente al terminar, cancelar o vencer.</p>
-
-            <div v-if="errorMessage" class="sat-message error" role="alert"><i class="pi pi-exclamation-triangle" /><span>{{ errorMessage }}</span></div>
-            <div v-if="successMessage" class="sat-message success" role="status"><i class="pi pi-check-circle" /><span>{{ successMessage }}</span></div>
-
-            <footer>
-              <div><span>{{ dateLabel(startDate) }}</span><i class="pi pi-arrow-right" /><span>{{ dateLabel(endDate) }}</span></div>
               <AppButton
-                :label="submitting ? 'Conectando con el SAT…' : 'Solicitar descarga'"
+                :label="submitting ? 'Conectando con el SAT…' : (!credentialReady || editingCredentials ? 'Guardar y solicitar' : 'Solicitar descarga')"
                 :icon="submitting ? 'pi pi-spin pi-spinner' : 'pi pi-send'"
                 :disabled="!canSubmit"
                 @click="submit"
@@ -80,20 +419,44 @@
             </footer>
           </section>
 
-          <aside class="sat-download-history" aria-label="Seguimiento de solicitudes">
+          <aside
+            v-if="authenticationMethod === 'efirma'"
+            class="sat-download-history"
+            aria-label="Seguimiento de solicitudes"
+          >
             <header>
-              <div><small>SEGUIMIENTO</small><h3>Solicitudes recientes</h3></div>
-              <button type="button" :disabled="loading" aria-label="Actualizar solicitudes" @click="loadJobs()"><i class="pi pi-refresh" :class="{ 'pi-spin': loading }" /></button>
+              <div>
+                <small>SEGUIMIENTO</small>
+                <h3>Solicitudes recientes</h3>
+              </div>
+              <div class="sat-history-tools">
+                <span class="sat-history-count">{{ jobs.length }}</span
+                ><button
+                  type="button"
+                  :disabled="loading"
+                  aria-label="Actualizar solicitudes"
+                  @click="loadJobs()"
+                >
+                  <i class="pi pi-refresh" :class="{ 'pi-spin': loading }" />
+                </button>
+              </div>
             </header>
             <div v-if="waitingJobs.length" class="sat-waiting-notice" role="status">
               <i class="pi pi-clock" aria-hidden="true" />
               <div>
-                <strong>El SAT sigue preparando {{ waitingJobs.length === 1 ? 'la solicitud' : 'las solicitudes' }}</strong>
-                <span>Puede tardar varios minutos. Puedes cerrar esta ventana; el servidor continuará revisando el avance.</span>
+                <strong
+                  >El SAT sigue preparando {{ waitingJobs.length === 1 ? 'la solicitud' : 'las solicitudes' }}</strong
+                >
+                <span>Puedes cerrar esta ventana; el servidor continuará revisando el avance.</span>
               </div>
             </div>
-            <div v-if="loading && !jobs.length" class="jobs-empty"><i class="pi pi-spin pi-spinner" /><span>Consultando el SAT…</span></div>
-            <div v-else-if="!jobs.length" class="jobs-empty"><i class="pi pi-inbox" /><strong>Aún no hay solicitudes</strong><span>Configura el periodo y envía la primera descarga.</span></div>
+            <div v-if="loading && !jobs.length" class="jobs-empty">
+              <i class="pi pi-spin pi-spinner" /><span>Consultando el SAT…</span>
+            </div>
+            <div v-else-if="!jobs.length" class="jobs-empty">
+              <i class="pi pi-inbox" /><strong>Aún no hay solicitudes</strong
+              ><span>Configura el periodo y envía la primera descarga.</span>
+            </div>
             <div v-else class="job-list">
               <article v-for="job in jobs" :key="job.id" :data-status="job.estado">
                 <div class="job-icon"><i :class="jobCopy(job).icon" /></div>
@@ -101,14 +464,179 @@
                   <div><strong>{{ jobDirection(job) }}</strong><span>#{{ job.id }}</span></div>
                   <b>{{ jobCopy(job).label }}</b>
                   <p>{{ job.ultimo_error || job.mensaje_sat || jobCopy(job).detail }}</p>
-                  <small>{{ dateLabel(String(job.fecha_inicial).slice(0, 10)) }} — {{ dateLabel(String(job.fecha_final).slice(0, 10)) }}</small>
+                  <small
+                    >{{ dateLabel(String(job.fecha_inicial).slice(0, 10)) }} — {{
+                    dateLabel(String(job.fecha_final).slice(0, 10)) }}</small
+                  >
                   <div v-if="job.estado === 'completada'" class="job-counts">
-                    <span><b>{{ job.importados }}</b> nuevos</span><span><b>{{ job.duplicados }}</b> existentes</span><span><b>{{ job.rechazados }}</b> rechazados</span>
+                    <span><b>{{ job.importados }}</b> nuevos</span
+                    ><span><b>{{ job.duplicados }}</b> existentes</span
+                    ><span><b>{{ job.rechazados }}</b> rechazados</span>
                   </div>
                 </div>
-                <button v-if="activeStates.has(job.estado)" class="job-cancel" type="button" @click="cancelJob(job)">Cancelar</button>
+                <button
+                  v-if="activeStates.has(job.estado)"
+                  class="job-cancel"
+                  type="button"
+                  @click="cancelJob(job)"
+                >
+                  Cancelar
+                </button>
               </article>
             </div>
+          </aside>
+
+          <aside
+            v-else
+            class="sat-portal-workspace"
+            aria-label="Automatización de descarga del SAT"
+          >
+            <header>
+              <div class="portal-phase-dot" :data-phase="portalPhase"><i /></div>
+              <div>
+                <small>AUTOMATIZACIÓN SAT</small>
+                <h3>{{ portalStatusTitle }}</h3>
+                <span>{{ portalStatusDetail }}</span>
+              </div>
+              <span v-if="portalState" class="portal-session-time"
+                >{{ portalState.expiresInSeconds }} s</span
+              >
+            </header>
+
+            <div
+              class="sat-portal-viewport"
+              :class="{ interactive: portalRecoveryOpen && portalAuthenticated && portalState?.image }"
+              tabindex="0"
+              @click="clickPortalViewport"
+              @wheel.prevent="scrollPortalViewport"
+            >
+              <img
+                v-if="portalRecoveryOpen && portalState?.image"
+                :src="portalState.image"
+                alt="Recuperación manual del portal oficial del SAT"
+                draggable="false"
+              />
+
+              <div
+                v-else-if="portalPhase === 'loading'"
+                class="portal-placeholder portal-loading"
+                aria-live="polite"
+              >
+                <div class="portal-skeleton" aria-hidden="true">
+                  <i /><span /><span /><b /><b />
+                </div>
+                <strong>Conectando con el SAT</strong>
+                <span>Se está creando un navegador aislado en el servidor.</span>
+              </div>
+
+              <div v-else-if="portalPhase === 'login'" class="portal-placeholder">
+                <i class="pi pi-key" />
+                <strong>CAPTCHA pendiente</strong>
+                <span>Ingresa el código para continuar.</span>
+              </div>
+
+              <div
+                v-else-if="['portal', 'automating', 'importing', 'complete'].includes(portalPhase)"
+                class="portal-automation"
+                :data-phase="portalPhase"
+              >
+                <div class="portal-automation-icon">
+                  <i
+                    :class="portalPhase === 'complete' ? 'pi pi-check' : 'pi pi-spin pi-spinner'"
+                  />
+                </div>
+                <small
+                  >{{ portalPhase === 'complete' ? 'PROCESO COMPLETO' : 'TRABAJANDO EN SEGUNDO PLANO' }}</small
+                >
+                <strong>{{ portalStatusTitle }}</strong>
+                <span>{{ portalStatusDetail }}</span>
+                <div
+                  class="portal-automation-progress"
+                  role="progressbar"
+                  :aria-valuenow="portalAutomationProgress"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  <i :style="{ width: `${portalAutomationProgress}%` }" />
+                </div>
+                <div v-if="portalState?.automation" class="portal-automation-metrics">
+                  <span
+                    ><b>{{ portalState.automation.completedDirections }}</b>/{{
+                    portalState.automation.totalDirections }} consultas</span
+                  >
+                  <span><b>{{ portalState.automation.downloads }}</b> descargas</span>
+                </div>
+              </div>
+
+              <div
+                v-else-if="portalPhase === 'error'"
+                class="portal-placeholder portal-error"
+                role="alert"
+              >
+                <i class="pi pi-exclamation-circle" />
+                <strong>El SAT cambió un paso</strong>
+                <span
+                  >{{ portalState?.message || 'No se pudo completar la consulta automática.'
+                  }}</span
+                >
+                <div class="portal-recovery-actions">
+                  <button type="button" @click.stop="retryPortal">Intentar de nuevo</button>
+                  <button
+                    v-if="portalState?.manualAvailable"
+                    type="button"
+                    @click.stop="openPortalRecovery"
+                  >
+                    Abrir recuperación manual
+                  </button>
+                </div>
+              </div>
+
+              <div v-else class="portal-placeholder">
+                <i class="pi pi-cloud-download" />
+                <strong>Descarga automática</strong>
+                <span>Configura el periodo; el portal no ocupará tu pantalla.</span>
+              </div>
+
+              <input
+                ref="portalKeyboardInput"
+                v-model="portalTypedText"
+                class="portal-keyboard-capture"
+                aria-label="Escribir en el campo seleccionado del portal SAT"
+                autocomplete="off"
+                @input="sendPortalTypedText"
+                @keydown="sendPortalKey"
+              />
+            </div>
+
+            <div v-if="portalState?.downloads.length" class="portal-downloads" aria-live="polite">
+              <article
+                v-for="download in portalState.downloads.slice(0, 3)"
+                :key="download.id"
+                :data-status="download.status"
+              >
+                <i
+                  :class="download.status === 'importing' ? 'pi pi-spin pi-spinner' : download.status === 'completed' ? 'pi pi-check-circle' : download.status === 'ignored' ? 'pi pi-info-circle' : 'pi pi-exclamation-triangle'"
+                />
+                <div><strong>{{ download.name }}</strong><span>{{ download.message }}</span></div>
+              </article>
+            </div>
+
+            <footer>
+              <span
+                ><i class="pi pi-file-import" /> Los XML y ZIP se validan e importan automáticamente
+                al expediente.</span
+              >
+              <button
+                v-if="portalState?.manualAvailable && !portalRecoveryOpen"
+                type="button"
+                @click="openPortalRecovery"
+              >
+                <i class="pi pi-desktop" />Recuperación manual
+              </button>
+              <button v-if="portalSessionId" type="button" @click="startPortalSession">
+                <i class="pi pi-refresh" />Reiniciar sesión
+              </button>
+            </footer>
           </aside>
         </div>
       </section>

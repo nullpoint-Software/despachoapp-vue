@@ -13,18 +13,44 @@
       </label>
 
       <div class="kanban-date">
-        <span>Fecha del reporte <AppFieldHelp label="Fecha del reporte" text="El reporte incluirá únicamente las tareas terminadas durante el día seleccionado." /></span>
-        <DateTimePicker v-model="reportDate" :show-time="false" modal title="Fecha del reporte de tareas" />
+        <span
+          >Fecha del reporte
+          <AppFieldHelp
+            label="Fecha del reporte"
+            text="El reporte incluirá únicamente las tareas terminadas durante el día seleccionado."
+        /></span>
+        <DateTimePicker
+          v-model="reportDate"
+          :show-time="false"
+          modal
+          title="Fecha del reporte de tareas"
+        />
       </div>
 
-      <button class="kanban-icon-button" type="button" :disabled="isLoading" aria-label="Actualizar tareas" @click="loadTasks(currentPage)">
+      <button
+        class="kanban-icon-button"
+        type="button"
+        :disabled="isLoading"
+        aria-label="Actualizar tareas"
+        @click="loadTasks(currentPage)"
+      >
         <i class="pi pi-refresh" :class="{ 'is-spinning': isLoading }"></i>
       </button>
-      <button class="kanban-button kanban-button--secondary" type="button" :disabled="isGeneratingReport" @click="openReportPreview">
+      <button
+        class="kanban-button kanban-button--secondary"
+        type="button"
+        :disabled="isGeneratingReport"
+        @click="openReportPreview"
+      >
         <i class="pi" :class="isGeneratingReport ? 'pi-spin pi-spinner' : 'pi-file-pdf'"></i>
         {{ isGeneratingReport ? "Generando" : "Reporte" }}
       </button>
-      <button v-if="!mini" class="kanban-button kanban-button--primary" type="button" @click="openTaskForm('add')">
+      <button
+        v-if="!mini"
+        class="kanban-button kanban-button--primary"
+        type="button"
+        @click="openTaskForm('add')"
+      >
         <i class="pi pi-plus"></i>
         Nueva tarea
       </button>
@@ -52,12 +78,20 @@
   </div>
 
   <nav class="kanban-pagination" aria-label="Paginaci&oacute;n de tareas">
-    <button type="button" :disabled="isLoading || currentPage === 1" @click="changePage(currentPage - 1)">
+    <button
+      type="button"
+      :disabled="isLoading || currentPage === 1"
+      @click="changePage(currentPage - 1)"
+    >
       <i class="pi pi-arrow-left" aria-hidden="true"></i>
       Anterior
     </button>
     <span><small>P&aacute;gina</small><strong>{{ currentPage }}</strong></span>
-    <button type="button" :disabled="isLoading || !hasNextPage" @click="changePage(currentPage + 1)">
+    <button
+      type="button"
+      :disabled="isLoading || !hasNextPage"
+      @click="changePage(currentPage + 1)"
+    >
       Siguiente
       <i class="pi pi-arrow-right" aria-hidden="true"></i>
     </button>
@@ -86,5 +120,4 @@
     :task-count="reportPreview.exportedTasks"
     @close="closeReportPreview"
   />
-
 </section>

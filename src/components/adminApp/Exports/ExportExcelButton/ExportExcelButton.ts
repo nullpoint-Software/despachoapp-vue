@@ -50,20 +50,11 @@ async function exportExcel() {
 
   const ws_data: any[][] = []
   // encabezados
-  ws_data.push([
-    'ID',
-    'CLIENTE',
-    'ASUNTO',
-    'ATENDIO',
-    'COBRAMOS',
-    'PAGAMOS',
-    'SALDO',
-    'FECHA'
-  ])
+  ws_data.push(['ID', 'CLIENTE', 'ASUNTO', 'ATENDIO', 'COBRAMOS', 'PAGAMOS', 'SALDO', 'FECHA'])
 
   // datos con saldo acumulado
   let cumulative = 0
-  dataToExport.forEach(p => {
+  dataToExport.forEach((p) => {
     cumulative += p.cobramos - p.pagamos
     ws_data.push([
       p.id,

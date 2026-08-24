@@ -1,97 +1,101 @@
 import { as, bs, pks, us } from '@/service/adminApp/client'
 import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import { USER_AVATAR_PLACEHOLDER as defaultAvatar } from '@/constants/brandAssets'
-import imageCompression from "browser-image-compression";
-import { useAppToast } from '@/composables/useAppToast';
-import { useAppDialog } from '@/composables/useAppDialog';
-import { getPermissions, updatePermissions } from '@/service/adminApp/permissionsService';
-import router from '@/router';
+import imageCompression from 'browser-image-compression'
+import { useAppToast } from '@/composables/useAppToast'
+import { useAppDialog } from '@/composables/useAppDialog'
+import { getPermissions, updatePermissions } from '@/service/adminApp/permissionsService'
+import router from '@/router'
 
+import { clearSensitiveAccess, hasSensitiveAccess } from '@/service/adminApp/sensitiveAccess'
 interface SettingsUser {
-  id_usuario: string | number;
-  nombre: string;
-  username: string;
-  email: string;
-  puesto: string;
-  imagen?: string;
-  activo?: boolean;
-  password?: string;
-  [key: string]: unknown;
+  id_usuario: string | number
+  nombre: string
+  username: string
+  email: string
+  puesto: string
+  imagen?: string
+  activo?: boolean
+  password?: string
+  [key: string]: unknown
 }
 
 interface PasskeyRecord {
-  id: number;
-  name: string;
-  deviceType: string | null;
-  backedUp: boolean;
-  transports: string[];
-  createdAt: string;
-  lastUsedAt: string | null;
+  id: number
+  name: string
+  deviceType: string | null
+  backedUp: boolean
+  transports: string[]
+  createdAt: string
+  lastUsedAt: string | null
 }
 
 interface ApiErrorShape {
-  response?: { data?: { error?: string } };
+  response?: { data?: { error?: string } }
 }
 
 interface PermissionMatrix {
-  [role: string]: Record<string, boolean>;
+  [role: string]: Record<string, boolean>
 }
 
-type UserDetailTab = 'account' | 'permissions';
-type PermissionSaveState = 'idle' | 'saving' | 'saved' | 'error';
+type UserDetailTab = 'account' | 'permissions'
+type PermissionSaveState = 'idle' | 'saving' | 'saved' | 'error'
 
 interface PermissionMeta {
-  label: string;
-  description: string;
-  group: 'Tareas' | 'Clientes' | 'Cobranza' | 'Otros';
-  icon: string;
-  sensitive?: boolean;
+  label: string
+  description: string
+  group: 'Tareas' | 'Clientes' | 'Cobranza' | 'Otros'
+  icon: string
+  sensitive?: boolean
 }
 
 interface NewUserForm {
-  nombre: string;
-  email: string;
-  telefono: string;
-  username: string;
-  puesto: string;
-  imagen: string;
-  password: string;
-  confirmPassword?: string;
+  nombre: string
+  email: string
+  telefono: string
+  username: string
+  puesto: string
+  imagen: string
+  password: string
+  confirmPassword?: string
 }
 
-interface EmailParts { local: string; domain: string }
+interface EmailParts {
+  local: string
+  domain: string
+}
 interface BackupFile {
-  filename: string;
-  size: number;
-  createdAt: string;
+  filename: string
+  size: number
+  createdAt: string
 }
 interface BackupConfig {
-  backupDir: string;
-  storageRoot: string;
-  cron: string;
-  timezone: string;
-  frequency: 'daily' | 'weekly' | 'monthly' | 'custom';
-  time: string;
-  dayOfWeek: number;
-  dayOfMonth: number;
-  retentionDays: number;
-  retentionMaxFiles: number;
-  schedulerEnabled: boolean;
-  creating: boolean;
-  importing: boolean;
+  backupDir: string
+  storageRoot: string
+  cron: string
+  timezone: string
+  frequency: 'daily' | 'weekly' | 'monthly' | 'custom'
+  time: string
+  dayOfWeek: number
+  dayOfMonth: number
+  retentionDays: number
+  retentionMaxFiles: number
+  schedulerEnabled: boolean
+  creating: boolean
+  importing: boolean
 }
 
 const apiErrorMessage = (error: unknown): string | undefined =>
-  (error as ApiErrorShape).response?.data?.error;
-const showAppearanceModal = ref(false);
-const showBackupManager = ref(false);
-const backupLoading = ref(false);
-const backupBusy = ref(false);
-const backupError = ref("");
-const backups = ref<BackupFile[]>([]);
-const backupConfig = ref<BackupConfig | null>(null);
-const backupImportInput = ref<HTMLInputElement | null>(null);
-const backupScheduleOpen = ref(false);
+  (error as ApiErrorShape).response?.data?.error
+const showAppearanceModal = ref(false)
+const showBackupManager = ref(false)
+const backupLoading = ref(false)
+const backupBusy = ref(false)
+const backupError = ref('')
+const backups = ref<BackupFile[]>([])
+const backupConfig = ref<BackupConfig | null>(null)
+const backupImportInput = ref<HTMLInputElement | null>(null)
+const backupScheduleOpen = ref(false)
 const backupScheduleForm = ref({
   schedulerEnabled: true,
   frequency: 'daily' as BackupConfig['frequency'],
@@ -99,8 +103,8 @@ const backupScheduleForm = ref({
   dayOfWeek: 1,
   dayOfMonth: 1,
   timezone: 'America/Mexico_City',
-  cron: '0 2 * * *',
-});
+  cron: '0 2 * * *'
+})
 
 const backupWeekdays = [
   { value: 1, label: 'Lunes' },
@@ -109,48 +113,48 @@ const backupWeekdays = [
   { value: 4, label: 'Jueves' },
   { value: 5, label: 'Viernes' },
   { value: 6, label: 'Sábado' },
-  { value: 0, label: 'Domingo' },
-];
+  { value: 0, label: 'Domingo' }
+]
 
-const backupMonthDays = Array.from({ length: 28 }, (_, index) => index + 1);
+const backupMonthDays = Array.from({ length: 28 }, (_, index) => index + 1)
 const backupFrequencyLabels: Record<BackupConfig['frequency'], string> = {
   daily: 'Diario',
   weekly: 'Semanal',
   monthly: 'Mensual',
-  custom: 'Cron',
-};
+  custom: 'Cron'
+}
 
 // USER DETAILS MODAL
 const modalAbierto = ref(false)
 const userDetailTab = ref<UserDetailTab>('account')
 const permissionTutorialOpen = ref(false)
 const selectedUserPhotoBusy = ref(false)
-const buildTime = ref<string>("");
+const buildTime = ref<string>('')
 const usuarioSeleccionado = ref<SettingsUser | null>(null)
 const passwordVisible = ref(false)
 const passwordRevealBusy = ref(false)
 const passwordResetMenuOpen = ref(false)
 const passwordResetBusy = ref(false)
-const generatedResetLink = ref("")
+const generatedResetLink = ref('')
 
-const confirmDialogVisible = ref(false);
-const userToDelete = ref<SettingsUser | null>(null);
-const isDropdown = ref(false);
-const selectedLevel = ref<string>("");
+const confirmDialogVisible = ref(false)
+const userToDelete = ref<SettingsUser | null>(null)
+const isDropdown = ref(false)
+const selectedLevel = ref<string>('')
 async function confirmDelete(u: SettingsUser): Promise<void> {
   await deleteUser(u)
-  confirmDialogVisible.value = false;
-  userToDelete.value = null;
+  confirmDialogVisible.value = false
+  userToDelete.value = null
 }
 async function cancelDelete() {
-  confirmDialogVisible.value = false;
-  userToDelete.value = null;
+  confirmDialogVisible.value = false
+  userToDelete.value = null
 }
-const toast = useAppToast();
-const { prompt: promptDialog, confirm: confirmDialog } = useAppDialog();
+const toast = useAppToast()
+const { prompt: promptDialog, confirm: confirmDialog } = useAppDialog()
 // PERFIL
-const userInfo = await as.getUserInfo();
-const isAdmin = userInfo && userInfo.level === 'Administrador';
+const userInfo = await as.getUserInfo()
+const isAdmin = userInfo && userInfo.level === 'Administrador'
 
 const settingsTutorialOpen = ref(false)
 const settingsTutorialSteps = computed(() => [
@@ -158,40 +162,42 @@ const settingsTutorialSteps = computed(() => [
     target: '.settings-hero',
     eyebrow: 'Ajustes / inicio',
     title: 'Tu centro de control',
-    body: 'Desde aquí administras tu cuenta, el acceso seguro, la apariencia y, si eres administrador, al equipo completo.',
+    body: 'Desde aquí administras tu cuenta, el acceso seguro, la apariencia y, si eres administrador, al equipo completo.'
   },
   {
     target: '.settings-context-bar',
     eyebrow: 'Ajustes / accesos',
     title: 'Ve directo a cada área',
-    body: 'Estos accesos resumen el estado de tu cuenta y te llevan al bloque que quieres configurar.',
+    body: 'Estos accesos resumen el estado de tu cuenta y te llevan al bloque que quieres configurar.'
   },
   {
     target: '.profile-panel',
     eyebrow: 'Ajustes / perfil',
     title: 'Mantén tu identidad actualizada',
-    body: 'Cambia tu foto, edita tu nombre o actualiza tu contraseña de acceso.',
+    body: 'Cambia tu foto, edita tu nombre o actualiza tu contraseña de acceso.'
   },
   {
     target: '.passkey-panel',
     eyebrow: 'Ajustes / seguridad',
     title: 'Accede sin depender de contraseñas',
-    body: 'Registra una passkey con huella, rostro, Windows Hello, un gestor compatible o una llave física.',
+    body: 'Registra una passkey con huella, rostro, Windows Hello, un gestor compatible o una llave física.'
   },
-  ...(isAdmin ? [
-    {
-      target: '.users-panel',
-      eyebrow: 'Ajustes / equipo',
-      title: 'Consulta y administra usuarios',
-      body: 'Busca a una persona para editar sus datos, activar su cuenta o revisar los permisos de su rol.',
-    },
-    {
-      target: '.create-user-panel',
-      eyebrow: 'Ajustes / altas',
-      title: 'Agrega integrantes con una guía',
-      body: 'El registro separa identidad, credenciales y confirmación para reducir errores al crear una cuenta.',
-    },
-  ] : []),
+  ...(isAdmin
+    ? [
+        {
+          target: '.users-panel',
+          eyebrow: 'Ajustes / equipo',
+          title: 'Consulta y administra usuarios',
+          body: 'Busca a una persona para editar sus datos, activar su cuenta o revisar los permisos de su rol.'
+        },
+        {
+          target: '.create-user-panel',
+          eyebrow: 'Ajustes / altas',
+          title: 'Agrega integrantes con una guía',
+          body: 'El registro separa identidad, credenciales y confirmación para reducir errores al crear una cuenta.'
+        }
+      ]
+    : [])
 ])
 
 const permissionTutorialSteps = [
@@ -199,26 +205,26 @@ const permissionTutorialSteps = [
     target: '.permission-overview',
     eyebrow: 'Permisos / alcance',
     title: 'Configuras un rol, no una sola cuenta',
-    body: 'El resumen indica cuántos accesos están activos y cuántas personas comparten este rol.',
+    body: 'El resumen indica cuántos accesos están activos y cuántas personas comparten este rol.'
   },
   {
     target: '.permission-impact-note',
     eyebrow: 'Permisos / impacto',
     title: 'Revisa a quién afectará',
-    body: 'Cada cambio se aplica de inmediato a todos los usuarios con el mismo rol. Esta nota te recuerda el alcance antes de editar.',
+    body: 'Cada cambio se aplica de inmediato a todos los usuarios con el mismo rol. Esta nota te recuerda el alcance antes de editar.'
   },
   {
     target: '.permission-group',
     eyebrow: 'Permisos / categorías',
     title: 'Decide por área de trabajo',
-    body: 'Los accesos están agrupados en tareas, clientes y cobranza, con una explicación clara de lo que habilita cada uno.',
+    body: 'Los accesos están agrupados en tareas, clientes y cobranza, con una explicación clara de lo que habilita cada uno.'
   },
   {
     target: '.permission-switch',
     eyebrow: 'Permisos / guardado',
     title: 'Activa sólo lo necesario',
-    body: 'Usa el interruptor de cada acceso. El estado de guardado confirma cuándo el cambio ya quedó aplicado.',
-  },
+    body: 'Usa el interruptor de cada acceso. El estado de guardado confirma cuándo el cambio ya quedó aplicado.'
+  }
 ]
 
 function startSettingsTutorial(): void {
@@ -233,157 +239,194 @@ onMounted(() => {
   if (!localStorage.getItem('tourSettingsDone')) settingsTutorialOpen.value = true
 })
 
-const userFullName = ref(localStorage.getItem("fullname"))
-const userName = ref(localStorage.getItem("username"));
-const storedPhoto = localStorage.getItem("userphoto");
-const profileNameDraft = ref(userFullName.value || "")
+const userFullName = ref(localStorage.getItem('fullname'))
+const userName = ref(localStorage.getItem('username'))
+const storedPhoto = localStorage.getItem('userphoto')
+const profileNameDraft = ref(userFullName.value || '')
 const profileEditingName = ref(false)
 const profileUpdateBusy = ref(false)
 const profilePhotoBusy = ref(false)
 const profileImage = ref(
-  storedPhoto && storedPhoto !== "data:image/png;base64,null"
-    ? storedPhoto
-    : defaultAvatar
-);
+  storedPhoto && storedPhoto !== 'data:image/png;base64,null' ? storedPhoto : defaultAvatar
+)
 onMounted(async () => {
-    const showToast = await localStorage.getItem("showToast");
-    const res = await fetch('/build-time.txt')
-    buildTime.value = await res.text()
-    if (showToast === "nameSuccess") {
-      toast.add({
-        severity: "success",
-        summary: "Agregado",
-        detail: "Nombre actualizado correctamente",
-        life: 3000,
-      });
-      localStorage.removeItem("showToast"); // clear flag
-    }
-  });
+  const showToast = await localStorage.getItem('showToast')
+  const res = await fetch('/build-time.txt')
+  buildTime.value = await res.text()
+  if (showToast === 'nameSuccess') {
+    toast.add({
+      severity: 'success',
+      summary: 'Agregado',
+      detail: 'Nombre actualizado correctamente',
+      life: 3000
+    })
+    localStorage.removeItem('showToast') // clear flag
+  }
+})
 
-const passkeys = ref<PasskeyRecord[]>([]);
-const passkeysLoading = ref(false);
-const passkeyBusy = ref(false);
-const passkeySupported = ref(false);
-const platformPasskeyAvailable = ref(false);
+const passkeys = ref<PasskeyRecord[]>([])
+const passkeysLoading = ref(false)
+const passkeyBusy = ref(false)
+const passkeySupported = ref(false)
+const platformPasskeyAvailable = ref(false)
 const passkeyStatusLabel = computed(() => {
-  if (!passkeySupported.value) return "Este navegador no tiene passkeys disponibles.";
-  if (!platformPasskeyAvailable.value) return "Listo para usar una llave de seguridad o un gestor compatible.";
-  return "Puedes usar huella, rostro, Windows Hello o un gestor compatible.";
-});
+  if (!passkeySupported.value) return 'Este navegador no tiene passkeys disponibles.'
+  if (passkeys.value.length) {
+    return `${passkeys.value.length} ${passkeys.value.length === 1 ? 'passkey registrada' : 'passkeys registradas'}. Puedes agregar otro teléfono, dispositivo o llave de seguridad.`
+  }
+  if (!platformPasskeyAvailable.value)
+    return 'Listo para usar una llave de seguridad o un gestor compatible.'
+  return 'Puedes usar huella, rostro, Windows Hello o un gestor compatible.'
+})
 
 async function loadPasskeys() {
-  passkeysLoading.value = true;
+  passkeysLoading.value = true
   try {
-    passkeys.value = await pks.getPasskeys();
+    passkeys.value = await pks.getPasskeys()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Sin passkeys', detail: apiErrorMessage(error) || 'No se pudieron cargar tus passkeys.', life: 3500 });
+    toast.add({
+      severity: 'error',
+      summary: 'Sin passkeys',
+      detail: apiErrorMessage(error) || 'No se pudieron cargar tus passkeys.',
+      life: 3500
+    })
   } finally {
-    passkeysLoading.value = false;
+    passkeysLoading.value = false
   }
 }
 
 async function setupPasskeys() {
-  passkeySupported.value = pks.supportsPasskeys();
+  passkeySupported.value = pks.supportsPasskeys()
   if (passkeySupported.value) {
-    platformPasskeyAvailable.value = await pks.platformAuthenticatorAvailable().catch(() => false);
+    platformPasskeyAvailable.value = await pks.platformAuthenticatorAvailable().catch(() => false)
   }
-  await loadPasskeys();
+  await loadPasskeys()
 }
 
 async function addPasskey() {
-  if (!passkeySupported.value || passkeyBusy.value) return;
+  if (!passkeySupported.value || passkeyBusy.value) return
   const name = await promptDialog({
     title: 'Agregar passkey',
     message: 'Ponle un nombre reconocible a este dispositivo, gestor o llave de seguridad.',
     inputLabel: 'Nombre',
     inputType: 'text',
     placeholder: 'Dispositivo personal',
-    confirmLabel: 'Crear passkey',
-  });
-  if (name === null) return;
-  passkeyBusy.value = true;
+    confirmLabel: 'Crear passkey'
+  })
+  if (name === null) return
+  passkeyBusy.value = true
   try {
-    await pks.register(name || undefined);
-    await loadPasskeys();
-    toast.add({ severity: 'success', summary: 'Passkey lista', detail: 'Ya puedes verificar datos protegidos con el autenticador elegido.', life: 3000 });
-  } catch (error) {
-    toast.add({ severity: 'error', summary: 'No registrada', detail: apiErrorMessage(error) || 'No fue posible registrar la passkey.', life: 4000 });
+    const useAnotherAuthenticator = passkeys.value.length > 0
+    await pks.register(name || undefined, useAnotherAuthenticator)
+    await loadPasskeys()
+    toast.add({
+      severity: 'success',
+      summary: 'Passkey lista',
+      detail: useAnotherAuthenticator
+        ? 'El nuevo autenticador quedó agregado sin reemplazar los anteriores.'
+        : 'Ya puedes verificar datos protegidos con el autenticador elegido.',
+      life: 3000
+    })
+  } catch (error: any) {
+    const browserMessage =
+      error?.name === 'InvalidStateError'
+        ? 'Ese autenticador ya pertenece a tu cuenta. Elige otro teléfono, dispositivo o llave de seguridad.'
+        : error?.name === 'NotAllowedError'
+          ? 'El registro se canceló o el autenticador no respondió. Inténtalo de nuevo y elige otro dispositivo.'
+          : ''
+    toast.add({
+      severity: 'error',
+      summary: 'No registrada',
+      detail: browserMessage || apiErrorMessage(error) || 'No fue posible registrar la passkey.',
+      life: 5000
+    })
   } finally {
-    passkeyBusy.value = false;
+    passkeyBusy.value = false
   }
 }
 
 async function removePasskey(passkey: PasskeyRecord): Promise<void> {
-  if (passkeyBusy.value) return;
+  if (passkeyBusy.value) return
   const confirmed = await confirmDialog({
     title: 'Eliminar passkey',
     message: `Eliminar "${passkey.name}" de tu cuenta.`,
     tone: 'danger',
     confirmLabel: 'Eliminar',
-    cancelLabel: 'Cancelar',
-  });
-  if (!confirmed) return;
-  passkeyBusy.value = true;
+    cancelLabel: 'Cancelar'
+  })
+  if (!confirmed) return
+  passkeyBusy.value = true
   try {
-    await pks.delete(passkey.id);
-    await loadPasskeys();
-    toast.add({ severity: 'success', summary: 'Passkey eliminada', detail: 'El acceso se actualizó correctamente.', life: 2500 });
+    await pks.delete(passkey.id)
+    await loadPasskeys()
+    toast.add({
+      severity: 'success',
+      summary: 'Passkey eliminada',
+      detail: 'El acceso se actualizó correctamente.',
+      life: 2500
+    })
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No eliminada', detail: apiErrorMessage(error) || 'No fue posible eliminar la passkey.', life: 3500 });
+    toast.add({
+      severity: 'error',
+      summary: 'No eliminada',
+      detail: apiErrorMessage(error) || 'No fue posible eliminar la passkey.',
+      life: 3500
+    })
   } finally {
-    passkeyBusy.value = false;
+    passkeyBusy.value = false
   }
 }
 
 function formatPasskeyDate(value: string | null): string {
-  if (!value) return 'Sin fecha';
+  if (!value) return 'Sin fecha'
   return new Intl.DateTimeFormat('es-MX', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric',
-  }).format(new Date(value));
+    year: 'numeric'
+  }).format(new Date(value))
 }
 
-onMounted(setupPasskeys);
+onMounted(setupPasskeys)
 
 function formatBytes(bytes = 0): string {
-  if (!bytes) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+  if (!bytes) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB']
+  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`
 }
 
 function formatBackupDate(value: string): string {
   return new Intl.DateTimeFormat('es-MX', {
     dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+    timeStyle: 'short'
+  }).format(new Date(value))
 }
 
 function backupScheduleSummary(config: BackupConfig | null): string {
-  if (!config?.schedulerEnabled) return 'Desactivada';
-  if (config.frequency === 'custom') return config.cron;
-  const frequency = backupFrequencyLabels[config.frequency] || 'Diario';
+  if (!config?.schedulerEnabled) return 'Desactivada'
+  if (config.frequency === 'custom') return config.cron
+  const frequency = backupFrequencyLabels[config.frequency] || 'Diario'
   if (config.frequency === 'weekly') {
-    const day = backupWeekdays.find(item => item.value === Number(config.dayOfWeek))?.label || 'Lunes';
-    return `${frequency}, ${day} ${config.time}`;
+    const day =
+      backupWeekdays.find((item) => item.value === Number(config.dayOfWeek))?.label || 'Lunes'
+    return `${frequency}, ${day} ${config.time}`
   }
-  if (config.frequency === 'monthly') return `${frequency}, día ${config.dayOfMonth} ${config.time}`;
-  return `${frequency}, ${config.time}`;
+  if (config.frequency === 'monthly') return `${frequency}, día ${config.dayOfMonth} ${config.time}`
+  return `${frequency}, ${config.time}`
 }
 
 async function loadBackups(): Promise<void> {
-  backupLoading.value = true;
-  backupError.value = "";
+  backupLoading.value = true
+  backupError.value = ''
   try {
-    const overview = await bs.getOverview();
-    backups.value = overview.backups;
-    backupConfig.value = overview.config;
-    syncBackupScheduleForm(overview.config);
+    const overview = await bs.getOverview()
+    backups.value = overview.backups
+    backupConfig.value = overview.config
+    syncBackupScheduleForm(overview.config)
   } catch (error) {
-    backupError.value = apiErrorMessage(error) || 'No fue posible cargar los respaldos.';
+    backupError.value = apiErrorMessage(error) || 'No fue posible cargar los respaldos.'
   } finally {
-    backupLoading.value = false;
+    backupLoading.value = false
   }
 }
 
@@ -395,139 +438,187 @@ function syncBackupScheduleForm(config: BackupConfig): void {
     dayOfWeek: Number(config.dayOfWeek ?? 1),
     dayOfMonth: Number(config.dayOfMonth ?? 1),
     timezone: config.timezone || 'America/Mexico_City',
-    cron: config.cron || '0 2 * * *',
-  };
+    cron: config.cron || '0 2 * * *'
+  }
 }
 
 async function saveBackupSchedule(): Promise<void> {
-  backupBusy.value = true;
+  backupBusy.value = true
   try {
-    const config = await bs.updateConfig(backupScheduleForm.value);
-    backupConfig.value = config;
-    syncBackupScheduleForm(config);
-    toast.add({ severity: 'success', summary: 'Programación actualizada', detail: 'Los próximos respaldos usarán este horario.', life: 3500 });
+    const config = await bs.updateConfig(backupScheduleForm.value)
+    backupConfig.value = config
+    syncBackupScheduleForm(config)
+    toast.add({
+      severity: 'success',
+      summary: 'Programación actualizada',
+      detail: 'Los próximos respaldos usarán este horario.',
+      life: 3500
+    })
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No actualizado', detail: apiErrorMessage(error) || 'No fue posible guardar la programación.', life: 4500 });
+    toast.add({
+      severity: 'error',
+      summary: 'No actualizado',
+      detail: apiErrorMessage(error) || 'No fue posible guardar la programación.',
+      life: 4500
+    })
   } finally {
-    backupBusy.value = false;
+    backupBusy.value = false
   }
 }
 
 async function openBackupManager(): Promise<void> {
-  showBackupManager.value = true;
-  await loadBackups();
+  showBackupManager.value = true
+  await loadBackups()
 }
 
 function closeBackupManager(): void {
-  if (backupBusy.value) return;
-  showBackupManager.value = false;
+  if (backupBusy.value) return
+  showBackupManager.value = false
 }
 
 async function createBackup(): Promise<void> {
-  backupBusy.value = true;
-  backupError.value = "";
+  backupBusy.value = true
+  backupError.value = ''
   try {
-    const backup = await bs.createBackup('manual-ui');
-    backups.value = [backup, ...backups.value.filter(item => item.filename !== backup.filename)];
-    toast.add({ severity: 'success', summary: 'Respaldo creado', detail: backup.filename, life: 3500 });
-    await loadBackups();
+    const backup = await bs.createBackup('manual-ui')
+    backups.value = [backup, ...backups.value.filter((item) => item.filename !== backup.filename)]
+    toast.add({
+      severity: 'success',
+      summary: 'Respaldo creado',
+      detail: backup.filename,
+      life: 3500
+    })
+    await loadBackups()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No creado', detail: apiErrorMessage(error) || 'No fue posible crear el respaldo.', life: 4500 });
+    toast.add({
+      severity: 'error',
+      summary: 'No creado',
+      detail: apiErrorMessage(error) || 'No fue posible crear el respaldo.',
+      life: 4500
+    })
   } finally {
-    backupBusy.value = false;
+    backupBusy.value = false
   }
 }
 
 async function downloadBackup(backup: BackupFile): Promise<void> {
-  backupBusy.value = true;
+  backupBusy.value = true
   try {
-    const blob = await bs.downloadBackup(backup.filename);
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = backup.filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    const blob = await bs.downloadBackup(backup.filename)
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = backup.filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No descargado', detail: apiErrorMessage(error) || 'No fue posible descargar el respaldo.', life: 4000 });
+    toast.add({
+      severity: 'error',
+      summary: 'No descargado',
+      detail: apiErrorMessage(error) || 'No fue posible descargar el respaldo.',
+      life: 4000
+    })
   } finally {
-    backupBusy.value = false;
+    backupBusy.value = false
   }
 }
 
 async function deleteBackup(backup: BackupFile): Promise<void> {
-  const confirmed = window.confirm(`Eliminar el respaldo ${backup.filename}?`);
-  if (!confirmed) return;
-  backupBusy.value = true;
+  const confirmed = window.confirm(`Eliminar el respaldo ${backup.filename}?`)
+  if (!confirmed) return
+  backupBusy.value = true
   try {
-    await bs.deleteBackup(backup.filename);
-    backups.value = backups.value.filter(item => item.filename !== backup.filename);
-    toast.add({ severity: 'success', summary: 'Respaldo eliminado', detail: backup.filename, life: 3000 });
+    await bs.deleteBackup(backup.filename)
+    backups.value = backups.value.filter((item) => item.filename !== backup.filename)
+    toast.add({
+      severity: 'success',
+      summary: 'Respaldo eliminado',
+      detail: backup.filename,
+      life: 3000
+    })
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No eliminado', detail: apiErrorMessage(error) || 'No fue posible eliminar el respaldo.', life: 4000 });
+    toast.add({
+      severity: 'error',
+      summary: 'No eliminado',
+      detail: apiErrorMessage(error) || 'No fue posible eliminar el respaldo.',
+      life: 4000
+    })
   } finally {
-    backupBusy.value = false;
+    backupBusy.value = false
   }
 }
 
 async function pruneBackups(): Promise<void> {
-  backupBusy.value = true;
+  backupBusy.value = true
   try {
-    const result = await bs.pruneBackups();
-    toast.add({ severity: 'success', summary: 'Limpieza completa', detail: `${result.deleted} respaldos eliminados.`, life: 3000 });
-    await loadBackups();
+    const result = await bs.pruneBackups()
+    toast.add({
+      severity: 'success',
+      summary: 'Limpieza completa',
+      detail: `${result.deleted} respaldos eliminados.`,
+      life: 3000
+    })
+    await loadBackups()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No limpiado', detail: apiErrorMessage(error) || 'No fue posible limpiar respaldos antiguos.', life: 4000 });
+    toast.add({
+      severity: 'error',
+      summary: 'No limpiado',
+      detail: apiErrorMessage(error) || 'No fue posible limpiar respaldos antiguos.',
+      life: 4000
+    })
   } finally {
-    backupBusy.value = false;
+    backupBusy.value = false
   }
 }
 
 function chooseBackupImport(): void {
-  if (backupBusy.value || backupLoading.value) return;
-  backupImportInput.value?.click();
+  if (backupBusy.value || backupLoading.value) return
+  backupImportInput.value?.click()
 }
 
 async function importBackupFile(event: Event): Promise<void> {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  input.value = "";
-  if (!file) return;
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
   const confirmed = window.confirm(
     `Importar ${file.name}? Se creará un respaldo de seguridad antes de restaurar, pero la base de datos y archivos actuales serán reemplazados.`
-  );
-  if (!confirmed) return;
+  )
+  if (!confirmed) return
 
-  backupBusy.value = true;
-  backupError.value = "";
+  backupBusy.value = true
+  backupError.value = ''
   try {
-    const response = await bs.importBackup(file);
-    const safetyName = response?.result?.safetyBackup?.filename;
+    const response = await bs.importBackup(file)
+    const safetyName = response?.result?.safetyBackup?.filename
     toast.add({
       severity: 'success',
       summary: 'Respaldo importado',
       detail: safetyName ? `Respaldo previo: ${safetyName}` : 'Restauración completada.',
-      life: 5000,
-    });
-    await loadBackups();
+      life: 5000
+    })
+    await loadBackups()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No importado', detail: apiErrorMessage(error) || 'No fue posible importar el respaldo.', life: 5000 });
+    toast.add({
+      severity: 'error',
+      summary: 'No importado',
+      detail: apiErrorMessage(error) || 'No fue posible importar el respaldo.',
+      life: 5000
+    })
   } finally {
-    backupBusy.value = false;
+    backupBusy.value = false
   }
 }
 
 // USUARIOS
 const usuarios = ref<SettingsUser[]>(await us.getUsuarios())
-const currentUserId = String(localStorage.getItem("userid") || "")
+const currentUserId = String(localStorage.getItem('userid') || '')
 
 const searchQuery = ref('')
 const filteredUsers = computed(() =>
-  usuarios.value.filter(u =>
-    u.nombre.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+  usuarios.value.filter((u) => u.nombre.toLowerCase().includes(searchQuery.value.toLowerCase()))
 )
 
 // -------------- CONTRASEÑA MAESTRA --------------
@@ -537,11 +628,11 @@ function abrirModal(u: SettingsUser): void {
   usuarioSeleccionado.value = u
   passwordVisible.value = false
   passwordRevealBusy.value = false
-  generatedResetLink.value = ""
+  generatedResetLink.value = ''
   passwordResetMenuOpen.value = false
   userDetailTab.value = 'account'
   modalAbierto.value = true
-  selectedLevel.value = u.puesto;
+  selectedLevel.value = u.puesto
 }
 async function openPermissionTab(): Promise<void> {
   userDetailTab.value = 'permissions'
@@ -549,64 +640,87 @@ async function openPermissionTab(): Promise<void> {
   if (!localStorage.getItem('tourSettingsPermissionsDone')) permissionTutorialOpen.value = true
 }
 async function verPassword() {
-  if (passwordRevealBusy.value || !usuarioSeleccionado.value) return;
+  if (passwordRevealBusy.value || !usuarioSeleccionado.value) return
   if (passwordVisible.value) {
-    passwordVisible.value = false;
-    delete usuarioSeleccionado.value.password;
-    return;
+    passwordVisible.value = false
+    delete usuarioSeleccionado.value.password
+    return
   }
-  const entrada = await promptDialog({
-    title: 'Ver contraseña de usuario',
-    message: 'Confirma tu contraseña de acceso para consultar este dato protegido.',
-    inputLabel: 'Tu contraseña',
-    inputType: 'password',
-    placeholder: 'Escribe tu contraseña',
-    confirmLabel: 'Verificar y mostrar',
-  })
-  if (!entrada) return
+
+  const selectedId = usuarioSeleccionado.value.id_usuario
+  const reusedAccess = hasSensitiveAccess()
+  let currentPassword = ''
+  if (!reusedAccess) {
+    const entrada = await promptDialog({
+      title: 'Ver contraseña de usuario',
+      message:
+        'Confirma tu contraseña de acceso. La autorización permanecerá activa durante 10 minutos.',
+      inputLabel: 'Tu contraseña',
+      inputType: 'password',
+      placeholder: 'Escribe tu contraseña',
+      confirmLabel: 'Verificar y mostrar'
+    })
+    if (!entrada) return
+    currentPassword = entrada
+  }
+
   passwordRevealBusy.value = true
   try {
-    const userbd = await us.getUsuarioPS(usuarioSeleccionado.value.id_usuario, entrada)
+    const userbd = await us.getUsuarioPS(selectedId, currentPassword)
+    if (!usuarioSeleccionado.value || usuarioSeleccionado.value.id_usuario !== selectedId) return
     usuarioSeleccionado.value.password = userbd.password
     passwordVisible.value = true
     window.setTimeout(() => {
+      if (usuarioSeleccionado.value?.id_usuario !== selectedId) return
       passwordVisible.value = false
-      if (usuarioSeleccionado.value) delete usuarioSeleccionado.value.password
+      delete usuarioSeleccionado.value.password
     }, 20000)
-  } catch (error) {
-    toast.add({ severity: 'error', summary: 'Verificación rechazada', detail: apiErrorMessage(error) || 'No fue posible verificar tu identidad.', life: 4000 })
+  } catch (error: any) {
+    if (reusedAccess && error?.response?.data?.code === 'SENSITIVE_ACCESS_EXPIRED') {
+      clearSensitiveAccess()
+      passwordRevealBusy.value = false
+      await verPassword()
+      return
+    }
+    toast.add({
+      severity: 'error',
+      summary: 'Verificación rechazada',
+      detail: apiErrorMessage(error) || 'No fue posible verificar tu identidad.',
+      life: 4000
+    })
   } finally {
     passwordRevealBusy.value = false
   }
 }
 
 function isSelectedUserSelf() {
-  return String(usuarioSeleccionado.value?.id_usuario || '') === currentUserId;
+  return String(usuarioSeleccionado.value?.id_usuario || '') === currentUserId
 }
 
 function syncSelectedUserPatch(patch: Partial<SettingsUser>): void {
-  if (!usuarioSeleccionado.value) return;
-  const selectedUser = { ...usuarioSeleccionado.value, ...patch };
-  usuarioSeleccionado.value = selectedUser;
-  const index = usuarios.value.findIndex((user) => user.id_usuario === selectedUser.id_usuario);
-  if (index !== -1) usuarios.value[index] = { ...usuarios.value[index], ...patch };
+  if (!usuarioSeleccionado.value) return
+  const selectedUser = { ...usuarioSeleccionado.value, ...patch }
+  usuarioSeleccionado.value = selectedUser
+  const index = usuarios.value.findIndex((user) => user.id_usuario === selectedUser.id_usuario)
+  if (index !== -1) usuarios.value[index] = { ...usuarios.value[index], ...patch }
   if (isSelectedUserSelf()) {
     if (patch.nombre !== undefined) {
-      userFullName.value = patch.nombre;
-      localStorage.setItem("fullname", patch.nombre);
+      userFullName.value = patch.nombre
+      localStorage.setItem('fullname', patch.nombre)
     }
     if (patch.username !== undefined) {
-      userName.value = patch.username;
-      localStorage.setItem("username", patch.username);
+      userName.value = patch.username
+      localStorage.setItem('username', patch.username)
     }
-    if (patch.puesto !== undefined) localStorage.setItem("level", patch.puesto);
-    if (patch.imagen !== undefined) localStorage.setItem("userphoto", "data:image/png;base64," + patch.imagen);
+    if (patch.puesto !== undefined) localStorage.setItem('level', patch.puesto)
+    if (patch.imagen !== undefined)
+      localStorage.setItem('userphoto', 'data:image/png;base64,' + patch.imagen)
   }
 }
 
 async function editSelectedUserField(field: keyof SettingsUser, label: string): Promise<void> {
-  if (!usuarioSeleccionado.value) return;
-  const currentValue = usuarioSeleccionado.value[field] || "";
+  if (!usuarioSeleccionado.value) return
+  const currentValue = usuarioSeleccionado.value[field] || ''
   const value = await promptDialog({
     title: `Editar ${label.toLowerCase()}`,
     message: `Actualiza ${label.toLowerCase()} para esta cuenta.`,
@@ -614,21 +728,31 @@ async function editSelectedUserField(field: keyof SettingsUser, label: string): 
     inputType: field === 'email' ? 'email' : 'text',
     initialValue: String(currentValue || ''),
     placeholder: field === 'email' ? 'nombre@gmail.com' : String(currentValue || label),
-    confirmLabel: 'Guardar',
-  });
-  if (value === null) return;
+    confirmLabel: 'Guardar'
+  })
+  if (value === null) return
   try {
-    await us.editUsuario(usuarioSeleccionado.value.id_usuario, { [field]: value });
-    syncSelectedUserPatch({ [field]: value });
-    toast.add({ severity: 'success', summary: 'Usuario actualizado', detail: `${label} guardado correctamente.`, life: 2500 });
+    await us.editUsuario(usuarioSeleccionado.value.id_usuario, { [field]: value })
+    syncSelectedUserPatch({ [field]: value })
+    toast.add({
+      severity: 'success',
+      summary: 'Usuario actualizado',
+      detail: `${label} guardado correctamente.`,
+      life: 2500
+    })
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No guardado', detail: apiErrorMessage(error) || 'No se pudo actualizar el usuario.', life: 3500 });
+    toast.add({
+      severity: 'error',
+      summary: 'No guardado',
+      detail: apiErrorMessage(error) || 'No se pudo actualizar el usuario.',
+      life: 3500
+    })
   }
 }
 
 async function changeSelectedUserPassword() {
-  if (!usuarioSeleccionado.value) return;
-  let currentPassword;
+  if (!usuarioSeleccionado.value) return
+  let currentPassword
   if (isSelectedUserSelf()) {
     currentPassword = await promptDialog({
       title: 'Confirmar identidad',
@@ -636,9 +760,9 @@ async function changeSelectedUserPassword() {
       inputLabel: 'Contraseña actual',
       inputType: 'password',
       placeholder: 'Contraseña actual',
-      confirmLabel: 'Continuar',
-    });
-    if (!currentPassword) return;
+      confirmLabel: 'Continuar'
+    })
+    if (!currentPassword) return
   }
   const password = await promptDialog({
     title: 'Cambiar contraseña',
@@ -646,29 +770,44 @@ async function changeSelectedUserPassword() {
     inputLabel: 'Nueva contraseña',
     inputType: 'password',
     placeholder: 'Mínimo 8 caracteres',
-    confirmLabel: 'Continuar',
-  });
-  if (!password) return;
+    confirmLabel: 'Continuar'
+  })
+  if (!password) return
   const confirmPassword = await promptDialog({
     title: 'Confirmar contraseña',
     message: 'Repite la nueva contraseña.',
     inputLabel: 'Confirmación',
     inputType: 'password',
     placeholder: 'Repite la contraseña',
-    confirmLabel: 'Guardar',
-  });
-  if (confirmPassword === null) return;
+    confirmLabel: 'Guardar'
+  })
+  if (confirmPassword === null) return
   if (password !== confirmPassword) {
-    toast.add({ severity: 'warn', summary: 'No coincide', detail: 'Las contraseñas no coinciden.', life: 3000 });
-    return;
+    toast.add({
+      severity: 'warn',
+      summary: 'No coincide',
+      detail: 'Las contraseñas no coinciden.',
+      life: 3000
+    })
+    return
   }
   try {
-    await us.editUsuario(usuarioSeleccionado.value.id_usuario, { password, currentPassword });
-    passwordVisible.value = false;
-    delete usuarioSeleccionado.value.password;
-    toast.add({ severity: 'success', summary: 'Contraseña actualizada', detail: 'La contraseña se guardó correctamente.', life: 3000 });
+    await us.editUsuario(usuarioSeleccionado.value.id_usuario, { password, currentPassword })
+    passwordVisible.value = false
+    delete usuarioSeleccionado.value.password
+    toast.add({
+      severity: 'success',
+      summary: 'Contraseña actualizada',
+      detail: 'La contraseña se guardó correctamente.',
+      life: 3000
+    })
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No guardada', detail: apiErrorMessage(error) || 'No se pudo cambiar la contraseña.', life: 3500 });
+    toast.add({
+      severity: 'error',
+      summary: 'No guardada',
+      detail: apiErrorMessage(error) || 'No se pudo cambiar la contraseña.',
+      life: 3500
+    })
   }
 }
 
@@ -679,134 +818,155 @@ async function changeOwnPassword() {
     inputLabel: 'Contraseña actual',
     inputType: 'password',
     placeholder: 'Contraseña actual',
-    confirmLabel: 'Continuar',
-  });
-  if (!currentPassword) return;
+    confirmLabel: 'Continuar'
+  })
+  if (!currentPassword) return
   const password = await promptDialog({
     title: 'Cambiar contraseña',
     message: 'La nueva contraseña se guardará cifrada.',
     inputLabel: 'Nueva contraseña',
     inputType: 'password',
     placeholder: 'Mínimo 8 caracteres',
-    confirmLabel: 'Continuar',
-  });
-  if (!password) return;
+    confirmLabel: 'Continuar'
+  })
+  if (!password) return
   const confirmPassword = await promptDialog({
     title: 'Confirmar contraseña',
     message: 'Repite la nueva contraseña.',
     inputLabel: 'Confirmación',
     inputType: 'password',
     placeholder: 'Repite la contraseña',
-    confirmLabel: 'Guardar',
-  });
-  if (confirmPassword === null) return;
+    confirmLabel: 'Guardar'
+  })
+  if (confirmPassword === null) return
   if (password !== confirmPassword) {
-    toast.add({ severity: 'warn', summary: 'No coincide', detail: 'Las contraseñas no coinciden.', life: 3000 });
-    return;
+    toast.add({
+      severity: 'warn',
+      summary: 'No coincide',
+      detail: 'Las contraseñas no coinciden.',
+      life: 3000
+    })
+    return
   }
   try {
-    await us.editUsuario(currentUserId, { password, currentPassword });
-    toast.add({ severity: 'success', summary: 'Contraseña actualizada', detail: 'Tu contraseña se guardó correctamente.', life: 3000 });
+    await us.editUsuario(currentUserId, { password, currentPassword })
+    toast.add({
+      severity: 'success',
+      summary: 'Contraseña actualizada',
+      detail: 'Tu contraseña se guardó correctamente.',
+      life: 3000
+    })
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'No guardada', detail: apiErrorMessage(error) || 'No se pudo cambiar tu contraseña.', life: 3500 });
+    toast.add({
+      severity: 'error',
+      summary: 'No guardada',
+      detail: apiErrorMessage(error) || 'No se pudo cambiar tu contraseña.',
+      life: 3500
+    })
   }
 }
 
 async function copyText(value: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
+    await navigator.clipboard.writeText(value)
+    return
   }
-  const input = document.createElement('textarea');
-  input.value = value;
-  input.setAttribute('readonly', 'true');
-  input.style.position = 'fixed';
-  input.style.opacity = '0';
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('copy');
-  input.remove();
+  const input = document.createElement('textarea')
+  input.value = value
+  input.setAttribute('readonly', 'true')
+  input.style.position = 'fixed'
+  input.style.opacity = '0'
+  document.body.appendChild(input)
+  input.select()
+  document.execCommand('copy')
+  input.remove()
 }
 
 async function generatePasswordResetLink() {
-  if (!usuarioSeleccionado.value || passwordResetBusy.value) return;
-  passwordResetBusy.value = true;
+  if (!usuarioSeleccionado.value || passwordResetBusy.value) return
+  passwordResetBusy.value = true
   try {
-    const result = await us.createPasswordReset(usuarioSeleccionado.value.id_usuario, false);
-    generatedResetLink.value = result.resetUrl || "";
-    if (generatedResetLink.value) await copyText(generatedResetLink.value);
+    const result = await us.createPasswordReset(usuarioSeleccionado.value.id_usuario, false)
+    generatedResetLink.value = result.resetUrl || ''
+    if (generatedResetLink.value) await copyText(generatedResetLink.value)
     toast.add({
-      severity: "success",
-      summary: "Enlace generado",
-      detail: generatedResetLink.value ? "El enlace se copió al portapapeles." : "Enlace creado correctamente.",
-      life: 3500,
-    });
+      severity: 'success',
+      summary: 'Enlace generado',
+      detail: generatedResetLink.value
+        ? 'El enlace se copió al portapapeles.'
+        : 'Enlace creado correctamente.',
+      life: 3500
+    })
   } catch (error) {
     toast.add({
-      severity: "error",
-      summary: "No generado",
-      detail: apiErrorMessage(error) || "No fue posible generar el enlace.",
-      life: 4000,
-    });
+      severity: 'error',
+      summary: 'No generado',
+      detail: apiErrorMessage(error) || 'No fue posible generar el enlace.',
+      life: 4000
+    })
   } finally {
-    passwordResetBusy.value = false;
-    passwordResetMenuOpen.value = false;
+    passwordResetBusy.value = false
+    passwordResetMenuOpen.value = false
   }
 }
 
 async function sendPasswordResetEmail() {
-  if (!usuarioSeleccionado.value || passwordResetBusy.value) return;
-  passwordResetBusy.value = true;
+  if (!usuarioSeleccionado.value || passwordResetBusy.value) return
+  passwordResetBusy.value = true
   try {
-    await us.createPasswordReset(usuarioSeleccionado.value.id_usuario, true);
+    await us.createPasswordReset(usuarioSeleccionado.value.id_usuario, true)
     toast.add({
-      severity: "success",
-      summary: "Correo enviado",
+      severity: 'success',
+      summary: 'Correo enviado',
       detail: `Enlace enviado a ${usuarioSeleccionado.value.email}.`,
-      life: 3500,
-    });
-    generatedResetLink.value = "";
+      life: 3500
+    })
+    generatedResetLink.value = ''
   } catch (error) {
     toast.add({
-      severity: "error",
-      summary: "No enviado",
-      detail: apiErrorMessage(error) || "No fue posible enviar el correo.",
-      life: 4000,
-    });
+      severity: 'error',
+      summary: 'No enviado',
+      detail: apiErrorMessage(error) || 'No fue posible enviar el correo.',
+      life: 4000
+    })
   } finally {
-    passwordResetBusy.value = false;
-    passwordResetMenuOpen.value = false;
+    passwordResetBusy.value = false
+    passwordResetMenuOpen.value = false
   }
 }
 
 // DELETE USER
 async function deleteUser(u: SettingsUser): Promise<void> {
   try {
-    usuarios.value = usuarios.value.filter(x => x.id_usuario !== u.id_usuario)
-    if (u.id_usuario == localStorage.getItem("userid")) { //si se intenta eliminar a uno mismo xd
+    usuarios.value = usuarios.value.filter((x) => x.id_usuario !== u.id_usuario)
+    if (u.id_usuario == localStorage.getItem('userid')) {
+      //si se intenta eliminar a uno mismo xd
       await us.deleteUsuario(String(u.id_usuario))
       localStorage.clear()
-      router.push("/")
+      router.push('/')
     } else {
       await us.deleteUsuario(String(u.id_usuario))
-      window.location.reload();
+      window.location.reload()
     }
-
   } catch (error) {
-    toast.add({ severity: "error", summary: "Error", detail: apiErrorMessage(error) || "No se pudo eliminar el usuario.", life: 3500 });
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: apiErrorMessage(error) || 'No se pudo eliminar el usuario.',
+      life: 3500
+    })
   }
-
 }
 
 async function startProfileNameEdit(): Promise<void> {
-  profileNameDraft.value = userFullName.value || ""
+  profileNameDraft.value = userFullName.value || ''
   profileEditingName.value = true
   await nextTick()
   document.querySelector<HTMLInputElement>('#profile-full-name')?.focus()
 }
 
 function cancelProfileNameEdit(): void {
-  profileNameDraft.value = userFullName.value || ""
+  profileNameDraft.value = userFullName.value || ''
   profileEditingName.value = false
 }
 
@@ -814,51 +974,71 @@ async function saveProfileName(): Promise<void> {
   const name = profileNameDraft.value.trim()
   if (name.length < 2 || profileUpdateBusy.value) {
     if (name.length < 2) {
-      toast.add({ severity: 'warn', summary: 'Nombre incompleto', detail: 'Escribe al menos dos caracteres.', life: 3000 })
+      toast.add({
+        severity: 'warn',
+        summary: 'Nombre incompleto',
+        detail: 'Escribe al menos dos caracteres.',
+        life: 3000
+      })
     }
     return
   }
   profileUpdateBusy.value = true
   try {
-    await us.editUsuario(localStorage.getItem("userid"), { nombre: name })
+    await us.editUsuario(localStorage.getItem('userid'), { nombre: name })
     userFullName.value = name
-    localStorage.setItem("fullname", name)
+    localStorage.setItem('fullname', name)
     profileEditingName.value = false
-    toast.add({ severity: 'success', summary: 'Nombre actualizado', detail: 'Tu nombre se guardó correctamente.', life: 2800 })
+    toast.add({
+      severity: 'success',
+      summary: 'Nombre actualizado',
+      detail: 'Tu nombre se guardó correctamente.',
+      life: 2800
+    })
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Nombre sin cambios', detail: apiErrorMessage(error) || 'No se pudo guardar tu nombre.', life: 3500 })
+    toast.add({
+      severity: 'error',
+      summary: 'Nombre sin cambios',
+      detail: apiErrorMessage(error) || 'No se pudo guardar tu nombre.',
+      life: 3500
+    })
   } finally {
     profileUpdateBusy.value = false
   }
 }
 
-async function updateUserStatus(u: SettingsUser): Promise<void>{
+async function updateUserStatus(u: SettingsUser): Promise<void> {
   try {
-    await us.editUsuario(u.id_usuario,{activo: u.activo})
+    await us.editUsuario(u.id_usuario, { activo: u.activo })
   } catch (error) {
-    toast.add({ severity: "error", summary: "Error", detail: apiErrorMessage(error) || "No se pudo actualizar el estado.", life: 3000 });
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: apiErrorMessage(error) || 'No se pudo actualizar el estado.',
+      life: 3000
+    })
   }
 }
 
 async function updateImage(u: string): Promise<void> {
   try {
-    await us.editUsuario(localStorage.getItem("userid"), { imagen: u })
-    const dataUrl = "data:image/png;base64," + u
+    await us.editUsuario(localStorage.getItem('userid'), { imagen: u })
+    const dataUrl = 'data:image/png;base64,' + u
     profileImage.value = dataUrl
-    localStorage.setItem("userphoto", dataUrl)
+    localStorage.setItem('userphoto', dataUrl)
     toast.add({
-      severity: "success",
-      summary: "Foto actualizada",
-      detail: "La nueva foto ya aparece en tu cuenta.",
-      life: 3000,
-    });
+      severity: 'success',
+      summary: 'Foto actualizada',
+      detail: 'La nueva foto ya aparece en tu cuenta.',
+      life: 3000
+    })
   } catch (error) {
     toast.add({
-      severity: "error",
-      summary: "Foto sin cambios",
-      detail: apiErrorMessage(error) || "No se pudo actualizar la foto.",
-      life: 3000,
-    });
+      severity: 'error',
+      summary: 'Foto sin cambios',
+      detail: apiErrorMessage(error) || 'No se pudo actualizar la foto.',
+      life: 3000
+    })
   }
 }
 
@@ -866,108 +1046,121 @@ async function updateImage(u: string): Promise<void> {
 const permissionMetadata: Record<string, PermissionMeta> = {
   canMoveAllCards: {
     label: 'Mover cualquier tarea',
-    description: 'Permite cambiar de columna tareas propias, disponibles y asignadas a otras personas.',
+    description:
+      'Permite cambiar de columna tareas propias, disponibles y asignadas a otras personas.',
     group: 'Tareas',
-    icon: 'pi pi-arrows-alt',
+    icon: 'pi pi-arrows-alt'
   },
   canMoveOwnCard: {
     label: 'Mover tareas propias',
     description: 'Permite avanzar o regresar las tareas que tiene asignadas.',
     group: 'Tareas',
-    icon: 'pi pi-arrow-right-arrow-left',
+    icon: 'pi pi-arrow-right-arrow-left'
   },
   canMoveAvailableCard: {
     label: 'Tomar tareas disponibles',
     description: 'Permite mover y comenzar tareas que todavía no tienen responsable.',
     group: 'Tareas',
-    icon: 'pi pi-inbox',
+    icon: 'pi pi-inbox'
   },
   canAddCard: {
     label: 'Crear tareas',
     description: 'Permite registrar nuevas tareas para el despacho.',
     group: 'Tareas',
-    icon: 'pi pi-plus-circle',
+    icon: 'pi pi-plus-circle'
   },
   canEditCard: {
     label: 'Editar tareas',
     description: 'Permite cambiar datos, fechas y responsables de una tarea.',
     group: 'Tareas',
-    icon: 'pi pi-pencil',
+    icon: 'pi pi-pencil'
   },
   canDeleteCard: {
     label: 'Eliminar tareas',
     description: 'Permite borrar tareas y retirarlas del flujo de trabajo.',
     group: 'Tareas',
     icon: 'pi pi-trash',
-    sensitive: true,
+    sensitive: true
   },
   canAddCliente: {
     label: 'Agregar clientes',
     description: 'Permite crear expedientes nuevos de clientes.',
     group: 'Clientes',
-    icon: 'pi pi-user-plus',
+    icon: 'pi pi-user-plus'
   },
   canEditCliente: {
     label: 'Editar clientes',
     description: 'Permite actualizar datos fiscales, contacto y expediente.',
     group: 'Clientes',
-    icon: 'pi pi-user-edit',
+    icon: 'pi pi-user-edit'
   },
   canDeleteCliente: {
     label: 'Eliminar clientes',
     description: 'Permite eliminar un expediente y sus relaciones disponibles.',
     group: 'Clientes',
     icon: 'pi pi-user-minus',
-    sensitive: true,
+    sensitive: true
   },
   canAddPagoConcepto: {
     label: 'Registrar pago por concepto',
     description: 'Permite capturar cobros o pagos asociados a un concepto.',
     group: 'Cobranza',
-    icon: 'pi pi-receipt',
+    icon: 'pi pi-receipt'
   },
   canEditPagoConcepto: {
     label: 'Editar pago por concepto',
     description: 'Permite corregir importes y datos de pagos por concepto.',
     group: 'Cobranza',
-    icon: 'pi pi-file-edit',
+    icon: 'pi pi-file-edit'
   },
   canDeletePagoConcepto: {
     label: 'Eliminar pago por concepto',
     description: 'Permite borrar registros de pagos por concepto.',
     group: 'Cobranza',
     icon: 'pi pi-trash',
-    sensitive: true,
+    sensitive: true
   },
   canAddPagoMensual: {
     label: 'Registrar pago mensual',
     description: 'Permite capturar mensualidades de clientes.',
     group: 'Cobranza',
-    icon: 'pi pi-calendar-plus',
+    icon: 'pi pi-calendar-plus'
   },
   canEditPagoMensual: {
     label: 'Editar pago mensual',
     description: 'Permite corregir importes, periodos y datos de mensualidades.',
     group: 'Cobranza',
-    icon: 'pi pi-calendar-clock',
+    icon: 'pi pi-calendar-clock'
   },
   canDeletePagoMensual: {
     label: 'Eliminar pago mensual',
     description: 'Permite borrar registros de mensualidades.',
     group: 'Cobranza',
     icon: 'pi pi-calendar-times',
-    sensitive: true,
+    sensitive: true
+  }
+}
+
+const permissionGroupDetails: Record<
+  PermissionMeta['group'],
+  { icon: string; description: string }
+> = {
+  Tareas: {
+    icon: 'pi pi-list-check',
+    description: 'Creación, edición y movimiento del trabajo diario.'
   },
+  Clientes: {
+    icon: 'pi pi-address-book',
+    description: 'Altas y cambios dentro de los expedientes.'
+  },
+  Cobranza: {
+    icon: 'pi pi-wallet',
+    description: 'Mensualidades y pagos registrados en el sistema.'
+  },
+  Otros: { icon: 'pi pi-sliders-h', description: 'Accesos adicionales disponibles para este rol.' }
 }
 
-const permissionGroupDetails: Record<PermissionMeta['group'], { icon: string; description: string }> = {
-  Tareas: { icon: 'pi pi-list-check', description: 'Creación, edición y movimiento del trabajo diario.' },
-  Clientes: { icon: 'pi pi-address-book', description: 'Altas y cambios dentro de los expedientes.' },
-  Cobranza: { icon: 'pi pi-wallet', description: 'Mensualidades y pagos registrados en el sistema.' },
-  Otros: { icon: 'pi pi-sliders-h', description: 'Accesos adicionales disponibles para este rol.' },
-}
-
-const permissions = ref<PermissionMatrix>(await getPermissions());
+const permissions = ref<PermissionMatrix>(await getPermissions())
 const permissionSaving = ref(false)
 const permissionSaveState = ref<PermissionSaveState>('idle')
 
@@ -980,7 +1173,7 @@ const permissionSummary = computed(() => {
   const values = Object.values(activeRolePermissions.value)
   return {
     enabled: values.filter(Boolean).length,
-    total: values.length,
+    total: values.length
   }
 })
 
@@ -990,13 +1183,16 @@ const roleUserCount = computed(() => {
 })
 
 const permissionGroups = computed(() => {
-  const grouped = new Map<PermissionMeta['group'], Array<PermissionMeta & { key: string; enabled: boolean }>>()
+  const grouped = new Map<
+    PermissionMeta['group'],
+    Array<PermissionMeta & { key: string; enabled: boolean }>
+  >()
   Object.entries(activeRolePermissions.value).forEach(([key, enabled]) => {
     const meta = permissionMetadata[key] || {
       label: key,
       description: 'Acceso adicional configurado para este rol.',
       group: 'Otros' as const,
-      icon: 'pi pi-key',
+      icon: 'pi pi-key'
     }
     const entries = grouped.get(meta.group) || []
     entries.push({ ...meta, key, enabled })
@@ -1007,12 +1203,15 @@ const permissionGroups = computed(() => {
     .map((name) => ({ name, ...permissionGroupDetails[name], items: grouped.get(name) || [] }))
 })
 
-const permissionSaveLabel = computed(() => ({
-  idle: 'Los cambios se guardan al instante',
-  saving: 'Guardando cambios…',
-  saved: 'Permisos actualizados',
-  error: 'No se pudo guardar',
-})[permissionSaveState.value])
+const permissionSaveLabel = computed(
+  () =>
+    ({
+      idle: 'Los cambios se guardan al instante',
+      saving: 'Guardando cambios…',
+      saved: 'Permisos actualizados',
+      error: 'No se pudo guardar'
+    })[permissionSaveState.value]
+)
 
 async function togglePermission(role: string, key: string): Promise<void> {
   const rolePermissions = permissions.value[role]
@@ -1034,16 +1233,15 @@ async function togglePermission(role: string, key: string): Promise<void> {
       severity: 'error',
       summary: 'Permisos sin cambios',
       detail: 'No se pudo actualizar el rol. Intenta de nuevo.',
-      life: 4000,
+      life: 4000
     })
   } finally {
     permissionSaving.value = false
   }
 }
 function traducirPermiso(k: string): string {
-  return permissionMetadata[k]?.label || k;
+  return permissionMetadata[k]?.label || k
 }
-
 
 // CREAR USUARIO
 const newUser = ref<NewUserForm>({
@@ -1077,7 +1275,7 @@ const emailDomainOptions = [
   'protonmail.com',
   'zoho.com',
   'aol.com',
-  'dreamsoft-dev.com',
+  'dreamsoft-dev.com'
 ]
 const wizardTitles = ['Identidad y contacto', 'Acceso', 'Confirmación']
 
@@ -1128,7 +1326,7 @@ function parseEmailParts(value = ''): EmailParts | null {
   if (!match) return null
   return {
     local: match[1].replace(/\s+/g, ''),
-    domain: match[2].replace(/^@+/, '').toLowerCase(),
+    domain: match[2].replace(/^@+/, '').toLowerCase()
   }
 }
 
@@ -1137,7 +1335,9 @@ function applyEmailParts(value = ''): boolean {
   if (!parsed) return false
   emailLocalPart.value = parsed.local
   emailDomain.value = parsed.domain
-  emailDomainChoice.value = emailDomainOptions.includes(parsed.domain) ? parsed.domain : customEmailDomainValue
+  emailDomainChoice.value = emailDomainOptions.includes(parsed.domain)
+    ? parsed.domain
+    : customEmailDomainValue
   newUser.value.email = `${parsed.local}@${parsed.domain}`
   return true
 }
@@ -1152,17 +1352,24 @@ watch([emailLocalPart, emailDomain], ([localPart, domain]) => {
   if (pastedEmail) {
     if (pastedEmail.local !== localPart) emailLocalPart.value = pastedEmail.local
     if (pastedEmail.domain !== domain) emailDomain.value = pastedEmail.domain
-    const matchingChoice = emailDomainOptions.includes(pastedEmail.domain) ? pastedEmail.domain : customEmailDomainValue
+    const matchingChoice = emailDomainOptions.includes(pastedEmail.domain)
+      ? pastedEmail.domain
+      : customEmailDomainValue
     if (emailDomainChoice.value !== matchingChoice) emailDomainChoice.value = matchingChoice
     newUser.value.email = `${pastedEmail.local}@${pastedEmail.domain}`
     return
   }
 
   const cleanLocal = String(localPart || '').replace(/\s|@/g, '')
-  const cleanDomain = String(domain || '').replace(/^@+|\s/g, '').toLowerCase() || 'gmail.com'
+  const cleanDomain =
+    String(domain || '')
+      .replace(/^@+|\s/g, '')
+      .toLowerCase() || 'gmail.com'
   if (cleanLocal !== localPart) emailLocalPart.value = cleanLocal
   if (cleanDomain !== domain) emailDomain.value = cleanDomain
-  const matchingChoice = emailDomainOptions.includes(cleanDomain) ? cleanDomain : customEmailDomainValue
+  const matchingChoice = emailDomainOptions.includes(cleanDomain)
+    ? cleanDomain
+    : customEmailDomainValue
   if (emailDomainChoice.value !== matchingChoice) emailDomainChoice.value = matchingChoice
   newUser.value.email = cleanLocal ? `${cleanLocal}@${cleanDomain}` : ''
 })
@@ -1175,39 +1382,49 @@ watch(emailDomainChoice, (choice) => {
 async function compressToBase64(file: File): Promise<string> {
   const options = {
     maxWidthOrHeight: 200,
-    useWebWorker: true,
-  };
+    useWebWorker: true
+  }
 
-  const compressedFile = await imageCompression(file, options);
-  const base64 = await imageCompression.getDataUrlFromFile(compressedFile);
-  return base64.split(",")[1]; // Return base64 only
+  const compressedFile = await imageCompression(file, options)
+  const base64 = await imageCompression.getDataUrlFromFile(compressedFile)
+  return base64.split(',')[1] // Return base64 only
 }
 
 async function onFileChange(e: Event): Promise<void> {
-  const input = e.target as HTMLInputElement;
-  const f = input.files?.[0];
+  const input = e.target as HTMLInputElement
+  const f = input.files?.[0]
   if (f) {
     if (!f.type.startsWith('image/')) {
-      toast.add({ severity: 'warn', summary: 'Archivo no compatible', detail: 'Selecciona una imagen JPG, PNG o WebP.', life: 3500 })
-      input.value = ""
+      toast.add({
+        severity: 'warn',
+        summary: 'Archivo no compatible',
+        detail: 'Selecciona una imagen JPG, PNG o WebP.',
+        life: 3500
+      })
+      input.value = ''
       return
     }
-    const maxSizeMB = 5;
-    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    const maxSizeMB = 5
+    const maxSizeBytes = maxSizeMB * 1024 * 1024
 
     if (f.size > maxSizeBytes) {
-      toast.add({ severity: 'warn', summary: 'Imagen demasiado grande', detail: `La imagen no debe superar los ${maxSizeMB} MB.`, life: 3500 });
-      input.value = "";
-      return;
+      toast.add({
+        severity: 'warn',
+        summary: 'Imagen demasiado grande',
+        detail: `La imagen no debe superar los ${maxSizeMB} MB.`,
+        life: 3500
+      })
+      input.value = ''
+      return
     }
 
     profilePhotoBusy.value = true
     try {
-      const base64Only = await compressToBase64(f);
-      await updateImage(base64Only);
+      const base64Only = await compressToBase64(f)
+      await updateImage(base64Only)
     } finally {
       profilePhotoBusy.value = false
-      input.value = ""
+      input.value = ''
     }
   }
 }
@@ -1217,13 +1434,23 @@ async function onSelectedUserFileChange(e: Event): Promise<void> {
   const file = input.files?.[0]
   if (!file || !usuarioSeleccionado.value || selectedUserPhotoBusy.value) return
   if (!file.type.startsWith('image/')) {
-    toast.add({ severity: 'warn', summary: 'Archivo no compatible', detail: 'Selecciona una imagen JPG, PNG o WebP.', life: 3500 })
-    input.value = ""
+    toast.add({
+      severity: 'warn',
+      summary: 'Archivo no compatible',
+      detail: 'Selecciona una imagen JPG, PNG o WebP.',
+      life: 3500
+    })
+    input.value = ''
     return
   }
   if (file.size > 5 * 1024 * 1024) {
-    toast.add({ severity: 'warn', summary: 'Imagen demasiado grande', detail: 'La imagen no debe superar los 5 MB.', life: 3500 })
-    input.value = ""
+    toast.add({
+      severity: 'warn',
+      summary: 'Imagen demasiado grande',
+      detail: 'La imagen no debe superar los 5 MB.',
+      life: 3500
+    })
+    input.value = ''
     return
   }
 
@@ -1233,46 +1460,60 @@ async function onSelectedUserFileChange(e: Event): Promise<void> {
     await us.editUsuario(usuarioSeleccionado.value.id_usuario, { imagen: base64Only })
     syncSelectedUserPatch({ imagen: base64Only })
     if (isSelectedUserSelf()) profileImage.value = `data:image/png;base64,${base64Only}`
-    toast.add({ severity: 'success', summary: 'Foto actualizada', detail: `La foto de ${usuarioSeleccionado.value.nombre} se guardó correctamente.`, life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: 'Foto actualizada',
+      detail: `La foto de ${usuarioSeleccionado.value.nombre} se guardó correctamente.`,
+      life: 3000
+    })
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Foto sin cambios', detail: apiErrorMessage(error) || 'No se pudo actualizar la foto del usuario.', life: 3500 })
+    toast.add({
+      severity: 'error',
+      summary: 'Foto sin cambios',
+      detail: apiErrorMessage(error) || 'No se pudo actualizar la foto del usuario.',
+      life: 3500
+    })
   } finally {
     selectedUserPhotoBusy.value = false
-    input.value = ""
+    input.value = ''
   }
 }
 
 async function onNewFileChange(e: Event): Promise<void> {
-  const input = e.target as HTMLInputElement;
-  const f = input.files?.[0];
+  const input = e.target as HTMLInputElement
+  const f = input.files?.[0]
   if (f) {
-    const maxSizeMB = 5;
-    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    const maxSizeMB = 5
+    const maxSizeBytes = maxSizeMB * 1024 * 1024
 
     if (f.size > maxSizeBytes) {
-      toast.add({ severity: 'warn', summary: 'Imagen demasiado grande', detail: `La imagen no debe superar los ${maxSizeMB} MB.`, life: 3500 });
-      input.value = "";
-      return;
+      toast.add({
+        severity: 'warn',
+        summary: 'Imagen demasiado grande',
+        detail: `La imagen no debe superar los ${maxSizeMB} MB.`,
+        life: 3500
+      })
+      input.value = ''
+      return
     }
 
-    const fullDataUrl = await imageCompression.getDataUrlFromFile(f);
-    newUserPreview.value = fullDataUrl;
+    const fullDataUrl = await imageCompression.getDataUrlFromFile(f)
+    newUserPreview.value = fullDataUrl
 
-    const base64Only = await compressToBase64(f);
-    newUser.value.imagen = base64Only;
+    const base64Only = await compressToBase64(f)
+    newUser.value.imagen = base64Only
   }
 }
-
 
 const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newUser.value.email))
 const isPhoneValid = computed(() => newUser.value.telefono.replace(/\D/g, '').length === 10)
 const isPasswordMatch = computed(
-  () =>
-    newUser.value.password && newUser.value.password === newUser.value.confirmPassword
+  () => newUser.value.password && newUser.value.password === newUser.value.confirmPassword
 )
 const passwordStrength = computed(() => {
   const password = newUser.value.password
-  if (!password) return { bars: 0, level: 'empty', label: 'Sin evaluar', hint: 'Usa 8 caracteres o más.' }
+  if (!password)
+    return { bars: 0, level: 'empty', label: 'Sin evaluar', hint: 'Usa 8 caracteres o más.' }
 
   let score = 0
   if (password.length >= 8) score++
@@ -1286,7 +1527,7 @@ const passwordStrength = computed(() => {
     { level: 'weak', label: 'Débil', hint: 'Combina mayúsculas, números y símbolos.' },
     { level: 'medium', label: 'Aceptable', hint: 'Un símbolo la hará más segura.' },
     { level: 'good', label: 'Buena', hint: 'Cumple el nivel recomendado.' },
-    { level: 'strong', label: 'Fuerte', hint: 'Buena combinación y longitud.' },
+    { level: 'strong', label: 'Fuerte', hint: 'Buena combinación y longitud.' }
   ]
   return { bars, ...levels[bars] }
 })
@@ -1302,46 +1543,49 @@ const canCreateUser = computed(
 )
 const canContinueCreateUser = computed(() => {
   if (createUserStep.value === 1) {
-    return Boolean(newUser.value.nombre && isEmailValid.value && isPhoneValid.value && newUser.value.puesto)
+    return Boolean(
+      newUser.value.nombre && isEmailValid.value && isPhoneValid.value && newUser.value.puesto
+    )
   }
   if (createUserStep.value === 2) {
-    return Boolean(newUser.value.username && isPasswordMatch.value && passwordStrength.value.bars >= 3)
+    return Boolean(
+      newUser.value.username && isPasswordMatch.value && passwordStrength.value.bars >= 3
+    )
   }
   return canCreateUser.value
 })
 
 const updateLevel = async (level: string): Promise<void> => {
-  const selectedUser = usuarioSeleccionado.value;
-  if (!selectedUser) return;
-  const initialLevel = selectedUser.puesto;
+  const selectedUser = usuarioSeleccionado.value
+  if (!selectedUser) return
+  const initialLevel = selectedUser.puesto
   try {
     await us.editUsuario(selectedUser.id_usuario, { puesto: level })
-    selectedUser.puesto = level;
-    isDropdown.value =  false;
-    if (selectedUser.id_usuario == localStorage.getItem("userid")) {
-      await localStorage.setItem("level", level)
+    selectedUser.puesto = level
+    isDropdown.value = false
+    if (selectedUser.id_usuario == localStorage.getItem('userid')) {
+      await localStorage.setItem('level', level)
     }
-    window.location.reload();
+    window.location.reload()
   } catch (error) {
-    modalAbierto.value = false;
-    selectedUser.puesto = initialLevel;
-    isDropdown.value = false;
+    modalAbierto.value = false
+    selectedUser.puesto = initialLevel
+    isDropdown.value = false
     toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: "No se pudo realizar la operacion",
-      life: 3000,
-    });
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo realizar la operacion',
+      life: 3000
+    })
   }
-
-};
+}
 
 async function createUser() {
   if (!canCreateUser.value) return
   creatingUser.value = true
   try {
     const userInfo = await as.getUserInfo() //actualiza la informacion del usuario para actualizar localstorage
-    if (localStorage.getItem('level') == "Administrador" && userInfo) {
+    if (localStorage.getItem('level') == 'Administrador' && userInfo) {
       const payload = { ...newUser.value }
       delete payload.confirmPassword
       const creationResult = await us.addUsuario(payload)
@@ -1349,26 +1593,27 @@ async function createUser() {
       toast.add({
         severity: creationResult.emailWarning ? 'warn' : 'success',
         summary: 'Usuario creado',
-        detail: creationResult.emailWarning || `${newUser.value.nombre} ya puede acceder a la aplicación. Credenciales enviadas por correo.`,
-        life: creationResult.emailWarning ? 6000 : 3500,
+        detail:
+          creationResult.emailWarning ||
+          `${newUser.value.nombre} ya puede acceder a la aplicación. Credenciales enviadas por correo.`,
+        life: creationResult.emailWarning ? 6000 : 3500
       })
       showCreateUserModal.value = false
       resetNewUser()
     } else {
       toast.add({
-        severity: "error",
-        summary: "Acceso restringido",
-        detail: "Solo un administrador puede crear usuarios.",
-        life: 3000,
-      });
+        severity: 'error',
+        summary: 'Acceso restringido',
+        detail: 'Solo un administrador puede crear usuarios.',
+        life: 3000
+      })
     }
-
   } catch (error) {
     toast.add({
       severity: 'error',
       summary: 'No se creó el usuario',
       detail: apiErrorMessage(error) || 'Revisa los datos e inténtalo de nuevo.',
-      life: 4000,
+      life: 4000
     })
   } finally {
     creatingUser.value = false

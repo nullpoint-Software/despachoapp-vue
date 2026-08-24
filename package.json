@@ -10,7 +10,9 @@
     "postbuild": "node generate-htaccess.js",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@abrazasoft/thermal_printer_vuejs": "^1.0.2",
@@ -61,6 +63,7 @@
     "concurrently": "^9.1.2",
     "daisyui": "^5.3.8",
     "npm-run-all2": "^7.0.2",
+    "prettier": "3.9.6",
     "typescript": "~5.7.3",
     "vite": "^6.4.3",
     "vite-plugin-pwa": "^1.1.0",

@@ -9,11 +9,7 @@
 />
 
 <Teleport to="body">
-  <div
-    v-if="show"
-    class="bank-reconciliation-overlay"
-    @click.self="closeDialog"
-  >
+  <div v-if="show" class="bank-reconciliation-overlay">
     <section
       class="bank-reconciliation-modal"
       role="dialog"
@@ -25,7 +21,11 @@
           <p>ESTADO DE CUENTA / REPORTES</p>
           <h2 id="bank-reconciliation-title">Conciliación bancaria</h2>
           <span>Detecta abonos, cargos y diferencias contra los CFDI reportados.</span>
-          <button type="button" class="reconciliation-help-button" @click="openReconciliationTutorial">
+          <button
+            type="button"
+            class="reconciliation-help-button"
+            @click="openReconciliationTutorial"
+          >
             <i class="pi pi-question-circle"></i>
             {{ result ? "Cómo leer resultados" : "Ver guía de conciliación" }}
           </button>
@@ -36,39 +36,63 @@
       <div class="bank-reconciliation-body">
         <template v-if="!result">
           <section class="reconciliation-context" aria-label="Contexto de conciliación">
-            <div><span>Cliente</span><strong>{{ props.clientLabel || "Cliente seleccionado" }}</strong></div>
+            <div>
+              <span>Cliente</span><strong>{{ props.clientLabel || "Cliente seleccionado" }}</strong>
+            </div>
             <div><span>Periodo</span><strong>{{ periodLabel }}</strong></div>
             <div><span>Reportes mensuales</span><strong>{{ monthlyReports.length }}</strong></div>
           </section>
 
           <p v-if="props.month === 0" class="reconciliation-alert" role="alert">
-            Selecciona un mes en los filtros de Fiscal. La conciliación se realiza por periodo mensual.
+            Selecciona un mes en los filtros de Fiscal. La conciliación se realiza por periodo
+            mensual.
           </p>
           <p v-else-if="!monthlyReports.length" class="reconciliation-alert" role="alert">
-            Este periodo todavía no tiene reportes mensuales. Guarda el reporte de ingresos o egresos antes de comparar.
+            Este periodo todavía no tiene reportes mensuales. Guarda el reporte de ingresos o
+            egresos antes de comparar.
           </p>
 
           <ol class="reconciliation-readiness" aria-label="Requisitos para conciliar">
             <li :class="{ complete: props.month > 0 }">
               <span>01</span>
-              <div><strong>Periodo mensual</strong><small>{{ props.month > 0 ? periodLabel : "Selecciona un mes en Fiscal" }}</small></div>
+              <div>
+                <strong>Periodo mensual</strong
+                ><small>{{ props.month > 0 ? periodLabel : "Selecciona un mes en Fiscal" }}</small>
+              </div>
               <i :class="props.month > 0 ? 'pi pi-check' : 'pi pi-clock'"></i>
             </li>
             <li :class="{ complete: monthlyReports.length > 0 }">
               <span>02</span>
-              <div><strong>Reportes fiscales</strong><small>{{ monthlyReports.length ? monthlyReports.length + " reporte(s) disponibles" : "Guarda ingresos o egresos" }}</small></div>
+              <div>
+                <strong>Reportes fiscales</strong
+                ><small
+                  >{{ monthlyReports.length ? monthlyReports.length + " reporte(s) disponibles" :
+                  "Guarda ingresos o egresos" }}</small
+                >
+              </div>
               <i :class="monthlyReports.length ? 'pi pi-check' : 'pi pi-clock'"></i>
             </li>
             <li :class="{ complete: statementFile }">
               <span>03</span>
-              <div><strong>Estado de cuenta</strong><small>{{ statementFile ? statementFile.name : "Carga el archivo del mismo periodo" }}</small></div>
+              <div>
+                <strong>Estado de cuenta</strong
+                ><small
+                  >{{ statementFile ? statementFile.name : "Carga el archivo del mismo periodo"
+                  }}</small
+                >
+              </div>
               <i :class="statementFile ? 'pi pi-check' : 'pi pi-clock'"></i>
             </li>
           </ol>
 
           <section class="reconciliation-config" aria-label="Configuración del archivo">
             <label>
-              <span>Banco <AppFieldHelp label="Banco del estado de cuenta" text="Usa detección automática o elige un banco si el formato no se reconoce correctamente." /></span>
+              <span
+                >Banco
+                <AppFieldHelp
+                  label="Banco del estado de cuenta"
+                  text="Usa detección automática o elige un banco si el formato no se reconoce correctamente."
+              /></span>
               <AppSelect
                 v-model="draft.bank"
                 :options="bankOptions"
@@ -77,7 +101,12 @@
               />
             </label>
             <label>
-              <span>Contraseña del PDF <AppFieldHelp label="Contraseña temporal" text="Sólo se usa para abrir el PDF durante esta comparación. No se almacena." /></span>
+              <span
+                >Contraseña del PDF
+                <AppFieldHelp
+                  label="Contraseña temporal"
+                  text="Sólo se usa para abrir el PDF durante esta comparación. No se almacena."
+              /></span>
               <AppInput
                 v-model="draft.password"
                 type="password"
@@ -86,11 +115,27 @@
               />
             </label>
             <label>
-              <span>Tolerancia de importe <AppFieldHelp label="Tolerancia de importe" text="Diferencia máxima en pesos que todavía puede considerarse coincidencia." /></span>
-              <AppInput v-model="draft.amountTolerance" type="number" min="0" max="1000" step="0.01" />
+              <span
+                >Tolerancia de importe
+                <AppFieldHelp
+                  label="Tolerancia de importe"
+                  text="Diferencia máxima en pesos que todavía puede considerarse coincidencia."
+              /></span>
+              <AppInput
+                v-model="draft.amountTolerance"
+                type="number"
+                min="0"
+                max="1000"
+                step="0.01"
+              />
             </label>
             <label>
-              <span>Ventana de fechas <AppFieldHelp label="Ventana de fechas" text="Número máximo de días entre la fecha bancaria y la fecha del CFDI." /></span>
+              <span
+                >Ventana de fechas
+                <AppFieldHelp
+                  label="Ventana de fechas"
+                  text="Número máximo de días entre la fecha bancaria y la fecha del CFDI."
+              /></span>
               <AppInput v-model="draft.dateWindow" type="number" min="0" max="31" step="1" />
               <small>Días permitidos entre banco y CFDI.</small>
             </label>
@@ -131,11 +176,15 @@
             <i class="pi pi-lock" />
             <div>
               <strong>Procesamiento privado</strong>
-              <span>El servidor extrae el archivo en memoria y lo descarta. No guarda estados de cuenta ni contraseñas.</span>
+              <span
+                >El servidor extrae el archivo en memoria y lo descarta. No guarda estados de cuenta
+                ni contraseñas.</span
+              >
             </div>
           </aside>
           <p class="bank-support">
-            Perfiles incluidos: BBVA, HSBC, Banco Azteca, Santander, Banorte y Banamex. El modo genérico usa fecha, concepto, cargo, abono, referencia y saldo.
+            Perfiles incluidos: BBVA, HSBC, Banco Azteca, Santander, Banorte y Banamex. El modo
+            genérico usa fecha, concepto, cargo, abono, referencia y saldo.
           </p>
         </template>
 
@@ -144,7 +193,9 @@
             <div>
               <span>{{ result.meta.bank.label }} / {{ result.meta.format }}</span>
               <strong>{{ result.meta.client.name }}</strong>
-              <small>{{ periodLabel }}. {{ result.meta.reports.length }} reportes del periodo.</small>
+              <small
+                >{{ periodLabel }}. {{ result.meta.reports.length }} reportes del periodo.</small
+              >
             </div>
             <button type="button" @click="resetComparison">
               <i class="pi pi-refresh" /> Nueva comparación
@@ -167,26 +218,36 @@
           </section>
 
           <section class="reconciliation-money" aria-label="Comparación de importes">
-            <div class="money-heading"><span>Movimiento</span><span>Banco</span><span>Reportes</span><span>Diferencia</span></div>
+            <div class="money-heading">
+              <span>Movimiento</span><span>Banco</span><span>Reportes</span><span>Diferencia</span>
+            </div>
             <div>
               <strong>Abonos / ingresos</strong>
               <span>{{ money(result.summary.bankCredits) }}</span>
               <span>{{ money(result.summary.reportCredits) }}</span>
-              <b :class="{ balanced: Math.abs(result.summary.creditDifference) <= draft.amountTolerance }">{{ money(result.summary.creditDifference) }}</b>
+              <b
+                :class="{ balanced: Math.abs(result.summary.creditDifference) <= draft.amountTolerance }"
+                >{{ money(result.summary.creditDifference) }}</b
+              >
             </div>
             <div>
               <strong>Cargos / egresos</strong>
               <span>{{ money(result.summary.bankDebits) }}</span>
               <span>{{ money(result.summary.reportDebits) }}</span>
-              <b :class="{ balanced: Math.abs(result.summary.debitDifference) <= draft.amountTolerance }">{{ money(result.summary.debitDifference) }}</b>
+              <b
+                :class="{ balanced: Math.abs(result.summary.debitDifference) <= draft.amountTolerance }"
+                >{{ money(result.summary.debitDifference) }}</b
+              >
             </div>
           </section>
 
           <p v-if="result.meta.skipped.unpaidPpd" class="reconciliation-info">
-            {{ result.meta.skipped.unpaidPpd }} CFDI PPD no tenían complemento de pago en el periodo y no se consideraron como movimiento esperado.
+            {{ result.meta.skipped.unpaidPpd }} CFDI PPD no tenían complemento de pago en el periodo
+            y no se consideraron como movimiento esperado.
           </p>
           <p v-if="result.meta.skipped.nonBankPayment" class="reconciliation-info">
-            {{ result.meta.skipped.nonBankPayment }} CFDI pagados en efectivo se excluyeron porque no deben aparecer en el estado bancario.
+            {{ result.meta.skipped.nonBankPayment }} CFDI pagados en efectivo se excluyeron porque
+            no deben aparecer en el estado bancario.
           </p>
 
           <div class="reconciliation-toolbar">
@@ -215,14 +276,18 @@
               <tbody v-if="visibleRows.length">
                 <tr v-for="row in visibleRows" :key="row.id" :class="`row-${row.status}`">
                   <td>
-                    <span class="reconciliation-status" :class="row.status">{{ statusLabel(row.status) }}</span>
+                    <span class="reconciliation-status" :class="row.status"
+                      >{{ statusLabel(row.status) }}</span
+                    >
                     <small v-if="row.score">Confianza {{ row.score }}%</small>
                   </td>
                   <td>
                     <template v-if="row.bank">
                       <div class="movement-line">
                         <span>{{ dateLabel(row.bank.date) }}</span>
-                        <strong>{{ movementLabel(row.bank.type) }} {{ money(row.bank.amount) }}</strong>
+                        <strong
+                          >{{ movementLabel(row.bank.type) }} {{ money(row.bank.amount) }}</strong
+                        >
                       </div>
                       <p>{{ row.bank.description }}</p>
                       <small v-if="row.bank.trackingKey || row.bank.reference">
@@ -252,7 +317,11 @@
                 </tr>
               </tbody>
               <tbody v-else>
-                <tr><td colspan="4" class="reconciliation-empty">No hay resultados para este filtro.</td></tr>
+                <tr>
+                  <td colspan="4" class="reconciliation-empty">
+                    No hay resultados para este filtro.
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

@@ -1,3 +1,42 @@
-.modal-content button.app-button.p-button-text,.modal-content button.app-button.app-button--outlined,.modal-shell button.app-button.p-button-text,.modal-shell button.app-button.app-button--outlined,.cut-modal button.app-button.p-button-text,.cut-modal button.app-button.app-button--outlined{background:transparent!important;color:#141413!important;border-color:#141413!important}.modal-content button.app-button.p-button-text:hover:not(:disabled),.modal-content button.app-button.app-button--outlined:hover:not(:disabled),.modal-shell button.app-button.p-button-text:hover:not(:disabled),.modal-shell button.app-button.app-button--outlined:hover:not(:disabled),.cut-modal button.app-button.p-button-text:hover:not(:disabled),.cut-modal button.app-button.app-button--outlined:hover:not(:disabled){background:#141413!important;color:#fff!important;border-color:#141413!important}
-button.app-button.app-help-button{border-color:var(--br-accent)!important;background:var(--br-accent)!important;color:var(--br-accent-text)!important;-webkit-text-fill-color:var(--br-accent-text)!important;box-shadow:3px 3px 0 color-mix(in srgb,var(--br-text) 78%,transparent)}button.app-button.app-help-button:hover:not(:disabled){border-color:var(--br-text)!important;background:var(--br-text)!important;color:var(--br-bg)!important;-webkit-text-fill-color:var(--br-bg)!important;transform:translateY(-2px)}button.app-button.app-help-button:focus-visible{outline:3px solid var(--br-text)!important;outline-offset:3px}
-button.app-button.app-help-button :where(span,i){color:inherit!important;-webkit-text-fill-color:inherit!important}
+.modal-content button.app-button.p-button-text,
+.modal-content button.app-button.app-button--outlined,
+.modal-shell button.app-button.p-button-text,
+.modal-shell button.app-button.app-button--outlined,
+.cut-modal button.app-button.p-button-text,
+.cut-modal button.app-button.app-button--outlined {
+  background: transparent !important;
+  color: #141413 !important;
+  border-color: #141413 !important;
+}
+.modal-content button.app-button.p-button-text:hover:not(:disabled),
+.modal-content button.app-button.app-button--outlined:hover:not(:disabled),
+.modal-shell button.app-button.p-button-text:hover:not(:disabled),
+.modal-shell button.app-button.app-button--outlined:hover:not(:disabled),
+.cut-modal button.app-button.p-button-text:hover:not(:disabled),
+.cut-modal button.app-button.app-button--outlined:hover:not(:disabled) {
+  background: #141413 !important;
+  color: #fff !important;
+  border-color: #141413 !important;
+}
+button.app-button.app-help-button {
+  border-color: var(--br-accent) !important;
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+  -webkit-text-fill-color: var(--br-accent-text) !important;
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--br-text) 78%, transparent);
+}
+button.app-button.app-help-button:hover:not(:disabled) {
+  border-color: var(--br-text) !important;
+  background: var(--br-text) !important;
+  color: var(--br-bg) !important;
+  -webkit-text-fill-color: var(--br-bg) !important;
+  transform: translateY(-2px);
+}
+button.app-button.app-help-button:focus-visible {
+  outline: 3px solid var(--br-text) !important;
+  outline-offset: 3px;
+}
+button.app-button.app-help-button :where(span, i) {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+}

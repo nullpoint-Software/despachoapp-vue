@@ -37,13 +37,17 @@
 .bank-reconciliation-header p {
   margin: 0 0 0.55rem;
   color: var(--br-accent);
-  font: 800 0.68rem "Courier New", monospace;
+  font:
+    800 0.68rem 'Courier New',
+    monospace;
   letter-spacing: 0.1em;
 }
 
 .bank-reconciliation-header h2 {
   margin: 0;
-  font: 900 clamp(2rem, 4vw, 3.6rem) / 0.92 Arial, sans-serif;
+  font:
+    900 clamp(2rem, 4vw, 3.6rem) / 0.92 Arial,
+    sans-serif;
   letter-spacing: -0.055em;
   text-transform: uppercase;
 }
@@ -52,7 +56,9 @@
   display: block;
   margin-top: 0.75rem;
   color: #c2beb5;
-  font: 700 0.76rem "Courier New", monospace;
+  font:
+    700 0.76rem 'Courier New',
+    monospace;
 }
 
 .bank-reconciliation-header > button {
@@ -66,7 +72,9 @@
   border-bottom: 2px solid #f4f2ec;
   background: var(--br-accent);
   color: var(--br-accent-text);
-  font: 400 2rem Arial, sans-serif;
+  font:
+    400 2rem Arial,
+    sans-serif;
   cursor: pointer;
 }
 
@@ -98,7 +106,9 @@
   display: block;
   margin-bottom: 0.38rem;
   color: #56534c;
-  font: 800 0.62rem "Courier New", monospace;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -108,7 +118,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: 900 0.88rem Arial, sans-serif;
+  font:
+    900 0.88rem Arial,
+    sans-serif;
 }
 
 .reconciliation-alert,
@@ -145,7 +157,9 @@
   display: block;
   margin-top: 0.32rem;
   color: #56534c;
-  font: 700 0.62rem "Courier New", monospace;
+  font:
+    700 0.62rem 'Courier New',
+    monospace;
 }
 
 .reconciliation-file-input {
@@ -195,13 +209,17 @@
 
 .statement-dropzone strong {
   overflow-wrap: anywhere;
-  font: 900 1.05rem Arial, sans-serif;
+  font:
+    900 1.05rem Arial,
+    sans-serif;
 }
 
 .statement-dropzone small {
   margin-top: 0.35rem;
   color: #56534c;
-  font: 700 0.7rem "Courier New", monospace;
+  font:
+    700 0.7rem 'Courier New',
+    monospace;
 }
 
 .reconciliation-error {
@@ -237,7 +255,9 @@
 .bank-support {
   margin-top: 0.22rem;
   color: #56534c;
-  font: 700 0.66rem/1.45 "Courier New", monospace;
+  font:
+    700 0.66rem/1.45 'Courier New',
+    monospace;
 }
 
 .bank-support {
@@ -261,19 +281,25 @@
 
 .reconciliation-result-head span {
   color: #56534c;
-  font: 800 0.64rem "Courier New", monospace;
+  font:
+    800 0.64rem 'Courier New',
+    monospace;
   text-transform: uppercase;
 }
 
 .reconciliation-result-head strong {
   margin-top: 0.25rem;
-  font: 900 1.25rem Arial, sans-serif;
+  font:
+    900 1.25rem Arial,
+    sans-serif;
 }
 
 .reconciliation-result-head small {
   margin-top: 0.2rem;
   color: #56534c;
-  font: 700 0.66rem "Courier New", monospace;
+  font:
+    700 0.66rem 'Courier New',
+    monospace;
 }
 
 .reconciliation-result-head button {
@@ -282,7 +308,9 @@
   background: transparent;
   color: #141413;
   padding: 0.7rem 0.85rem;
-  font: 800 0.65rem "Courier New", monospace;
+  font:
+    800 0.65rem 'Courier New',
+    monospace;
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -315,13 +343,17 @@
 
 .reconciliation-kpis span {
   color: #56534c;
-  font: 800 0.62rem "Courier New", monospace;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
   text-transform: uppercase;
 }
 
 .reconciliation-kpis strong {
   margin-top: 0.65rem;
-  font: 900 2rem/1 Arial, sans-serif;
+  font:
+    900 2rem/1 Arial,
+    sans-serif;
 }
 
 .reconciliation-kpis .coverage {
@@ -373,7 +405,9 @@
 .reconciliation-money .money-heading {
   background: #dedbd3;
   color: #56534c;
-  font: 800 0.62rem "Courier New", monospace;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
   text-transform: uppercase;
 }
 
@@ -399,7 +433,9 @@
 
 .reconciliation-toolbar > span {
   color: #56534c;
-  font: 800 0.65rem "Courier New", monospace;
+  font:
+    800 0.65rem 'Courier New',
+    monospace;
 }
 
 .reconciliation-table-wrap {
@@ -422,7 +458,9 @@
   color: #56534c;
   padding: 0.75rem;
   text-align: left;
-  font: 800 0.62rem "Courier New", monospace;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
   text-transform: uppercase;
 }
 
@@ -455,20 +493,33 @@
   display: inline-block;
   border: 1px solid currentColor;
   padding: 0.25rem 0.42rem;
-  font: 800 0.58rem "Courier New", monospace;
+  font:
+    800 0.58rem 'Courier New',
+    monospace;
   text-transform: uppercase;
 }
 
-.reconciliation-status.matched { color: #25613b; background: #d8ead9; }
-.reconciliation-status.review { color: #60470d; background: #f3e8c7; }
+.reconciliation-status.matched {
+  color: #25613b;
+  background: #d8ead9;
+}
+.reconciliation-status.review {
+  color: #60470d;
+  background: #f3e8c7;
+}
 .reconciliation-status.bank_only,
-.reconciliation-status.report_only { color: #7b261f; background: #f4ded9; }
+.reconciliation-status.report_only {
+  color: #7b261f;
+  background: #f4ded9;
+}
 
 .reconciliation-table td:first-child small {
   display: block;
   margin-top: 0.45rem;
   color: #56534c;
-  font: 700 0.6rem "Courier New", monospace;
+  font:
+    700 0.6rem 'Courier New',
+    monospace;
 }
 
 .movement-line {
@@ -483,7 +534,9 @@
 .report-matches span,
 .report-matches small {
   color: #56534c;
-  font: 700 0.62rem "Courier New", monospace;
+  font:
+    700 0.62rem 'Courier New',
+    monospace;
 }
 
 .reconciliation-table p {
@@ -645,21 +698,103 @@
 }
 
 /* Contraste coherente con cualquier paleta activa. */
-.bank-reconciliation-modal{border-color:var(--br-line-strong);background:var(--br-panel);color:var(--br-text)}
-.bank-reconciliation-header{border-color:var(--br-line-strong);background:var(--br-bg);color:var(--br-text)}
-.bank-reconciliation-header span,.reconciliation-context span,.reconciliation-config label>span,.reconciliation-toolbar label>span,.reconciliation-config small,.statement-dropzone small,.reconciliation-privacy span,.bank-support,.reconciliation-result-head span,.reconciliation-result-head small,.reconciliation-kpis span,.reconciliation-toolbar>span,.reconciliation-table td:first-child small,.reconciliation-table td>small,.reconciliation-empty{color:var(--br-muted)}
-.reconciliation-context,.reconciliation-privacy,.reconciliation-kpis,.reconciliation-money,.reconciliation-table-wrap,.statement-dropzone,.reconciliation-result-head,.bank-reconciliation-footer{border-color:var(--br-line-strong)}
-.reconciliation-context div,.reconciliation-kpis article,.reconciliation-money>div,.reconciliation-money span,.reconciliation-money strong,.reconciliation-money b,.reconciliation-table td{border-color:var(--br-line)}
-.statement-dropzone,.reconciliation-result-head button{color:var(--br-text)}
-.reconciliation-result-head button{border-color:var(--br-line-strong)}
-.reconciliation-result-head button:hover{border-color:var(--br-accent);background:var(--br-accent);color:var(--br-accent-text)}
-.reconciliation-money .money-heading,.reconciliation-table th{background:var(--br-panel-2);color:var(--br-muted)}
-.reconciliation-alert,.reconciliation-error,.reconciliation-kpis .difference{border-color:var(--br-danger);background:color-mix(in srgb,var(--br-danger) 16%,var(--br-panel));color:color-mix(in srgb,var(--br-danger) 82%,white)}
-.reconciliation-info{border-color:var(--br-warning);background:color-mix(in srgb,var(--br-warning) 15%,var(--br-panel));color:color-mix(in srgb,var(--br-warning) 78%,white)}
-.reconciliation-money b{color:var(--br-danger)}.reconciliation-money b.balanced{color:var(--br-success)}.reconciliation-reason{color:var(--br-text)}
-.reconciliation-status.matched{background:color-mix(in srgb,var(--br-success) 18%,var(--br-panel));color:var(--br-success)}
-.reconciliation-status.review{background:color-mix(in srgb,var(--br-warning) 16%,var(--br-panel));color:var(--br-warning)}
-.reconciliation-status.bank_only,.reconciliation-status.report_only{background:color-mix(in srgb,var(--br-danger) 16%,var(--br-panel));color:var(--br-danger)}
+.bank-reconciliation-modal {
+  border-color: var(--br-line-strong);
+  background: var(--br-panel);
+  color: var(--br-text);
+}
+.bank-reconciliation-header {
+  border-color: var(--br-line-strong);
+  background: var(--br-bg);
+  color: var(--br-text);
+}
+.bank-reconciliation-header span,
+.reconciliation-context span,
+.reconciliation-config label > span,
+.reconciliation-toolbar label > span,
+.reconciliation-config small,
+.statement-dropzone small,
+.reconciliation-privacy span,
+.bank-support,
+.reconciliation-result-head span,
+.reconciliation-result-head small,
+.reconciliation-kpis span,
+.reconciliation-toolbar > span,
+.reconciliation-table td:first-child small,
+.reconciliation-table td > small,
+.reconciliation-empty {
+  color: var(--br-muted);
+}
+.reconciliation-context,
+.reconciliation-privacy,
+.reconciliation-kpis,
+.reconciliation-money,
+.reconciliation-table-wrap,
+.statement-dropzone,
+.reconciliation-result-head,
+.bank-reconciliation-footer {
+  border-color: var(--br-line-strong);
+}
+.reconciliation-context div,
+.reconciliation-kpis article,
+.reconciliation-money > div,
+.reconciliation-money span,
+.reconciliation-money strong,
+.reconciliation-money b,
+.reconciliation-table td {
+  border-color: var(--br-line);
+}
+.statement-dropzone,
+.reconciliation-result-head button {
+  color: var(--br-text);
+}
+.reconciliation-result-head button {
+  border-color: var(--br-line-strong);
+}
+.reconciliation-result-head button:hover {
+  border-color: var(--br-accent);
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+.reconciliation-money .money-heading,
+.reconciliation-table th {
+  background: var(--br-panel-2);
+  color: var(--br-muted);
+}
+.reconciliation-alert,
+.reconciliation-error,
+.reconciliation-kpis .difference {
+  border-color: var(--br-danger);
+  background: color-mix(in srgb, var(--br-danger) 16%, var(--br-panel));
+  color: color-mix(in srgb, var(--br-danger) 82%, white);
+}
+.reconciliation-info {
+  border-color: var(--br-warning);
+  background: color-mix(in srgb, var(--br-warning) 15%, var(--br-panel));
+  color: color-mix(in srgb, var(--br-warning) 78%, white);
+}
+.reconciliation-money b {
+  color: var(--br-danger);
+}
+.reconciliation-money b.balanced {
+  color: var(--br-success);
+}
+.reconciliation-reason {
+  color: var(--br-text);
+}
+.reconciliation-status.matched {
+  background: color-mix(in srgb, var(--br-success) 18%, var(--br-panel));
+  color: var(--br-success);
+}
+.reconciliation-status.review {
+  background: color-mix(in srgb, var(--br-warning) 16%, var(--br-panel));
+  color: var(--br-warning);
+}
+.reconciliation-status.bank_only,
+.reconciliation-status.report_only {
+  background: color-mix(in srgb, var(--br-danger) 16%, var(--br-panel));
+  color: var(--br-danger);
+}
 
 .bank-reconciliation-header .reconciliation-help-button {
   display: inline-flex;
@@ -671,11 +806,16 @@
   background: transparent;
   color: var(--br-accent);
   padding: 0.55rem 0.75rem;
-  font: 800 0.62rem "Courier New", monospace;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
 }
 
 .bank-reconciliation-header .reconciliation-help-button:hover,
@@ -722,7 +862,9 @@
   place-items: center;
   border: 1px solid var(--br-line-strong);
   color: var(--br-muted);
-  font: 900 0.65rem "Courier New", monospace;
+  font:
+    900 0.65rem 'Courier New',
+    monospace;
 }
 
 .reconciliation-readiness strong,
@@ -732,7 +874,9 @@
 
 .reconciliation-readiness strong {
   color: var(--br-text);
-  font: 900 0.78rem Arial, sans-serif;
+  font:
+    900 0.78rem Arial,
+    sans-serif;
   text-transform: uppercase;
 }
 
@@ -740,7 +884,9 @@
   overflow: hidden;
   margin-top: 0.25rem;
   color: var(--br-muted);
-  font: 700 0.6rem "Courier New", monospace;
+  font:
+    700 0.6rem 'Courier New',
+    monospace;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

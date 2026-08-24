@@ -5,8 +5,7 @@
   border: 1px solid rgb(158 231 194 / 0.28);
   background:
     radial-gradient(circle at 50% 48%, rgb(120 213 170 / 0.12), transparent 42%),
-    linear-gradient(135deg, rgb(255 255 255 / 0.035), transparent 52%),
-    #0d1915;
+    linear-gradient(135deg, rgb(255 255 255 / 0.035), transparent 52%), #0d1915;
   isolation: isolate;
   margin: 0;
 }
@@ -15,7 +14,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  content: "";
+  content: '';
 }
 .ascii-orb::before {
   z-index: 2;
@@ -27,7 +26,14 @@
   border: 1px solid rgb(255 255 255 / 0.05);
   box-shadow: inset 0 0 5rem rgb(0 0 0 / 0.36);
 }
-canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; }
+canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 figcaption {
   position: absolute;
   right: 1.2rem;
@@ -42,13 +48,32 @@ figcaption {
   padding-top: 0.8rem;
   color: #b7c9c0;
 }
-figcaption span { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-figcaption b { max-width: 15rem; color: #eff7f2; font-size: 0.72rem; text-align: right; }
+figcaption span {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+figcaption b {
+  max-width: 15rem;
+  color: #eff7f2;
+  font-size: 0.72rem;
+  text-align: right;
+}
 @media (max-width: 680px) {
-  .ascii-orb { min-height: 25rem; }
-  figcaption { align-items: flex-start; flex-direction: column; }
-  figcaption b { text-align: left; }
+  .ascii-orb {
+    min-height: 25rem;
+  }
+  figcaption {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  figcaption b {
+    text-align: left;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ascii-orb { background: #0d1915; }
+  .ascii-orb {
+    background: #0d1915;
+  }
 }

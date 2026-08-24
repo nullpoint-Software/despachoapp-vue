@@ -1,8 +1,10 @@
 <Teleport to="body">
-<Transition name="fade">
-    <div v-if="visible" class="notes-overlay" @click.self="emit('close')">
-      <div class="notes-frame">
-        <button class="notes-close" type="button" aria-label="Cerrar notas" @click="emit('close')">×</button>
+  <Transition name="fade">
+    <div v-if="visible" class="notes-overlay">
+      <div class="notes-frame" role="dialog" aria-modal="true" aria-label="Tablero de notas">
+        <button class="notes-close" type="button" aria-label="Cerrar notas" @click="emit('close')">
+          ×
+        </button>
         <Suspense><BoardNote /></Suspense>
       </div>
     </div>

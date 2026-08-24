@@ -1,3 +1,105 @@
-.kanban-lane{--lane-accent:#d9a441;display:flex;width:100%;height:100%;min-width:0;min-height:30rem;flex-direction:column;border:1px solid var(--kb-line,#3b3933);background:var(--kb-panel,#181816);padding:.9rem;transition:border-color .18s ease,background .18s ease}.kanban-lane[data-status="Disponible"]{--lane-accent:#7fa58d}.kanban-lane[data-status="Pendiente"]{--lane-accent:#d9a441}.kanban-lane[data-status="Terminado"]{--lane-accent:#8b8a83}.kanban-lane.is-drag-over{border-color:var(--lane-accent);background:color-mix(in srgb,var(--kb-panel,#181816) 88%,var(--lane-accent))}
-.kanban-lane__header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--kb-line,#3b3933);padding:.15rem .1rem .85rem}.kanban-lane__header>div{display:flex;align-items:flex-start;gap:.65rem}.kanban-lane__marker{width:.55rem;height:.55rem;margin-top:.2rem;background:var(--lane-accent)}.kanban-lane__header h3{margin:0;color:var(--kb-text,#f4f1e9);font:800 .78rem "Courier New",monospace;text-transform:uppercase}.kanban-lane__header p{margin:.28rem 0 0;color:var(--kb-muted,#aaa59a);font:600 .6rem "Courier New",monospace}.kanban-lane__header strong{color:var(--kb-text,#f4f1e9);font:800 1.15rem/1 "Courier New",monospace;font-variant-numeric:tabular-nums}
-.kanban-lane__tasks{display:grid;min-height:25rem;flex:1;align-content:start;gap:.7rem;padding-top:.8rem}.kanban-lane__empty{display:grid;min-height:13rem;place-items:center;align-content:center;gap:.5rem;border:1px dashed var(--kb-line,#3b3933);color:var(--kb-muted,#aaa59a);text-align:center}.kanban-lane__empty i{font-size:1.25rem}.kanban-lane__empty strong{color:var(--kb-text,#f4f1e9);font:700 .8rem Arial,sans-serif}.kanban-lane__empty span{font-size:.68rem}.kanban-lane.is-compact{min-height:21rem}.kanban-lane.is-compact .kanban-lane__tasks{min-height:17rem}
+.kanban-lane {
+  --lane-accent: #d9a441;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 30rem;
+  flex-direction: column;
+  border: 1px solid var(--kb-line, #3b3933);
+  background: var(--kb-panel, #181816);
+  padding: 0.9rem;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+.kanban-lane[data-status='Disponible'] {
+  --lane-accent: #7fa58d;
+}
+.kanban-lane[data-status='Pendiente'] {
+  --lane-accent: #d9a441;
+}
+.kanban-lane[data-status='Terminado'] {
+  --lane-accent: #8b8a83;
+}
+.kanban-lane.is-drag-over {
+  border-color: var(--lane-accent);
+  background: color-mix(in srgb, var(--kb-panel, #181816) 88%, var(--lane-accent));
+}
+.kanban-lane__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--kb-line, #3b3933);
+  padding: 0.15rem 0.1rem 0.85rem;
+}
+.kanban-lane__header > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+.kanban-lane__marker {
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: 0.2rem;
+  background: var(--lane-accent);
+}
+.kanban-lane__header h3 {
+  margin: 0;
+  color: var(--kb-text, #f4f1e9);
+  font:
+    800 0.78rem 'Courier New',
+    monospace;
+  text-transform: uppercase;
+}
+.kanban-lane__header p {
+  margin: 0.28rem 0 0;
+  color: var(--kb-muted, #aaa59a);
+  font:
+    600 0.6rem 'Courier New',
+    monospace;
+}
+.kanban-lane__header strong {
+  color: var(--kb-text, #f4f1e9);
+  font:
+    800 1.15rem/1 'Courier New',
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.kanban-lane__tasks {
+  display: grid;
+  min-height: 25rem;
+  flex: 1;
+  align-content: start;
+  gap: 0.7rem;
+  padding-top: 0.8rem;
+}
+.kanban-lane__empty {
+  display: grid;
+  min-height: 13rem;
+  place-items: center;
+  align-content: center;
+  gap: 0.5rem;
+  border: 1px dashed var(--kb-line, #3b3933);
+  color: var(--kb-muted, #aaa59a);
+  text-align: center;
+}
+.kanban-lane__empty i {
+  font-size: 1.25rem;
+}
+.kanban-lane__empty strong {
+  color: var(--kb-text, #f4f1e9);
+  font:
+    700 0.8rem Arial,
+    sans-serif;
+}
+.kanban-lane__empty span {
+  font-size: 0.68rem;
+}
+.kanban-lane.is-compact {
+  min-height: 21rem;
+}
+.kanban-lane.is-compact .kanban-lane__tasks {
+  min-height: 17rem;
+}

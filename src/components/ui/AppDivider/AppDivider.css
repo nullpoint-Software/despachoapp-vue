@@ -1,1 +1,6 @@
-.app-divider{border:0;border-left:1px solid var(--br-line,#4d4b46);height:2rem;margin:0 .4rem}
+.app-divider {
+  border: 0;
+  border-left: 1px solid var(--br-line, #4d4b46);
+  height: 2rem;
+  margin: 0 0.4rem;
+}

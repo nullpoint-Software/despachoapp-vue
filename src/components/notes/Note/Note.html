@@ -1,29 +1,47 @@
 <div
-    :class="['note-card rounded-lg overflow-hidden relative', noteColorClass]"
-    ref="rootRef"
-    :style="cardStyle"
-  >
-    <div class="note-header flex items-center justify-between p-3" :class="noteBorderClass">
-      <h3 class="font-semibold note-title" v-html="highlightedTitle"></h3>
+  :class="['note-card rounded-lg overflow-hidden relative', noteColorClass]"
+  ref="rootRef"
+  :style="cardStyle"
+>
+  <div class="note-header flex items-center justify-between p-3" :class="noteBorderClass">
+    <h3 class="font-semibold note-title" v-html="highlightedTitle"></h3>
 
-      <div class="absolute top-2 right-2 flex items-center space-x-1 z-10 bg-inherit/70 backdrop-blur-sm rounded-full p-1">
-        <button @click.stop="$emit('store-note', note.id)" class="p-1 rounded-full hover:bg-black/10" title="Archivar">
-          <i class="pi pi-inbox text-xs"></i>
-        </button>
-        <button @click.stop="$emit('open-note', note)" class="p-1 rounded-full hover:bg-black/10" title="Ver nota">
-          <i class="pi pi-window-maximize text-xs"></i>
-        </button>
-        <button @click.stop="$emit('toggle-pin', note.id)" class="p-1 rounded-full hover:bg-black/10" title="Anclar">
-          <i class="pi pi-thumbtack text-yellow-500" v-if="note.status === 'pinned'"></i>
-          <i class="pi pi-thumbtack" v-else></i>
-        </button>
-        <button @click.stop="$emit('delete-note', note)" class="p-1 rounded-full hover:bg-black/10" title="Eliminar">
-          <i class="pi pi-trash"></i>
-        </button>
-      </div>
+    <div
+      class="absolute top-2 right-2 flex items-center space-x-1 z-10 bg-inherit/70 backdrop-blur-sm rounded-full p-1"
+    >
+      <button
+        @click.stop="$emit('store-note', note.id)"
+        class="p-1 rounded-full hover:bg-black/10"
+        title="Archivar"
+      >
+        <i class="pi pi-inbox text-xs"></i>
+      </button>
+      <button
+        @click.stop="$emit('open-note', note)"
+        class="p-1 rounded-full hover:bg-black/10"
+        title="Ver nota"
+      >
+        <i class="pi pi-window-maximize text-xs"></i>
+      </button>
+      <button
+        @click.stop="$emit('toggle-pin', note.id)"
+        class="p-1 rounded-full hover:bg-black/10"
+        title="Anclar"
+      >
+        <i class="pi pi-thumbtack text-yellow-500" v-if="note.status === 'pinned'"></i>
+        <i class="pi pi-thumbtack" v-else></i>
+      </button>
+      <button
+        @click.stop="$emit('delete-note', note)"
+        class="p-1 rounded-full hover:bg-black/10"
+        title="Eliminar"
+      >
+        <i class="pi pi-trash"></i>
+      </button>
     </div>
-
-    <div class="note-content p-4" v-html="highlightedContent" ref="contentRef"></div>
-
-    <div class="coords-badge">{{ coordsText }}</div>
   </div>
+
+  <div class="note-content p-4" v-html="highlightedContent" ref="contentRef"></div>
+
+  <div class="coords-badge">{{ coordsText }}</div>
+</div>

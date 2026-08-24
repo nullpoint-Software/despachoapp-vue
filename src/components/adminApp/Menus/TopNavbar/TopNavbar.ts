@@ -1,5 +1,5 @@
-import { useRouter } from 'vue-router';
-const router = useRouter();
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 defineProps({
   profileName: String,
@@ -7,7 +7,7 @@ defineProps({
   profileType: String,
   isAdmin: Boolean,
   notesActive: Boolean,
-  logsActive: Boolean,
-});
+  logsActive: Boolean
+})
 
-defineEmits(['toggleMenu', 'openNotes', 'openLogs', 'logout']);
+defineEmits(['toggleMenu', 'openNotes', 'openLogs', 'logout'])

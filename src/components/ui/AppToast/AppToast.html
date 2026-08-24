@@ -1,9 +1,17 @@
 <aside class="app-toast-stack" aria-live="polite" aria-atomic="false">
-    <transition-group name="toast-list">
-      <article v-for="message in messages" :key="message.id" class="app-toast" :data-severity="message.severity">
-        <i :class="iconFor(message.severity)" aria-hidden="true"></i>
-        <div><strong>{{ message.summary }}</strong><p v-if="message.detail">{{ message.detail }}</p></div>
-        <button type="button" aria-label="Cerrar aviso" @click="remove(message.id)">×</button>
-      </article>
-    </transition-group>
-  </aside>
+  <transition-group name="toast-list">
+    <article
+      v-for="message in messages"
+      :key="message.id"
+      class="app-toast"
+      :data-severity="message.severity"
+    >
+      <i :class="iconFor(message.severity)" aria-hidden="true"></i>
+      <div>
+        <strong>{{ message.summary }}</strong>
+        <p v-if="message.detail">{{ message.detail }}</p>
+      </div>
+      <button type="button" aria-label="Cerrar aviso" @click="remove(message.id)">×</button>
+    </article>
+  </transition-group>
+</aside>

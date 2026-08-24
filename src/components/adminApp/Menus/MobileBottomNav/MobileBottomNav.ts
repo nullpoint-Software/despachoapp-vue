@@ -1,4 +1,4 @@
 defineProps({
-  menuItems: Array,
-});
-defineEmits(['openMoreMenu']);
+  menuItems: Array
+})
+defineEmits(['openMoreMenu'])

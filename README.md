@@ -24,6 +24,7 @@ Main capabilities:
 - Password or passkey verification for protected data reveal.
 - Payment records, cash cuts, Excel exports, and thermal ticket printing.
 - CFDI XML import, classification, fiscal reports, DIOT output, PDF and Excel downloads.
+- SAT mass downloads with encrypted reusable e.firma credentials, plus manual XML/ZIP import from the SAT portal.
 - Public SAT compliance opinion checks by RFC.
 - Internal Markdown notes organized in folders.
 - Audit log with compatible undo actions.
@@ -42,6 +43,7 @@ For Docker, SMTP, volumes, and production operation, see the root `README.md` an
 - Registro de pagos mensuales y pagos por concepto.
 - Cortes de caja, exportación a Excel e impresión de comprobantes.
 - Importación y clasificación de CFDI 4.0 desde archivos XML.
+- Descarga masiva del SAT con e.firma cifrada e importación manual de XML o ZIP.
 - Separación de facturas emitidas/ingresos y recibidas/egresos.
 - Reportes fiscales mensuales, anuales y DIOT.
 - Archivo TXT de carga masiva para DIOT.
@@ -53,6 +55,20 @@ For Docker, SMTP, volumes, and production operation, see the root `README.md` an
 - Correos transaccionales para alta de usuario y restablecimiento de contraseña.
 - Diseño adaptable para escritorio y dispositivos móviles.
 - Ventanas flotantes de escritorio adaptadas a pantalla completa en móvil.
+
+## Actualización SAT (22 de agosto de 2026)
+
+- Se corrigió la descarga masiva para usar las operaciones vigentes `SolicitaDescargaEmitidos` y `SolicitaDescargaRecibidos` con firma WS-Security.
+- La e.firma puede validarse y guardarse por cliente; certificado, llave y contraseña se cifran con AES-256-GCM.
+- La interfaz nunca recupera la llave privada ni la contraseña después de guardarlas y sólo muestra RFC, serie, vigencia y huella SHA-256.
+- Las solicitudes continúan en segundo plano, importan los paquetes del SAT y eliminan su copia de trabajo al completar, cancelar o vencer.
+- El modal permite elegir entre e.firma y RFC + Contraseña. El segundo método toma los datos cifrados del cliente, pide únicamente el CAPTCHA y abre una sesión aislada del portal oficial.
+- Los XML o ZIP descargados dentro de esa sesión se validan e importan; la carga manual permanece en la vista principal de Fiscal y no se duplica en el modal.
+- Los ZIP se procesan en memoria con límites de archivos y tamaño, y sólo se extraen entradas XML.
+- La rotación de `DATA_ENCRYPTION_KEY` ahora incluye también las e.firmas persistentes.
+- Las dependencias de producción del servidor se actualizaron y `npm audit --omit=dev` reporta cero vulnerabilidades.
+
+Consulta la guía completa en [Descarga de CFDI del SAT y resguardo de e.firma](docs/FISCAL_DESCARGA_SAT.md).
 
 ## Actualización reciente (25 de julio de 2026)
 
@@ -156,7 +172,7 @@ Genera `DATA_ENCRYPTION_KEY` desde el servidor con:
 npm run security:generate-key
 ```
 
-Copia el resultado al `.env` antes de ejecutar migraciones. Esta clave cifra XML, documentos y credenciales FIEL/CIECF con AES-256-GCM. No la publiques ni la guardes en Git. Sin la misma clave no es posible recuperar los archivos o secretos cifrados, por lo que debe conservarse en un gestor de secretos y en el respaldo seguro del despliegue.
+Copia el resultado al `.env` antes de ejecutar migraciones. Esta clave cifra XML, documentos, credenciales FIEL/CIECF y los archivos `.cer`/`.key` de e.firma con AES-256-GCM. No la publiques ni la guardes en Git. Sin la misma clave no es posible recuperar los archivos o secretos cifrados, por lo que debe conservarse en un gestor de secretos y en el respaldo seguro del despliegue.
 
 Aunque algunas variables de base de datos comienzan con `VITE_`, pertenecen al servidor y no deben colocarse en el `.env` público del frontend. El archivo `.env` del servidor está excluido de Git.
 
@@ -184,6 +200,7 @@ Este comando:
 - retira esas credenciales de los eventos de auditoría antiguos;
 - mueve a archivos cifrados del servidor cualquier XML antiguo guardado dentro de la base de datos;
 - crea el catálogo de documentos PDF cifrados por cliente.
+- crea el almacén cifrado de e.firma por cliente para la descarga masiva del SAT.
 
 No inicies el módulo Fiscal contra una base nueva sin ejecutar antes este comando.
 
@@ -307,15 +324,15 @@ La prueba integral utiliza la base configurada en `.env`; no debe ejecutarse con
 
 El 19 de julio de 2026 se actualizaron las dependencias afectadas por las alertas de GitHub y `npm audit`:
 
-| Dependencia | Versión instalada anterior | Versión nueva | Motivo |
-| --- | ---: | ---: | --- |
-| `axios` | `1.12.2` | `1.18.1` | Corrige alertas de SSRF, contaminación de prototipos, filtración de credenciales, inyección de encabezados y denegación de servicio. |
-| `dompurify` | `3.3.0` | `3.4.12` | Corrige evasiones del sanitizado que podían permitir XSS y contaminación de la configuración. |
-| `express` | `4.21.2` | `4.22.2` | Mantiene compatibilidad con Express 4 y actualiza `body-parser`, `qs` y `path-to-regexp` para corregir riesgos de DoS y ReDoS. |
-| `jspdf` | `3.0.3` | `4.2.1` | Corrige lectura de archivos, traversal, inyección de objetos o JavaScript en PDF y denegaciones de servicio. El código usa ahora la importación nombrada requerida por la versión 4. |
-| `jspdf-autotable` | `5.0.2` | `5.0.8` | Asegura compatibilidad declarada con `jsPDF 4` y conserva la generación de tablas fiscales. |
-| `vite` | `6.4.1` | `6.4.3` | Corrige lectura arbitraria, traversal y exposición de hashes NTLM desde el servidor de desarrollo. |
-| `xlsx` / SheetJS CE | `0.18.5` | `0.20.3` | Corrige contaminación de prototipos y ReDoS. Como npm no publica la versión corregida, se instala el paquete oficial desde `cdn.sheetjs.com`. |
+| Dependencia         | Versión instalada anterior |                       Versión nueva | Motivo                                                                                                                                                                               |
+| ------------------- | -------------------------: | ----------------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `axios`             |                   `1.12.2` | Frontend `1.18.1`; backend `1.19.0` | Corrige alertas de SSRF, contaminación de prototipos, filtración de credenciales, inyección de encabezados y denegación de servicio.                                                 |
+| `dompurify`         |                    `3.3.0` |                            `3.4.12` | Corrige evasiones del sanitizado que podían permitir XSS y contaminación de la configuración.                                                                                        |
+| `express`           |                   `4.21.2` |                            `4.22.2` | Mantiene compatibilidad con Express 4 y actualiza `body-parser`, `qs` y `path-to-regexp` para corregir riesgos de DoS y ReDoS.                                                       |
+| `jspdf`             |                    `3.0.3` |                             `4.2.1` | Corrige lectura de archivos, traversal, inyección de objetos o JavaScript en PDF y denegaciones de servicio. El código usa ahora la importación nombrada requerida por la versión 4. |
+| `jspdf-autotable`   |                    `5.0.2` |                             `5.0.8` | Asegura compatibilidad declarada con `jsPDF 4` y conserva la generación de tablas fiscales.                                                                                          |
+| `vite`              |                    `6.4.1` |                             `6.4.3` | Corrige lectura arbitraria, traversal y exposición de hashes NTLM desde el servidor de desarrollo.                                                                                   |
+| `xlsx` / SheetJS CE |                   `0.18.5` |                            `0.20.3` | Corrige contaminación de prototipos y ReDoS. Como npm no publica la versión corregida, se instala el paquete oficial desde `cdn.sheetjs.com`.                                        |
 
 También se ejecutó `npm audit fix` para actualizar dependencias transitivas como Rollup, Babel, Lodash, Minimatch, Picomatch, PostCSS, AJV y `serialize-javascript`. Después de la actualización, `npm audit` reportó **0 vulnerabilidades**.
 
@@ -410,9 +427,19 @@ Calcula y organiza impuestos a partir de CFDI XML asociados a un cliente.
 1. Busca y selecciona un cliente escribiendo su nombre o RFC.
 2. Elige emitidas/ingresos o recibidas/egresos.
 3. Selecciona ejercicio y mes.
-4. Arrastra los XML al área de importación o haz clic sobre ella para buscarlos.
+4. Solicita la descarga automática con la e.firma guardada o arrastra XML/ZIP obtenidos manualmente del SAT.
 5. Revisa la lista de archivos y confirma la importación.
 6. Verifica la clasificación, selecciona los CFDI y guarda el reporte.
+
+**Descarga desde el SAT**
+
+- La descarga automática valida que `.cer` y `.key` sean una e.firma vigente del RFC seleccionado, cifra los archivos y permite reutilizarlos sin iniciar sesión en cada periodo.
+- La llave privada y su contraseña permanecen dentro del servidor y sólo se descifran en memoria para firmar. El certificado público forma parte de WS-Security, como exige el protocolo del SAT.
+- RFC + Contraseña usa `clientes.rfc` y la Contraseña SAT cifrada del expediente. El navegador sólo recibe el CAPTCHA; la credencial se envía desde el servidor exclusivamente al dominio oficial del SAT.
+- Después del acceso, el portal se opera dentro del modal y cualquier XML o ZIP descargado desde esa sesión se importa al expediente.
+- El servidor da seguimiento a las solicitudes aunque se cierre la ventana de Fiscal e importa automáticamente los paquetes cuando el SAT los publica.
+
+La arquitectura, límites, endpoints, rotación de claves y solución de errores HTTP 500 están documentados en [Descarga de CFDI del SAT y resguardo de e.firma](docs/FISCAL_DESCARGA_SAT.md).
 
 **Documentos compatibles**
 
@@ -605,6 +632,7 @@ Un respaldo completo necesita estos elementos:
 - archivos de permisos dentro de `despachoapp-server/data`;
 - variables de entorno almacenadas de forma segura.
 - la misma `DATA_ENCRYPTION_KEY` en un respaldo separado y protegido.
+- las filas de `cliente_efirma`, incluidas en la exportación SQL; sin `DATA_ENCRYPTION_KEY` seguirán siendo irrecuperables.
 
 Respaldar solamente MySQL no recuperará los XML, porque la base contiene sólo sus rutas.
 
@@ -660,6 +688,7 @@ Luego elimina únicamente `node_modules` del proyecto afectado y ejecuta nuevame
 
 - Cambia las credenciales iniciales inmediatamente.
 - Nunca subas `.env`, respaldos, XML, FIEL, CIECF ni archivos de clientes a Git.
+- Nunca subas certificados `.cer`, llaves `.key` ni sus contraseñas al repositorio o a servicios de terceros.
 - Usa HTTPS en producción.
 - Limita el acceso a Configuración, Registro de cambios y Fiscal mediante permisos.
 - Realiza respaldos cifrados y prueba periódicamente su restauración.

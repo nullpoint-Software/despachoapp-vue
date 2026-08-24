@@ -35,14 +35,18 @@
 .appearance-section__heading h3 {
   margin: 0;
   color: var(--br-accent);
-  font: 800 0.68rem/1 "Courier New", monospace;
+  font:
+    800 0.68rem/1 'Courier New',
+    monospace;
   letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
 .appearance-header h2 {
   margin: 0.45rem 0 0;
-  font: 900 3rem/0.95 Arial, sans-serif;
+  font:
+    900 3rem/0.95 Arial,
+    sans-serif;
   letter-spacing: -0.055em;
   text-transform: uppercase;
 }
@@ -51,7 +55,9 @@
   display: block;
   margin-top: 0.7rem;
   color: var(--br-muted);
-  font: 700 0.74rem/1.45 "Courier New", monospace;
+  font:
+    700 0.74rem/1.45 'Courier New',
+    monospace;
 }
 
 .appearance-header > button {
@@ -60,7 +66,9 @@
   border-bottom: 1px solid var(--br-line);
   background: var(--br-accent);
   color: var(--br-accent-text);
-  font: 400 2rem/1 Arial, sans-serif;
+  font:
+    400 2rem/1 Arial,
+    sans-serif;
   cursor: pointer;
 }
 
@@ -80,7 +88,9 @@
 
 .appearance-section__heading span {
   color: var(--br-muted);
-  font: 700 0.62rem "Courier New", monospace;
+  font:
+    700 0.62rem 'Courier New',
+    monospace;
   text-transform: uppercase;
 }
 
@@ -154,7 +164,9 @@
   display: block;
   margin-top: 0.55rem;
   color: var(--br-muted);
-  font: 700 0.6rem "Courier New", monospace;
+  font:
+    700 0.6rem 'Courier New',
+    monospace;
   text-align: center;
   text-transform: uppercase;
 }
@@ -169,7 +181,9 @@
 
 .appearance-preview span {
   color: var(--br-accent);
-  font: 800 0.6rem "Courier New", monospace;
+  font:
+    800 0.6rem 'Courier New',
+    monospace;
   letter-spacing: 0.1em;
 }
 
@@ -195,7 +209,9 @@
 
 .appearance-footer span {
   color: var(--br-muted);
-  font: 700 0.62rem "Courier New", monospace;
+  font:
+    700 0.62rem 'Courier New',
+    monospace;
   text-transform: uppercase;
 }
 
@@ -209,7 +225,9 @@
   background: var(--br-accent);
   color: var(--br-accent-text);
   padding: 0.75rem 1.25rem;
-  font: 800 0.7rem "Courier New", monospace;
+  font:
+    800 0.7rem 'Courier New',
+    monospace;
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -332,11 +350,23 @@
 }
 
 .font-family-list b,
-.font-family-list small { display: block; }
-.font-family-list b { font-size: 1rem; }
-.font-family-list small { margin-top: 0.25rem; color: var(--br-muted); font-size: 0.72rem; }
-.font-family-list .pi { color: var(--br-accent); }
+.font-family-list small {
+  display: block;
+}
+.font-family-list b {
+  font-size: 1rem;
+}
+.font-family-list small {
+  margin-top: 0.25rem;
+  color: var(--br-muted);
+  font-size: 0.72rem;
+}
+.font-family-list .pi {
+  color: var(--br-accent);
+}
 
 @media (max-width: 760px) {
-  .font-family-list { grid-template-columns: 1fr; }
+  .font-family-list {
+    grid-template-columns: 1fr;
+  }
 }

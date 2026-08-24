@@ -5,7 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
-import { VitePWA } from 'vite-plugin-pwa';
+import { VitePWA } from 'vite-plugin-pwa'
 import { externalSfcSetupPlugin } from './build/externalSfcSetupPlugin'
 
 // https://vite.dev/config/
@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
     vueDevTools(),
     tailwindcss(),
     VitePWA({
-       registerType: 'autoUpdate', 
+      registerType: 'autoUpdate',
       includeAssets: ['/icons/favicon.ico', '/icons/apple-touch-icon.png', '/icons/favicon.svg'],
       manifest: {
         name: 'ContaApp',
@@ -49,17 +49,17 @@ export default defineConfig(({ mode }) => ({
           }
         ]
       }
-    }),
+    })
   ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
-    },
+    }
   },
   optimizeDeps: {
     include: ['chart.js', 'vue-chartjs']
   },
   esbuild: {
-    drop: mode === 'production' ? ['console', 'debugger'] : [],
-  },
+    drop: mode === 'production' ? ['console', 'debugger'] : []
+  }
 }))

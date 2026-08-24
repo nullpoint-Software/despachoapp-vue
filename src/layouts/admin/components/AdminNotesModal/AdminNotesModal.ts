@@ -1,7 +1,11 @@
-interface AdminNotesModalProps { visible: boolean }
+interface AdminNotesModalProps {
+  visible: boolean
+}
 
-interface AdminNotesModalEmits { close: [] }
+interface AdminNotesModalEmits {
+  close: []
+}
 
-import { Suspense } from "vue";
-defineProps<AdminNotesModalProps>();
-const emit = defineEmits<AdminNotesModalEmits>();
+import { Suspense } from 'vue'
+defineProps<AdminNotesModalProps>()
+const emit = defineEmits<AdminNotesModalEmits>()

@@ -1,10 +1,12 @@
-import { readonly, ref } from "vue";
+import { readonly, ref } from 'vue'
 
-const newPaymentRequest = ref(0);
+const newPaymentRequest = ref(0)
 
 export function usePaymentActions() {
   return {
     newPaymentRequest: readonly(newPaymentRequest),
-    requestNewPayment: () => { newPaymentRequest.value += 1; },
-  };
+    requestNewPayment: () => {
+      newPaymentRequest.value += 1
+    }
+  }
 }

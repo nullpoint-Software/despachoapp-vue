@@ -1,2 +1,89 @@
-.mobile-more{max-height:min(78dvh,34rem);overflow:auto;border-top:1px solid var(--color-border);border-radius:1rem 1rem 0 0;background:var(--color-bg-secondary);padding:1rem 1rem calc(2rem + env(safe-area-inset-bottom));color:var(--color-text)}
-.mobile-more__header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;border-bottom:1px solid var(--color-border);padding-bottom:.85rem}.mobile-more__profile{display:flex;min-width:0;align-items:center;gap:.7rem}.mobile-more__profile img{width:2.5rem;height:2.5rem;flex:none;border:1px solid var(--color-border);border-radius:50%;object-fit:cover}.mobile-more__profile strong,.mobile-more__profile span{display:block;overflow:hidden;max-width:15rem;text-overflow:ellipsis;white-space:nowrap}.mobile-more__profile strong{font-weight:800}.mobile-more__profile span{color:var(--color-text-muted);font-size:.75rem}.mobile-more__header>button{display:grid;width:2.25rem;height:2.25rem;place-items:center;border:1px solid var(--color-border);border-radius:.45rem;background:transparent;color:inherit;font-size:1.3rem}.mobile-more h2{margin:0 0 1rem;font-size:1.125rem;font-weight:700}.mobile-more__list{margin:0;padding:0;list-style:none}.mobile-more__list a,.mobile-more__list button{display:flex;width:100%;min-height:3rem;align-items:center;gap:1rem;border:0;background:transparent;color:inherit;font-size:1.125rem;text-align:left;cursor:pointer}.mobile-more__list i{width:1.5rem;text-align:center}.mobile-more__list .mobile-more__logout{color:var(--btn-danger-bg)}
+.mobile-more {
+  max-height: min(78dvh, 34rem);
+  overflow: auto;
+  border-top: 1px solid var(--color-border);
+  border-radius: 1rem 1rem 0 0;
+  background: var(--color-bg-secondary);
+  padding: 1rem 1rem calc(2rem + env(safe-area-inset-bottom));
+  color: var(--color-text);
+}
+.mobile-more__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.85rem;
+}
+.mobile-more__profile {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+}
+.mobile-more__profile img {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  object-fit: cover;
+}
+.mobile-more__profile strong,
+.mobile-more__profile span {
+  display: block;
+  overflow: hidden;
+  max-width: 15rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mobile-more__profile strong {
+  font-weight: 800;
+}
+.mobile-more__profile span {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+.mobile-more__header > button {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 0.45rem;
+  background: transparent;
+  color: inherit;
+  font-size: 1.3rem;
+}
+.mobile-more h2 {
+  margin: 0 0 1rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+.mobile-more__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mobile-more__list a,
+.mobile-more__list button {
+  display: flex;
+  width: 100%;
+  min-height: 3rem;
+  align-items: center;
+  gap: 1rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.125rem;
+  text-align: left;
+  cursor: pointer;
+}
+.mobile-more__list i {
+  width: 1.5rem;
+  text-align: center;
+}
+.mobile-more__list .mobile-more__logout {
+  color: var(--btn-danger-bg);
+}

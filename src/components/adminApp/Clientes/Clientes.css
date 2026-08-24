@@ -1,8 +1,211 @@
-.clients-view{min-height:100%;padding:clamp(1rem,2.5vw,2rem);background:var(--br-bg);color:var(--br-text)}.clients-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;padding:1.5rem 0;border-top:1px solid var(--br-line);border-bottom:1px solid var(--br-line);margin-bottom:1rem}.clients-hero p{margin:0 0 .5rem;color:var(--br-accent);font:800 .75rem "Courier New",monospace;letter-spacing:.12em}.clients-hero h1{margin:0;font:900 clamp(3.2rem,9vw,7rem)/.75 Arial,sans-serif;letter-spacing:-.075em;text-transform:uppercase}.clients-hero>div>span{display:block;margin-top:1rem;color:var(--br-muted);font:700 .9rem "Courier New",monospace}.hero-stat{min-width:10rem;padding:1rem;border:1px solid var(--br-line-strong);text-align:right}.hero-stat b{display:block;font:900 2.8rem/1 Arial,sans-serif}.hero-stat span{font:800 .7rem "Courier New",monospace;text-transform:uppercase}@media(max-width:640px){.clients-hero{align-items:flex-start;flex-direction:column}.hero-stat{width:100%;text-align:left}}
-.credential-overlay{position:fixed;inset:0;z-index:1400;display:grid;place-items:center;padding:1rem;background:rgba(0,0,0,.82);backdrop-filter:blur(4px)}.credential-dialog{width:min(31rem,100%);border:1px solid var(--br-line-strong);background:var(--br-panel);color:var(--br-text);box-shadow:9px 9px 0 var(--br-accent)}.credential-dialog header{display:flex;justify-content:space-between;border-bottom:1px solid var(--br-line);background:var(--br-bg)}.credential-dialog header>div{padding:1.25rem}.credential-dialog header p{margin:0 0 .35rem;color:var(--br-accent);font:800 .68rem "Courier New",monospace;letter-spacing:.1em}.credential-dialog header h2{margin:0;font:900 1.8rem/1 Arial,sans-serif;text-transform:uppercase}.credential-dialog header span{display:block;margin-top:.6rem;color:var(--br-muted);font:700 .78rem/1.35 "Courier New",monospace}.credential-dialog header button{width:3.75rem;align-self:stretch;border:0;border-left:1px solid var(--br-line);background:var(--br-accent);color:var(--br-accent-text);font-size:2rem;cursor:pointer}.credential-dialog>label{display:grid;gap:.45rem;padding:1.25rem}.credential-dialog>label>span{font:800 .72rem "Courier New",monospace;text-transform:uppercase}.credential-error{margin:0 1.25rem;border:1px solid #ef4d3d;background:rgba(239,77,61,.12);padding:.75rem;color:var(--br-text);font:800 .76rem "Courier New",monospace}.credential-dialog footer{display:flex;justify-content:flex-end;gap:.75rem;padding:1rem 1.25rem 1.25rem}
-.credential-dialog--loading{display:grid;min-height:18rem;place-items:center;padding:2rem;text-align:center}.credential-dialog--loading p{margin:0;color:var(--br-accent);font:800 .68rem "Courier New",monospace;letter-spacing:.1em}.credential-dialog--loading h2{margin:.2rem 0 0;font:900 1.8rem/1 Arial,sans-serif;text-transform:uppercase}.credential-dialog--loading span{max-width:20rem;color:var(--br-muted);font:700 .78rem/1.4 "Courier New",monospace}.credential-password-fallback{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.75rem;border:1px solid var(--br-accent);background:transparent;color:var(--br-accent);padding:.55rem .85rem;font:800 .72rem "Courier New",monospace;text-transform:uppercase;cursor:pointer}.credential-password-fallback:hover{background:var(--br-accent);color:var(--br-accent-text)}
+.clients-view {
+  min-height: 100%;
+  padding: clamp(1rem, 2.5vw, 2rem);
+  background: var(--br-bg);
+  color: var(--br-text);
+}
+.clients-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--br-line);
+  border-bottom: 1px solid var(--br-line);
+  margin-bottom: 1rem;
+}
+.clients-hero p {
+  margin: 0 0 0.5rem;
+  color: var(--br-accent);
+  font:
+    800 0.75rem 'Courier New',
+    monospace;
+  letter-spacing: 0.12em;
+}
+.clients-hero h1 {
+  margin: 0;
+  font:
+    900 clamp(3.2rem, 9vw, 7rem)/0.75 Arial,
+    sans-serif;
+  letter-spacing: -0.075em;
+  text-transform: uppercase;
+}
+.clients-hero > div > span {
+  display: block;
+  margin-top: 1rem;
+  color: var(--br-muted);
+  font:
+    700 0.9rem 'Courier New',
+    monospace;
+}
+.hero-stat {
+  min-width: 10rem;
+  padding: 1rem;
+  border: 1px solid var(--br-line-strong);
+  text-align: right;
+}
+.hero-stat b {
+  display: block;
+  font:
+    900 2.8rem/1 Arial,
+    sans-serif;
+}
+.hero-stat span {
+  font:
+    800 0.7rem 'Courier New',
+    monospace;
+  text-transform: uppercase;
+}
+@media (max-width: 640px) {
+  .clients-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .hero-stat {
+    width: 100%;
+    text-align: left;
+  }
+}
+.credential-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(4px);
+}
+.credential-dialog {
+  width: min(31rem, 100%);
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel);
+  color: var(--br-text);
+  box-shadow: 9px 9px 0 var(--br-accent);
+}
+.credential-dialog header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--br-line);
+  background: var(--br-bg);
+}
+.credential-dialog header > div {
+  padding: 1.25rem;
+}
+.credential-dialog header p {
+  margin: 0 0 0.35rem;
+  color: var(--br-accent);
+  font:
+    800 0.68rem 'Courier New',
+    monospace;
+  letter-spacing: 0.1em;
+}
+.credential-dialog header h2 {
+  margin: 0;
+  font:
+    900 1.8rem/1 Arial,
+    sans-serif;
+  text-transform: uppercase;
+}
+.credential-dialog header span {
+  display: block;
+  margin-top: 0.6rem;
+  color: var(--br-muted);
+  font:
+    700 0.78rem/1.35 'Courier New',
+    monospace;
+}
+.credential-dialog header button {
+  width: 3.75rem;
+  align-self: stretch;
+  border: 0;
+  border-left: 1px solid var(--br-line);
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+  font-size: 2rem;
+  cursor: pointer;
+}
+.credential-dialog > label {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.25rem;
+}
+.credential-dialog > label > span {
+  font:
+    800 0.72rem 'Courier New',
+    monospace;
+  text-transform: uppercase;
+}
+.credential-error {
+  margin: 0 1.25rem;
+  border: 1px solid #ef4d3d;
+  background: rgba(239, 77, 61, 0.12);
+  padding: 0.75rem;
+  color: var(--br-text);
+  font:
+    800 0.76rem 'Courier New',
+    monospace;
+}
+.credential-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 1.25rem;
+}
+.credential-dialog--loading {
+  display: grid;
+  min-height: 18rem;
+  place-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+.credential-dialog--loading p {
+  margin: 0;
+  color: var(--br-accent);
+  font:
+    800 0.68rem 'Courier New',
+    monospace;
+  letter-spacing: 0.1em;
+}
+.credential-dialog--loading h2 {
+  margin: 0.2rem 0 0;
+  font:
+    900 1.8rem/1 Arial,
+    sans-serif;
+  text-transform: uppercase;
+}
+.credential-dialog--loading span {
+  max-width: 20rem;
+  color: var(--br-muted);
+  font:
+    700 0.78rem/1.4 'Courier New',
+    monospace;
+}
+.credential-password-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.75rem;
+  border: 1px solid var(--br-accent);
+  background: transparent;
+  color: var(--br-accent);
+  padding: 0.55rem 0.85rem;
+  font:
+    800 0.72rem 'Courier New',
+    monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.credential-password-fallback:hover {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
 
-:deep(.app-data-table__table) { min-width: 74rem; table-layout: fixed; }
+:deep(.app-data-table__table) {
+  min-width: 74rem;
+  table-layout: fixed;
+}
 :deep(.app-data-table__table th) {
   height: 2.5rem;
   min-width: 0;
@@ -47,34 +250,78 @@
   padding-inline: 0.45rem !important;
 }
 :deep(.app-data-table__table th:nth-child(1)),
-:deep(.app-data-table__table td:nth-child(1)) { width: 6%; }
+:deep(.app-data-table__table td:nth-child(1)) {
+  width: 6%;
+}
 :deep(.app-data-table__table th:nth-child(2)),
-:deep(.app-data-table__table td:nth-child(2)) { width: 16%; }
+:deep(.app-data-table__table td:nth-child(2)) {
+  width: 16%;
+}
 :deep(.app-data-table__table th:nth-child(3)),
-:deep(.app-data-table__table td:nth-child(3)) { width: 11%; }
+:deep(.app-data-table__table td:nth-child(3)) {
+  width: 11%;
+}
 :deep(.app-data-table__table th:nth-child(4)),
 :deep(.app-data-table__table td:nth-child(4)),
 :deep(.app-data-table__table th:nth-child(5)),
 :deep(.app-data-table__table td:nth-child(5)),
 :deep(.app-data-table__table th:nth-child(6)),
-:deep(.app-data-table__table td:nth-child(6)) { width: 10%; }
+:deep(.app-data-table__table td:nth-child(6)) {
+  width: 10%;
+}
 :deep(.app-data-table__table th:nth-child(7)),
-:deep(.app-data-table__table td:nth-child(7)) { width: 12%; }
+:deep(.app-data-table__table td:nth-child(7)) {
+  width: 12%;
+}
 :deep(.app-data-table__table th:nth-child(8)),
-:deep(.app-data-table__table td:nth-child(8)) { width: 13%; }
+:deep(.app-data-table__table td:nth-child(8)) {
+  width: 13%;
+}
 :deep(.app-data-table__table th:nth-child(9)),
-:deep(.app-data-table__table td:nth-child(9)) { width: 12%; min-width: 8.5rem; }
-:deep(.app-pager) { min-height: 3rem; font-size: 11px; }
-:deep(.app-data-table__header input) { font-size: 0.85rem !important; }
+:deep(.app-data-table__table td:nth-child(9)) {
+  width: 12%;
+  min-width: 8.5rem;
+}
+:deep(.app-pager) {
+  min-height: 3rem;
+  font-size: 11px;
+}
+:deep(.app-data-table__header input) {
+  font-size: 0.85rem !important;
+}
 
 @media (max-width: 700px) {
-  :deep(.app-data-table__table) { min-width: 72rem; }
+  :deep(.app-data-table__table) {
+    min-width: 72rem;
+  }
   :deep(.app-data-table__table th),
   :deep(.app-data-table__table td),
   :deep(.app-data-table__table th > div),
   :deep(.app-data-table__table td > div),
-  :deep(.app-data-table__table td div) { font-size: 11px !important; }
+  :deep(.app-data-table__table td div) {
+    font-size: 11px !important;
+  }
 }
-.clients-view{background:transparent}
-.clients-hero__tools{display:flex;align-items:stretch;gap:.65rem}.clients-hero__tools :deep(.p-button){align-self:stretch}
-@media(max-width:640px){.clients-hero__tools{width:100%;flex-direction:column-reverse}.clients-hero__tools :deep(.p-button){width:100%}.clients-hero__tools .hero-stat{width:100%}}
+.clients-view {
+  background: transparent;
+}
+.clients-hero__tools {
+  display: flex;
+  align-items: stretch;
+  gap: 0.65rem;
+}
+.clients-hero__tools :deep(.p-button) {
+  align-self: stretch;
+}
+@media (max-width: 640px) {
+  .clients-hero__tools {
+    width: 100%;
+    flex-direction: column-reverse;
+  }
+  .clients-hero__tools :deep(.p-button) {
+    width: 100%;
+  }
+  .clients-hero__tools .hero-stat {
+    width: 100%;
+  }
+}

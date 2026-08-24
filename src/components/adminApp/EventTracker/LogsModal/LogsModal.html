@@ -1,18 +1,7 @@
 <Teleport to="body">
-<transition name="logs-fade">
-    <div
-      v-if="visible"
-      class="logs-overlay"
-      role="presentation"
-      @click.self="closeModal"
-      @keydown.esc="closeModal"
-    >
-      <section
-        class="logs-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="logs-title"
-      >
+  <transition name="logs-fade">
+    <div v-if="visible" class="logs-overlay" role="presentation" @keydown.esc="closeModal">
+      <section class="logs-dialog" role="dialog" aria-modal="true" aria-labelledby="logs-title">
         <header class="logs-header">
           <div class="logs-heading">
             <p>REGISTRO / SISTEMA</p>
@@ -56,11 +45,7 @@
               @click="dropdownOpen = !dropdownOpen"
             >
               <span>{{ selectedTypes.length ? selectedLabels.join(", ") : "Todos" }}</span>
-              <i
-                class="pi pi-chevron-down"
-                :class="{ rotated: dropdownOpen }"
-                aria-hidden="true"
-              />
+              <i class="pi pi-chevron-down" :class="{ rotated: dropdownOpen }" aria-hidden="true" />
             </button>
             <div v-if="dropdownOpen" class="filter-menu" role="listbox">
               <button type="button" :class="{ active: !selectedTypes.length }" @click="selectAll">
@@ -74,7 +59,9 @@
                 :class="{ active: selectedTypes.includes(option.value) }"
                 @click="toggleType(option.value)"
               >
-                <i :class="selectedTypes.includes(option.value) ? 'pi pi-check-square' : 'pi pi-stop'" />
+                <i
+                  :class="selectedTypes.includes(option.value) ? 'pi pi-check-square' : 'pi pi-stop'"
+                />
                 <span>{{ option.label }}</span>
               </button>
             </div>

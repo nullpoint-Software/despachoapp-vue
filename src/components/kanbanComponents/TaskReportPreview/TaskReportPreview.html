@@ -1,7 +1,13 @@
 <Teleport to="body">
   <Transition name="report-preview">
-    <div class="report-preview-overlay" role="presentation" @click.self="close">
-      <section class="report-preview" role="dialog" aria-modal="true" aria-labelledby="report-preview-title" @keydown.esc="close">
+    <div class="report-preview-overlay" role="presentation">
+      <section
+        class="report-preview"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="report-preview-title"
+        @keydown.esc="close"
+      >
         <header class="report-preview__header">
           <div>
             <p>Reporte / tareas</p>
@@ -16,8 +22,18 @@
         </div>
 
         <footer class="report-preview__actions">
-          <button type="button" class="report-preview__button report-preview__button--secondary" @click="close">Cerrar</button>
-          <button type="button" class="report-preview__button report-preview__button--primary" @click="download">
+          <button
+            type="button"
+            class="report-preview__button report-preview__button--secondary"
+            @click="close"
+          >
+            Cerrar
+          </button>
+          <button
+            type="button"
+            class="report-preview__button report-preview__button--primary"
+            @click="download"
+          >
             <i class="pi pi-download" aria-hidden="true"></i>
             Descargar PDF
           </button>

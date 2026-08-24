@@ -1,6 +1,10 @@
 <select :value="modelValue ?? ''" @change="handleChange">
-    <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
-    <option v-for="(option, index) in options" :key="optionValue ? String(option?.[optionValue]) : index" :value="optionValue ? option?.[optionValue] : option">
-      {{ optionLabel ? option?.[optionLabel] : option }}
-    </option>
-  </select>
+  <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
+  <option
+    v-for="(option, index) in options"
+    :key="optionValue ? String(option?.[optionValue]) : index"
+    :value="optionValue ? option?.[optionValue] : option"
+  >
+    {{ optionLabel ? option?.[optionLabel] : option }}
+  </option>
+</select>

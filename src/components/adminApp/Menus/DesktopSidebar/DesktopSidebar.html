@@ -1,26 +1,24 @@
-<aside class="desktop-sidebar group hidden lg:flex fixed top-0 left-0 h-screen flex-col bg-gradient-to-b from-[var(--color-bg-secondary)] to-[var(--color-bg)] text-[var(--color-text)] overflow-hidden border-r border-[var(--color-border)] pt-20 z-40">
-    <nav class="flex-1 overflow-y-auto custom-scrollbar-hide">
-      <ul class="space-y-2 p-2">
-        <li v-for="item in menuItems" :key="item.name" class="sidebar-item">
-          <router-link
-            :to="item.path"
-            class="sidebar-link"
-            :aria-label="'Ir a ' + item.name"
-          >
-            <span class="sidebar-icon-shell">
-              <i :class="[item.icon, 'text-2xl text-[var(--color-text-muted)]']"></i>
-            </span>
-            <span class="sidebar-label text-sm font-medium">{{ item.name }}</span>
-          </router-link>
-        </li>
-      </ul>
-    </nav>
-    <div class="sidebar-footer border-t border-[var(--color-border)]">
-      <router-link to="/app/settings" class="sidebar-link sidebar-item" aria-label="Ajustes">
-        <span class="sidebar-icon-shell">
-          <i class="pi pi-cog text-2xl text-[var(--color-text-muted)]"></i>
-        </span>
-        <span class="sidebar-label text-sm font-medium">Ajustes</span>
-      </router-link>
-    </div>
-  </aside>
+<aside
+  class="desktop-sidebar group hidden lg:flex fixed top-0 left-0 h-screen flex-col bg-gradient-to-b from-[var(--color-bg-secondary)] to-[var(--color-bg)] text-[var(--color-text)] overflow-hidden border-r border-[var(--color-border)] pt-20 z-40"
+>
+  <nav class="flex-1 overflow-y-auto custom-scrollbar-hide">
+    <ul class="space-y-2 p-2">
+      <li v-for="item in menuItems" :key="item.name" class="sidebar-item">
+        <router-link :to="item.path" class="sidebar-link" :aria-label="'Ir a ' + item.name">
+          <span class="sidebar-icon-shell">
+            <i :class="[item.icon, 'text-2xl text-[var(--color-text-muted)]']"></i>
+          </span>
+          <span class="sidebar-label text-sm font-medium">{{ item.name }}</span>
+        </router-link>
+      </li>
+    </ul>
+  </nav>
+  <div class="sidebar-footer border-t border-[var(--color-border)]">
+    <router-link to="/app/settings" class="sidebar-link sidebar-item" aria-label="Ajustes">
+      <span class="sidebar-icon-shell">
+        <i class="pi pi-cog text-2xl text-[var(--color-text-muted)]"></i>
+      </span>
+      <span class="sidebar-label text-sm font-medium">Ajustes</span>
+    </router-link>
+  </div>
+</aside>

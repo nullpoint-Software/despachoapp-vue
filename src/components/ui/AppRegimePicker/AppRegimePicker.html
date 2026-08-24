@@ -1,0 +1,40 @@
+<button
+  :id="controlId"
+  type="button"
+  class="regime-picker-trigger"
+  :class="{ 'is-empty': !hasSelection, 'is-invalid': invalid }"
+  :disabled="disabled"
+  aria-haspopup="dialog"
+  :aria-expanded="visible"
+  :aria-required="required || undefined"
+  :aria-invalid="invalid || undefined"
+  :aria-describedby="describedby"
+  @click="openPicker"
+>
+  <span>
+    <small>{{ selectionCaption }}</small>
+    <strong>{{ selectedLabel }}</strong>
+  </span>
+  <i class="pi pi-list-check" aria-hidden="true" />
+</button>
+
+<AppFilterModal
+  :visible="visible"
+  :title="title"
+  :eyebrow="eyebrow"
+  :title-id="titleId"
+  :apply-label="applyLabel"
+  :reset-label="resetLabel"
+  @close="closePicker"
+  @reset="resetPicker"
+  @apply="applyPicker"
+  :layer="layer"
+>
+  <AppFilterOptions
+    v-model="draftValue"
+    :legend="legend"
+    :name="`${controlId}-options`"
+    :options="options"
+    :multiple="multiple"
+  />
+</AppFilterModal>

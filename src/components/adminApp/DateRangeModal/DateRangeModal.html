@@ -1,20 +1,36 @@
 <Teleport to="body">
-    <div class="period-overlay" @mousedown.self="emit('close')">
-      <section class="period-modal" role="dialog" aria-modal="true" aria-labelledby="period-title">
-        <header>
-          <p>CAJA / PERIODO</p>
-          <h2 id="period-title">Definir corte</h2>
-          <button type="button" aria-label="Cerrar" @click="emit('close')">×</button>
-        </header>
-        <div class="period-body">
-          <p>Selecciona la fecha y hora exactas de inicio y fin.</p>
-          <div class="period-grid">
-            <section><span>01 / Inicio</span><DateTimePicker v-model="draftFrom" modal title="Fecha y hora de inicio" /></section>
-            <section><span>02 / Fin</span><DateTimePicker v-model="draftTo" modal title="Fecha y hora final" /></section>
-          </div>
-          <p v-if="invalid" class="period-error">La fecha inicial debe ser anterior a la fecha final.</p>
+  <div class="period-overlay">
+    <section class="period-modal" role="dialog" aria-modal="true" aria-labelledby="period-title">
+      <header>
+        <p>CAJA / PERIODO</p>
+        <h2 id="period-title">Definir corte</h2>
+        <button type="button" aria-label="Cerrar" @click="emit('close')">×</button>
+      </header>
+      <div class="period-body">
+        <p>Selecciona la fecha y hora exactas de inicio y fin.</p>
+        <div class="period-grid">
+          <section>
+            <span>01 / Inicio</span
+            ><DateTimePicker v-model="draftFrom" modal title="Fecha y hora de inicio" />
+          </section>
+          <section>
+            <span>02 / Fin</span
+            ><DateTimePicker v-model="draftTo" modal title="Fecha y hora final" />
+          </section>
         </div>
-        <footer><AppButton label="Cancelar" outlined @click="emit('close')"/><AppButton label="Aplicar periodo" icon="pi pi-check" class="p-button-primary" :disabled="invalid" @click="apply"/></footer>
-      </section>
-    </div>
-  </Teleport>
+        <p v-if="invalid" class="period-error">
+          La fecha inicial debe ser anterior a la fecha final.
+        </p>
+      </div>
+      <footer>
+        <AppButton label="Cancelar" outlined @click="emit('close')" /><AppButton
+          label="Aplicar periodo"
+          icon="pi pi-check"
+          class="p-button-primary"
+          :disabled="invalid"
+          @click="apply"
+        />
+      </footer>
+    </section>
+  </div>
+</Teleport>

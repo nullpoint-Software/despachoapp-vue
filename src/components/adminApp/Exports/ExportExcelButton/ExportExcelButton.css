@@ -10,6 +10,15 @@
   color: var(--br-text);
   cursor: pointer;
 }
-.excel-icon-button:hover,.excel-icon-button:focus-visible { border-color:var(--br-accent);outline:0;color:var(--br-accent) }
-.excel-icon-button:active { transform:translateY(1px) }
-.excel-icon-button i { font-size:1.15rem }
+.excel-icon-button:hover,
+.excel-icon-button:focus-visible {
+  border-color: var(--br-accent);
+  outline: 0;
+  color: var(--br-accent);
+}
+.excel-icon-button:active {
+  transform: translateY(1px);
+}
+.excel-icon-button i {
+  font-size: 1.15rem;
+}
