@@ -22,9 +22,9 @@ const permissionListeners = new Set<(profile: PermissionProfile) => void>();
 const PERMISSION_REFRESH_MS = 3000;
 
 const authHeaders = (): Record<string, string> => {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+  const token = localStorage.getItem('token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
 export function clearPermissionCache(): void {
   currentProfile = null;

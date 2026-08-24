@@ -10,11 +10,12 @@ import { initializeFontFamily } from './composables/useFontFamily'
 import { tooltipDirective } from './directives/tooltip'
 import { imageFallbackDirective } from './directives/imageFallback'
 import { registerGlobalComponents } from './plugins/globalComponents'
-
+import { installModalInteractions } from './utils/modalInteractions'
 
 const app = createApp(App)
 initializePalette()
 initializeFontSize()
+installModalInteractions()
 initializeFontFamily()
 const pinia = createPinia()
 

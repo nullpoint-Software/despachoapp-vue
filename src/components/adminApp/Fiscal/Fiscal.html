@@ -1,295 +1,304 @@
 <main class="fiscal-view">
-    <header class="fiscal-hero">
-      <div>
-        <p>IMPUESTOS / CFDI</p>
-        <h1>Control fiscal</h1>
-        <span>CFDI, reportes y conciliación bancaria por cliente y periodo.</span>
-      </div>
-      <div class="hero-actions">
-        <input
-          ref="fileInput"
-          class="sr-only" aria-label="Seleccionar archivos XML"
-          type="file"
-          accept=".xml,text/xml,application/xml"
-          multiple
-          @change="queueFiles"
-        />
-        <AppButton
-          label="Ayuda"
-          icon="pi pi-question-circle"
-          outlined
-          class="app-help-button"
-          @click="fiscalTutorialOpen = true"
-        />
-        <BankReconciliation
-          :client-id="Number(filters.clienteId)"
-          :client-label="clientSearch"
-          :year="Number(filters.year)"
-          :month="Number(filters.month)"
-          :reports="reports"
-        />
-        <AppButton
-          label="Nuevo reporte"
-          icon="pi pi-file-plus"
-          outlined
-          :disabled="!selectedIds.size"
-          @click="openReportDialog"
-        />
-      </div>
-    </header>
-
-    <section class="filter-strip" aria-label="Filtros fiscales">
-      <label class="client-combobox"
-        ><span>Cliente <AppFieldHelp label="Cliente fiscal" text="Selecciona el expediente al que pertenecen los CFDI, estados de cuenta y reportes que vas a consultar." /></span
-        ><span class="app-search-control app-search-control--autocomplete">
-          <i class="pi pi-search" aria-hidden="true" />
-          <AppAutocomplete
-            v-model="clientSearch"
-            :options="clientOptions"
-            placeholder="Escribe nombre o RFC"
-            @update:model-value="onClientSearch"
-          />
-        </span></label>
-      <label
-        ><span>Ejercicio <AppFieldHelp label="Ejercicio" text="Año fiscal de los comprobantes y reportes que deseas revisar." /></span
-        ><AppSelect v-model="filters.year" :options="years"
-      /></label>
-      <label
-        ><span>Mes <AppFieldHelp label="Mes" text="Periodo mensual usado para filtrar CFDI y generar reportes fiscales." /></span
-        ><AppSelect
-          v-model="filters.month"
-          :options="months"
-          option-label="label"
-          option-value="value"
-      /></label>
-      <label class="search-field"
-        ><span>Buscar UUID, RFC o nombre <AppFieldHelp label="Búsqueda fiscal" text="Localiza comprobantes por folio fiscal, RFC o nombre del emisor o receptor." /></span
-        ><span class="app-search-control">
-          <i class="pi pi-search" aria-hidden="true" />
-          <AppInput
-            v-model="filters.search"
-            type="search"
-            placeholder="Buscar factura"
-            @input="scheduleLoad"
-          />
-        </span></label>
-      <AppButton label="Aplicar" icon="pi pi-filter" @click="loadInvoices" />
-      <AppButton
-        label="Limpiar"
-        icon="pi pi-times"
-        outlined
-        @click="clearFilters"
+  <header class="fiscal-hero">
+    <div>
+      <p>IMPUESTOS / CFDI</p>
+      <h1>Control fiscal</h1>
+      <span>CFDI, reportes y conciliación bancaria por cliente y periodo.</span>
+    </div>
+    <div class="hero-actions">
+      <input
+        ref="fileInput"
+        class="sr-only"
+        aria-label="Seleccionar archivos XML o ZIP del SAT"
+        type="file"
+        accept=".xml,.zip,text/xml,application/xml,application/zip"
+        multiple
+        @change="queueFiles"
       />
-    </section>
-
-    <section class="sat-download-entry" aria-label="Descarga masiva de CFDI del SAT">
-      <div class="sat-download-entry-copy">
-        <i class="pi pi-cloud-download" aria-hidden="true" />
-        <div>
-          <small>CFDI / SERVICIO OFICIAL</small>
-          <strong>Trae los XML del SAT sin cargarlos uno por uno</strong>
-          <span>Elige el cliente y el periodo. El servidor descarga, valida e importa los comprobantes automáticamente.</span>
-        </div>
-      </div>
-      <SatMassDownload
+      <AppButton
+        label="Ayuda"
+        icon="pi pi-question-circle"
+        outlined
+        class="app-help-button"
+        @click="fiscalTutorialOpen = true"
+      />
+      <BankReconciliation
         :client-id="Number(filters.clienteId)"
-        :client-label="clientSearch || 'Cliente sin seleccionar'"
+        :client-label="clientSearch"
         :year="Number(filters.year)"
         :month="Number(filters.month)"
-        @imported="handleSatImport"
+        :reports="reports"
       />
-      <p v-if="!filters.clienteId" class="sat-download-entry-hint">
-        <i class="pi pi-arrow-up" aria-hidden="true" /> Selecciona primero un cliente en los filtros.
-      </p>
-    </section>
+      <AppButton
+        label="Nuevo reporte"
+        icon="pi pi-file-plus"
+        outlined
+        :disabled="!selectedIds.size"
+        @click="openReportDialog"
+      />
+    </div>
+  </header>
 
+  <section class="filter-strip" aria-label="Filtros fiscales">
+    <label class="client-combobox"
+      ><span
+        >Cliente
+        <AppFieldHelp
+          label="Cliente fiscal"
+          text="Selecciona el expediente al que pertenecen los CFDI, estados de cuenta y reportes que vas a consultar." /></span
+      ><span class="app-search-control app-search-control--autocomplete">
+        <i class="pi pi-search" aria-hidden="true" />
+        <AppAutocomplete
+          v-model="clientSearch"
+          :options="clientOptions"
+          placeholder="Escribe nombre o RFC"
+          @update:model-value="onClientSearch"
+        /> </span
+    ></label>
+    <label
+      ><span
+        >Ejercicio
+        <AppFieldHelp
+          label="Ejercicio"
+          text="Año fiscal de los comprobantes y reportes que deseas revisar." /></span
+      ><AppSelect v-model="filters.year" :options="years"
+    /></label>
+    <label
+      ><span
+        >Mes
+        <AppFieldHelp
+          label="Mes"
+          text="Periodo mensual usado para filtrar CFDI y generar reportes fiscales." /></span
+      ><AppSelect
+        v-model="filters.month"
+        :options="months"
+        option-label="label"
+        option-value="value"
+    /></label>
+    <label class="search-field"
+      ><span
+        >Buscar UUID, RFC o nombre
+        <AppFieldHelp
+          label="Búsqueda fiscal"
+          text="Localiza comprobantes por folio fiscal, RFC o nombre del emisor o receptor." /></span
+      ><span class="app-search-control">
+        <i class="pi pi-search" aria-hidden="true" />
+        <AppInput
+          v-model="filters.search"
+          type="search"
+          placeholder="Buscar factura"
+          @input="scheduleLoad"
+        /> </span
+    ></label>
+    <AppButton label="Aplicar" icon="pi pi-filter" @click="loadInvoices" />
+    <AppButton label="Limpiar" icon="pi pi-times" outlined @click="clearFilters" />
+  </section>
 
-    <section
-      class="xml-dropzone"
-      :class="{ dragging, disabled: !filters.clienteId || importing }"
-      role="button"
-      tabindex="0"
-      aria-label="Agregar archivos XML"
-      @click="openFilePicker"
-      @keydown.enter.prevent="openFilePicker"
-      @keydown.space.prevent="openFilePicker"
-      @dragenter.prevent="dragging = true"
-      @dragover.prevent
-      @dragleave.prevent="dragging = false"
-      @drop.prevent="dropFiles"
-    >
+  <section class="sat-download-entry" aria-label="Descarga masiva de CFDI del SAT">
+    <div class="sat-download-entry-copy">
+      <i class="pi pi-cloud-download" aria-hidden="true" />
       <div>
-        <i class="pi pi-cloud-upload" /><strong
-          >Arrastra tus XML aquí <em>o haz clic para buscarlos</em></strong
-        ><span
-          >Ingresos, egresos, nómina, pagos, traslados, notas de crédito y
-          sustituciones.</span
+        <small>CFDI / SERVICIO OFICIAL</small>
+        <strong>Trae los XML del SAT sin cargarlos uno por uno</strong>
+        <span
+          >Elige el cliente y el periodo. El servidor descarga, valida e importa los comprobantes
+          automáticamente.</span
         >
       </div>
-      <div v-if="pendingFiles.length" class="file-preview">
-        <article
-          v-for="(file, index) in pendingFiles"
-          :key="`${file.name}-${file.size}`"
-          @click.stop
-        >
-          <i class="pi pi-file" /><span
-            ><strong>{{ file.name }}</strong
-            ><small>{{ fileSize(file.size) }}</small></span
-          ><button
-            type="button"
-            aria-label="Quitar archivo"
-            @click="pendingFiles.splice(index, 1)"
-          >
-            ×
-          </button>
-        </article>
-        <AppButton
-          :label="
-            importing ? 'Importando…' : `Importar ${pendingFiles.length} XML`
-          "
-          icon="pi pi-check"
-          :disabled="importing || !filters.clienteId"
-          @click.stop="uploadQueued"
-        />
-      </div>
-    </section>
+    </div>
+    <SatMassDownload
+      :client-id="Number(filters.clienteId)"
+      :client-label="clientSearch || 'Cliente sin seleccionar'"
+      :year="Number(filters.year)"
+      :month="Number(filters.month)"
+      @imported="handleSatImport"
+    />
+    <p v-if="!filters.clienteId" class="sat-download-entry-hint">
+      <i class="pi pi-arrow-up" aria-hidden="true" /> Selecciona primero un cliente en los filtros.
+    </p>
+  </section>
 
-    <div v-if="notice" class="notice" :class="noticeTone" role="status">
-      <i
-        :class="
+  <section
+    class="xml-dropzone"
+    :class="{ dragging, disabled: !filters.clienteId || importing }"
+    role="button"
+    tabindex="0"
+    aria-label="Agregar archivos XML o ZIP del SAT"
+    @click="openFilePicker"
+    @keydown.enter.prevent="openFilePicker"
+    @keydown.space.prevent="openFilePicker"
+    @dragenter.prevent="dragging = true"
+    @dragover.prevent
+    @dragleave.prevent="dragging = false"
+    @drop.prevent="dropFiles"
+  >
+    <div>
+      <i class="pi pi-cloud-upload" /><strong
+        >Arrastra XML o el ZIP del SAT <em>o haz clic para buscarlos</em></strong
+      ><span>Ingresos, egresos, nómina, pagos, traslados, notas de crédito y sustituciones.</span>
+    </div>
+    <div v-if="pendingFiles.length" class="file-preview">
+      <article v-for="(file, index) in pendingFiles" :key="`${file.name}-${file.size}`" @click.stop>
+        <i class="pi pi-file" /><span
+          ><strong>{{ file.name }}</strong><small>{{ fileSize(file.size) }}</small></span
+        ><button type="button" aria-label="Quitar archivo" @click="pendingFiles.splice(index, 1)">
+          ×
+        </button>
+      </article>
+      <AppButton
+        :label="
+            importing ? 'Importando…' : `Importar ${pendingFiles.length} archivo(s)`
+          "
+        icon="pi pi-check"
+        :disabled="importing || !filters.clienteId"
+        @click.stop="uploadQueued"
+      />
+    </div>
+  </section>
+
+  <div v-if="notice" class="notice" :class="noticeTone" role="status">
+    <i
+      :class="
           noticeTone === 'error'
             ? 'pi pi-exclamation-triangle'
             : 'pi pi-check-circle'
         "
-      />
-      <span>{{ notice }}</span>
-      <button type="button" aria-label="Cerrar aviso" @click="notice = ''">
-        ×
-      </button>
-    </div>
+    />
+    <span>{{ notice }}</span>
+    <button type="button" aria-label="Cerrar aviso" @click="notice = ''">×</button>
+  </div>
 
-    <section class="summary-grid" aria-label="Resumen de impuestos">
-      <article>
-        <span>Documentos</span><strong>{{ invoices.length }}</strong>
-      </article>
-      <article>
-        <span>Base 16%</span><strong>{{ money(summary.base16) }}</strong>
-      </article>
-      <article class="accent">
-        <span>IVA 16%</span><strong>{{ money(summary.iva16) }}</strong>
-      </article>
-      <article>
-        <span>Tasa 0%</span><strong>{{ money(summary.zero) }}</strong>
-      </article>
-      <article>
-        <span>Exento</span><strong>{{ money(summary.exempt) }}</strong>
-      </article>
-      <article>
-        <span>Total</span><strong>{{ money(summary.total) }}</strong>
-      </article>
-    </section>
+  <section class="summary-grid" aria-label="Resumen de impuestos">
+    <article><span>Documentos</span><strong>{{ invoices.length }}</strong></article>
+    <article><span>Base 16%</span><strong>{{ money(summary.base16) }}</strong></article>
+    <article class="accent">
+      <span>IVA 16%</span><strong>{{ money(summary.iva16) }}</strong>
+    </article>
+    <article><span>Tasa 0%</span><strong>{{ money(summary.zero) }}</strong></article>
+    <article><span>Exento</span><strong>{{ money(summary.exempt) }}</strong></article>
+    <article><span>Total</span><strong>{{ money(summary.total) }}</strong></article>
+  </section>
 
-    <div class="fiscal-tabs" role="tablist" aria-label="Tipo de facturas">
-      <button type="button" role="tab" aria-controls="fiscal-invoice-panel" :aria-selected="filters.direction === 'emitida'" :class="{ active: filters.direction === 'emitida' }" @click="filters.direction = 'emitida'">
-        Emitidas / ingresos
-      </button>
-      <button type="button" role="tab" aria-controls="fiscal-invoice-panel" :aria-selected="filters.direction === 'recibida'" :class="{ active: filters.direction === 'recibida' }" @click="filters.direction = 'recibida'">
-        Recibidas / egresos
-      </button>
-    </div>
+  <div class="fiscal-tabs" role="tablist" aria-label="Tipo de facturas">
+    <button
+      type="button"
+      role="tab"
+      aria-controls="fiscal-invoice-panel"
+      :aria-selected="filters.direction === 'emitida'"
+      :class="{ active: filters.direction === 'emitida' }"
+      @click="filters.direction = 'emitida'"
+    >
+      Emitidas / ingresos
+    </button>
+    <button
+      type="button"
+      role="tab"
+      aria-controls="fiscal-invoice-panel"
+      :aria-selected="filters.direction === 'recibida'"
+      :class="{ active: filters.direction === 'recibida' }"
+      @click="filters.direction = 'recibida'"
+    >
+      Recibidas / egresos
+    </button>
+  </div>
 
-    <section class="workspace-grid">
-      <div id="fiscal-invoice-panel" class="invoice-panel" role="tabpanel">
-        <header class="panel-heading">
-          <div>
-            <h2>
-              {{
-                filters.direction === "emitida"
-                  ? "Ingresos emitidos"
-                  : "Egresos recibidos"
-              }}
-            </h2>
-            <p>
-              {{ selectedIds.size }} seleccionadas para el siguiente reporte
-            </p>
-            <strong class="selected-subtotal">Subtotal seleccionado: {{ money(selectedSubtotal) }}</strong>
-            <div class="row-legend"><span class="used">Usada en reporte</span><span class="blocked">No seleccionable</span></div>
+  <section class="workspace-grid">
+    <div id="fiscal-invoice-panel" class="invoice-panel" role="tabpanel">
+      <header class="panel-heading">
+        <div>
+          <h2>{{ filters.direction === "emitida" ? "Ingresos emitidos" : "Egresos recibidos" }}</h2>
+          <p>{{ selectedIds.size }} seleccionadas para el siguiente reporte</p>
+          <strong class="selected-subtotal"
+            >Subtotal seleccionado: {{ money(selectedSubtotal) }}</strong
+          >
+          <div class="row-legend">
+            <span class="attention">Tasa 0%, exento o devolución</span
+            ><span class="warning">Revisión excepcional</span
+            ><span class="used">Usada en reporte</span
+            ><span class="blocked">Sin efectos fiscales</span>
           </div>
-          <div class="selection-actions">
-            <button
-              class="reports-drawer-trigger"
-              type="button"
-              aria-haspopup="dialog"
-              :aria-expanded="showReportsDrawer"
-              @click="showReportsDrawer = true"
-            >
-              <i class="pi pi-folder-open" /> Reportes guardados
-              <strong>{{ reports.length }}</strong>
-            </button>
-            <button type="button" @click="selectVisible">
-              Seleccionar visibles
-            </button>
-            <button type="button" @click="selectedIds.clear()">
-              Limpiar selección
-            </button>
-          </div>
-        </header>
-
-        <div v-if="activeReport" class="active-report-bar">
-          <div>
-            <small>EDITANDO REPORTE</small>
-            <strong>{{ activeReport.nombre }}</strong>
-            <span>{{ activeReport.facturas_count }} CFDI vinculados</span>
-          </div>
-          <button type="button" @click="closeActiveReport">
-            <i class="pi pi-times" /> Cerrar edición
-          </button>
         </div>
+        <div class="selection-actions">
+          <button
+            class="reports-drawer-trigger"
+            type="button"
+            aria-haspopup="dialog"
+            :aria-expanded="showReportsDrawer"
+            @click="showReportsDrawer = true"
+          >
+            <i class="pi pi-folder-open" /> Reportes guardados
+            <strong>{{ reports.length }}</strong>
+          </button>
+          <button type="button" @click="selectVisible">Seleccionar visibles</button>
+          <button type="button" @click="selectedIds.clear()">Limpiar selección</button>
+        </div>
+      </header>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th class="check-col">
-                  <input
-                    type="checkbox"
-                    :checked="allVisibleSelected"
-                    aria-label="Seleccionar todas"
-                    @change="toggleAll"
-                  />
-                </th>
-                <th class="actions-col">Acciones</th>
-                <th>Estatus</th>
-                <th>Forma de pago</th>
-                <th>Nombre</th>
-                <th>RFC</th>
-                <th class="number">Abonado</th>
-                <th class="number">Subtotal 16%</th>
-                <th class="number">Subtotal 8%</th>
-                <th class="number">IVA 16%</th>
-                <th class="number">IVA 8%</th>
-                <th class="number">Pendiente</th>
-                <th class="number">Exento</th>
-                <th class="number">0%</th>
-                <th class="number">Ret. IEPS</th>
-                <th>Fecha</th>
+      <div v-if="activeReport" class="active-report-bar">
+        <div>
+          <small>EDITANDO REPORTE</small>
+          <strong>{{ activeReport.nombre }}</strong>
+          <span>{{ activeReport.facturas_count }} CFDI vinculados</span>
+        </div>
+        <button type="button" @click="closeActiveReport">
+          <i class="pi pi-times" /> Cerrar edición
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="check-col">
+                <input
+                  type="checkbox"
+                  :checked="allVisibleSelected"
+                  aria-label="Seleccionar todas"
+                  @change="toggleAll"
+                />
+              </th>
+              <th class="actions-col">Acciones</th>
+              <th>Estatus</th>
+              <th>Forma de pago</th>
+              <th>Nombre</th>
+              <th>RFC</th>
+              <th class="number">Abonado</th>
+              <th class="number">Subtotal 16%</th>
+              <th class="number">Subtotal 8%</th>
+              <th class="number">IVA 16%</th>
+              <th class="number">IVA 8%</th>
+              <th class="number">Pendiente</th>
+              <th class="number">Exento</th>
+              <th class="number">0%</th>
+              <th class="number">Ret. IEPS</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody v-if="loading">
+            <tr v-for="index in 5" :key="index" class="skeleton-row">
+              <td colspan="16"><span /></td>
+            </tr>
+          </tbody>
+          <tbody v-else-if="invoices.length">
+            <template v-for="group in invoiceGroups" :key="group.key">
+              <tr class="invoice-group-row">
+                <td colspan="16">
+                  <strong>{{ group.label }}</strong
+                  ><span>{{ group.invoices.length }} documento(s)</span>
+                </td>
               </tr>
-            </thead>
-            <tbody v-if="loading">
-              <tr v-for="index in 5" :key="index" class="skeleton-row">
-                <td colspan="16"><span /></td>
-              </tr>
-            </tbody>
-            <tbody v-else-if="invoices.length">
               <tr
-                v-for="invoice in invoices"
+                v-for="invoice in group.invoices"
                 :key="invoice.id"
                 :class="{
                   selected: selectedIds.has(Number(invoice.id)),
                   'used-monthly': Number(invoice.usada_reporte_mensual) === 1,
                   'report-blocked': !isSelectable(invoice),
+                  'fiscal-attention': hasFiscalAttention(invoice),
+                  'report-warning': Boolean(invoice.advertencia_reporte),
+                  'payment-complement': isPaymentComplement(invoice),
                 }"
-                :title="invoice.motivo_no_seleccionable || undefined"
+                :title="invoice.motivo_no_seleccionable || invoice.advertencia_reporte || undefined"
               >
                 <td class="check-col">
                   <input
@@ -301,23 +310,11 @@
                   />
                 </td>
                 <td class="row-actions">
-                  <button
-                    type="button"
-                    title="Previsualizar PDF"
-                    @click="previewInvoice(invoice)"
-                  >
+                  <button type="button" title="Previsualizar PDF" @click="previewInvoice(invoice)">
                     <i class="pi pi-file-pdf" /></button
-                  ><button
-                    type="button"
-                    title="Ver XML desglosado"
-                    @click="openDetail(invoice)"
-                  >
+                  ><button type="button" title="Ver XML desglosado" @click="openDetail(invoice)">
                     <i class="pi pi-eye" /></button
-                  ><button
-                    type="button"
-                    title="Descargar XML"
-                    @click="downloadXml(invoice)"
-                  >
+                  ><button type="button" title="Descargar XML" @click="downloadXml(invoice)">
                     <i class="pi pi-download" /></button
                   ><button
                     v-if="invoiceBelongsToActiveReport(invoice)"
@@ -326,8 +323,7 @@
                     title="Quitar del reporte abierto"
                     @click="removeInvoiceFromReport(invoice)"
                   >
-                    <i class="pi pi-minus-circle" />
-                  </button
+                    <i class="pi pi-minus-circle" /></button
                   ><button
                     class="danger"
                     type="button"
@@ -338,14 +334,35 @@
                   </button>
                 </td>
                 <td>
-                  <span
-                    class="status-pill"
-                    :class="invoice.estatus_calculado"
+                  <span class="status-pill" :class="invoice.estatus_calculado"
                     >{{ invoice.estatus_calculado }}</span
                   ><small>{{ typeLabel(invoice.tipo_comprobante) }}</small>
-                  <small v-if="!isSelectable(invoice)" class="blocked-label">No seleccionable: {{ invoice.motivo_no_seleccionable }}</small>
+                  <small v-if="!isSelectable(invoice)" class="blocked-label"
+                    >Sin efectos fiscales: no seleccionable</small
+                  >
+                  <small v-else-if="invoice.advertencia_reporte" class="warning-label"
+                    >Seleccionable con revisión: {{ invoice.advertencia_reporte }}</small
+                  >
                 </td>
-                <td><strong>{{ paymentLabel(invoice) }}</strong></td>
+                <td>
+                  <strong>{{ paymentLabel(invoice) }}</strong>
+                  <div v-if="isPaymentComplement(invoice)" class="payment-reference-list">
+                    <small
+                      >Aplica a {{ invoice.facturas_relacionadas_count || 0 }} factura(s)</small
+                    >
+                    <button
+                      v-for="reference in paymentReferences(invoice)"
+                      :key="`${invoice.id}-${reference.uuid}`"
+                      type="button"
+                      :disabled="!reference.invoiceId"
+                      :title="reference.uuid"
+                      @click="reference.invoiceId && openDetail({ id: reference.invoiceId })"
+                    >
+                      {{ reference.folio || shortUuid(reference.uuid) }} · {{
+                      money(reference.amount) }}
+                    </button>
+                  </div>
+                </td>
                 <td>
                   <button
                     class="provider-link"
@@ -353,8 +370,9 @@
                     :disabled="invoice.direccion !== 'recibida'"
                     @click="openProvider(invoice)"
                   >
-                    {{ counterpartName(invoice) || "Sin nombre" }}</button
-                  ><div v-if="invoice.reportes" class="report-badges">
+                    {{ counterpartName(invoice) || "Sin nombre" }}
+                  </button>
+                  <div v-if="invoice.reportes" class="report-badges">
                     <small
                       v-if="Number(invoice.usada_reporte_mensual) === 1"
                       class="monthly-used-label"
@@ -374,69 +392,44 @@
                 <td>
                   <strong>{{ counterpartRfc(invoice) }}</strong>
                 </td>
-                <td class="number">
-                  {{ currencyMoney(invoice.abonado, invoice.moneda) }}
-                </td>
-                <td class="number">
-                  {{ currencyMoney(invoice.base_iva_16, invoice.moneda) }}
-                </td>
-                <td class="number">
-                  {{ currencyMoney(invoice.base_iva_8, invoice.moneda) }}
-                </td>
-                <td class="number">
-                  {{ currencyMoney(invoice.iva_16, invoice.moneda) }}
-                </td>
-                <td class="number">
-                  {{ currencyMoney(invoice.iva_8, invoice.moneda) }}
-                </td>
-                <td class="number">
-                  {{ currencyMoney(invoice.pendiente, invoice.moneda) }}
-                </td>
-                <td class="number">
-                  {{ currencyMoney(invoice.base_exento, invoice.moneda) }}
-                </td>
-                <td class="number">
-                  {{ currencyMoney(invoice.base_iva_0, invoice.moneda) }}
-                </td>
-                <td class="number">
-                  {{ currencyMoney(invoice.ieps_retenido, invoice.moneda) }}
-                </td>
+                <td class="number">{{ currencyMoney(invoice.abonado, invoice.moneda) }}</td>
+                <td class="number">{{ currencyMoney(invoice.base_iva_16, invoice.moneda) }}</td>
+                <td class="number">{{ currencyMoney(invoice.base_iva_8, invoice.moneda) }}</td>
+                <td class="number">{{ currencyMoney(invoice.iva_16, invoice.moneda) }}</td>
+                <td class="number">{{ currencyMoney(invoice.iva_8, invoice.moneda) }}</td>
+                <td class="number">{{ currencyMoney(invoice.pendiente, invoice.moneda) }}</td>
+                <td class="number">{{ currencyMoney(invoice.base_exento, invoice.moneda) }}</td>
+                <td class="number">{{ currencyMoney(invoice.base_iva_0, invoice.moneda) }}</td>
+                <td class="number">{{ currencyMoney(invoice.ieps_retenido, invoice.moneda) }}</td>
                 <td>
                   <time>{{ date(invoice.fecha_emision) }}</time
                   ><small>{{ shortUuid(invoice.uuid) }}</small>
                 </td>
               </tr>
-            </tbody>
-            <tbody v-else>
-              <tr>
-                <td colspan="16">
-                  <div class="empty-state">
-                    <i class="pi pi-file-import" /><strong>{{
-                      filters.clienteId
-                        ? "No hay CFDI en este periodo"
-                        : "Selecciona un cliente"
+            </template>
+          </tbody>
+          <tbody v-else>
+            <tr>
+              <td colspan="16">
+                <div class="empty-state">
+                  <i class="pi pi-file-import" /><strong
+                    >{{ filters.clienteId ? "No hay CFDI en este periodo" : "Selecciona un cliente"
                     }}</strong
-                    ><span>{{
-                      filters.clienteId
-                        ? "Importa los XML del cliente o cambia los filtros."
-                        : "Escribe el nombre o RFC para comenzar."
-                    }}</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  ><span
+                    >{{ filters.clienteId ? "Importa los XML del cliente o cambia los filtros." :
+                    "Escribe el nombre o RFC para comenzar." }}</span
+                  >
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </div>
+  </section>
 
-    </section>
-
-    <Teleport to="body">
-    <div
-      v-if="showReportsDrawer"
-      class="reports-drawer-overlay"
-      @click.self="showReportsDrawer = false"
-    >
+  <Teleport to="body">
+    <div v-if="showReportsDrawer" class="reports-drawer-overlay">
       <aside
         class="reports-panel reports-drawer"
         role="dialog"
@@ -458,24 +451,16 @@
             ×
           </button>
         </header>
-        <div v-if="reportsLoading" class="reports-loading">
-          Cargando cortes...
-        </div>
+        <div v-if="reportsLoading" class="reports-loading">Cargando cortes...</div>
         <div v-else class="calendar-reports">
           <div class="annual-row">
             <strong>{{ filters.year }}</strong>
-            <div
-              v-for="report in reportsFor(null, 'anual')"
-              :key="report.id"
-              class="report-chip"
-            >
-              <button @click="loadReport(Number(report.id))">
-                {{ report.nombre }}</button
+            <div v-for="report in reportsFor(null, 'anual')" :key="report.id" class="report-chip">
+              <button @click="loadReport(Number(report.id))">{{ report.nombre }}</button
               ><button title="PDF" @click="previewReportPdf(report)">
                 <i class="pi pi-file-pdf" /></button
               ><button title="Excel" @click="downloadReport(report)">
-                <i class="pi pi-download" />
-              </button
+                <i class="pi pi-download" /></button
               ><button
                 class="report-delete"
                 title="Eliminar reporte"
@@ -484,9 +469,7 @@
                 <i class="pi pi-trash" />
               </button>
             </div>
-            <span v-if="!reportsFor(null, 'anual').length"
-              >Sin reporte anual</span
-            >
+            <span v-if="!reportsFor(null, 'anual').length">Sin reporte anual</span>
           </div>
           <article v-for="(month, index) in monthNames" :key="month">
             <strong>{{ month }}</strong>
@@ -497,12 +480,9 @@
                 class="report-chip"
               >
                 <button @click="loadReport(Number(report.id))">
-                  {{
-                    report.direccion === "emitida" ? "Ingresos" : "Egresos"
-                  }}</button
+                  {{ report.direccion === "emitida" ? "Ingresos" : "Egresos" }}</button
                 ><button title="Excel" @click="downloadReport(report)">
-                  <i class="pi pi-download" />
-                </button
+                  <i class="pi pi-download" /></button
                 ><button
                   class="report-delete"
                   title="Eliminar reporte"
@@ -527,12 +507,8 @@
                 class="report-chip"
               >
                 <button @click="loadReport(Number(report.id))">DIOT</button
-                ><button
-                  title="TXT de carga masiva"
-                  @click="downloadReport(report)"
-                >
-                  <i class="pi pi-download" />
-                </button
+                ><button title="TXT de carga masiva" @click="downloadReport(report)">
+                  <i class="pi pi-download" /></button
                 ><button
                   class="report-delete"
                   title="Eliminar DIOT"
@@ -541,41 +517,23 @@
                   <i class="pi pi-trash" />
                 </button>
               </div>
-              <span v-if="!reportsFor(index + 1, 'diot').length"
-                >DIOT pendiente</span
-              >
+              <span v-if="!reportsFor(index + 1, 'diot').length">DIOT pendiente</span>
             </div>
           </article>
         </div>
       </aside>
     </div>
 
-    <div
-      v-if="showReportDialog"
-      class="modal-overlay"
-      @click.self="showReportDialog = false"
-    >
-      <section
-        class="modal-shell"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="report-title"
-      >
+    <div v-if="showReportDialog" class="modal-overlay">
+      <section class="modal-shell" role="dialog" aria-modal="true" aria-labelledby="report-title">
         <header class="modal-header">
           <p>SELECCIÓN / CORTE</p>
           <h2 id="report-title">Guardar reporte</h2>
-          <button
-            type="button"
-            aria-label="Cerrar"
-            @click="showReportDialog = false"
-          >
-            ×
-          </button>
+          <button type="button" aria-label="Cerrar" @click="showReportDialog = false">×</button>
         </header>
         <div class="modal-body form-grid">
           <label class="full"
-            ><span>Nombre del reporte</span
-            ><AppInput v-model="reportDraft.name"
+            ><span>Nombre del reporte</span><AppInput v-model="reportDraft.name"
           /></label>
           <label
             ><span>Tipo</span
@@ -595,8 +553,7 @@
               disabled
           /></label>
           <label
-            ><span>Ejercicio</span
-            ><AppSelect v-model="reportDraft.year" :options="years" disabled
+            ><span>Ejercicio</span><AppSelect v-model="reportDraft.year" :options="years" disabled
           /></label>
           <label v-if="reportDraft.type !== 'anual'"
             ><span>Mes de emisión</span
@@ -609,15 +566,11 @@
           /></label>
           <div class="selection-note full">
             <strong>{{ selectedIds.size }} CFDI</strong
-            ><span
-              >La selección quedará guardada y marcada para volver a generar
-              este corte.</span
-            >
+            ><span>La selección quedará guardada y marcada para volver a generar este corte.</span>
           </div>
           <p v-if="matchingReport" class="fiscal-note full">
-            Este corte ya existe como “{{ matchingReport.nombre }}”. Las
-            facturas seleccionadas se agregarán a ese mismo reporte sin crear
-            otro.
+            Este corte ya existe como “{{ matchingReport.nombre }}”. Las facturas seleccionadas se
+            agregarán a ese mismo reporte sin crear otro.
           </p>
           <p
             v-if="
@@ -626,19 +579,15 @@
             "
             class="fiscal-note full"
           >
-            La DIOT del mes se guardará automáticamente con exactamente los
-            mismos CFDI de este reporte mensual.
+            La DIOT del mes se guardará automáticamente con exactamente los mismos CFDI de este
+            reporte mensual.
           </p>
           <p v-if="reportValidation" class="fiscal-note report-error full">
             {{ reportValidation }}
           </p>
         </div>
         <footer>
-          <AppButton
-            label="Cancelar"
-            outlined
-            @click="showReportDialog = false"
-          /><AppButton
+          <AppButton label="Cancelar" outlined @click="showReportDialog = false" /><AppButton
             :label="matchingReport ? 'Agregar al reporte existente' : 'Guardar reporte'"
             class="p-button-primary"
             :disabled="savingReport || !!reportValidation"
@@ -648,11 +597,7 @@
       </section>
     </div>
 
-    <div
-      v-if="showDetail && detail"
-      class="modal-overlay"
-      @click.self="showDetail = false"
-    >
+    <div v-if="showDetail && detail" class="modal-overlay">
       <section
         class="modal-shell detail-modal"
         role="dialog"
@@ -662,30 +607,22 @@
         <header class="modal-header">
           <p>CFDI / {{ detail.uuid }}</p>
           <h2 id="detail-title">Detalle de factura</h2>
-          <button type="button" aria-label="Cerrar" @click="showDetail = false">
-            ×
-          </button>
+          <button type="button" aria-label="Cerrar" @click="showDetail = false">×</button>
         </header>
         <div class="modal-body">
           <dl class="invoice-meta">
             <div>
               <dt>Emisor</dt>
-              <dd>
-                {{ detail.emisor_nombre }}<small>{{ detail.emisor_rfc }}</small>
-              </dd>
+              <dd>{{ detail.emisor_nombre }}<small>{{ detail.emisor_rfc }}</small></dd>
             </div>
             <div>
               <dt>Receptor</dt>
-              <dd>
-                {{ detail.receptor_nombre
-                }}<small>{{ detail.receptor_rfc }}</small>
-              </dd>
+              <dd>{{ detail.receptor_nombre }}<small>{{ detail.receptor_rfc }}</small></dd>
             </div>
             <div>
               <dt>Pago</dt>
               <dd>
-                {{ detail.forma_pago || "Sin clave" }} /
-                {{ detail.metodo_pago || "Sin método" }}
+                {{ detail.forma_pago || "Sin clave" }} / {{ detail.metodo_pago || "Sin método" }}
               </dd>
             </div>
             <div>
@@ -699,52 +636,30 @@
               <div>
                 <strong>{{ concept.descripcion }}</strong
                 ><small
-                  >{{ concept.clave_prod_serv }} /
-                  {{
-                    concept.clave_unidad || concept.unidad || "Sin unidad"
-                  }}</small
+                  >{{ concept.clave_prod_serv }} / {{ concept.clave_unidad || concept.unidad || "Sin unidad" }}</small
                 >
               </div>
-              <span
-                >{{ concept.cantidad }} ×
-                {{ money(concept.valor_unitario) }}</span
+              <span>{{ concept.cantidad }} × {{ money(concept.valor_unitario) }}</span
               ><b>{{ money(concept.importe) }}</b>
             </article>
           </div>
           <h3>Impuestos desglosados</h3>
           <div class="tax-detail">
             <span v-for="tax in detail.taxes" :key="tax.id"
-              >{{ tax.movimiento }} / {{ taxName(tax.impuesto) }} /
-              {{ tax.tipo_factor || "Sin factor" }}
-              {{ tax.tasa_cuota == null ? "" : percent(tax.tasa_cuota) }}:
-              {{ money(tax.importe) }}</span
+              >{{ tax.movimiento }} / {{ taxName(tax.impuesto) }} / {{ tax.tipo_factor || "Sin factor" }} {{ tax.tasa_cuota == null ? "" : percent(tax.tasa_cuota) }}: {{
+              money(tax.importe) }}</span
             >
           </div>
         </div>
       </section>
     </div>
 
-    <div
-      v-if="showDiotDialog && diotDraft"
-      class="modal-overlay"
-      @click.self="showDiotDialog = false"
-    >
-      <section
-        class="modal-shell"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="diot-title"
-      >
+    <div v-if="showDiotDialog && diotDraft" class="modal-overlay">
+      <section class="modal-shell" role="dialog" aria-modal="true" aria-labelledby="diot-title">
         <header class="modal-header">
           <p>DIOT / PROVEEDOR</p>
           <h2 id="diot-title">{{ diotDraft.nombre }}</h2>
-          <button
-            type="button"
-            aria-label="Cerrar"
-            @click="showDiotDialog = false"
-          >
-            ×
-          </button>
+          <button type="button" aria-label="Cerrar" @click="showDiotDialog = false">×</button>
         </header>
         <div class="modal-body form-grid">
           <label
@@ -789,20 +704,13 @@
           /></label>
           <label v-if="diotDraft.acreditamiento === 'proporcion'"
             ><span>Proporción acreditable (0 a 1)</span
-            ><AppInput
-              v-model="diotDraft.proporcion"
-              type="number"
-              min="0"
-              max="1"
-              step="0.000001"
+            ><AppInput v-model="diotDraft.proporcion" type="number" min="0" max="1" step="0.000001"
           /></label>
           <template v-if="diotDraft.tipoTercero === '05'"
             ><label
               ><span>ID fiscal extranjero</span
               ><AppInput v-model="diotDraft.numeroIdFiscal" /></label
-            ><label
-              ><span>País SAT</span
-              ><AppInput v-model="diotDraft.pais" maxlength="3" /></label
+            ><label><span>País SAT</span><AppInput v-model="diotDraft.pais" maxlength="3" /></label
           ></template>
           <label class="full check-label"
             ><input v-model="diotDraft.efectoFiscal" type="checkbox" /><span
@@ -810,16 +718,11 @@
             ></label
           >
           <p class="fiscal-note full">
-            Estos campos controlan la posición de bases e IVA en el TXT de 54
-            campos del SAT.
+            Estos campos controlan la posición de bases e IVA en el TXT de 54 campos del SAT.
           </p>
         </div>
         <footer>
-          <AppButton
-            label="Cancelar"
-            outlined
-            @click="showDiotDialog = false"
-          /><AppButton
+          <AppButton label="Cancelar" outlined @click="showDiotDialog = false" /><AppButton
             label="Guardar para este proveedor"
             class="p-button-primary"
             @click="saveProvider"
@@ -827,7 +730,7 @@
         </footer>
       </section>
     </div>
-    <div v-if="pdfUrl" class="modal-overlay" @click.self="closePdf">
+    <div v-if="pdfUrl" class="modal-overlay">
       <section class="modal-shell pdf-modal" role="dialog" aria-modal="true">
         <header class="modal-header">
           <p>PREVISUALIZACIÓN</p>
@@ -837,6 +740,11 @@
         <iframe :src="pdfUrl" title="Vista previa PDF" />
       </section>
     </div>
-    </Teleport>
-    <AppTutorial v-model="fiscalTutorialOpen" title="Cómo usar Control fiscal" :steps="fiscalTutorialSteps" storage-key="tourFiscalDone" />
-  </main>
+  </Teleport>
+  <AppTutorial
+    v-model="fiscalTutorialOpen"
+    title="Cómo usar Control fiscal"
+    :steps="fiscalTutorialSteps"
+    storage-key="tourFiscalDone"
+  />
+</main>

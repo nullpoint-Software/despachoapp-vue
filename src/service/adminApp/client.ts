@@ -1,116 +1,134 @@
-import axios from "axios";
-const serverip = import.meta.env.VITE_API_SERVER_IP;
-import ClienteService from "./clienteService";
-import TareasService from "./tareasService";
-import AuthService from "./authService";
-import PagosService from "./pagosService";
-import NotasService from "./notasService";
-import EstadisticaService from "./estadisticaService";
-import UsuarioService from "./usuariosService";
-import LogsService from "./logsService";
-import FiscalService from "./fiscalService";
-import CumplimientoService from "./cumplimientoService";
-import PasskeyService from "./passkeyService";
-import SatRecommendationsService from "./satRecommendationsService";
-import BackupService from "./backupService";
+import axios from 'axios'
+const serverip = import.meta.env.VITE_API_SERVER_IP
+import ClienteService from './clienteService'
+import TareasService from './tareasService'
+import AuthService from './authService'
+import PagosService from './pagosService'
+import NotasService from './notasService'
+import EstadisticaService from './estadisticaService'
+import UsuarioService from './usuariosService'
+import LogsService from './logsService'
+import FiscalService from './fiscalService'
+import CumplimientoService from './cumplimientoService'
+import PasskeyService from './passkeyService'
+import SatRecommendationsService from './satRecommendationsService'
+import BackupService from './backupService'
+import {
+  clearSensitiveAccess,
+  getSensitiveAccessToken,
+  storeSensitiveAccess
+} from './sensitiveAccess'
 
-const instance = axios.create();
+const instance = axios.create()
 instance.interceptors.request.use((config) => {
-  const userId = localStorage.getItem("userid");
-  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem('userid')
+  const token = localStorage.getItem('token')
   if (userId && config.data instanceof FormData) {
-    if (!config.data.has("userId")) config.data.append("userId", userId);
-  } else if (userId && typeof config.data == "object") {
-    config.data.userId = userId;
-  } else if (config.method === "delete") {
-    config.data = { userId };
+    if (!config.data.has('userId')) config.data.append('userId', userId)
+  } else if (userId && typeof config.data == 'object') {
+    config.data.userId = userId
+  } else if (config.method === 'delete') {
+    config.data = { userId }
   }
   if (token) {
-    config.headers.set("Authorization", `Bearer ${token}`);
+    config.headers.set('Authorization', `Bearer ${token}`)
   }
-  return config;
-});
-export const cs = new ClienteService(serverip, instance);
-export const ts = new TareasService(serverip, instance);
-export const authService = new AuthService(serverip, instance);
+  const sensitiveAccessToken = getSensitiveAccessToken()
+  if (sensitiveAccessToken) {
+    config.headers.set('X-Sensitive-Authorization', sensitiveAccessToken)
+  }
+  return config
+})
+instance.interceptors.response.use(
+  (response) => {
+    if (response.data && typeof response.data === 'object') storeSensitiveAccess(response.data)
+    return response
+  },
+  (error) => {
+    if (error?.response?.data?.code === 'SENSITIVE_ACCESS_EXPIRED') clearSensitiveAccess()
+    return Promise.reject(error)
+  }
+)
+export const cs = new ClienteService(serverip, instance)
+export const ts = new TareasService(serverip, instance)
+export const authService = new AuthService(serverip, instance)
 /** @deprecated Use the expressive `authService` export. */
-export const as = authService;
-export const ps = new PagosService(serverip, instance);
-export const ns = new NotasService(serverip, instance);
-export const es = new EstadisticaService(serverip, instance);
-export const us = new UsuarioService(serverip, instance);
-export const ls = new LogsService(serverip, instance);
-export const fs = new FiscalService(serverip, instance);
-export const satrs = new SatRecommendationsService(serverip, instance);
-export const cos = new CumplimientoService(serverip, instance);
-export const pks = new PasskeyService(serverip, instance);
-export const bs = new BackupService(serverip, instance);
+export const as = authService
+export const ps = new PagosService(serverip, instance)
+export const ns = new NotasService(serverip, instance)
+export const es = new EstadisticaService(serverip, instance)
+export const us = new UsuarioService(serverip, instance)
+export const ls = new LogsService(serverip, instance)
+export const fs = new FiscalService(serverip, instance)
+export const satrs = new SatRecommendationsService(serverip, instance)
+export const cos = new CumplimientoService(serverip, instance)
+export const pks = new PasskeyService(serverip, instance)
+export const bs = new BackupService(serverip, instance)
 export const formatFechaSQL = (dateStr: string): string => {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
 
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-  const day = String(date.getDate()).padStart(2, "0");
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
+  const day = String(date.getDate()).padStart(2, '0')
 
-  return `${year}-${month}-${day}`;
-};
+  return `${year}-${month}-${day}`
+}
 
 export const formatFechaMesAnoSQL = (dateStr: string): string => {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
 
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-// oxlint-disable-next-line no-unused-vars
-  const day = String(date.getDate()).padStart(2, "0");
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
+  // oxlint-disable-next-line no-unused-vars
+  const day = String(date.getDate()).padStart(2, '0')
 
-  return `${month}/${year}`;
-};
+  return `${month}/${year}`
+}
 
 export const formatFechaHoraSQL = (dateStr: string): string => {
-  const date = new Date(dateStr);
-  const now = new Date();
+  const date = new Date(dateStr)
+  const now = new Date()
 
   const isToday =
     date.getDate() === now.getDate() &&
     date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
+    date.getFullYear() === now.getFullYear()
 
-  const hour = String(date.getHours() % 12 || 12).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
-  const timeofday = date.getHours() < 12 ? "AM" : "PM";
+  const hour = String(date.getHours() % 12 || 12).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  const timeofday = date.getHours() < 12 ? 'AM' : 'PM'
 
   if (isToday) {
-    return `Hoy a las ${hour}:${min}${timeofday}`;
+    return `Hoy a las ${hour}:${min}${timeofday}`
   }
 
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
 
-  return `${day}-${month}-${year} a las ${hour}:${min}${timeofday}`;
-};
-
+  return `${day}-${month}-${year} a las ${hour}:${min}${timeofday}`
+}
 
 export const formatFechaHoraFullSQL = (dateStr: string): string => {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
 
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-  const day = String(date.getDate()).padStart(2, "0");
-  const hour = String(date.getHours()).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
-  const sec = String(date.getSeconds()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hour}:${min}:${sec}`;
-};
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
+  const day = String(date.getDate()).padStart(2, '0')
+  const hour = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  const sec = String(date.getSeconds()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hour}:${min}:${sec}`
+}
 
 export const formatFechaHoraFullPagoSQL = (dateStr: string): string => {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr)
 
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-  const day = String(date.getDate()).padStart(2, "0");
-  const hour = String(date.getHours()).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
-  const sec = String(date.getSeconds()).padStart(2, "0");
-  return `${month}/${day}/${year} ${hour}:${min}:${sec}`;
-};
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
+  const day = String(date.getDate()).padStart(2, '0')
+  const hour = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  const sec = String(date.getSeconds()).padStart(2, '0')
+  return `${month}/${day}/${year} ${hour}:${min}:${sec}`
+}

@@ -1,33 +1,52 @@
 <Teleport to="body">
-<transition name="fade">
-    <div class="modal-overlay" @click.self="$emit('close')">
+  <transition name="fade">
+    <div class="modal-overlay">
       <div class="modal-content relative bg-gray-50">
-
-        <div class="standard-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow">
-          <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="$emit('close')">×</button>
+        <div
+          class="standard-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow"
+        >
+          <button
+            type="button"
+            class="standard-modal-close"
+            aria-label="Cerrar"
+            @click="$emit('close')"
+          >
+            ×
+          </button>
           <div class="w-16 h-16" v-if="card.id_usuario">
-            <img v-image-fallback :src="!card.image ? defaultprofilePicture : card.image" alt="Foto del Usuario"
-                 class="w-16 h-16 rounded-full object-cover" />
+            <img
+              v-image-fallback
+              :src="!card.image ? defaultprofilePicture : card.image"
+              alt="Foto del Usuario"
+              class="w-16 h-16 rounded-full object-cover"
+            />
           </div>
           <div>
             <!-- ---------------------- Cambio: usar v-html con nombre procesado para insertar guiones suaves en palabras largas ---------------------- -->
             <h3 class="text-2xl font-bold text-gray-800" v-html="hyphenatedNombre"></h3>
             <!-- -------------------------------------------------------------------------------------------- -->
             <!-- ---------------------- Cambio: usar v-html con username procesado para insertar guiones suaves en palabras largas ---------------------- -->
-            <p v-if="card.id_usuario" class="text-sm text-gray-500" v-html="hyphenatedUsername">
-            </p>
+            <p v-if="card.id_usuario" class="text-sm text-gray-500" v-html="hyphenatedUsername"></p>
             <!-- -------------------------------------------------------------------------------------------- -->
           </div>
         </div>
 
         <table class="w-full text-sm border border-gray-200 rounded-md overflow-hidden mb-6">
           <tbody>
-            <tr class="border-b border-gray-200" :style="{ backgroundColor: getStatusColor(card.estado) }">
+            <tr
+              class="border-b border-gray-200"
+              :style="{ backgroundColor: getStatusColor(card.estado) }"
+            >
               <!-- ---------------------- Cambio: mostrar título truncado con opción "Mostrar más" y hyphenation ---------------------- -->
               <th colspan="2" class="px-4 py-2 text-center font-semibold text-black">
                 <div v-if="isTituloLong" class="title-cell">
                   <div class="truncate-multiline" v-html="hyphenatedTituloTruncated"></div>
-                  <button @click="openFullText(propsLabel('Título'), card.titulo)" class="mt-2 underline text-sm">Mostrar más</button>
+                  <button
+                    @click="openFullText(propsLabel('Título'), card.titulo)"
+                    class="mt-2 underline text-sm"
+                  >
+                    Mostrar más
+                  </button>
                 </div>
                 <div v-else v-html="hyphenatedTitulo"></div>
               </th>
@@ -43,7 +62,12 @@
               <td class="px-4 py-2 text-gray-600 text-center">
                 <div v-if="isDescripcionLong">
                   <div class="truncate-multiline" v-html="hyphenatedDescripcionTruncated"></div>
-                  <button @click="openFullText(propsLabel('Descripción'), card.descripcion)" class="mt-2 underline text-sm">Mostrar más</button>
+                  <button
+                    @click="openFullText(propsLabel('Descripción'), card.descripcion)"
+                    class="mt-2 underline text-sm"
+                  >
+                    Mostrar más
+                  </button>
                 </div>
                 <div v-else v-html="hyphenatedDescripcion"></div>
               </td>
@@ -51,20 +75,31 @@
             </tr>
             <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha de creación</td>
-              <td class="px-4 py-2 text-gray-600 text-center">{{ card.fecha_creacion || 'No disponible' }}</td>
+              <td class="px-4 py-2 text-gray-600 text-center">
+                {{ card.fecha_creacion || 'No disponible' }}
+              </td>
             </tr>
             <tr class="border-b border-gray-200">
               <td class="px-4 py-2 font-medium text-gray-700 text-center">Fecha de finalización</td>
-              <td class="px-4 py-2 text-gray-600 text-center">{{ card.fecha_vencimiento || 'No disponible' }}</td>
+              <td class="px-4 py-2 text-gray-600 text-center">
+                {{ card.fecha_vencimiento || 'No disponible' }}
+              </td>
             </tr>
           </tbody>
         </table>
         <div class="task-detail-actions flex space-x-4">
-          <button @click="editTask" class="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold hover:bg-blue-400 transition focus:outline-none">
+          <button
+            @click="editTask"
+            class="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 rounded-md text-white font-semibold hover:bg-blue-400 transition focus:outline-none"
+          >
             <i class="pi pi-pencil"></i>
             <span>Modificar</span>
           </button>
-          <button @click="advanceState" :style="{ backgroundColor: getStatusColor(card.estado) }" class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold hover:opacity-90 transition focus:outline-none border border-gray-300">
+          <button
+            @click="advanceState"
+            :style="{ backgroundColor: getStatusColor(card.estado) }"
+            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-black font-semibold hover:opacity-90 transition focus:outline-none border border-gray-300"
+          >
             <i :class="getStateIcon(card.estado)"></i>
             <!-- ---------------------- Cambio: usar v-html con estado procesado por si contiene palabras largas ---------------------- -->
             <span v-html="hyphenatedEstado"></span>
@@ -77,17 +112,27 @@
 
   <!-- ---------------------- Cambio: Modal secundario para mostrar texto completo (usa misma paleta que modal padre) ---------------------- -->
   <transition name="fade">
-    <div v-if="showFullModal" class="modal-overlay" @click.self="closeFullModal">
+    <div v-if="showFullModal" class="modal-overlay">
       <!-- ---------------------- Cambio: aplicar clase 'modal-content full' para heredar paleta y estilos del padre ---------------------- -->
       <div class="modal-content full relative max-w-3xl w-[95%] p-6">
         <!-- -------------------------------------------------------------------------------------------- -->
         <div class="flex justify-between items-start mb-4">
           <h2 class="text-xl font-semibold text-gray-800">{{ fullModalTitle }}</h2>
-          <button @click="closeFullModal" class="text-gray-600 hover:text-gray-800 text-lg close-x">&times;</button>
+          <button @click="closeFullModal" class="text-gray-600 hover:text-gray-800 text-lg close-x">
+            &times;
+          </button>
         </div>
-        <div class="full-text-content max-h-[60vh] overflow-auto whitespace-pre-wrap break-words" v-html="fullModalContentHyphenated"></div>
+        <div
+          class="full-text-content max-h-[60vh] overflow-auto whitespace-pre-wrap break-words"
+          v-html="fullModalContentHyphenated"
+        ></div>
         <div class="mt-4 flex justify-end">
-          <button @click="closeFullModal" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800">Cerrar</button>
+          <button
+            @click="closeFullModal"
+            class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800"
+          >
+            Cerrar
+          </button>
         </div>
       </div>
     </div>

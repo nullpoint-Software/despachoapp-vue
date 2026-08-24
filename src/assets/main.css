@@ -1,20 +1,48 @@
 /* main.css */
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "daisyui";
-@import "primeicons/primeicons.css";
-@import "../components/ui/AppDataTable/AppDataTable.css";
-@import "../components/ui/form-controls.css";
+@import 'primeicons/primeicons.css';
+@import '../components/ui/AppDataTable/AppDataTable.css';
+@import '../components/ui/form-controls.css';
 
 /* Scroll y controles nativos integrados con la paleta activa */
-html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--br-line-strong) var(--br-bg)}
-*{scrollbar-width:thin;scrollbar-color:var(--br-line-strong) var(--br-panel)}
-*::-webkit-scrollbar{width:.65rem;height:.65rem}
-*::-webkit-scrollbar-track{background:var(--br-panel)}
-*::-webkit-scrollbar-thumb{border:2px solid var(--br-panel);border-radius:0;background:var(--br-line-strong)}
-*::-webkit-scrollbar-thumb:hover{background:var(--br-accent)}
-*::-webkit-scrollbar-corner{background:var(--br-panel)}
-input[type="number"]{-moz-appearance:textfield;appearance:textfield}
-input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0}
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--br-line-strong) var(--br-bg);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--br-line-strong) var(--br-panel);
+}
+*::-webkit-scrollbar {
+  width: 0.65rem;
+  height: 0.65rem;
+}
+*::-webkit-scrollbar-track {
+  background: var(--br-panel);
+}
+*::-webkit-scrollbar-thumb {
+  border: 2px solid var(--br-panel);
+  border-radius: 0;
+  background: var(--br-line-strong);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--br-accent);
+}
+*::-webkit-scrollbar-corner {
+  background: var(--br-panel);
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
 
 /*
   ==========================================================================
@@ -27,19 +55,19 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 */
 
 :root {
-  --br-bg:#10100f;
-  --br-panel:#191918;
-  --br-panel-2:#242321;
-  --br-control:#e7e4dc;
-  --br-control-text:#141413;
-  --br-control-muted:#4e4b45;
-  --br-text:#eceae4;
-  --br-muted:#aaa79f;
-  --br-line:#4d4b46;
-  --br-line-strong:#77736b;
-  --br-accent:#e34b32;
+  --br-bg: #10100f;
+  --br-panel: #191918;
+  --br-panel-2: #242321;
+  --br-control: #e7e4dc;
+  --br-control-text: #141413;
+  --br-control-muted: #4e4b45;
+  --br-text: #eceae4;
+  --br-muted: #aaa79f;
+  --br-line: #4d4b46;
+  --br-line-strong: #77736b;
+  --br-accent: #e34b32;
   /* --- Configuración de Fuente (Editable con JS) --- */
-  --font-family: "Inter", sans-serif;
+  --font-family: 'Inter', sans-serif;
   --font-size-base: 16px;
   --font-size-body: 17px;
 
@@ -224,14 +252,10 @@ html {
   font-size: var(--font-size-base);
   color: var(--color-text);
   background-color: var(--color-bg);
-  transition: background-color 0.2s ease-out, color 0.2s ease-out;
+  transition:
+    background-color 0.2s ease-out,
+    color 0.2s ease-out;
 }
-
-
-
-
-
-
 
 body {
   font-size: var(--font-size-body) !important;
@@ -285,18 +309,176 @@ body {
 }
 
 /* Brutalist application layer */
-:root{--admin-overlay-top:0px}
-body{margin:0;background:var(--br-bg);font-size:1rem;line-height:1.55}button,input,select,textarea{font:inherit}body.modal-open{overflow:hidden}.app-data-table th *{color:inherit!important}.app-data-table__header>div{border-radius:0!important}.app-data-table__header input{width:min(25rem,100%);font-size:1rem!important}.app-data-table__header .flex{gap:.65rem;flex-wrap:wrap}.app-data-table__header .border-2{display:grid;width:3rem;height:3rem;place-items:center;border:1px solid var(--br-line-strong)!important}.app-data-table__header .text-gray-400{color:var(--br-accent)!important}.app-data-table__table td div{font-size:.96rem!important;border:0!important;color:inherit!important}.app-data-table__table td .file-actions,.app-data-table__table td .flex{padding:.5rem!important}.app-data-table__table td button{min-width:3rem}.modal-overlay{z-index:1000!important;background:rgba(8,8,7,.84)!important;backdrop-filter:blur(3px)!important;padding:1rem!important}.modal-overlay>.modal-content{width:min(46rem,100%)!important;max-width:46rem!important;max-height:calc(100vh - 2rem)!important;overflow:auto!important;border:2px solid #111!important;border-radius:0!important;background:var(--br-control)!important;color:#141413!important;padding:1.4rem!important;box-shadow:10px 10px 0 var(--br-accent)!important}.modal-content>.bg-white,.modal-content>.flex.items-center:first-child{border:0!important;border-radius:0!important;border-bottom:2px solid #141413!important;background:#141413!important;color:#fff!important;box-shadow:none!important}.modal-content h3,.modal-content .text-black,.modal-content .text-gray-800,.modal-content .text-gray-700{color:inherit!important}.modal-content>.bg-white h3,.modal-content>.flex.items-center:first-child h3{color:#fff!important;font-size:1.8rem!important;text-transform:uppercase}.modal-content label{font:800 .78rem "Courier New",monospace!important;text-transform:uppercase}.modal-content input,.modal-content select,.modal-content textarea{width:100%;border:1px solid #56534c!important;border-radius:0!important;background:#fff!important;color:#141413!important;font-size:1rem!important}.modal-content .rounded,.modal-content .rounded-lg,.modal-content .rounded-l,.modal-content .rounded-r{border-radius:0!important}.modal-content .text-red-500{color:#a52319!important;font-weight:800}.fade-enter-active,.fade-leave-active{transition:opacity .18s ease!important}.fade-enter-active>.modal-content,.fade-leave-active>.modal-content{transition:transform .22s cubic-bezier(.2,.8,.2,1)!important}.fade-enter-from>.modal-content{transform:translateY(18px) scale(.98)!important}.fade-leave-to>.modal-content{transform:translateY(8px)!important}nav.fixed{border-bottom:1px solid var(--br-line)!important;background:rgba(16,16,15,.96)!important;box-shadow:none!important}aside.fixed{border-right:1px solid var(--br-line)!important;background:var(--br-panel)!important;box-shadow:none!important}aside.fixed a{border-radius:0!important}aside.fixed a:hover,aside.fixed a.router-link-active{background:var(--br-accent)!important;color:#fff!important}@media(max-width:700px){body{font-size:1rem}.modal-overlay>.modal-content{box-shadow:5px 5px 0 var(--br-accent)!important;padding:1rem!important}}
-
-@media(min-width:761px){
-  .modal-overlay{
-    inset:5rem 0 0!important;
-    align-items:center!important;
-    justify-content:center!important;
-    overflow:auto!important;
+:root {
+  --admin-overlay-top: 0px;
+}
+body {
+  margin: 0;
+  background: var(--br-bg);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+body.modal-open {
+  overflow: hidden;
+}
+.app-data-table th * {
+  color: inherit !important;
+}
+.app-data-table__header > div {
+  border-radius: 0 !important;
+}
+.app-data-table__header input {
+  width: min(25rem, 100%);
+  font-size: 1rem !important;
+}
+.app-data-table__header .flex {
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+.app-data-table__header .border-2 {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid var(--br-line-strong) !important;
+}
+.app-data-table__header .text-gray-400 {
+  color: var(--br-accent) !important;
+}
+.app-data-table__table td div {
+  font-size: 0.96rem !important;
+  border: 0 !important;
+  color: inherit !important;
+}
+.app-data-table__table td .file-actions,
+.app-data-table__table td .flex {
+  padding: 0.5rem !important;
+}
+.app-data-table__table td button {
+  min-width: 3rem;
+}
+.modal-overlay {
+  z-index: 1000 !important;
+  background: rgba(8, 8, 7, 0.84) !important;
+  backdrop-filter: blur(3px) !important;
+  padding: 1rem !important;
+}
+.modal-overlay > .modal-content {
+  width: min(46rem, 100%) !important;
+  max-width: 46rem !important;
+  max-height: calc(100vh - 2rem) !important;
+  overflow: auto !important;
+  border: 2px solid #111 !important;
+  border-radius: 0 !important;
+  background: var(--br-control) !important;
+  color: #141413 !important;
+  padding: 1.4rem !important;
+  box-shadow: 10px 10px 0 var(--br-accent) !important;
+}
+.modal-content > .bg-white,
+.modal-content > .flex.items-center:first-child {
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 2px solid #141413 !important;
+  background: #141413 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.modal-content h3,
+.modal-content .text-black,
+.modal-content .text-gray-800,
+.modal-content .text-gray-700 {
+  color: inherit !important;
+}
+.modal-content > .bg-white h3,
+.modal-content > .flex.items-center:first-child h3 {
+  color: #fff !important;
+  font-size: 1.8rem !important;
+  text-transform: uppercase;
+}
+.modal-content label {
+  font:
+    800 0.78rem 'Courier New',
+    monospace !important;
+  text-transform: uppercase;
+}
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  width: 100%;
+  border: 1px solid #56534c !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  color: #141413 !important;
+  font-size: 1rem !important;
+}
+.modal-content .rounded,
+.modal-content .rounded-lg,
+.modal-content .rounded-l,
+.modal-content .rounded-r {
+  border-radius: 0 !important;
+}
+.modal-content .text-red-500 {
+  color: #a52319 !important;
+  font-weight: 800;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.18s ease !important;
+}
+.fade-enter-active > .modal-content,
+.fade-leave-active > .modal-content {
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+.fade-enter-from > .modal-content {
+  transform: translateY(18px) scale(0.98) !important;
+}
+.fade-leave-to > .modal-content {
+  transform: translateY(8px) !important;
+}
+nav.fixed {
+  border-bottom: 1px solid var(--br-line) !important;
+  background: rgba(16, 16, 15, 0.96) !important;
+  box-shadow: none !important;
+}
+aside.fixed {
+  border-right: 1px solid var(--br-line) !important;
+  background: var(--br-panel) !important;
+  box-shadow: none !important;
+}
+aside.fixed a {
+  border-radius: 0 !important;
+}
+aside.fixed a:hover,
+aside.fixed a.router-link-active {
+  background: var(--br-accent) !important;
+  color: #fff !important;
+}
+@media (max-width: 700px) {
+  body {
+    font-size: 1rem;
   }
-  .modal-overlay>.modal-content{
-    max-height:calc(100dvh - 5rem - 2rem)!important;
+  .modal-overlay > .modal-content {
+    box-shadow: 5px 5px 0 var(--br-accent) !important;
+    padding: 1rem !important;
+  }
+}
+
+@media (min-width: 761px) {
+  .modal-overlay {
+    inset: 5rem 0 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: auto !important;
+  }
+  .modal-overlay > .modal-content {
+    max-height: calc(100dvh - 5rem - 2rem) !important;
   }
 }
 
@@ -315,176 +497,1004 @@ body{margin:0;background:var(--br-bg);font-size:1rem;line-height:1.55}button,inp
 }
 
 /* Consistent squared admin surfaces */
-:where(.home-dashboard,.records-view,.clients-view,.tasks-page) :where(.rounded,.rounded-md,.rounded-lg,.rounded-xl,.rounded-2xl,.p-button-rounded){
-  border-radius:0!important;
+:where(.home-dashboard, .records-view, .clients-view, .tasks-page)
+  :where(.rounded, .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .p-button-rounded) {
+  border-radius: 0 !important;
 }
-:where(.home-dashboard,.records-view,.clients-view,.tasks-page) :where(.shadow,.shadow-md,.shadow-lg,.shadow-xl,.shadow-2xl){
-  box-shadow:6px 6px 0 var(--br-accent)!important;
+:where(.home-dashboard, .records-view, .clients-view, .tasks-page)
+  :where(.shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
+  box-shadow: 6px 6px 0 var(--br-accent) !important;
 }
-:where(.home-dashboard,.records-view,.clients-view,.tasks-page) :where(.page-hero,.records-hero,.clients-hero,.tasks-hero){
-  border-top:2px solid var(--br-line-strong)!important;
-  border-bottom:2px solid var(--br-line-strong)!important;
+:where(.home-dashboard, .records-view, .clients-view, .tasks-page)
+  :where(.page-hero, .records-hero, .clients-hero, .tasks-hero) {
+  border-top: 2px solid var(--br-line-strong) !important;
+  border-bottom: 2px solid var(--br-line-strong) !important;
 }
-:where(.home-dashboard,.records-view,.clients-view,.tasks-page) :where(.revenue-panel,.tasks-preview,.board-frame,.records-tabs,.hero-date,.hero-stat,.hero-mark){
-  border:2px solid var(--br-line-strong)!important;
-  border-radius:0!important;
-  box-shadow:8px 8px 0 var(--br-accent)!important;
+:where(.home-dashboard, .records-view, .clients-view, .tasks-page)
+  :where(
+    .revenue-panel,
+    .tasks-preview,
+    .board-frame,
+    .records-tabs,
+    .hero-date,
+    .hero-stat,
+    .hero-mark
+  ) {
+  border: 2px solid var(--br-line-strong) !important;
+  border-radius: 0 !important;
+  box-shadow: 8px 8px 0 var(--br-accent) !important;
 }
-:where(.home-dashboard,.records-view,.clients-view,.tasks-page) :where(.revenue-panel,.tasks-preview,.board-frame){
-  margin-bottom:.75rem;
+:where(.home-dashboard, .records-view, .clients-view, .tasks-page)
+  :where(.revenue-panel, .tasks-preview, .board-frame) {
+  margin-bottom: 0.75rem;
 }
-:where(.home-dashboard,.records-view,.clients-view,.tasks-page) :where(input,select,textarea,button,.app-button){
-  border-radius:0!important;
+:where(.home-dashboard, .records-view, .clients-view, .tasks-page)
+  :where(input, select, textarea, button, .app-button) {
+  border-radius: 0 !important;
 }
-:where(.records-view,.clients-view) :where(.flex-grow.w-full.overflow-hidden){
-  border-radius:0!important;
-  box-shadow:8px 8px 0 var(--br-accent)!important;
+:where(.records-view, .clients-view) :where(.flex-grow.w-full.overflow-hidden) {
+  border-radius: 0 !important;
+  box-shadow: 8px 8px 0 var(--br-accent) !important;
 }
-:where(.records-view,.clients-view) .app-data-table{
-  margin-bottom:.75rem;
+:where(.records-view, .clients-view) .app-data-table {
+  margin-bottom: 0.75rem;
 }
-#clientes-table,.records-content>.flex-grow.w-full{width:calc(100% - .6rem)!important;margin-right:.6rem!important;margin-bottom:1rem!important;box-shadow:8px 8px 0 var(--br-accent)!important}
-#clientes-table>.app-data-table,.records-content>.flex-grow.w-full>.app-data-table{margin-bottom:0!important;box-shadow:none!important}
+#clientes-table,
+.records-content > .flex-grow.w-full {
+  width: calc(100% - 0.6rem) !important;
+  margin-right: 0.6rem !important;
+  margin-bottom: 1rem !important;
+  box-shadow: 8px 8px 0 var(--br-accent) !important;
+}
+#clientes-table > .app-data-table,
+.records-content > .flex-grow.w-full > .app-data-table {
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+}
 
 /* Profundidad uniforme para las superficies principales */
-body nav.fixed,body aside.fixed{box-shadow:none!important}
-:where(.home-dashboard,.records-view,.clients-view,.tasks-page,.fiscal-view) :where(.revenue-panel,.tasks-preview,.board-frame,.records-tabs,.app-data-table,.invoice-panel,.reports-panel,.xml-dropzone,.summary-grid){
-  box-shadow:8px 8px 0 var(--br-accent)!important;
+body nav.fixed,
+body aside.fixed {
+  box-shadow: none !important;
 }
-:where(.fiscal-view) :where(.xml-dropzone,.summary-grid,.invoice-panel,.reports-panel){margin-bottom:.5rem}
+:where(.home-dashboard, .records-view, .clients-view, .tasks-page, .fiscal-view)
+  :where(
+    .revenue-panel,
+    .tasks-preview,
+    .board-frame,
+    .records-tabs,
+    .app-data-table,
+    .invoice-panel,
+    .reports-panel,
+    .xml-dropzone,
+    .summary-grid
+  ) {
+  box-shadow: 8px 8px 0 var(--br-accent) !important;
+}
+:where(.fiscal-view) :where(.xml-dropzone, .summary-grid, .invoice-panel, .reports-panel) {
+  margin-bottom: 0.5rem;
+}
 
-html[data-br-palette="carbon"]{--br-bg:#10100f;--br-panel:#191918;--br-panel-2:#242321;--br-control:#e7e4dc;--br-text:#eceae4;--br-muted:#aaa79f;--br-line:#4d4b46;--br-line-strong:#77736b;--br-accent:#e34b32;--br-accent-text:#fff;--color-bg:#10100f;--color-bg-secondary:#191918;--color-text:#eceae4;--color-text-muted:#aaa79f;--color-border:#4d4b46;--bg-modal:#e7e4dc;--btn-primary-bg:#e34b32;--btn-primary-text:#fff;--btn-primary-hover-bg:#bf3623;--btn-secondary-bg:#242321;--btn-secondary-text:#eceae4;--btn-secondary-hover-bg:#34332f;--obj-important-1:#e34b32;--obj-important-2:#78a187;--obj-important-3:#d0a928}
-html[data-br-palette="cobalt"]{--br-bg:#0c1420;--br-panel:#121e2d;--br-panel-2:#1b2b3e;--br-control:#e9edf5;--br-text:#edf3fb;--br-muted:#9aaabd;--br-line:#34465c;--br-line-strong:#637791;--br-accent:#4f7cff;--br-accent-text:#fff;--color-bg:#0c1420;--color-bg-secondary:#121e2d;--color-text:#edf3fb;--color-text-muted:#9aaabd;--color-border:#34465c;--bg-modal:#e9edf5;--btn-primary-bg:#4f7cff;--btn-primary-text:#fff;--btn-primary-hover-bg:#335fda;--btn-secondary-bg:#1b2b3e;--btn-secondary-text:#edf3fb;--btn-secondary-hover-bg:#263b53;--obj-important-1:#4f7cff;--obj-important-2:#5dbb9d;--obj-important-3:#e6b84d}
-html[data-br-palette="forest"]{--br-bg:#0e1511;--br-panel:#172019;--br-panel-2:#243027;--br-control:#e7eadf;--br-text:#eef2e8;--br-muted:#a7b0a2;--br-line:#445147;--br-line-strong:#718077;--br-accent:#a8d65b;--br-accent-text:#12170c;--color-bg:#0e1511;--color-bg-secondary:#172019;--color-text:#eef2e8;--color-text-muted:#a7b0a2;--color-border:#445147;--bg-modal:#e7eadf;--btn-primary-bg:#a8d65b;--btn-primary-text:#12170c;--btn-primary-hover-bg:#8fbd42;--btn-secondary-bg:#243027;--btn-secondary-text:#eef2e8;--btn-secondary-hover-bg:#314036;--obj-important-1:#a8d65b;--obj-important-2:#66b894;--obj-important-3:#e2b84e}
-html[data-br-palette="sand"]{--br-bg:#1a1712;--br-panel:#262119;--br-panel-2:#342d22;--br-control:#f1eadb;--br-text:#f6efe1;--br-muted:#b8ab98;--br-line:#554b3d;--br-line-strong:#837561;--br-accent:#e0b95b;--br-accent-text:#1b160b;--color-bg:#1a1712;--color-bg-secondary:#262119;--color-text:#f6efe1;--color-text-muted:#b8ab98;--color-border:#554b3d;--bg-modal:#f1eadb;--btn-primary-bg:#e0b95b;--btn-primary-text:#1b160b;--btn-primary-hover-bg:#c39b3d;--btn-secondary-bg:#342d22;--btn-secondary-text:#f6efe1;--btn-secondary-hover-bg:#463c2d;--obj-important-1:#e0b95b;--obj-important-2:#7bab83;--obj-important-3:#d98258}
+html[data-br-palette='carbon'] {
+  --br-bg: #10100f;
+  --br-panel: #191918;
+  --br-panel-2: #242321;
+  --br-control: #e7e4dc;
+  --br-text: #eceae4;
+  --br-muted: #aaa79f;
+  --br-line: #4d4b46;
+  --br-line-strong: #77736b;
+  --br-accent: #e34b32;
+  --br-accent-text: #fff;
+  --color-bg: #10100f;
+  --color-bg-secondary: #191918;
+  --color-text: #eceae4;
+  --color-text-muted: #aaa79f;
+  --color-border: #4d4b46;
+  --bg-modal: #e7e4dc;
+  --btn-primary-bg: #e34b32;
+  --btn-primary-text: #fff;
+  --btn-primary-hover-bg: #bf3623;
+  --btn-secondary-bg: #242321;
+  --btn-secondary-text: #eceae4;
+  --btn-secondary-hover-bg: #34332f;
+  --obj-important-1: #e34b32;
+  --obj-important-2: #78a187;
+  --obj-important-3: #d0a928;
+}
+html[data-br-palette='cobalt'] {
+  --br-bg: #0c1420;
+  --br-panel: #121e2d;
+  --br-panel-2: #1b2b3e;
+  --br-control: #e9edf5;
+  --br-text: #edf3fb;
+  --br-muted: #9aaabd;
+  --br-line: #34465c;
+  --br-line-strong: #637791;
+  --br-accent: #4f7cff;
+  --br-accent-text: #fff;
+  --color-bg: #0c1420;
+  --color-bg-secondary: #121e2d;
+  --color-text: #edf3fb;
+  --color-text-muted: #9aaabd;
+  --color-border: #34465c;
+  --bg-modal: #e9edf5;
+  --btn-primary-bg: #4f7cff;
+  --btn-primary-text: #fff;
+  --btn-primary-hover-bg: #335fda;
+  --btn-secondary-bg: #1b2b3e;
+  --btn-secondary-text: #edf3fb;
+  --btn-secondary-hover-bg: #263b53;
+  --obj-important-1: #4f7cff;
+  --obj-important-2: #5dbb9d;
+  --obj-important-3: #e6b84d;
+}
+html[data-br-palette='forest'] {
+  --br-bg: #0e1511;
+  --br-panel: #172019;
+  --br-panel-2: #243027;
+  --br-control: #e7eadf;
+  --br-text: #eef2e8;
+  --br-muted: #a7b0a2;
+  --br-line: #445147;
+  --br-line-strong: #718077;
+  --br-accent: #a8d65b;
+  --br-accent-text: #12170c;
+  --color-bg: #0e1511;
+  --color-bg-secondary: #172019;
+  --color-text: #eef2e8;
+  --color-text-muted: #a7b0a2;
+  --color-border: #445147;
+  --bg-modal: #e7eadf;
+  --btn-primary-bg: #a8d65b;
+  --btn-primary-text: #12170c;
+  --btn-primary-hover-bg: #8fbd42;
+  --btn-secondary-bg: #243027;
+  --btn-secondary-text: #eef2e8;
+  --btn-secondary-hover-bg: #314036;
+  --obj-important-1: #a8d65b;
+  --obj-important-2: #66b894;
+  --obj-important-3: #e2b84e;
+}
+html[data-br-palette='sand'] {
+  --br-bg: #1a1712;
+  --br-panel: #262119;
+  --br-panel-2: #342d22;
+  --br-control: #f1eadb;
+  --br-text: #f6efe1;
+  --br-muted: #b8ab98;
+  --br-line: #554b3d;
+  --br-line-strong: #837561;
+  --br-accent: #e0b95b;
+  --br-accent-text: #1b160b;
+  --color-bg: #1a1712;
+  --color-bg-secondary: #262119;
+  --color-text: #f6efe1;
+  --color-text-muted: #b8ab98;
+  --color-border: #554b3d;
+  --bg-modal: #f1eadb;
+  --btn-primary-bg: #e0b95b;
+  --btn-primary-text: #1b160b;
+  --btn-primary-hover-bg: #c39b3d;
+  --btn-secondary-bg: #342d22;
+  --btn-secondary-text: #f6efe1;
+  --btn-secondary-hover-bg: #463c2d;
+  --obj-important-1: #e0b95b;
+  --obj-important-2: #7bab83;
+  --obj-important-3: #d98258;
+}
 
-button.app-button{background:var(--br-panel-2)!important;color:var(--br-text)!important;border-color:var(--br-line-strong)!important}button.app-button:hover:not(:disabled){background:var(--br-accent)!important;color:var(--br-accent-text)!important;border-color:var(--br-accent)!important}button.app-button.p-button-primary,button.app-button.p-button-info{background:var(--br-accent)!important;color:var(--br-accent-text)!important;border-color:var(--br-accent)!important}button.app-button.p-button-success{background:var(--br-success,#35624a)!important;color:var(--br-success-text,#fff)!important}button.app-button.p-button-danger{background:var(--br-danger,#96382e)!important;color:var(--br-danger-text,#fff)!important}button.app-button.p-button-warning{background:var(--br-warning,#806527)!important;color:var(--br-warning-text,#fff)!important}button.app-button.app-button--outlined,button.app-button.p-button-text{background:transparent!important;color:var(--br-text)!important}.modal-content button.app-button.app-button--outlined,.modal-shell button.app-button.app-button--outlined,.cut-modal button.app-button.app-button--outlined{color:#141413!important;border-color:#141413!important}.modal-content button.app-button.app-button--outlined:hover,.modal-shell button.app-button.app-button--outlined:hover,.cut-modal button.app-button.app-button--outlined:hover{background:#141413!important;color:#fff!important}
-.modal-overlay>.modal-content{width:min(48rem,calc(100vw - 2rem))!important;max-width:48rem!important;padding:0!important;border:2px solid #0e0e0d!important;border-radius:0!important;background:var(--br-control)!important;color:#141413!important;box-shadow:12px 12px 0 var(--br-accent)!important}.standard-modal-header{position:relative!important;display:block!important;margin:0!important;padding:1.4rem 4.5rem 1.25rem 1.5rem!important;border:0!important;border-bottom:2px solid #141413!important;border-radius:0!important;background:#141413!important;color:var(--br-text)!important;box-shadow:none!important}.standard-modal-header::before,.logs-modal-header::before{content:"REGISTRO / SISTEMA";display:block;margin:0 0 .45rem;color:var(--br-accent);font:800 .75rem "Courier New",monospace;letter-spacing:.09em}.standard-modal-header>i,.standard-modal-header h3 i{display:none!important}.standard-modal-header h2,.standard-modal-header h3{margin:0!important;color:var(--br-text)!important;font:900 clamp(1.8rem,5vw,3.2rem)/.95 Arial,sans-serif!important;letter-spacing:-.055em!important;text-align:left!important;text-transform:uppercase}.standard-modal-header p:not(.modal-kicker){margin:.5rem 0 0!important;color:var(--br-muted)!important;font:600 .8rem "Courier New",monospace!important}.standard-modal-close{position:absolute!important;right:0!important;top:0!important;z-index:5!important;width:3.75rem!important;height:3.75rem!important;border:0!important;border-left:2px solid var(--br-control)!important;border-bottom:2px solid var(--br-control)!important;border-radius:0!important;background:var(--br-accent)!important;color:var(--br-accent-text)!important;padding:0!important;font:400 2rem/1 Arial!important;cursor:pointer}.modal-content>.space-y-4,.modal-content>form,.modal-content>table,.modal-content>.mb-6,.modal-content>.note-content-display{margin:0!important;padding:1.5rem!important}.modal-content>.flex.justify-end,.modal-content>.flex.justify-center,.modal-content>.flex.space-x-4{gap:.75rem!important;margin:0!important;padding:1rem 1.5rem!important;border-top:1px solid #77736b!important}.logs-modal-header{position:relative;margin:-1.5rem -1.5rem 1rem!important;padding:1.4rem 1.5rem!important;border-bottom:2px solid #141413;background:#141413!important;color:var(--br-text)!important}.logs-modal-header h2{color:var(--br-text)!important;font:900 clamp(1.6rem,4vw,2.6rem)/1 Arial,sans-serif!important;text-align:left!important;text-transform:uppercase}.logs-modal-header input,.logs-modal-header button:not(.standard-modal-close){border:1px solid var(--br-line-strong)!important;border-radius:0!important}.note-content-display{background:var(--br-control);color:#141413}@media(max-width:760px){.modal-overlay{align-items:stretch!important;justify-content:stretch!important;padding:0!important}.modal-overlay>.modal-content{display:flex!important;width:100vw!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;min-height:100dvh!important;flex-direction:column!important;overflow:hidden!important;border:0!important;box-shadow:none!important}.modal-overlay>.modal-content>.space-y-4,.modal-overlay>.modal-content>form,.modal-overlay>.modal-content>table,.modal-overlay>.modal-content>.mb-6,.modal-overlay>.modal-content>.note-content-display{min-height:0!important;overflow:auto!important}.modal-overlay>.modal-content>.flex.justify-end,.modal-overlay>.modal-content>.flex.justify-center,.modal-overlay>.modal-content>.flex.space-x-4{flex-shrink:0!important}.standard-modal-header{flex-shrink:0!important;padding-left:1rem!important}.modal-content>.space-y-4,.modal-content>form,.modal-content>table,.modal-content>.mb-6,.modal-content>.note-content-display{padding:1rem!important}}
+button.app-button {
+  background: var(--br-panel-2) !important;
+  color: var(--br-text) !important;
+  border-color: var(--br-line-strong) !important;
+}
+button.app-button:hover:not(:disabled) {
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+  border-color: var(--br-accent) !important;
+}
+button.app-button.p-button-primary,
+button.app-button.p-button-info {
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+  border-color: var(--br-accent) !important;
+}
+button.app-button.p-button-success {
+  background: var(--br-success, #35624a) !important;
+  color: var(--br-success-text, #fff) !important;
+}
+button.app-button.p-button-danger {
+  background: var(--br-danger, #96382e) !important;
+  color: var(--br-danger-text, #fff) !important;
+}
+button.app-button.p-button-warning {
+  background: var(--br-warning, #806527) !important;
+  color: var(--br-warning-text, #fff) !important;
+}
+button.app-button.app-button--outlined,
+button.app-button.p-button-text {
+  background: transparent !important;
+  color: var(--br-text) !important;
+}
+.modal-content button.app-button.app-button--outlined,
+.modal-shell button.app-button.app-button--outlined,
+.cut-modal button.app-button.app-button--outlined {
+  color: #141413 !important;
+  border-color: #141413 !important;
+}
+.modal-content button.app-button.app-button--outlined:hover,
+.modal-shell button.app-button.app-button--outlined:hover,
+.cut-modal button.app-button.app-button--outlined:hover {
+  background: #141413 !important;
+  color: #fff !important;
+}
+.modal-overlay > .modal-content {
+  width: min(48rem, calc(100vw - 2rem)) !important;
+  max-width: 48rem !important;
+  padding: 0 !important;
+  border: 2px solid #0e0e0d !important;
+  border-radius: 0 !important;
+  background: var(--br-control) !important;
+  color: #141413 !important;
+  box-shadow: 12px 12px 0 var(--br-accent) !important;
+}
+.standard-modal-header {
+  position: relative !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 1.4rem 4.5rem 1.25rem 1.5rem !important;
+  border: 0 !important;
+  border-bottom: 2px solid #141413 !important;
+  border-radius: 0 !important;
+  background: #141413 !important;
+  color: var(--br-text) !important;
+  box-shadow: none !important;
+}
+.standard-modal-header::before,
+.logs-modal-header::before {
+  content: 'REGISTRO / SISTEMA';
+  display: block;
+  margin: 0 0 0.45rem;
+  color: var(--br-accent);
+  font:
+    800 0.75rem 'Courier New',
+    monospace;
+  letter-spacing: 0.09em;
+}
+.standard-modal-header > i,
+.standard-modal-header h3 i {
+  display: none !important;
+}
+.standard-modal-header h2,
+.standard-modal-header h3 {
+  margin: 0 !important;
+  color: var(--br-text) !important;
+  font:
+    900 clamp(1.8rem, 5vw, 3.2rem)/0.95 Arial,
+    sans-serif !important;
+  letter-spacing: -0.055em !important;
+  text-align: left !important;
+  text-transform: uppercase;
+}
+.standard-modal-header p:not(.modal-kicker) {
+  margin: 0.5rem 0 0 !important;
+  color: var(--br-muted) !important;
+  font:
+    600 0.8rem 'Courier New',
+    monospace !important;
+}
+.standard-modal-close {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  z-index: 5 !important;
+  width: 3.75rem !important;
+  height: 3.75rem !important;
+  border: 0 !important;
+  border-left: 2px solid var(--br-control) !important;
+  border-bottom: 2px solid var(--br-control) !important;
+  border-radius: 0 !important;
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+  padding: 0 !important;
+  font: 400 2rem/1 Arial !important;
+  cursor: pointer;
+}
+.modal-content > .space-y-4,
+.modal-content > form,
+.modal-content > table,
+.modal-content > .mb-6,
+.modal-content > .note-content-display {
+  margin: 0 !important;
+  padding: 1.5rem !important;
+}
+.modal-content > .flex.justify-end,
+.modal-content > .flex.justify-center,
+.modal-content > .flex.space-x-4 {
+  gap: 0.75rem !important;
+  margin: 0 !important;
+  padding: 1rem 1.5rem !important;
+  border-top: 1px solid #77736b !important;
+}
+.logs-modal-header {
+  position: relative;
+  margin: -1.5rem -1.5rem 1rem !important;
+  padding: 1.4rem 1.5rem !important;
+  border-bottom: 2px solid #141413;
+  background: #141413 !important;
+  color: var(--br-text) !important;
+}
+.logs-modal-header h2 {
+  color: var(--br-text) !important;
+  font:
+    900 clamp(1.6rem, 4vw, 2.6rem)/1 Arial,
+    sans-serif !important;
+  text-align: left !important;
+  text-transform: uppercase;
+}
+.logs-modal-header input,
+.logs-modal-header button:not(.standard-modal-close) {
+  border: 1px solid var(--br-line-strong) !important;
+  border-radius: 0 !important;
+}
+.note-content-display {
+  background: var(--br-control);
+  color: #141413;
+}
+@media (max-width: 760px) {
+  .modal-overlay {
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    padding: 0 !important;
+  }
+  .modal-overlay > .modal-content {
+    display: flex !important;
+    width: 100vw !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  .modal-overlay > .modal-content > .space-y-4,
+  .modal-overlay > .modal-content > form,
+  .modal-overlay > .modal-content > table,
+  .modal-overlay > .modal-content > .mb-6,
+  .modal-overlay > .modal-content > .note-content-display {
+    min-height: 0 !important;
+    overflow: auto !important;
+  }
+  .modal-overlay > .modal-content > .flex.justify-end,
+  .modal-overlay > .modal-content > .flex.justify-center,
+  .modal-overlay > .modal-content > .flex.space-x-4 {
+    flex-shrink: 0 !important;
+  }
+  .standard-modal-header {
+    flex-shrink: 0 !important;
+    padding-left: 1rem !important;
+  }
+  .modal-content > .space-y-4,
+  .modal-content > form,
+  .modal-content > table,
+  .modal-content > .mb-6,
+  .modal-content > .note-content-display {
+    padding: 1rem !important;
+  }
+}
 
 /* OLED: negro real, superficies mínimas y controles oscuros en toda la aplicación. */
-html[data-br-palette="oled"] body,
-html[data-br-palette="oled"] nav.fixed,
-html[data-br-palette="oled"] .background{background:#000!important}
-html[data-br-palette="oled"] aside.fixed{background:var(--br-panel)!important}
-html[data-br-palette="oled"] :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-text)!important;color-scheme:dark}
-html[data-br-palette="oled"] :where(input,textarea)::placeholder{color:var(--br-muted)!important;opacity:1}
-html[data-br-palette="oled"] :where(.modal-content,.modal-shell,.cut-modal,.thermal-modal,.ticket-printer-modal,.note-editor,.note-content-display,.login-form-panel){border-color:var(--br-line-strong)!important;background:var(--br-panel)!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] :where(.modal-content,.modal-shell,.cut-modal,.thermal-modal,.ticket-printer-modal,.note-editor,.login-form-panel) :where(.text-black,.text-gray-500,.text-gray-600,.text-gray-700,.text-gray-800,label,h2,h3,p,span){color:inherit!important}
-html[data-br-palette="oled"] :where(.bg-white,.bg-gray-50,.bg-gray-100){background-color:var(--br-panel)!important}
-html[data-br-palette="oled"] :where(.text-black,.text-gray-700,.text-gray-800){color:var(--br-text)!important}
-html[data-br-palette="oled"] :where(.text-gray-400,.text-gray-500,.text-gray-600){color:var(--br-muted)!important}
-html[data-br-palette="oled"] :where(.records-tabs a.is-active,.tree-panel button.active){background:var(--br-panel-2)!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] :where(.dt-trigger,.dt-panel,.dt-calendar button,.dt-blank,.dt-spinner,.dt-spinner input){border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] :where(.dt-icon,.dt-month-nav,.dt-spinner button){background:var(--br-panel-2)!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] :where(.modal-content,.modal-shell,.cut-modal) button.app-button.app-button--outlined{border-color:var(--br-line-strong)!important;background:transparent!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] :where(.modal-content,.modal-shell,.cut-modal) button.app-button.app-button--outlined:hover{border-color:var(--br-accent)!important;background:var(--br-accent)!important;color:var(--br-accent-text)!important}
-html[data-br-palette="oled"] :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode){background:#fff!important;color:#141413!important;color-scheme:light}
-html[data-br-palette="oled"] :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode) *{color:#141413!important}
+html[data-br-palette='oled'] body,
+html[data-br-palette='oled'] nav.fixed,
+html[data-br-palette='oled'] .background {
+  background: #000 !important;
+}
+html[data-br-palette='oled'] aside.fixed {
+  background: var(--br-panel) !important;
+}
+html[data-br-palette='oled']
+  :where(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-text) !important;
+  color-scheme: dark;
+}
+html[data-br-palette='oled'] :where(input, textarea)::placeholder {
+  color: var(--br-muted) !important;
+  opacity: 1;
+}
+html[data-br-palette='oled']
+  :where(
+    .modal-content,
+    .modal-shell,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .note-editor,
+    .note-content-display,
+    .login-form-panel
+  ) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-panel) !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  :where(
+    .modal-content,
+    .modal-shell,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .note-editor,
+    .login-form-panel
+  )
+  :where(
+    .text-black,
+    .text-gray-500,
+    .text-gray-600,
+    .text-gray-700,
+    .text-gray-800,
+    label,
+    h2,
+    h3,
+    p,
+    span
+  ) {
+  color: inherit !important;
+}
+html[data-br-palette='oled'] :where(.bg-white, .bg-gray-50, .bg-gray-100) {
+  background-color: var(--br-panel) !important;
+}
+html[data-br-palette='oled'] :where(.text-black, .text-gray-700, .text-gray-800) {
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled'] :where(.text-gray-400, .text-gray-500, .text-gray-600) {
+  color: var(--br-muted) !important;
+}
+html[data-br-palette='oled'] :where(.records-tabs a.is-active, .tree-panel button.active) {
+  background: var(--br-panel-2) !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  :where(.dt-trigger, .dt-panel, .dt-calendar button, .dt-blank, .dt-spinner, .dt-spinner input) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled'] :where(.dt-icon, .dt-month-nav, .dt-spinner button) {
+  background: var(--br-panel-2) !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  :where(.modal-content, .modal-shell, .cut-modal)
+  button.app-button.app-button--outlined {
+  border-color: var(--br-line-strong) !important;
+  background: transparent !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  :where(.modal-content, .modal-shell, .cut-modal)
+  button.app-button.app-button--outlined:hover {
+  border-color: var(--br-accent) !important;
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+}
+html[data-br-palette='oled']
+  :where(.ticket, .ticket-preview, .ticket-content, .ticket-logo, .ticket-barcode) {
+  background: #fff !important;
+  color: #141413 !important;
+  color-scheme: light;
+}
+html[data-br-palette='oled']
+  :where(.ticket, .ticket-preview, .ticket-content, .ticket-logo, .ticket-barcode)
+  * {
+  color: #141413 !important;
+}
 
 /* Contrato de contraste OLED. La especificidad evita que estilos scoped antiguos
    vuelvan a aplicar texto oscuro sobre las superficies negras. */
-html[data-br-palette="oled"] body #app{color:var(--br-text)}
-html[data-br-palette="oled"] body #app :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-text)!important;color-scheme:dark}
-html[data-br-palette="oled"] body #app :where(input,textarea)::placeholder{color:var(--br-muted)!important;opacity:1}
-html[data-br-palette="oled"] body #app :where(.bg-white,.bg-gray-50,.bg-gray-100,.bg-gray-200){background-color:var(--br-panel)!important}
-html[data-br-palette="oled"] body #app :where(.text-black,.text-gray-700,.text-gray-800,.text-gray-900){color:var(--br-text)!important}
-html[data-br-palette="oled"] body #app :where(.text-gray-400,.text-gray-500,.text-gray-600){color:var(--br-muted)!important}
-html[data-br-palette="oled"] body #app :where(.modal-content,.modal-shell,.cut-modal,.thermal-modal,.ticket-printer-modal,.note-editor,.note-content-display,.login-form-panel){border-color:var(--br-line-strong)!important;background:var(--br-panel)!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] body #app :where(.modal-content,.modal-shell,.cut-modal,.thermal-modal,.ticket-printer-modal,.note-editor,.login-form-panel) :where(label,h2,h3,p,td,th,li,dt,dd,.text-black,.text-gray-500,.text-gray-600,.text-gray-700,.text-gray-800){color:var(--br-text)!important}
-html[data-br-palette="oled"] body #app :where(.modal-content,.modal-shell,.cut-modal,.thermal-modal,.ticket-printer-modal,.note-editor,.login-form-panel) :where(small,.modal-description){color:var(--br-muted)!important}
-html[data-br-palette="oled"] body #app :where(.modal-content.full,.full-text-content,.note-content-display,.records-tabs a.is-active,.tree-panel button.active){background-color:var(--br-panel-2)!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] body #app :where(.task-modal-actions button:not(:last-child),.modal-content.full button,.records-tabs a.is-active){border-color:var(--br-line-strong)!important;background:transparent!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] body #app :where(.dt-trigger,.dt-panel,.dt-calendar button,.dt-blank,.dt-spinner,.dt-spinner input){border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] body #app :where(.dt-icon,.dt-month-nav,.dt-spinner button){background:var(--br-panel-2)!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] body #app :where(.modal-content,.modal-shell,.cut-modal) button.app-button.app-button--outlined{border-color:var(--br-line-strong)!important;background:transparent!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] body #app :where(.modal-content,.modal-shell,.cut-modal) button.app-button.app-button--outlined:hover{border-color:var(--br-accent)!important;background:var(--br-accent)!important;color:var(--br-accent-text)!important}
-html[data-br-palette="oled"] body #app .task-detail-actions button[style]{color:#141413!important}
-html[data-br-palette="oled"] body #app :where(.app-autocomplete__list,.app-autocomplete__list [role="option"],.app-autocomplete__empty){color:var(--br-control-text)!important}
-html[data-br-palette="oled"] body #app :where(.tree-item-row.active,.range-field,.confirm-check){border-color:var(--br-line-strong)!important;background:var(--br-panel-2)!important;color:var(--br-text)!important}
-html[data-br-palette="oled"] body #app :where(.field-help,.muted,.empty-state p,.file-name small){color:var(--br-muted)!important}
-html[data-br-palette="oled"] body #app :where(.header-actions button:hover,.app-autocomplete__list [role="option"]:hover,.app-autocomplete__list [role="option"].active){background:var(--br-accent)!important;color:var(--br-accent-text)!important}
+html[data-br-palette='oled'] body #app {
+  color: var(--br-text);
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-text) !important;
+  color-scheme: dark;
+}
+html[data-br-palette='oled'] body #app :where(input, textarea)::placeholder {
+  color: var(--br-muted) !important;
+  opacity: 1;
+}
+html[data-br-palette='oled'] body #app :where(.bg-white, .bg-gray-50, .bg-gray-100, .bg-gray-200) {
+  background-color: var(--br-panel) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(.text-black, .text-gray-700, .text-gray-800, .text-gray-900) {
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled'] body #app :where(.text-gray-400, .text-gray-500, .text-gray-600) {
+  color: var(--br-muted) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(
+    .modal-content,
+    .modal-shell,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .note-editor,
+    .note-content-display,
+    .login-form-panel
+  ) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-panel) !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(
+    .modal-content,
+    .modal-shell,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .note-editor,
+    .login-form-panel
+  )
+  :where(
+    label,
+    h2,
+    h3,
+    p,
+    td,
+    th,
+    li,
+    dt,
+    dd,
+    .text-black,
+    .text-gray-500,
+    .text-gray-600,
+    .text-gray-700,
+    .text-gray-800
+  ) {
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(
+    .modal-content,
+    .modal-shell,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .note-editor,
+    .login-form-panel
+  )
+  :where(small, .modal-description) {
+  color: var(--br-muted) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(
+    .modal-content.full,
+    .full-text-content,
+    .note-content-display,
+    .records-tabs a.is-active,
+    .tree-panel button.active
+  ) {
+  background-color: var(--br-panel-2) !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(
+    .task-modal-actions button:not(:last-child),
+    .modal-content.full button,
+    .records-tabs a.is-active
+  ) {
+  border-color: var(--br-line-strong) !important;
+  background: transparent !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(.dt-trigger, .dt-panel, .dt-calendar button, .dt-blank, .dt-spinner, .dt-spinner input) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled'] body #app :where(.dt-icon, .dt-month-nav, .dt-spinner button) {
+  background: var(--br-panel-2) !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(.modal-content, .modal-shell, .cut-modal)
+  button.app-button.app-button--outlined {
+  border-color: var(--br-line-strong) !important;
+  background: transparent !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(.modal-content, .modal-shell, .cut-modal)
+  button.app-button.app-button--outlined:hover {
+  border-color: var(--br-accent) !important;
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+}
+html[data-br-palette='oled'] body #app .task-detail-actions button[style] {
+  color: #141413 !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(
+    .app-autocomplete__list,
+    .app-autocomplete__list [role='option'],
+    .app-autocomplete__empty
+  ) {
+  color: var(--br-control-text) !important;
+}
+html[data-br-palette='oled'] body #app :where(.tree-item-row.active, .range-field, .confirm-check) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-panel-2) !important;
+  color: var(--br-text) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(.field-help, .muted, .empty-state p, .file-name small) {
+  color: var(--br-muted) !important;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(
+    .header-actions button:hover,
+    .app-autocomplete__list [role='option']:hover,
+    .app-autocomplete__list [role='option'].active
+  ) {
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+}
 
 /* Los documentos imprimibles conservan papel blanco y tinta oscura. */
-html[data-br-palette="oled"] body #app :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode){background:#fff!important;color:#141413!important;color-scheme:light}
-html[data-br-palette="oled"] body #app :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode) *{color:#141413!important}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(.ticket, .ticket-preview, .ticket-content, .ticket-logo, .ticket-barcode) {
+  background: #fff !important;
+  color: #141413 !important;
+  color-scheme: light;
+}
+html[data-br-palette='oled']
+  body
+  #app
+  :where(.ticket, .ticket-preview, .ticket-content, .ticket-logo, .ticket-barcode)
+  * {
+  color: #141413 !important;
+}
 
-img.is-image-placeholder{box-sizing:border-box;background:#151513!important;object-fit:contain!important;padding:.28rem}
-
+img.is-image-placeholder {
+  box-sizing: border-box;
+  background: #151513 !important;
+  object-fit: contain !important;
+  padding: 0.28rem;
+}
 
 /* Sistema cromático v2: paletas oscuras expresivas con contraste AA. */
-:root{
-  --font-family:"Segoe UI Variable","Segoe UI",Arial,sans-serif;
-  --font-size-base:16px;--font-size-body:1rem;
-  --br-bg:#0D1715;--br-panel:#14231F;--br-panel-2:#20342E;--br-control:#E8F0EC;
-  --br-control-text:#101B17;--br-control-muted:#50635C;--br-text:#EEF5F2;--br-muted:#A8BBB4;
-  --br-line:#3B544B;--br-line-strong:#668078;--br-accent:#6CC39A;--br-accent-text:#071B13;
-  --color-bg:var(--br-bg);--color-bg-secondary:var(--br-panel);--color-text:var(--br-text);
-  --color-text-muted:var(--br-muted);--color-border:var(--br-line);--bg-modal:var(--br-control);
-  --btn-primary-bg:var(--br-accent);--btn-primary-text:var(--br-accent-text);
-  --btn-primary-hover-bg:color-mix(in srgb,var(--br-accent) 84%,white);
-  --btn-secondary-bg:var(--br-panel-2);--btn-secondary-text:var(--br-text);
-  --btn-secondary-hover-bg:color-mix(in srgb,var(--br-panel-2) 82%,var(--br-text));
-  --obj-important-1:var(--br-accent);--obj-important-2:#6BC3A3;--obj-important-3:#D7B760;
+:root {
+  --font-family: 'Segoe UI Variable', 'Segoe UI', Arial, sans-serif;
+  --font-size-base: 16px;
+  --font-size-body: 1rem;
+  --br-bg: #0d1715;
+  --br-panel: #14231f;
+  --br-panel-2: #20342e;
+  --br-control: #e8f0ec;
+  --br-control-text: #101b17;
+  --br-control-muted: #50635c;
+  --br-text: #eef5f2;
+  --br-muted: #a8bbb4;
+  --br-line: #3b544b;
+  --br-line-strong: #668078;
+  --br-accent: #6cc39a;
+  --br-accent-text: #071b13;
+  --color-bg: var(--br-bg);
+  --color-bg-secondary: var(--br-panel);
+  --color-text: var(--br-text);
+  --color-text-muted: var(--br-muted);
+  --color-border: var(--br-line);
+  --bg-modal: var(--br-control);
+  --btn-primary-bg: var(--br-accent);
+  --btn-primary-text: var(--br-accent-text);
+  --btn-primary-hover-bg: color-mix(in srgb, var(--br-accent) 84%, white);
+  --btn-secondary-bg: var(--br-panel-2);
+  --btn-secondary-text: var(--br-text);
+  --btn-secondary-hover-bg: color-mix(in srgb, var(--br-panel-2) 82%, var(--br-text));
+  --obj-important-1: var(--br-accent);
+  --obj-important-2: #6bc3a3;
+  --obj-important-3: #d7b760;
 }
 
+body {
+  font-size: 1rem !important;
+  line-height: 1.55;
+}
 
-
-
-body{font-size:1rem!important;line-height:1.55}
-
-html[data-br-palette="phantom"]{--br-bg:#120F11;--br-panel:#1D181B;--br-panel-2:#292126;--br-control:#F0ECEB;--br-control-text:#1C1216;--br-control-muted:#66575D;--br-text:#F4F1ED;--br-muted:#B8ADB1;--br-line:#4E3C43;--br-line-strong:#7A626B;--br-accent:#E43D4F;--br-accent-text:#16080C;--obj-important-2:#80B89B;--obj-important-3:#E0B858}
-html[data-br-palette="darkhour"]{--br-bg:#081526;--br-panel:#0D223B;--br-panel-2:#143251;--br-control:#EAF4FB;--br-control-text:#0B1C2D;--br-control-muted:#4D6477;--br-text:#EEF7FF;--br-muted:#A8BED1;--br-line:#294B68;--br-line-strong:#537998;--br-accent:#39A7FF;--br-accent-text:#061625;--obj-important-2:#62C8A5;--obj-important-3:#E2BD59}
-html[data-br-palette="golden"]{--br-bg:#18150A;--br-panel:#26210D;--br-panel-2:#373015;--br-control:#F8F0C6;--br-control-text:#211C08;--br-control-muted:#665D2A;--br-text:#FFF7CE;--br-muted:#CABF83;--br-line:#5A5128;--br-line-strong:#8A7B35;--br-accent:#F1D33A;--br-accent-text:#1A1603;--obj-important-2:#77B593;--obj-important-3:#E77D50}
-html[data-br-palette="tachyon"]{--br-bg:#17131A;--br-panel:#221C27;--br-panel-2:#302638;--br-control:#F1EAF0;--br-control-text:#1D1521;--br-control-muted:#65566A;--br-text:#F5F0F4;--br-muted:#BFAFC0;--br-line:#514258;--br-line-strong:#7D697F;--br-accent:#62D4B1;--br-accent-text:#082019;--obj-important-2:#9DA5F0;--obj-important-3:#E5B65C}
-html[data-br-palette="ledger"]{--br-bg:#0D1715;--br-panel:#14231F;--br-panel-2:#20342E;--br-control:#E8F0EC;--br-control-text:#101B17;--br-control-muted:#50635C;--br-text:#EEF5F2;--br-muted:#A8BBB4;--br-line:#3B544B;--br-line-strong:#668078;--br-accent:#6CC39A;--br-accent-text:#071B13;--obj-important-2:#79A9D5;--obj-important-3:#D8B85D}
-html[data-br-palette="indigo"]{--br-bg:#11131D;--br-panel:#1A1D2B;--br-panel-2:#262A3C;--br-control:#EBECF3;--br-control-text:#171A28;--br-control-muted:#5B6073;--br-text:#F0F1F6;--br-muted:#ADB0C1;--br-line:#44495F;--br-line-strong:#70768F;--br-accent:#8EA2FF;--br-accent-text:#101425;--obj-important-2:#6BC3A3;--obj-important-3:#D7B760}
-
+html[data-br-palette='phantom'] {
+  --br-bg: #120f11;
+  --br-panel: #1d181b;
+  --br-panel-2: #292126;
+  --br-control: #f0eceb;
+  --br-control-text: #1c1216;
+  --br-control-muted: #66575d;
+  --br-text: #f4f1ed;
+  --br-muted: #b8adb1;
+  --br-line: #4e3c43;
+  --br-line-strong: #7a626b;
+  --br-accent: #e43d4f;
+  --br-accent-text: #16080c;
+  --obj-important-2: #80b89b;
+  --obj-important-3: #e0b858;
+}
+html[data-br-palette='darkhour'] {
+  --br-bg: #081526;
+  --br-panel: #0d223b;
+  --br-panel-2: #143251;
+  --br-control: #eaf4fb;
+  --br-control-text: #0b1c2d;
+  --br-control-muted: #4d6477;
+  --br-text: #eef7ff;
+  --br-muted: #a8bed1;
+  --br-line: #294b68;
+  --br-line-strong: #537998;
+  --br-accent: #39a7ff;
+  --br-accent-text: #061625;
+  --obj-important-2: #62c8a5;
+  --obj-important-3: #e2bd59;
+}
+html[data-br-palette='golden'] {
+  --br-bg: #18150a;
+  --br-panel: #26210d;
+  --br-panel-2: #373015;
+  --br-control: #f8f0c6;
+  --br-control-text: #211c08;
+  --br-control-muted: #665d2a;
+  --br-text: #fff7ce;
+  --br-muted: #cabf83;
+  --br-line: #5a5128;
+  --br-line-strong: #8a7b35;
+  --br-accent: #f1d33a;
+  --br-accent-text: #1a1603;
+  --obj-important-2: #77b593;
+  --obj-important-3: #e77d50;
+}
+html[data-br-palette='tachyon'] {
+  --br-bg: #17131a;
+  --br-panel: #221c27;
+  --br-panel-2: #302638;
+  --br-control: #f1eaf0;
+  --br-control-text: #1d1521;
+  --br-control-muted: #65566a;
+  --br-text: #f5f0f4;
+  --br-muted: #bfafc0;
+  --br-line: #514258;
+  --br-line-strong: #7d697f;
+  --br-accent: #62d4b1;
+  --br-accent-text: #082019;
+  --obj-important-2: #9da5f0;
+  --obj-important-3: #e5b65c;
+}
+html[data-br-palette='ledger'] {
+  --br-bg: #0d1715;
+  --br-panel: #14231f;
+  --br-panel-2: #20342e;
+  --br-control: #e8f0ec;
+  --br-control-text: #101b17;
+  --br-control-muted: #50635c;
+  --br-text: #eef5f2;
+  --br-muted: #a8bbb4;
+  --br-line: #3b544b;
+  --br-line-strong: #668078;
+  --br-accent: #6cc39a;
+  --br-accent-text: #071b13;
+  --obj-important-2: #79a9d5;
+  --obj-important-3: #d8b85d;
+}
+html[data-br-palette='indigo'] {
+  --br-bg: #11131d;
+  --br-panel: #1a1d2b;
+  --br-panel-2: #262a3c;
+  --br-control: #ebecf3;
+  --br-control-text: #171a28;
+  --br-control-muted: #5b6073;
+  --br-text: #f0f1f6;
+  --br-muted: #adb0c1;
+  --br-line: #44495f;
+  --br-line-strong: #70768f;
+  --br-accent: #8ea2ff;
+  --br-accent-text: #101425;
+  --obj-important-2: #6bc3a3;
+  --obj-important-3: #d7b760;
+}
 
 /* Paletas adicionales y estabilidad espacial en pantallas de alta resolución. */
-html[data-br-palette="oled"]{--br-bg:#000000;--br-panel:#070A08;--br-panel-2:#101512;--br-control:#090D0B;--br-control-text:#F2F7F4;--br-control-muted:#A8B7AF;--br-text:#F2F7F4;--br-muted:#A8B7AF;--br-line:#26332C;--br-line-strong:#64756B;--br-accent:#46E38D;--br-accent-text:#00170B;--obj-important-2:#71B7FF;--obj-important-3:#E5C65B;color-scheme:dark}
-html[data-br-palette="ember"]{--br-bg:#15110F;--br-panel:#211A17;--br-panel-2:#30241F;--br-control:#F3EAE5;--br-control-text:#21130E;--br-control-muted:#69534A;--br-text:#F6EFEA;--br-muted:#C1AEA4;--br-line:#554038;--br-line-strong:#806254;--br-accent:#FF7448;--br-accent-text:#241008;--obj-important-2:#75BCA0;--obj-important-3:#E4BC57}
-html[data-br-palette="sakura"]{--br-bg:#190F18;--br-panel:#281824;--br-panel-2:#382333;--br-control:#F4EAF0;--br-control-text:#25121F;--br-control-muted:#6D5363;--br-text:#F8EEF4;--br-muted:#C8ADBD;--br-line:#5C3B50;--br-line-strong:#88627A;--br-accent:#F06BA5;--br-accent-text:#250914;--obj-important-2:#77C2A8;--obj-important-3:#E2BE59}
-html[data-br-palette="steel"]{--br-bg:#0F161A;--br-panel:#172329;--br-panel-2:#223239;--br-control:#E9F0F2;--br-control-text:#101D21;--br-control-muted:#52666C;--br-text:#EDF4F5;--br-muted:#A9BCC1;--br-line:#39535A;--br-line-strong:#617A82;--br-accent:#65C7D6;--br-accent-text:#061B1F;--obj-important-2:#75C69B;--obj-important-3:#DABD62}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-.admin-layout__content>main{box-sizing:border-box;width:min(100%,100rem);margin-inline:auto}
-@media(max-width:700px){.admin-layout__content>main{width:100%;margin-inline:0}}
-
-/* Cierre del contrato de viewport para modales; se mantiene al final para ganar a estilos heredados. */
-html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
-  box-sizing:border-box!important;
-  max-width:calc(100vw - 2rem)!important;
-  max-height:calc(100vh - 2rem)!important;
-  max-height:calc(100dvh - var(--admin-overlay-top,5rem) - 2rem)!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-  overscroll-behavior:contain;
-  scrollbar-gutter:stable;
+html[data-br-palette='oled'] {
+  --br-bg: #000000;
+  --br-panel: #070a08;
+  --br-panel-2: #101512;
+  --br-control: #090d0b;
+  --br-control-text: #f2f7f4;
+  --br-control-muted: #a8b7af;
+  --br-text: #f2f7f4;
+  --br-muted: #a8b7af;
+  --br-line: #26332c;
+  --br-line-strong: #64756b;
+  --br-accent: #46e38d;
+  --br-accent-text: #00170b;
+  --obj-important-2: #71b7ff;
+  --obj-important-3: #e5c65b;
+  color-scheme: dark;
 }
-@media(min-width:761px){
-  html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
-    max-height:calc(100dvh - 5rem - 2rem)!important;
+html[data-br-palette='ember'] {
+  --br-bg: #15110f;
+  --br-panel: #211a17;
+  --br-panel-2: #30241f;
+  --br-control: #f3eae5;
+  --br-control-text: #21130e;
+  --br-control-muted: #69534a;
+  --br-text: #f6efea;
+  --br-muted: #c1aea4;
+  --br-line: #554038;
+  --br-line-strong: #806254;
+  --br-accent: #ff7448;
+  --br-accent-text: #241008;
+  --obj-important-2: #75bca0;
+  --obj-important-3: #e4bc57;
+}
+html[data-br-palette='sakura'] {
+  --br-bg: #190f18;
+  --br-panel: #281824;
+  --br-panel-2: #382333;
+  --br-control: #f4eaf0;
+  --br-control-text: #25121f;
+  --br-control-muted: #6d5363;
+  --br-text: #f8eef4;
+  --br-muted: #c8adbd;
+  --br-line: #5c3b50;
+  --br-line-strong: #88627a;
+  --br-accent: #f06ba5;
+  --br-accent-text: #250914;
+  --obj-important-2: #77c2a8;
+  --obj-important-3: #e2be59;
+}
+html[data-br-palette='steel'] {
+  --br-bg: #0f161a;
+  --br-panel: #172329;
+  --br-panel-2: #223239;
+  --br-control: #e9f0f2;
+  --br-control-text: #101d21;
+  --br-control-muted: #52666c;
+  --br-text: #edf4f5;
+  --br-muted: #a9bcc1;
+  --br-line: #39535a;
+  --br-line-strong: #617a82;
+  --br-accent: #65c7d6;
+  --br-accent-text: #061b1f;
+  --obj-important-2: #75c69b;
+  --obj-important-3: #dabd62;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+.admin-layout__content > main {
+  box-sizing: border-box;
+  width: min(100%, 100rem);
+  margin-inline: auto;
+}
+@media (max-width: 700px) {
+  .admin-layout__content > main {
+    width: 100%;
+    margin-inline: 0;
   }
 }
-html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel)>header{position:sticky!important;top:0;z-index:12}
-html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel)>footer,
-html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel)>form>footer{position:sticky!important;bottom:0;z-index:11}
-@media(max-width:700px),(max-height:620px){
-  html body :where([role="dialog"][aria-modal="true"]):not(.dt-panel){
-    width:calc(100vw - 1rem)!important;
-    height:auto!important;
-    min-height:0!important;
-    max-width:calc(100vw - 1rem)!important;
-    max-height:calc(100dvh - 1rem)!important;
-    margin:0!important;
-    box-shadow:none!important;
+
+/* Cierre del contrato de viewport para modales; se mantiene al final para ganar a estilos heredados. */
+html body :where([role='dialog'][aria-modal='true']):not(.dt-panel) {
+  box-sizing: border-box !important;
+  max-width: calc(100vw - 2rem) !important;
+  max-height: calc(100vh - 2rem) !important;
+  max-height: calc(100dvh - var(--admin-overlay-top, 5rem) - 2rem) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+@media (min-width: 761px) {
+  html body :where([role='dialog'][aria-modal='true']):not(.dt-panel) {
+    max-height: calc(100dvh - 5rem - 2rem) !important;
+  }
+}
+html body :where([role='dialog'][aria-modal='true']):not(.dt-panel) > header {
+  position: sticky !important;
+  top: 0;
+  z-index: 12;
+}
+html body :where([role='dialog'][aria-modal='true']):not(.dt-panel) > footer,
+html body :where([role='dialog'][aria-modal='true']):not(.dt-panel) > form > footer {
+  position: sticky !important;
+  bottom: 0;
+  z-index: 11;
+}
+@media (max-width: 700px), (max-height: 620px) {
+  html body :where([role='dialog'][aria-modal='true']):not(.dt-panel) {
+    width: calc(100vw - 1rem) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-width: calc(100vw - 1rem) !important;
+    max-height: calc(100dvh - 1rem) !important;
+    margin: 0 !important;
+    box-shadow: none !important;
   }
 }
 /* Contrato global de tipografía editable y contraste de estados interactivos. */
 body,
-body #app :where(h1,h2,h3,h4,h5,h6,p,span,label,button,input,select,textarea,table,th,td,small,strong,b,samp,dt,dd) {
-  font-family: var(--font-family, "Segoe UI", Arial, sans-serif) !important;
+body
+  #app
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    label,
+    button,
+    input,
+    select,
+    textarea,
+    table,
+    th,
+    td,
+    small,
+    strong,
+    b,
+    samp,
+    dt,
+    dd
+  ) {
+  font-family: var(--font-family, 'Segoe UI', Arial, sans-serif) !important;
 }
-body #app :where(aside.fixed a:hover,aside.fixed a.router-link-active,.app-data-table__table th.is-sortable:hover,.app-pager__button:hover:not(:disabled)) {
+body
+  #app
+  :where(
+    aside.fixed a:hover,
+    aside.fixed a.router-link-active,
+    .app-data-table__table th.is-sortable:hover,
+    .app-pager__button:hover:not(:disabled)
+  ) {
   color: var(--br-accent-text) !important;
 }
 
@@ -507,232 +1517,1372 @@ html[data-br-palette] {
   --bg-modal: var(--br-control);
   color-scheme: dark;
 }
-html[data-br-palette="oled"] { --br-control-scheme: dark; }
+html[data-br-palette='oled'] {
+  --br-control-scheme: dark;
+}
 
-body { min-height: 100dvh; background: var(--br-bg); color: var(--br-text); }
-body #app .admin-layout :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
-body > :where(.modal-overlay,.appearance-overlay) :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+body {
+  min-height: 100dvh;
+  background: var(--br-bg);
+  color: var(--br-text);
+}
+body #app .admin-layout :where(input:not([type='checkbox']):not([type='radio']), select, textarea),
+body
+  > :where(.modal-overlay, .appearance-overlay)
+  :where(input:not([type='checkbox']):not([type='radio']), select, textarea) {
   border-color: var(--br-line-strong) !important;
   background: var(--br-control) !important;
   color: var(--br-control-text) !important;
   caret-color: var(--br-accent);
   color-scheme: var(--br-control-scheme, light);
 }
-body #app .admin-layout :where(input,textarea)::placeholder,
-body > :where(.modal-overlay,.appearance-overlay) :where(input,textarea)::placeholder { color: var(--br-control-muted) !important; opacity: 1; }
+body #app .admin-layout :where(input, textarea)::placeholder,
+body > :where(.modal-overlay, .appearance-overlay) :where(input, textarea)::placeholder {
+  color: var(--br-control-muted) !important;
+  opacity: 1;
+}
 body #app .admin-layout option,
-body > :where(.modal-overlay,.appearance-overlay) option { background: var(--br-panel-2); color: var(--br-text); }
+body > :where(.modal-overlay, .appearance-overlay) option {
+  background: var(--br-panel-2);
+  color: var(--br-text);
+}
 
-body #app .admin-layout :where(.bg-white,.bg-gray-50,.bg-gray-100,.bg-gray-200):not(.ticket):not(.ticket *),
-body > .modal-overlay :where(.bg-white,.bg-gray-50,.bg-gray-100,.bg-gray-200) { background-color: var(--br-panel) !important; }
-body #app .admin-layout :where(.text-black,.text-gray-700,.text-gray-800,.text-gray-900):not(.ticket):not(.ticket *),
-body > .modal-overlay :where(.text-black,.text-gray-700,.text-gray-800,.text-gray-900) { color: var(--br-text) !important; }
-body #app .admin-layout :where(.text-gray-400,.text-gray-500,.text-gray-600):not(.ticket):not(.ticket *),
-body > .modal-overlay :where(.text-gray-400,.text-gray-500,.text-gray-600) { color: var(--br-muted) !important; }
+body
+  #app
+  .admin-layout
+  :where(.bg-white, .bg-gray-50, .bg-gray-100, .bg-gray-200):not(.ticket):not(.ticket *),
+body > .modal-overlay :where(.bg-white, .bg-gray-50, .bg-gray-100, .bg-gray-200) {
+  background-color: var(--br-panel) !important;
+}
+body
+  #app
+  .admin-layout
+  :where(.text-black, .text-gray-700, .text-gray-800, .text-gray-900):not(.ticket):not(.ticket *),
+body > .modal-overlay :where(.text-black, .text-gray-700, .text-gray-800, .text-gray-900) {
+  color: var(--br-text) !important;
+}
+body
+  #app
+  .admin-layout
+  :where(.text-gray-400, .text-gray-500, .text-gray-600):not(.ticket):not(.ticket *),
+body > .modal-overlay :where(.text-gray-400, .text-gray-500, .text-gray-600) {
+  color: var(--br-muted) !important;
+}
 
 body > .modal-overlay > .modal-content,
-body #app :where(.modal-shell,.cut-modal,.thermal-modal,.ticket-printer-modal,.note-editor) {
+body #app :where(.modal-shell, .cut-modal, .thermal-modal, .ticket-printer-modal, .note-editor) {
   border-color: var(--br-line-strong) !important;
   background: var(--br-control) !important;
   color: var(--br-control-text) !important;
 }
-body > .modal-overlay :where(.standard-modal-header,.logs-modal-header),
-body #app :where(.standard-modal-header,.logs-modal-header) {
+body > .modal-overlay :where(.standard-modal-header, .logs-modal-header),
+body #app :where(.standard-modal-header, .logs-modal-header) {
   border-color: var(--br-line-strong) !important;
   background: var(--br-panel-2) !important;
   color: var(--br-text) !important;
 }
 body > .modal-overlay :where(.note-content-display),
-body #app :where(.note-content-display) { background: var(--br-control) !important; color: var(--br-control-text) !important; }
+body #app :where(.note-content-display) {
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+}
 body > .modal-overlay button.app-button.app-button--outlined,
-body #app :where(.modal-shell,.cut-modal) button.app-button.app-button--outlined { border-color: var(--br-line-strong) !important; color: var(--br-text) !important; }
+body #app :where(.modal-shell, .cut-modal) button.app-button.app-button--outlined {
+  border-color: var(--br-line-strong) !important;
+  color: var(--br-text) !important;
+}
 
-body #app :where(button,a,input,select,textarea,[tabindex]):focus-visible {
+body #app :where(button, a, input, select, textarea, [tabindex]):focus-visible {
   outline: 3px solid var(--br-focus) !important;
   outline-offset: 3px;
 }
-body #app ::selection { background: var(--br-accent); color: var(--br-accent-text); }
+body #app ::selection {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
 
-body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) {
+body
+  #app
+  .admin-layout
+  :where(
+    .page-hero,
+    .clients-hero,
+    .records-hero,
+    .tasks-hero,
+    .fiscal-hero,
+    .compliance-hero,
+    .settings-hero,
+    .sat-hero
+  ) {
   position: relative;
   isolation: isolate;
   overflow: visible;
   border-color: var(--br-line-strong) !important;
   background:
-    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--br-accent) 13%, transparent), transparent 17rem),
+    radial-gradient(
+      circle at 88% 12%,
+      color-mix(in srgb, var(--br-accent) 13%, transparent),
+      transparent 17rem
+    ),
     color-mix(in srgb, var(--br-panel) 94%, var(--br-accent)) !important;
   padding-inline: clamp(1rem, 2.5vw, 2rem) !important;
   box-shadow: inset 4px 0 0 var(--br-accent);
 }
-body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) > * { position: relative; z-index: 1; }
-body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) h1 {
+body
+  #app
+  .admin-layout
+  :where(
+    .page-hero,
+    .clients-hero,
+    .records-hero,
+    .tasks-hero,
+    .fiscal-hero,
+    .compliance-hero,
+    .settings-hero,
+    .sat-hero
+  )
+  > * {
+  position: relative;
+  z-index: 1;
+}
+body
+  #app
+  .admin-layout
+  :where(
+    .page-hero,
+    .clients-hero,
+    .records-hero,
+    .tasks-hero,
+    .fiscal-hero,
+    .compliance-hero,
+    .settings-hero,
+    .sat-hero
+  )
+  h1 {
   max-width: 19ch;
-  margin-block: .35rem .75rem !important;
+  margin-block: 0.35rem 0.75rem !important;
   color: var(--br-text) !important;
   font-family: var(--font-family) !important;
   font-size: clamp(2.35rem, 5vw, 5.6rem) !important;
   font-weight: 800 !important;
-  line-height: .92 !important;
-  letter-spacing: -.055em !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.055em !important;
   text-transform: none !important;
   text-wrap: balance;
 }
-body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) :where(p,.tasks-kicker) {
+body
+  #app
+  .admin-layout
+  :where(
+    .page-hero,
+    .clients-hero,
+    .records-hero,
+    .tasks-hero,
+    .fiscal-hero,
+    .compliance-hero,
+    .settings-hero,
+    .sat-hero
+  )
+  :where(p, .tasks-kicker) {
   color: var(--br-accent) !important;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 }
-body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) > :first-child > span { color: var(--br-muted); text-wrap: pretty; }
+body
+  #app
+  .admin-layout
+  :where(
+    .page-hero,
+    .clients-hero,
+    .records-hero,
+    .tasks-hero,
+    .fiscal-hero,
+    .compliance-hero,
+    .settings-hero,
+    .sat-hero
+  )
+  > :first-child
+  > span {
+  color: var(--br-muted);
+  text-wrap: pretty;
+}
 
-body #app .admin-layout :where(.app-data-table__table tbody tr,.p-datatable-tbody > tr) { background: color-mix(in srgb, var(--br-panel) 92%, transparent); color: var(--br-text); }
-body #app .admin-layout :where(.app-data-table__table tbody tr:hover,.p-datatable-tbody > tr:hover) { background: var(--br-panel-2); }
-body #app :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode) { background: #fff !important; color: #141413 !important; color-scheme: light; }
+body #app .admin-layout :where(.app-data-table__table tbody tr, .p-datatable-tbody > tr) {
+  background: color-mix(in srgb, var(--br-panel) 92%, transparent);
+  color: var(--br-text);
+}
+body
+  #app
+  .admin-layout
+  :where(.app-data-table__table tbody tr:hover, .p-datatable-tbody > tr:hover) {
+  background: var(--br-panel-2);
+}
+body #app :where(.ticket, .ticket-preview, .ticket-content, .ticket-logo, .ticket-barcode) {
+  background: #fff !important;
+  color: #141413 !important;
+  color-scheme: light;
+}
 
 @media (max-width: 700px) {
-  body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) { padding-inline: 1rem !important; }
-  body #app .admin-layout :where(.page-hero,.clients-hero,.records-hero,.tasks-hero,.fiscal-hero,.compliance-hero,.settings-hero,.sat-hero) h1 { font-size: clamp(2.2rem, 11vw, 3.65rem) !important; }
+  body
+    #app
+    .admin-layout
+    :where(
+      .page-hero,
+      .clients-hero,
+      .records-hero,
+      .tasks-hero,
+      .fiscal-hero,
+      .compliance-hero,
+      .settings-hero,
+      .sat-hero
+    ) {
+    padding-inline: 1rem !important;
+  }
+  body
+    #app
+    .admin-layout
+    :where(
+      .page-hero,
+      .clients-hero,
+      .records-hero,
+      .tasks-hero,
+      .fiscal-hero,
+      .compliance-hero,
+      .settings-hero,
+      .sat-hero
+    )
+    h1 {
+    font-size: clamp(2.2rem, 11vw, 3.65rem) !important;
+  }
 }
 
 /* Prioridad final para controles heredados dentro de modales. */
-body > .modal-overlay .modal-content :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
-body > .appearance-overlay .appearance-dialog :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+body
+  > .modal-overlay
+  .modal-content
+  :is(input:not([type='checkbox']):not([type='radio']), select, textarea),
+body
+  > .appearance-overlay
+  .appearance-dialog
+  :is(input:not([type='checkbox']):not([type='radio']), select, textarea) {
   border-color: var(--br-line-strong) !important;
   background: var(--br-control) !important;
   color: var(--br-control-text) !important;
   caret-color: var(--br-accent);
   color-scheme: var(--br-control-scheme, light);
 }
-body > .modal-overlay .modal-content :is(input,textarea)::placeholder,
-body > .appearance-overlay .appearance-dialog :is(input,textarea)::placeholder { color: var(--br-control-muted) !important; opacity: 1; }
-body #app nav.fixed { background: color-mix(in srgb, var(--br-bg) 94%, transparent) !important; color: var(--br-text) !important; backdrop-filter: blur(12px); }
+body > .modal-overlay .modal-content :is(input, textarea)::placeholder,
+body > .appearance-overlay .appearance-dialog :is(input, textarea)::placeholder {
+  color: var(--br-control-muted) !important;
+  opacity: 1;
+}
+body #app nav.fixed {
+  background: color-mix(in srgb, var(--br-bg) 94%, transparent) !important;
+  color: var(--br-text) !important;
+  backdrop-filter: blur(12px);
+}
 
 /* Segunda pasada: modales heredados, movimiento y jerarquía visual. */
-body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay,.bank-reconciliation-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.bank-reconciliation-modal){border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-control-text)!important;color-scheme:var(--br-control-scheme,light)}
-body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(.form-block,.period-grid>section,.period-summary>div,.range-field,.confirm-check,.security-notice){border-color:var(--br-line)!important;background:color-mix(in srgb,var(--br-control) 92%,var(--br-bg))!important;color:var(--br-control-text)!important}
-body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(label,legend,p,h2,h3,h4,strong){color:var(--br-control-text)}
-body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(small,.field-help,.modal-description){color:var(--br-control-muted)!important}
-body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea){border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-control-text)!important;caret-color:var(--br-accent)}
-body>.modal-overlay .modal-shell .quick-options button{border-color:var(--br-line-strong)!important;background:var(--br-control)!important;color:var(--br-control-text)!important}
-body>.modal-overlay .modal-shell .quick-options button:is(:hover,[aria-pressed="true"]){border-color:var(--br-accent)!important;background:var(--br-accent)!important;color:var(--br-accent-text)!important}
-body>:is(.thermal-overlay,.ticket-printer-overlay) :is(.ticket,.ticket-preview,.ticket-content,.ticket-preview pre){background:#fff!important;color:#141413!important;color-scheme:light}
-@keyframes admin-page-enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-body #app .admin-layout__content>*{animation:admin-page-enter .34s cubic-bezier(.22,.8,.28,1) both}
-body #app .admin-layout :where(button,a,[role="button"]){transition:background-color .18s ease,color .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
-body #app .admin-layout :where(button,a,[role="button"]):active{transform:translateY(1px)}
-@media(prefers-reduced-motion:reduce){body #app .admin-layout__content>*{animation:none!important}body #app .admin-layout :where(button,a,[role="button"]){transition:none!important}}
+body
+  > :is(
+    .modal-overlay,
+    .period-overlay,
+    .cut-overlay,
+    .thermal-overlay,
+    .ticket-printer-overlay,
+    .bank-reconciliation-overlay
+  )
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .bank-reconciliation-modal
+  ) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+  color-scheme: var(--br-control-scheme, light);
+}
+body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  :is(
+    .form-block,
+    .period-grid > section,
+    .period-summary > div,
+    .range-field,
+    .confirm-check,
+    .security-notice
+  ) {
+  border-color: var(--br-line) !important;
+  background: color-mix(in srgb, var(--br-control) 92%, var(--br-bg)) !important;
+  color: var(--br-control-text) !important;
+}
+body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  :is(label, legend, p, h2, h3, h4, strong) {
+  color: var(--br-control-text);
+}
+body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  :is(small, .field-help, .modal-description) {
+  color: var(--br-control-muted) !important;
+}
+body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  :is(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+  caret-color: var(--br-accent);
+}
+body > .modal-overlay .modal-shell .quick-options button {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+}
+body > .modal-overlay .modal-shell .quick-options button:is(:hover, [aria-pressed='true']) {
+  border-color: var(--br-accent) !important;
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+}
+body
+  > :is(.thermal-overlay, .ticket-printer-overlay)
+  :is(.ticket, .ticket-preview, .ticket-content, .ticket-preview pre) {
+  background: #fff !important;
+  color: #141413 !important;
+  color-scheme: light;
+}
+@keyframes admin-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+body #app .admin-layout__content > * {
+  animation: admin-page-enter 0.34s cubic-bezier(0.22, 0.8, 0.28, 1) both;
+}
+body #app .admin-layout :where(button, a, [role='button']) {
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+body #app .admin-layout :where(button, a, [role='button']):active {
+  transform: translateY(1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  body #app .admin-layout__content > * {
+    animation: none !important;
+  }
+  body #app .admin-layout :where(button, a, [role='button']) {
+    transition: none !important;
+  }
+}
 
 /* Contraste final de acciones y superficies estadísticas heredadas. */
-html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(label,legend,p,h2,h3,h4,strong){color:var(--br-control-text)!important}
-html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) button.app-button:is(.p-button-text,.app-button--outlined){border-color:var(--br-control-text)!important;background:transparent!important;color:var(--br-control-text)!important}
-html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) button.app-button:is(.p-button-text,.app-button--outlined):hover:not(:disabled){border-color:var(--br-accent)!important;background:var(--br-accent)!important;color:var(--br-accent-text)!important}
-html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal)>header,
-html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(.standard-modal-header,.modal-header,.ticket-modal-header){background-color:var(--br-panel-2)!important;color:var(--br-text)!important}
-html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal)>header :is(h1,h2,h3,h4,p,span,strong),
-html body>:is(.modal-overlay,.period-overlay,.cut-overlay,.thermal-overlay,.ticket-printer-overlay) :is(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal) :is(.standard-modal-header,.modal-header,.ticket-modal-header) :is(h1,h2,h3,h4,p,span,strong){color:var(--br-text)!important}
-html body>.modal-overlay .modal-content :is(.bg-white,.bg-gray-50,.bg-gray-100,.bg-gray-200){background-color:var(--br-control)!important}
-html body>.modal-overlay .modal-content :is(.text-black,.text-gray-700,.text-gray-800,.text-gray-900){color:var(--br-control-text)!important}
-html body>.modal-overlay .modal-content :is(.text-gray-400,.text-gray-500,.text-gray-600){color:var(--br-control-muted)!important}
-html body>.modal-overlay .modal-content .standard-modal-header .modal-kicker,
-html body>.modal-overlay .modal-content .standard-modal-header::before{color:var(--br-accent)!important}
-html body>.cut-overlay .cut-modal :is(.metrics,.preview,.period-summary,.cut-modal>footer){border-color:var(--br-line-strong)!important}
-html body>.cut-overlay .cut-modal :is(.metrics article,.preview li){border-color:var(--br-line)!important}
-html body>.cut-overlay .cut-modal :is(.metrics .balance,.preview>div){background:var(--br-bg)!important;color:var(--br-text)!important}
+html
+  body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  :is(label, legend, p, h2, h3, h4, strong) {
+  color: var(--br-control-text) !important;
+}
+html
+  body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  button.app-button:is(.p-button-text, .app-button--outlined) {
+  border-color: var(--br-control-text) !important;
+  background: transparent !important;
+  color: var(--br-control-text) !important;
+}
+html
+  body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  button.app-button:is(.p-button-text, .app-button--outlined):hover:not(:disabled) {
+  border-color: var(--br-accent) !important;
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+}
+html
+  body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  > header,
+html
+  body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  :is(.standard-modal-header, .modal-header, .ticket-modal-header) {
+  background-color: var(--br-panel-2) !important;
+  color: var(--br-text) !important;
+}
+html
+  body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  > header
+  :is(h1, h2, h3, h4, p, span, strong),
+html
+  body
+  > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
+  :is(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal
+  )
+  :is(.standard-modal-header, .modal-header, .ticket-modal-header)
+  :is(h1, h2, h3, h4, p, span, strong) {
+  color: var(--br-text) !important;
+}
+html body > .modal-overlay .modal-content :is(.bg-white, .bg-gray-50, .bg-gray-100, .bg-gray-200) {
+  background-color: var(--br-control) !important;
+}
+html
+  body
+  > .modal-overlay
+  .modal-content
+  :is(.text-black, .text-gray-700, .text-gray-800, .text-gray-900) {
+  color: var(--br-control-text) !important;
+}
+html body > .modal-overlay .modal-content :is(.text-gray-400, .text-gray-500, .text-gray-600) {
+  color: var(--br-control-muted) !important;
+}
+html body > .modal-overlay .modal-content .standard-modal-header .modal-kicker,
+html body > .modal-overlay .modal-content .standard-modal-header::before {
+  color: var(--br-accent) !important;
+}
+html body > .cut-overlay .cut-modal :is(.metrics, .preview, .period-summary, .cut-modal > footer) {
+  border-color: var(--br-line-strong) !important;
+}
+html body > .cut-overlay .cut-modal :is(.metrics article, .preview li) {
+  border-color: var(--br-line) !important;
+}
+html body > .cut-overlay .cut-modal :is(.metrics .balance, .preview > div) {
+  background: var(--br-bg) !important;
+  color: var(--br-text) !important;
+}
 
 /* Contrato visual v5: contraste fuerte y determinista en todas las paletas. */
 :root,
-html[data-br-palette]{
-  --br-on-dark:var(--br-text);
-  --br-on-dark-muted:var(--br-muted);
-  --br-on-control:var(--br-control-text);
-  --br-on-control-muted:var(--br-control-muted);
+html[data-br-palette] {
+  --br-on-dark: var(--br-text);
+  --br-on-dark-muted: var(--br-muted);
+  --br-on-control: var(--br-control-text);
+  --br-on-control-muted: var(--br-control-muted);
 }
 
 /* Las utilidades heredadas nunca deben introducir tinta oscura en las vistas oscuras. */
-html body #app .admin-layout{color:var(--br-on-dark)!important}
-html body #app .admin-layout :where(.text-black,.text-gray-700,.text-gray-800,.text-gray-900,.text-slate-700,.text-slate-800,.text-slate-900,.text-neutral-700,.text-neutral-800,.text-neutral-900):not(.ticket):not(.ticket *){color:var(--br-on-dark)!important}
-html body #app .admin-layout :where(.text-gray-400,.text-gray-500,.text-gray-600,.text-slate-400,.text-slate-500,.text-slate-600,.text-neutral-400,.text-neutral-500,.text-neutral-600):not(.ticket):not(.ticket *){color:var(--br-on-dark-muted)!important}
-html body #app .admin-layout :where(.bg-white,.bg-gray-50,.bg-gray-100,.bg-gray-200,.bg-slate-50,.bg-slate-100,.bg-neutral-50,.bg-neutral-100):not(.ticket):not(.ticket *){background-color:var(--br-panel)!important}
-html body #app .admin-layout :where(h1,h2,h3,h4,h5,h6,label,legend,.field>span,.range-field>span){color:var(--br-on-dark)!important}
+html body #app .admin-layout {
+  color: var(--br-on-dark) !important;
+}
+html
+  body
+  #app
+  .admin-layout
+  :where(
+    .text-black,
+    .text-gray-700,
+    .text-gray-800,
+    .text-gray-900,
+    .text-slate-700,
+    .text-slate-800,
+    .text-slate-900,
+    .text-neutral-700,
+    .text-neutral-800,
+    .text-neutral-900
+  ):not(.ticket):not(.ticket *) {
+  color: var(--br-on-dark) !important;
+}
+html
+  body
+  #app
+  .admin-layout
+  :where(
+    .text-gray-400,
+    .text-gray-500,
+    .text-gray-600,
+    .text-slate-400,
+    .text-slate-500,
+    .text-slate-600,
+    .text-neutral-400,
+    .text-neutral-500,
+    .text-neutral-600
+  ):not(.ticket):not(.ticket *) {
+  color: var(--br-on-dark-muted) !important;
+}
+html
+  body
+  #app
+  .admin-layout
+  :where(
+    .bg-white,
+    .bg-gray-50,
+    .bg-gray-100,
+    .bg-gray-200,
+    .bg-slate-50,
+    .bg-slate-100,
+    .bg-neutral-50,
+    .bg-neutral-100
+  ):not(.ticket):not(.ticket *) {
+  background-color: var(--br-panel) !important;
+}
+html
+  body
+  #app
+  .admin-layout
+  :where(h1, h2, h3, h4, h5, h6, label, legend, .field > span, .range-field > span) {
+  color: var(--br-on-dark) !important;
+}
 
 /* Los formularios claros usan siempre tinta oscura; OLED conserva el inverso. */
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"]{
-  --app-modal-ink:var(--br-on-control);
-  --app-modal-muted:var(--br-on-control-muted);
-  background:var(--br-control)!important;
-  color:var(--app-modal-ink)!important;
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog'] {
+  --app-modal-ink: var(--br-on-control);
+  --app-modal-muted: var(--br-on-control-muted);
+  background: var(--br-control) !important;
+  color: var(--app-modal-ink) !important;
 }
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(h1,h2,h3,h4,h5,h6,p,span,small,strong,b,em,li,dt,dd,th,td,label,legend){
-  color:var(--app-modal-ink)!important;
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(h1, h2, h3, h4, h5, h6, p, span, small, strong, b, em, li, dt, dd, th, td, label, legend) {
+  color: var(--app-modal-ink) !important;
 }
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.field-help,.modal-description,.task-field-help,.muted,.form-block legend small,.file-name small){color:var(--app-modal-muted)!important}
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
-  border-color:var(--br-line-strong)!important;
-  background:var(--br-control)!important;
-  color:var(--br-on-control)!important;
-  -webkit-text-fill-color:var(--br-on-control)!important;
-  opacity:1!important;
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(
+    .field-help,
+    .modal-description,
+    .task-field-help,
+    .muted,
+    .form-block legend small,
+    .file-name small
+  ) {
+  color: var(--app-modal-muted) !important;
 }
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(input,textarea)::placeholder{
-  color:var(--br-on-control-muted)!important;
-  -webkit-text-fill-color:var(--br-on-control-muted)!important;
-  opacity:1!important;
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+  border-color: var(--br-line-strong) !important;
+  background: var(--br-control) !important;
+  color: var(--br-on-control) !important;
+  -webkit-text-fill-color: var(--br-on-control) !important;
+  opacity: 1 !important;
+}
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(input, textarea)::placeholder {
+  color: var(--br-on-control-muted) !important;
+  -webkit-text-fill-color: var(--br-on-control-muted) !important;
+  opacity: 1 !important;
 }
 
 /* Encabezados oscuros, botones de acento y bloques de vista previa recuperan su tinta correcta. */
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"]>header,
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.standard-modal-header,.modal-header,.task-modal__header,.dt-modal-header,.logs-modal-header,.metrics .balance,.preview>div,.dt-month-nav,.dt-icon,.dt-spinner button){
-  --app-modal-ink:var(--br-on-dark);
-  --app-modal-muted:var(--br-on-dark-muted);
-  color:var(--br-on-dark)!important;
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  > header,
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(
+    .standard-modal-header,
+    .modal-header,
+    .task-modal__header,
+    .dt-modal-header,
+    .logs-modal-header,
+    .metrics .balance,
+    .preview > div,
+    .dt-month-nav,
+    .dt-icon,
+    .dt-spinner button
+  ) {
+  --app-modal-ink: var(--br-on-dark);
+  --app-modal-muted: var(--br-on-dark-muted);
+  color: var(--br-on-dark) !important;
 }
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"]>header :where(h1,h2,h3,h4,span,strong),
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.standard-modal-header,.modal-header,.task-modal__header,.dt-modal-header,.logs-modal-header) :where(h1,h2,h3,h4,span,strong){color:var(--br-on-dark)!important}
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"]>header>p:first-child,
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.modal-kicker,.standard-modal-header::before,.logs-modal-header::before){color:var(--br-accent)!important}
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(button,a,[role="button"]) :where(span,strong,b,i){color:inherit!important}
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.p-button-primary,.p-button-success,.p-button-warning,.p-button-danger,.task-button--primary,.accent,.standard-modal-close,.modal-close,button[type="submit"]:not(.app-button--outlined):not(.p-button-text)){
-  border-color:var(--br-accent)!important;
-  background:var(--br-accent)!important;
-  color:var(--br-accent-text)!important;
-  -webkit-text-fill-color:var(--br-accent-text)!important;
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  > header
+  :where(h1, h2, h3, h4, span, strong),
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(
+    .standard-modal-header,
+    .modal-header,
+    .task-modal__header,
+    .dt-modal-header,
+    .logs-modal-header
+  )
+  :where(h1, h2, h3, h4, span, strong) {
+  color: var(--br-on-dark) !important;
 }
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.app-button--outlined,.p-button-text,.task-button--secondary){
-  border-color:var(--br-on-control)!important;
-  background:transparent!important;
-  color:var(--br-on-control)!important;
-  -webkit-text-fill-color:var(--br-on-control)!important;
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  > header
+  > p:first-child,
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(.modal-kicker, .standard-modal-header::before, .logs-modal-header::before) {
+  color: var(--br-accent) !important;
 }
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.app-button--outlined,.p-button-text,.task-button--secondary):hover:not(:disabled){
-  border-color:var(--br-accent)!important;
-  background:var(--br-accent)!important;
-  color:var(--br-accent-text)!important;
-  -webkit-text-fill-color:var(--br-accent-text)!important;
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(button, a, [role='button'])
+  :where(span, strong, b, i) {
+  color: inherit !important;
+}
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(
+    .p-button-primary,
+    .p-button-success,
+    .p-button-warning,
+    .p-button-danger,
+    .task-button--primary,
+    .accent,
+    .standard-modal-close,
+    .modal-close,
+    button[type='submit']:not(.app-button--outlined):not(.p-button-text)
+  ) {
+  border-color: var(--br-accent) !important;
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+  -webkit-text-fill-color: var(--br-accent-text) !important;
+}
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(.app-button--outlined, .p-button-text, .task-button--secondary) {
+  border-color: var(--br-on-control) !important;
+  background: transparent !important;
+  color: var(--br-on-control) !important;
+  -webkit-text-fill-color: var(--br-on-control) !important;
+}
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(.app-button--outlined, .p-button-text, .task-button--secondary):hover:not(:disabled) {
+  border-color: var(--br-accent) !important;
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+  -webkit-text-fill-color: var(--br-accent-text) !important;
 }
 
 /* Alertas y documentos impresos mantienen pares de color independientes del tema. */
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor)[role="dialog"] :where(.form-error,.period-error,.task-modal__error,.error,[role="alert"]){
-  --app-modal-ink:var(--br-danger-text);
-  border-color:var(--br-danger)!important;
-  background:color-mix(in srgb,var(--br-danger) 34%,var(--br-control))!important;
-  color:var(--br-danger-text)!important;
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor
+  )[role='dialog']
+  :where(.form-error, .period-error, .task-modal__error, .error, [role='alert']) {
+  --app-modal-ink: var(--br-danger-text);
+  border-color: var(--br-danger) !important;
+  background: color-mix(in srgb, var(--br-danger) 34%, var(--br-control)) !important;
+  color: var(--br-danger-text) !important;
 }
-html body :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode){--app-modal-ink:#141413;--app-modal-muted:#4e4b45;background:#fff!important;color:#141413!important;color-scheme:light}
-html body :where(.ticket,.ticket-preview,.ticket-content,.ticket-logo,.ticket-barcode) :where(*){color:inherit!important;-webkit-text-fill-color:currentColor!important}
+html body :where(.ticket, .ticket-preview, .ticket-content, .ticket-logo, .ticket-barcode) {
+  --app-modal-ink: #141413;
+  --app-modal-muted: #4e4b45;
+  background: #fff !important;
+  color: #141413 !important;
+  color-scheme: light;
+}
+html
+  body
+  :where(.ticket, .ticket-preview, .ticket-content, .ticket-logo, .ticket-barcode)
+  :where(*) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
 
 /* Deshabilitado sigue siendo distinguible, pero nunca ilegible. */
-html body #app :where(button,input,select,textarea):disabled,
-html body>[class*="overlay"] :where(button,input,select,textarea):disabled{opacity:.78!important}
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] .p-button-success{
-  border-color:var(--br-success)!important;background:var(--br-success)!important;color:var(--br-success-text)!important;-webkit-text-fill-color:var(--br-success-text)!important
+html body #app :where(button, input, select, textarea):disabled,
+html body > [class*='overlay'] :where(button, input, select, textarea):disabled {
+  opacity: 0.78 !important;
 }
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] .p-button-warning{
-  border-color:var(--br-warning)!important;background:var(--br-warning)!important;color:var(--br-warning-text)!important;-webkit-text-fill-color:var(--br-warning-text)!important
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  .p-button-success {
+  border-color: var(--br-success) !important;
+  background: var(--br-success) !important;
+  color: var(--br-success-text) !important;
+  -webkit-text-fill-color: var(--br-success-text) !important;
 }
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] .p-button-danger{
-  border-color:var(--br-danger)!important;background:var(--br-danger)!important;color:var(--br-danger-text)!important;-webkit-text-fill-color:var(--br-danger-text)!important
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  .p-button-warning {
+  border-color: var(--br-warning) !important;
+  background: var(--br-warning) !important;
+  color: var(--br-warning-text) !important;
+  -webkit-text-fill-color: var(--br-warning-text) !important;
 }
-html body :where(.modal-content,.modal-shell,.period-modal,.cut-modal,.thermal-modal,.ticket-printer-modal,.task-modal,.note-editor,.dt-panel)[role="dialog"] :where(.p-button-success,.p-button-warning,.p-button-danger) :where(span,strong,b,i){color:inherit!important}
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  .p-button-danger {
+  border-color: var(--br-danger) !important;
+  background: var(--br-danger) !important;
+  color: var(--br-danger-text) !important;
+  -webkit-text-fill-color: var(--br-danger-text) !important;
+}
+html
+  body
+  :where(
+    .modal-content,
+    .modal-shell,
+    .period-modal,
+    .cut-modal,
+    .thermal-modal,
+    .ticket-printer-modal,
+    .task-modal,
+    .note-editor,
+    .dt-panel
+  )[role='dialog']
+  :where(.p-button-success, .p-button-warning, .p-button-danger)
+  :where(span, strong, b, i) {
+  color: inherit !important;
+}
 
 /* Los mensajes secundarios conservan jerarquía sin caer por debajo de AA. */
-html body :where([role="dialog"][aria-modal="true"]) :where(.modal-description,.field-help,.task-field-help,.muted,small){
-  color:var(--app-modal-muted)!important
+html
+  body
+  :where([role='dialog'][aria-modal='true'])
+  :where(.modal-description, .field-help, .task-field-help, .muted, small) {
+  color: var(--app-modal-muted) !important;
+}
+
+/*
+  Contrato visual v6
+  Referencias perceptuales -> roles semánticos -> componentes.
+  Las escalas comparten separación de luminosidad para que cambiar de paleta
+  no altere la jerarquía ni el contraste de la interfaz.
+*/
+:root {
+  --palette-bg: oklch(15% 0.025 165);
+  --palette-surface-1: oklch(20.5% 0.035 165);
+  --palette-surface-2: oklch(27% 0.045 165);
+  --palette-control: oklch(95% 0.018 165);
+  --palette-control-text: oklch(18% 0.025 165);
+  --palette-control-muted: oklch(43% 0.035 165);
+  --palette-text: oklch(96% 0.015 165);
+  --palette-muted: oklch(76% 0.035 165);
+  --palette-line: oklch(40% 0.045 165);
+  --palette-line-strong: oklch(58% 0.055 165);
+  --palette-accent: oklch(76% 0.115 160);
+  --palette-accent-text: oklch(15% 0.03 160);
+  --palette-control-scheme: light;
+}
+
+html[data-br-palette='phantom'] {
+  --palette-bg: oklch(14.5% 0.018 8);
+  --palette-surface-1: oklch(20% 0.024 8);
+  --palette-surface-2: oklch(26.5% 0.032 8);
+  --palette-control: oklch(94.5% 0.012 8);
+  --palette-control-text: oklch(18% 0.025 8);
+  --palette-control-muted: oklch(43% 0.03 8);
+  --palette-text: oklch(96% 0.01 8);
+  --palette-muted: oklch(75% 0.025 8);
+  --palette-line: oklch(39% 0.034 8);
+  --palette-line-strong: oklch(57% 0.045 8);
+  --palette-accent: oklch(69% 0.185 18);
+  --palette-accent-text: oklch(14% 0.03 18);
+}
+html[data-br-palette='darkhour'] {
+  --palette-bg: oklch(14.5% 0.025 250);
+  --palette-surface-1: oklch(20% 0.035 250);
+  --palette-surface-2: oklch(27% 0.045 250);
+  --palette-control: oklch(95% 0.012 250);
+  --palette-control-text: oklch(18% 0.03 250);
+  --palette-control-muted: oklch(43% 0.04 250);
+  --palette-text: oklch(97% 0.012 250);
+  --palette-muted: oklch(77% 0.035 250);
+  --palette-line: oklch(40% 0.055 250);
+  --palette-line-strong: oklch(58% 0.07 250);
+  --palette-accent: oklch(76% 0.145 245);
+  --palette-accent-text: oklch(13% 0.035 250);
+}
+html[data-br-palette='golden'] {
+  --palette-bg: oklch(15% 0.025 95);
+  --palette-surface-1: oklch(20.5% 0.035 95);
+  --palette-surface-2: oklch(27% 0.045 95);
+  --palette-control: oklch(95% 0.035 95);
+  --palette-control-text: oklch(18% 0.035 95);
+  --palette-control-muted: oklch(43% 0.05 95);
+  --palette-text: oklch(97% 0.035 95);
+  --palette-muted: oklch(78% 0.055 95);
+  --palette-line: oklch(40% 0.055 95);
+  --palette-line-strong: oklch(58% 0.07 95);
+  --palette-accent: oklch(84% 0.155 95);
+  --palette-accent-text: oklch(18% 0.035 95);
+}
+html[data-br-palette='tachyon'] {
+  --palette-bg: oklch(15% 0.025 315);
+  --palette-surface-1: oklch(20.5% 0.035 315);
+  --palette-surface-2: oklch(27% 0.045 315);
+  --palette-control: oklch(95% 0.015 315);
+  --palette-control-text: oklch(18% 0.025 315);
+  --palette-control-muted: oklch(43% 0.035 315);
+  --palette-text: oklch(96% 0.015 315);
+  --palette-muted: oklch(76% 0.035 315);
+  --palette-line: oklch(40% 0.045 315);
+  --palette-line-strong: oklch(58% 0.055 315);
+  --palette-accent: oklch(78% 0.12 165);
+  --palette-accent-text: oklch(14% 0.03 165);
+}
+html[data-br-palette='ledger'] {
+  --palette-bg: oklch(15% 0.025 165);
+  --palette-surface-1: oklch(20.5% 0.035 165);
+  --palette-surface-2: oklch(27% 0.045 165);
+  --palette-control: oklch(95% 0.018 165);
+  --palette-control-text: oklch(18% 0.025 165);
+  --palette-control-muted: oklch(43% 0.035 165);
+  --palette-text: oklch(96% 0.015 165);
+  --palette-muted: oklch(76% 0.035 165);
+  --palette-line: oklch(40% 0.045 165);
+  --palette-line-strong: oklch(58% 0.055 165);
+  --palette-accent: oklch(76% 0.115 160);
+  --palette-accent-text: oklch(15% 0.03 160);
+}
+html[data-br-palette='indigo'] {
+  --palette-bg: oklch(15% 0.025 275);
+  --palette-surface-1: oklch(20.5% 0.035 275);
+  --palette-surface-2: oklch(27% 0.045 275);
+  --palette-control: oklch(95% 0.012 275);
+  --palette-control-text: oklch(18% 0.025 275);
+  --palette-control-muted: oklch(43% 0.035 275);
+  --palette-text: oklch(96% 0.012 275);
+  --palette-muted: oklch(76% 0.03 275);
+  --palette-line: oklch(40% 0.045 275);
+  --palette-line-strong: oklch(58% 0.055 275);
+  --palette-accent: oklch(77% 0.125 275);
+  --palette-accent-text: oklch(14% 0.03 275);
+}
+html[data-br-palette='oled'] {
+  --palette-bg: oklch(0% 0 0);
+  --palette-surface-1: oklch(8% 0.014 160);
+  --palette-surface-2: oklch(14% 0.02 160);
+  --palette-control: oklch(12% 0.018 160);
+  --palette-control-text: oklch(97% 0.012 160);
+  --palette-control-muted: oklch(76% 0.025 160);
+  --palette-text: oklch(97% 0.012 160);
+  --palette-muted: oklch(76% 0.025 160);
+  --palette-line: oklch(28% 0.035 160);
+  --palette-line-strong: oklch(58% 0.045 160);
+  --palette-accent: oklch(79% 0.16 155);
+  --palette-accent-text: oklch(9% 0.025 155);
+  --palette-control-scheme: dark;
+}
+html[data-br-palette='ember'] {
+  --palette-bg: oklch(15% 0.022 45);
+  --palette-surface-1: oklch(20.5% 0.032 45);
+  --palette-surface-2: oklch(27% 0.042 45);
+  --palette-control: oklch(95% 0.02 45);
+  --palette-control-text: oklch(18% 0.03 45);
+  --palette-control-muted: oklch(43% 0.04 45);
+  --palette-text: oklch(96% 0.018 45);
+  --palette-muted: oklch(76% 0.035 45);
+  --palette-line: oklch(40% 0.045 45);
+  --palette-line-strong: oklch(58% 0.06 45);
+  --palette-accent: oklch(74% 0.175 45);
+  --palette-accent-text: oklch(15% 0.035 45);
+}
+html[data-br-palette='sakura'] {
+  --palette-bg: oklch(15% 0.028 345);
+  --palette-surface-1: oklch(20.5% 0.04 345);
+  --palette-surface-2: oklch(27% 0.052 345);
+  --palette-control: oklch(95% 0.018 345);
+  --palette-control-text: oklch(18% 0.03 345);
+  --palette-control-muted: oklch(43% 0.04 345);
+  --palette-text: oklch(96% 0.018 345);
+  --palette-muted: oklch(76% 0.04 345);
+  --palette-line: oklch(40% 0.055 345);
+  --palette-line-strong: oklch(58% 0.07 345);
+  --palette-accent: oklch(75% 0.165 350);
+  --palette-accent-text: oklch(15% 0.035 350);
+}
+html[data-br-palette='steel'] {
+  --palette-bg: oklch(15% 0.018 220);
+  --palette-surface-1: oklch(20.5% 0.028 220);
+  --palette-surface-2: oklch(27% 0.038 220);
+  --palette-control: oklch(95% 0.012 220);
+  --palette-control-text: oklch(18% 0.025 220);
+  --palette-control-muted: oklch(43% 0.035 220);
+  --palette-text: oklch(96% 0.012 220);
+  --palette-muted: oklch(76% 0.03 220);
+  --palette-line: oklch(40% 0.045 220);
+  --palette-line-strong: oklch(58% 0.055 220);
+  --palette-accent: oklch(78% 0.11 215);
+  --palette-accent-text: oklch(13% 0.03 215);
+}
+
+:root,
+html[data-br-palette] {
+  --br-bg: var(--palette-bg);
+  --br-panel: var(--palette-surface-1);
+  --br-panel-2: var(--palette-surface-2);
+  --br-control: var(--palette-control);
+  --br-control-text: var(--palette-control-text);
+  --br-control-muted: var(--palette-control-muted);
+  --br-text: var(--palette-text);
+  --br-muted: var(--palette-muted);
+  --br-line: var(--palette-line);
+  --br-line-strong: var(--palette-line-strong);
+  --br-accent: var(--palette-accent);
+  --br-accent-text: var(--palette-accent-text);
+  --br-control-scheme: var(--palette-control-scheme, light);
+  --br-success: oklch(77% 0.105 160);
+  --br-success-line: oklch(60% 0.105 160);
+  --br-success-text: oklch(15% 0.03 160);
+  --br-warning: oklch(82% 0.125 90);
+  --br-warning-line: oklch(62% 0.11 90);
+  --br-warning-text: oklch(18% 0.035 90);
+  --br-danger: oklch(70% 0.155 25);
+  --br-danger-line: oklch(58% 0.175 25);
+  --br-danger-text: oklch(14% 0.035 25);
+  --br-focus: color-mix(in oklab, var(--br-accent) 72%, white);
+  --color-bg: var(--br-bg);
+  --color-bg-secondary: var(--br-panel);
+  --color-text: var(--br-text);
+  --color-text-muted: var(--br-muted);
+  --color-border: var(--br-line);
+  --bg-modal: var(--br-control);
+  --btn-primary-bg: var(--br-accent);
+  --btn-primary-text: var(--br-accent-text);
+  --btn-primary-hover-bg: color-mix(in oklab, var(--br-accent) 86%, white);
+  --btn-secondary-bg: var(--br-panel-2);
+  --btn-secondary-text: var(--br-text);
+  --btn-secondary-hover-bg: color-mix(in oklab, var(--br-panel-2) 84%, var(--br-accent));
+  --btn-danger-bg: var(--br-danger);
+  --btn-danger-text: var(--br-danger-text);
+  --btn-danger-hover-bg: color-mix(in oklab, var(--br-danger) 86%, white);
+  --obj-important-1: var(--br-accent);
+  --obj-important-2: var(--br-success);
+  --obj-important-3: var(--br-warning);
+  --obj-important-4: var(--br-danger);
+  --chart-1: var(--br-accent);
+  --chart-2: oklch(75% 0.115 275);
+  --chart-3: var(--br-success);
+  --chart-4: var(--br-danger);
+  --chart-5: var(--br-warning);
+}
+
+/* El cursor de alto contraste de Notas se convierte en comportamiento global. */
+@media (pointer: fine) {
+  html,
+  body,
+  body #app,
+  body > [class*='overlay'] {
+    cursor:
+      url('../components/notes/BoardNote/cursor-contrast.svg') 3 3,
+      default;
+  }
+  body
+    :where(
+      a[href],
+      button:not(:disabled),
+      summary,
+      label[for],
+      select:not(:disabled),
+      [role='button'],
+      [role='tab'],
+      [role='option'],
+      [role='checkbox'],
+      [role='radio'],
+      [tabindex]:not([tabindex='-1']),
+      input[type='button']:not(:disabled),
+      input[type='submit']:not(:disabled),
+      input[type='reset']:not(:disabled),
+      input[type='checkbox']:not(:disabled),
+      input[type='radio']:not(:disabled),
+      input[type='range']:not(:disabled)
+    ) {
+    cursor:
+      url('../components/notes/BoardNote/cursor-pointer-contrast.svg') 11 4,
+      pointer !important;
+  }
+  body
+    :where(
+      input:not(:disabled):not([type='button']):not([type='submit']):not([type='reset']):not(
+          [type='checkbox']
+        ):not([type='radio']):not([type='range']),
+      textarea:not(:disabled),
+      [contenteditable='true']
+    ) {
+    cursor:
+      url('../components/notes/BoardNote/cursor-text-contrast.svg') 12 12,
+      text !important;
+  }
+}
+
+/* Slider universal: mismo control, contraste y paleta en toda la aplicación. */
+body input[type='range'] {
+  --range-progress: 50%;
+  width: 100%;
+  min-width: 5rem;
+  height: 1.35rem;
+  margin: 0;
+  appearance: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0;
+  background: transparent !important;
+  padding: 0 !important;
+  accent-color: var(--br-accent);
+}
+
+body input[type='range']::-webkit-slider-runnable-track {
+  height: 0.42rem;
+  border: 1px solid var(--br-line-strong);
+  border-radius: 0;
+  background: linear-gradient(
+    to right,
+    var(--br-accent) 0 var(--range-progress),
+    var(--br-panel-2) var(--range-progress) 100%
+  );
+}
+
+body input[type='range']::-webkit-slider-thumb {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: -0.43rem;
+  appearance: none;
+  border: 2px solid var(--br-control);
+  border-radius: 0;
+  background: var(--br-accent);
+  box-shadow: 2px 2px 0 var(--br-control);
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+body input[type='range']::-moz-range-track {
+  height: 0.42rem;
+  border: 1px solid var(--br-line-strong);
+  border-radius: 0;
+  background: var(--br-panel-2);
+}
+
+body input[type='range']::-moz-range-progress {
+  height: 0.42rem;
+  background: var(--br-accent);
+}
+
+body input[type='range']::-moz-range-thumb {
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 2px solid var(--br-control);
+  border-radius: 0;
+  background: var(--br-accent);
+  box-shadow: 2px 2px 0 var(--br-control);
+}
+
+body input[type='range']:hover:not(:disabled)::-webkit-slider-thumb,
+body input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow: 3px 3px 0 var(--br-control);
+  transform: scale(1.08);
+}
+
+body input[type='range']:focus-visible {
+  outline: 2px solid var(--br-focus, var(--br-accent));
+  outline-offset: 3px;
+}
+
+body input[type='range']:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.65);
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body input[type='range']::-webkit-slider-thumb {
+    transition: none;
+  }
 }

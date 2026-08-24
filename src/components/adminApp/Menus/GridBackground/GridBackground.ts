@@ -1,1 +1,1 @@
-defineOptions({ name: "GridBackground" });
+defineOptions({ name: 'GridBackground' })

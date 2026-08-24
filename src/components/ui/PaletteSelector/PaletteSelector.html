@@ -1,23 +1,63 @@
-<section v-if="inline" class="palette-selector palette-selector--inline" aria-label="Paletas disponibles">
+<section
+  v-if="inline"
+  class="palette-selector palette-selector--inline"
+  aria-label="Paletas disponibles"
+>
   <ul class="palette-token-legend" aria-label="Orden de las muestras de color">
     <li v-for="label in paletteColorLabels" :key="label">{{ label }}</li>
-  </ul>  <div class="palette-list">
-    <button v-for="palette in palettes" :key="palette.id" type="button" :class="{active:selectedPalette===palette.id}" :aria-pressed="selectedPalette===palette.id" @click="select(palette.id)">
-      <span class="swatches" role="img" :aria-label="paletteAriaLabel(palette)"><i v-for="(color, index) in palette.colors" :key="color" :style="{backgroundColor:color}" :title="paletteColorLabels[index]" aria-hidden="true"/></span>
-      <span class="palette-copy"><b>{{ palette.name }}</b><small>{{ palette.description }}</small></span>
-      <i v-if="selectedPalette===palette.id" class="pi pi-check"/>
+  </ul>
+  <div class="palette-list">
+    <button
+      v-for="palette in palettes"
+      :key="palette.id"
+      type="button"
+      :class="{active:selectedPalette===palette.id}"
+      :aria-pressed="selectedPalette===palette.id"
+      @click="select(palette.id)"
+    >
+      <span class="swatches" role="img" :aria-label="paletteAriaLabel(palette)"
+        ><i
+          v-for="(color, index) in palette.colors"
+          :key="color"
+          :style="{backgroundColor:color}"
+          :title="paletteColorLabels[index]"
+          aria-hidden="true"
+      /></span>
+      <span class="palette-copy"
+        ><b>{{ palette.name }}</b><small>{{ palette.description }}</small></span
+      >
+      <i v-if="selectedPalette===palette.id" class="pi pi-check" />
     </button>
   </div>
 </section>
 <details v-else ref="menu" class="palette-selector">
-  <summary title="Cambiar paleta" aria-label="Cambiar paleta"><i class="pi pi-palette"/><span>Paleta</span></summary>
+  <summary title="Cambiar paleta" aria-label="Cambiar paleta">
+    <i class="pi pi-palette" /><span>Paleta</span>
+  </summary>
   <div class="palette-menu">
-    <header><b>Paleta visual</b><small>La preferencia se guarda en este dispositivo.</small></header>
+    <header>
+      <b>Paleta visual</b><small>La preferencia se guarda en este dispositivo.</small>
+    </header>
     <div class="palette-list">
-      <button v-for="palette in palettes" :key="palette.id" type="button" :class="{active:selectedPalette===palette.id}" @click="select(palette.id)">
-        <span class="swatches" role="img" :aria-label="paletteAriaLabel(palette)"><i v-for="(color, index) in palette.colors" :key="color" :style="{backgroundColor:color}" :title="paletteColorLabels[index]" aria-hidden="true"/></span>
-        <span class="palette-copy"><b>{{ palette.name }}</b><small>{{ palette.description }}</small></span>
-        <i v-if="selectedPalette===palette.id" class="pi pi-check"/>
+      <button
+        v-for="palette in palettes"
+        :key="palette.id"
+        type="button"
+        :class="{active:selectedPalette===palette.id}"
+        @click="select(palette.id)"
+      >
+        <span class="swatches" role="img" :aria-label="paletteAriaLabel(palette)"
+          ><i
+            v-for="(color, index) in palette.colors"
+            :key="color"
+            :style="{backgroundColor:color}"
+            :title="paletteColorLabels[index]"
+            aria-hidden="true"
+        /></span>
+        <span class="palette-copy"
+          ><b>{{ palette.name }}</b><small>{{ palette.description }}</small></span
+        >
+        <i v-if="selectedPalette===palette.id" class="pi pi-check" />
       </button>
     </div>
   </div>

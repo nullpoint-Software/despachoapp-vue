@@ -1,49 +1,86 @@
 <main class="settings-view">
-    <header class="settings-hero">
-      <div>
-        <p>CUENTA / SISTEMA</p>
-        <h1>Configuración del despacho</h1>
-        <span>Perfil, seguridad, permisos y apariencia del equipo.</span>
-      </div>
-            <div class="settings-hero-actions">
-        <button type="button" class="appearance-launch settings-help-launch" @click="startSettingsTutorial">
-          <span><small>AYUDA</small><strong>Recorrido guiado</strong></span>
-          <i class="pi pi-compass"></i>
-        </button>
-        <small>Compilación<br /><strong>{{ buildTime ?? "desarrollo" }}</strong></small>
-        <button type="button" class="appearance-launch" @click="showAppearanceModal = true">
-          <span><small>INTERFAZ</small><strong>Personalizar apariencia</strong></span>
-          <i class="pi pi-sliders-h"></i>
-        </button>
-        <button v-if="isAdmin" type="button" class="appearance-launch backup-launch" @click="openBackupManager">
-          <span><small>SISTEMA</small><strong>Gestión de respaldos</strong></span>
-          <i class="pi pi-database"></i>
-        </button>
-      </div>
-    </header>
-    <AppearancePreferencesModal :visible="showAppearanceModal" @close="showAppearanceModal = false" />
-    <Teleport to="body">
+  <header class="settings-hero">
+    <div>
+      <p>CUENTA / SISTEMA</p>
+      <h1>Configuración del despacho</h1>
+      <span>Perfil, seguridad, permisos y apariencia del equipo.</span>
+    </div>
+    <div class="settings-hero-actions">
+      <button
+        type="button"
+        class="appearance-launch settings-help-launch"
+        @click="startSettingsTutorial"
+      >
+        <span><small>AYUDA</small><strong>Recorrido guiado</strong></span>
+        <i class="pi pi-compass"></i>
+      </button>
+      <small>Compilación<br /><strong>{{ buildTime ?? "desarrollo" }}</strong></small>
+      <button type="button" class="appearance-launch" @click="showAppearanceModal = true">
+        <span><small>INTERFAZ</small><strong>Personalizar apariencia</strong></span>
+        <i class="pi pi-sliders-h"></i>
+      </button>
+      <button
+        v-if="isAdmin"
+        type="button"
+        class="appearance-launch backup-launch"
+        @click="openBackupManager"
+      >
+        <span><small>SISTEMA</small><strong>Gestión de respaldos</strong></span>
+        <i class="pi pi-database"></i>
+      </button>
+    </div>
+  </header>
+  <AppearancePreferencesModal :visible="showAppearanceModal" @close="showAppearanceModal = false" />
+  <Teleport to="body">
     <transition name="fade-scale">
-      <div v-if="showBackupManager" class="backup-overlay" @click.self="closeBackupManager">
-        <section class="backup-dialog" role="dialog" aria-modal="true" aria-labelledby="backup-title" :aria-busy="backupBusy || backupLoading">
+      <div v-if="showBackupManager" class="backup-overlay">
+        <section
+          class="backup-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="backup-title"
+          :aria-busy="backupBusy || backupLoading"
+        >
           <header>
             <div>
               <p>RESPALDOS / SISTEMA</p>
               <h2 id="backup-title">Gestión de respaldos</h2>
             </div>
-            <button type="button" aria-label="Cerrar respaldos" :disabled="backupBusy" @click="closeBackupManager">×</button>
+            <button
+              type="button"
+              aria-label="Cerrar respaldos"
+              :disabled="backupBusy"
+              @click="closeBackupManager"
+            >
+              ×
+            </button>
           </header>
 
           <div class="backup-toolbar">
-            <button type="button" class="backup-primary" :disabled="backupBusy || backupLoading" @click="createBackup">
+            <button
+              type="button"
+              class="backup-primary"
+              :disabled="backupBusy || backupLoading"
+              @click="createBackup"
+            >
               <i class="pi pi-save"></i>
               {{ backupBusy ? 'Procesando...' : 'Crear respaldo ahora' }}
             </button>
-            <button type="button" :disabled="backupBusy || backupLoading" @click="chooseBackupImport">
+            <button
+              type="button"
+              :disabled="backupBusy || backupLoading"
+              @click="chooseBackupImport"
+            >
               <i class="pi pi-upload"></i>
               Importar respaldo
             </button>
-            <input ref="backupImportInput" type="file" accept=".tar.gz,application/gzip,application/x-gzip" hidden @change="importBackupFile" />
+            <input
+              ref="backupImportInput"
+              type="file"
+              accept=".tar.gz,application/gzip,application/x-gzip"
+              hidden
+              @change="importBackupFile"
+            />
             <button type="button" :disabled="backupBusy || backupLoading" @click="loadBackups">
               <i class="pi pi-refresh"></i>
               Actualizar
@@ -55,25 +92,59 @@
           </div>
 
           <div v-if="backupConfig" class="backup-config">
-            <article><span>Programación</span><strong>{{ backupScheduleSummary(backupConfig) }}</strong></article>
+            <article>
+              <span>Programación</span><strong>{{ backupScheduleSummary(backupConfig) }}</strong>
+            </article>
             <article><span>Hora</span><strong>Tiempo local</strong></article>
-            <article><span>Retención</span><strong>{{ backupConfig.retentionDays }} días / {{ backupConfig.retentionMaxFiles }} archivos</strong></article>
-            <article><span>Estado</span><strong>{{ backupConfig.importing ? 'Importando' : backupConfig.creating ? 'Creando' : 'Listo' }}</strong></article>
+            <article>
+              <span>Retención</span
+              ><strong
+                >{{ backupConfig.retentionDays }} días / {{ backupConfig.retentionMaxFiles }}
+                archivos</strong
+              >
+            </article>
+            <article>
+              <span>Estado</span
+              ><strong
+                >{{ backupConfig.importing ? 'Importando' : backupConfig.creating ? 'Creando' :
+                'Listo' }}</strong
+              >
+            </article>
           </div>
 
           <section v-if="backupConfig" class="backup-schedule-panel">
-            <button type="button" class="backup-schedule-toggle" :aria-expanded="backupScheduleOpen" @click="backupScheduleOpen = !backupScheduleOpen">
-              <span><strong>Ajustar programación</strong><small>{{ backupScheduleSummary(backupConfig) }} · tiempo local</small></span>
+            <button
+              type="button"
+              class="backup-schedule-toggle"
+              :aria-expanded="backupScheduleOpen"
+              @click="backupScheduleOpen = !backupScheduleOpen"
+            >
+              <span
+                ><strong>Ajustar programación</strong
+                ><small>{{ backupScheduleSummary(backupConfig) }} · tiempo local</small></span
+              >
               <i class="pi pi-chevron-down" :class="{ 'is-open': backupScheduleOpen }"></i>
             </button>
-            <form v-if="backupScheduleOpen" class="backup-schedule" @submit.prevent="saveBackupSchedule">
+            <form
+              v-if="backupScheduleOpen"
+              class="backup-schedule"
+              @submit.prevent="saveBackupSchedule"
+            >
               <label class="backup-toggle">
                 <input v-model="backupScheduleForm.schedulerEnabled" type="checkbox" />
-                <span><strong>Respaldos automáticos</strong><small>{{ backupScheduleForm.schedulerEnabled ? 'Activos' : 'Desactivados' }}</small></span>
+                <span
+                  ><strong>Respaldos automáticos</strong
+                  ><small
+                    >{{ backupScheduleForm.schedulerEnabled ? 'Activos' : 'Desactivados' }}</small
+                  ></span
+                >
               </label>
               <label>
                 <span>Frecuencia</span>
-                <select v-model="backupScheduleForm.frequency" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled">
+                <select
+                  v-model="backupScheduleForm.frequency"
+                  :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled"
+                >
                   <option value="daily">Diario</option>
                   <option value="weekly">Semanal</option>
                   <option value="monthly">Mensual</option>
@@ -82,23 +153,39 @@
               </label>
               <label v-if="backupScheduleForm.frequency !== 'custom'">
                 <span>Hora local</span>
-                <input v-model="backupScheduleForm.time" type="time" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled" />
+                <input
+                  v-model="backupScheduleForm.time"
+                  type="time"
+                  :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled"
+                />
               </label>
               <label v-if="backupScheduleForm.frequency === 'weekly'">
                 <span>Día</span>
-                <select v-model.number="backupScheduleForm.dayOfWeek" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled">
-                  <option v-for="day in backupWeekdays" :key="day.value" :value="day.value">{{ day.label }}</option>
+                <select
+                  v-model.number="backupScheduleForm.dayOfWeek"
+                  :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled"
+                >
+                  <option v-for="day in backupWeekdays" :key="day.value" :value="day.value">
+                    {{ day.label }}
+                  </option>
                 </select>
               </label>
               <label v-if="backupScheduleForm.frequency === 'monthly'">
                 <span>Día del mes</span>
-                <select v-model.number="backupScheduleForm.dayOfMonth" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled">
+                <select
+                  v-model.number="backupScheduleForm.dayOfMonth"
+                  :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled"
+                >
                   <option v-for="day in backupMonthDays" :key="day" :value="day">{{ day }}</option>
                 </select>
               </label>
               <label v-if="backupScheduleForm.frequency === 'custom'" class="backup-schedule__cron">
                 <span>Cron</span>
-                <input v-model="backupScheduleForm.cron" placeholder="0 2 * * *" :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled" />
+                <input
+                  v-model="backupScheduleForm.cron"
+                  placeholder="0 2 * * *"
+                  :disabled="backupBusy || backupLoading || !backupScheduleForm.schedulerEnabled"
+                />
               </label>
               <button type="submit" :disabled="backupBusy || backupLoading">
                 <i class="pi pi-clock"></i>
@@ -120,19 +207,34 @@
             <div v-else-if="!backups.length" class="backup-state">
               <i class="pi pi-database"></i>
               <strong>Sin respaldos todavía</strong>
-              <span>Crea el primer respaldo para guardar base de datos, CFDI y documentos de clientes.</span>
+              <span
+                >Crea el primer respaldo para guardar base de datos, CFDI y documentos de
+                clientes.</span
+              >
             </div>
             <div v-else class="backup-list">
               <article v-for="backup in backups" :key="backup.filename" class="backup-row">
                 <i class="pi pi-file-archive"></i>
                 <div>
                   <strong>{{ backup.filename }}</strong>
-                  <span>{{ formatBackupDate(backup.createdAt) }} · {{ formatBytes(backup.size) }}</span>
+                  <span
+                    >{{ formatBackupDate(backup.createdAt) }} · {{ formatBytes(backup.size) }}</span
+                  >
                 </div>
-                <button type="button" title="Descargar respaldo" :disabled="backupBusy" @click="downloadBackup(backup)">
+                <button
+                  type="button"
+                  title="Descargar respaldo"
+                  :disabled="backupBusy"
+                  @click="downloadBackup(backup)"
+                >
                   <i class="pi pi-download"></i>
                 </button>
-                <button type="button" title="Eliminar respaldo" :disabled="backupBusy" @click="deleteBackup(backup)">
+                <button
+                  type="button"
+                  title="Eliminar respaldo"
+                  :disabled="backupBusy"
+                  @click="deleteBackup(backup)"
+                >
                   <i class="pi pi-trash"></i>
                 </button>
               </article>
@@ -145,183 +247,276 @@
         </section>
       </div>
     </transition>
-    </Teleport>
+  </Teleport>
 
-    <nav class="settings-context-bar" aria-label="Accesos rápidos de ajustes">
-      <div class="settings-context-bar__intro">
-        <span>CONFIGURACIÓN / MAPA</span>
-        <strong>Todo lo importante, en contexto</strong>
-        <small>Abre un área o inicia el recorrido desde Ayuda.</small>
-      </div>
-      <button type="button" @click="scrollToSettings('.profile-panel')">
-        <span>01 / PERFIL</span>
-        <strong>Cuenta personal</strong>
-        <small>Identidad y contraseña</small>
-        <i class="pi pi-arrow-down-right"></i>
-      </button>
-      <button type="button" @click="scrollToSettings('.passkey-panel')">
-        <span>02 / SEGURIDAD</span>
-        <strong>{{ passkeys.length }} passkey{{ passkeys.length === 1 ? '' : 's' }}</strong>
-        <small>{{ passkeySupported ? 'Acceso compatible' : 'Revisa tu navegador' }}</small>
-        <i class="pi pi-arrow-down-right"></i>
-      </button>
-      <button v-if="isAdmin" type="button" @click="scrollToSettings('.users-panel')">
-        <span>03 / EQUIPO</span>
-        <strong>{{ usuarios.length }} usuario{{ usuarios.length === 1 ? '' : 's' }}</strong>
-        <small>Roles y permisos</small>
-        <i class="pi pi-arrow-down-right"></i>
-      </button>
-    </nav>
-
-    <!-- Bento Grid Container -->
-    <div class="settings-grid grid grid-cols-3 lg:grid-cols-2 grid-rows-3 lg:grid-rows-3 gap-2 m-4 h-full" :class="{ 'settings-grid--profile': !isAdmin }">
-
-      <!-- 0: PERFIL -->
-      <section class="settings-panel profile-panel bg-white text-black rounded-2xl shadow p-6 flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-6
-               col-start-1 row-start-1 col-span-2
-               lg:col-start-1 lg:row-start-1 lg:col-span-1 lg:row-span-1">
-        <div class="profile-visual">
-          <div class="profile-avatar relative" :class="{ busy: profilePhotoBusy }">
-            <img v-image-fallback :src="profileImage" alt="Foto de perfil" class="w-24 h-24 rounded-full object-cover" />
-            <i v-if="profilePhotoBusy" class="pi pi-spin pi-spinner profile-avatar__loading" aria-hidden="true"></i>
-          </div>
-          <label for="file-input" class="profile-photo-button" :class="{ disabled: profilePhotoBusy }">
-            <i class="pi pi-camera"></i>
-            <span><strong>{{ profilePhotoBusy ? 'Guardando foto…' : 'Cambiar foto' }}</strong><small>JPG, PNG o WebP · máx. 5 MB</small></span>
-          </label>
-          <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp" :disabled="profilePhotoBusy" @change="onFileChange" class="hidden" />
-        </div>
-        <div class="profile-content">
-          <p class="profile-kicker">CUENTA PERSONAL</p>
-          <div v-if="!profileEditingName" class="profile-name-display">
-            <div><small>Nombre visible</small><h2>{{ userFullName }}</h2></div>
-            <button type="button" @click="startProfileNameEdit"><i class="pi pi-pencil"></i><span>Editar nombre</span></button>
-          </div>
-          <form v-else class="profile-name-form" @submit.prevent="saveProfileName">
-            <label for="profile-full-name">Nombre visible</label>
-            <input id="profile-full-name" v-model="profileNameDraft" type="text" autocomplete="name" maxlength="120" @keydown.esc.prevent="cancelProfileNameEdit" />
-            <div>
-              <button type="button" class="profile-action-secondary" :disabled="profileUpdateBusy" @click="cancelProfileNameEdit">Cancelar</button>
-              <button type="submit" class="profile-action-primary" :disabled="profileUpdateBusy || profileNameDraft.trim().length < 2">
-                <i :class="profileUpdateBusy ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>{{ profileUpdateBusy ? 'Guardando…' : 'Guardar nombre' }}
-              </button>
-            </div>
-          </form>
-          <div class="profile-account-meta">
-            <i class="pi pi-at"></i>
-            <span><small>Usuario de acceso</small><strong>{{ userName }}</strong></span>
-          </div>
-          <button type="button" class="profile-password-button" @click="changeOwnPassword"><i class="pi pi-lock"></i><span>Cambiar contraseña</span></button>
-        </div>
-      </section>
-
-      <section class="settings-panel passkey-panel bg-white text-black rounded-2xl shadow p-6
-               col-start-1 row-start-3 col-span-2
-               lg:col-start-1 lg:row-start-3 lg:col-span-1">
-        <div class="passkey-panel__header">
-          <div>
-            <p>ACCESO SEGURO</p>
-            <h2><i class="pi pi-shield mr-2"></i> Passkeys</h2>
-          </div>
-          <button type="button" class="passkey-add-button" :disabled="passkeyBusy || !passkeySupported"
-            @click="addPasskey">
-            <i class="pi pi-plus"></i>
-            <span>Agregar passkey</span>
-          </button>
-        </div>
-        <p class="passkey-panel__status" :class="{ unavailable: !passkeySupported }">
-          {{ passkeyStatusLabel }}
-        </p>
-        <div class="passkey-list">
-          <div v-if="passkeysLoading" class="passkey-empty">Cargando passkeys...</div>
-          <div v-else-if="!passkeys.length" class="passkey-empty">Sin passkeys registradas.</div>
-          <template v-else>
-            <article v-for="passkey in passkeys" :key="passkey.id" class="passkey-row">
-              <div>
-                <strong>{{ passkey.name }}</strong>
-                <span>{{ formatPasskeyDate(passkey.createdAt) }}</span>
-              </div>
-              <button type="button" aria-label="Eliminar passkey" title="Eliminar passkey"
-                :disabled="passkeyBusy" @click="removePasskey(passkey)">
-                <i class="pi pi-trash"></i>
-              </button>
-            </article>
-          </template>
-        </div>
-      </section>
-
-      <!-- 1: BUSCAR Y SELECCIÓN DE USUARIO -->
-      <aside v-if="isAdmin" class="settings-panel users-panel bg-white text-black rounded-2xl shadow p-6 flex flex-col
-               col-start-3 row-start-1 row-span-3
-               lg:col-start-2 lg:row-start-1 lg:col-span-1 lg:row-span-3">
-        <div class="users-heading flex flex-col items-center mb-4">
-          <i class="pi pi-users text-3xl"></i>
-          <span class="mt-2 text-lg font-semibold">Buscar</span>
-        </div>
-
-        <label class="user-search app-search-control">
-          <span class="sr-only">Buscar usuarios</span>
-          <i class="pi pi-search" aria-hidden="true"></i>
-          <input type="search" v-model="searchQuery" aria-label="Buscar usuarios" autocomplete="off" placeholder="Escribe nombre..."
-            data-search-control />
-        </label>
-
-        <div class="users-list overflow-y-auto">
-          <template v-for="user in filteredUsers" :key="user.id_usuario">
-            <!-- MOBILE: foto, nombre completo y cargo -->
-            <div class="mobile-user-row flex flex-col items-center lg:hidden cursor-pointer mb-4" @click="abrirModal(user)">
-              <img v-image-fallback :src="user.imagen ? 'data:image/png;base64,' + user.imagen : defaultAvatar"
-                class="w-12 h-12 rounded-full object-cover" />
-              <p class="text-sm mt-2 font-semibold text-center">{{ user.nombre + (!user.activo ? " (INACTIVO)" : "")}}</p>
-              <p class="text-xs text-gray-500">{{ user.puesto }}</p>
-            </div>
-            <!-- DESKTOP: full card with delete -->
-            <div
-              class="user-row hidden lg:flex bg-gray-100 p-4 rounded-xl shadow hover:bg-gray-50 transition items-center space-x-4 mb-4">
-              <img v-image-fallback :src="user.imagen ? 'data:image/png;base64,' + user.imagen : defaultAvatar"
-                class="w-10 h-10 rounded-full object-cover" />
-              <div class="flex-1 cursor-pointer" @click="abrirModal(user)">
-                <p class="font-semibold">{{ user.nombre + " (" + user.username + ")" }}</p>
-                <p class="text-sm text-gray-500">{{ user.puesto }}</p>
-              </div>
-              <span class="font-semibold" v-if="!user.activo">INACTIVO</span>
-              <button @click.stop="confirmDialogVisible = true; userToDelete = user"
-                class="text-red-500 hover:text-red-700 px-2 cursor-pointer">
-                <i class="pi pi-trash text-lg"></i>
-              </button>
-              <i class="pi pi-chevron-right text-gray-400 cursor-pointer" @click="abrirModal(user)"></i>
-            </div>
-          </template>
-        </div>
-      </aside>
-
-      <!-- 2: AÑADIR NUEVO USUARIO -->
-      <section v-if="isAdmin" class="settings-panel create-user-panel bg-white text-black rounded-2xl shadow p-6
-               col-start-1 row-start-2 col-span-2
-               lg:col-start-1 lg:row-start-2 lg:col-span-1">
-        <h2 class="text-xl font-semibold mb-4 flex items-center">
-          <i class="pi pi-user-plus mr-2"></i> Añadir nuevo usuario
-        </h2>
-
-        <div class="create-user-launch">
-          <div class="create-user-launch__mark"><i class="pi pi-user-plus" aria-hidden="true"></i></div>
-          <div>
-            <strong>Alta guiada del equipo</strong>
-            <p>Completa identidad, contacto y acceso en tres pasos breves.</p>
-          </div>
-          <button type="button" class="create-user-button" @click="openCreateUserModal">
-            Comenzar registro <i class="pi pi-arrow-right"></i>
-          </button>
-        </div>
-
-      </section>
+  <nav class="settings-context-bar" aria-label="Accesos rápidos de ajustes">
+    <div class="settings-context-bar__intro">
+      <span>CONFIGURACIÓN / MAPA</span>
+      <strong>Todo lo importante, en contexto</strong>
+      <small>Abre un área o inicia el recorrido desde Ayuda.</small>
     </div>
+    <button type="button" @click="scrollToSettings('.profile-panel')">
+      <span>01 / PERFIL</span>
+      <strong>Cuenta personal</strong>
+      <small>Identidad y contraseña</small>
+      <i class="pi pi-arrow-down-right"></i>
+    </button>
+    <button type="button" @click="scrollToSettings('.passkey-panel')">
+      <span>02 / SEGURIDAD</span>
+      <strong>{{ passkeys.length }} passkey{{ passkeys.length === 1 ? '' : 's' }}</strong>
+      <small>{{ passkeySupported ? 'Acceso compatible' : 'Revisa tu navegador' }}</small>
+      <i class="pi pi-arrow-down-right"></i>
+    </button>
+    <button v-if="isAdmin" type="button" @click="scrollToSettings('.users-panel')">
+      <span>03 / EQUIPO</span>
+      <strong>{{ usuarios.length }} usuario{{ usuarios.length === 1 ? '' : 's' }}</strong>
+      <small>Roles y permisos</small>
+      <i class="pi pi-arrow-down-right"></i>
+    </button>
+  </nav>
 
-    <!-- CREATE USER / STEPPED MODAL -->
-    <Teleport to="body">
+  <!-- Bento Grid Container -->
+  <div
+    class="settings-grid grid grid-cols-3 lg:grid-cols-2 grid-rows-3 lg:grid-rows-3 gap-2 m-4 h-full"
+    :class="{ 'settings-grid--profile': !isAdmin }"
+  >
+    <!-- 0: PERFIL -->
+    <section
+      class="settings-panel profile-panel bg-white text-black rounded-2xl shadow p-6 flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-6 col-start-1 row-start-1 col-span-2 lg:col-start-1 lg:row-start-1 lg:col-span-1 lg:row-span-1"
+    >
+      <div class="profile-visual">
+        <div class="profile-avatar relative" :class="{ busy: profilePhotoBusy }">
+          <img
+            v-image-fallback
+            :src="profileImage"
+            alt="Foto de perfil"
+            class="w-24 h-24 rounded-full object-cover"
+          />
+          <i
+            v-if="profilePhotoBusy"
+            class="pi pi-spin pi-spinner profile-avatar__loading"
+            aria-hidden="true"
+          ></i>
+        </div>
+        <label
+          for="file-input"
+          class="profile-photo-button"
+          :class="{ disabled: profilePhotoBusy }"
+        >
+          <i class="pi pi-camera"></i>
+          <span
+            ><strong>{{ profilePhotoBusy ? 'Guardando foto…' : 'Cambiar foto' }}</strong
+            ><small>JPG, PNG o WebP · máx. 5 MB</small></span
+          >
+        </label>
+        <input
+          id="file-input"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          :disabled="profilePhotoBusy"
+          @change="onFileChange"
+          class="hidden"
+        />
+      </div>
+      <div class="profile-content">
+        <p class="profile-kicker">CUENTA PERSONAL</p>
+        <div v-if="!profileEditingName" class="profile-name-display">
+          <div>
+            <small>Nombre visible</small>
+            <h2>{{ userFullName }}</h2>
+          </div>
+          <button type="button" @click="startProfileNameEdit">
+            <i class="pi pi-pencil"></i><span>Editar nombre</span>
+          </button>
+        </div>
+        <form v-else class="profile-name-form" @submit.prevent="saveProfileName">
+          <label for="profile-full-name">Nombre visible</label>
+          <input
+            id="profile-full-name"
+            v-model="profileNameDraft"
+            type="text"
+            autocomplete="name"
+            maxlength="120"
+            @keydown.esc.prevent="cancelProfileNameEdit"
+          />
+          <div>
+            <button
+              type="button"
+              class="profile-action-secondary"
+              :disabled="profileUpdateBusy"
+              @click="cancelProfileNameEdit"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="profile-action-primary"
+              :disabled="profileUpdateBusy || profileNameDraft.trim().length < 2"
+            >
+              <i :class="profileUpdateBusy ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>{{
+              profileUpdateBusy ? 'Guardando…' : 'Guardar nombre' }}
+            </button>
+          </div>
+        </form>
+        <div class="profile-account-meta">
+          <i class="pi pi-at"></i>
+          <span><small>Usuario de acceso</small><strong>{{ userName }}</strong></span>
+        </div>
+        <button type="button" class="profile-password-button" @click="changeOwnPassword">
+          <i class="pi pi-lock"></i><span>Cambiar contraseña</span>
+        </button>
+      </div>
+    </section>
+
+    <section
+      class="settings-panel passkey-panel bg-white text-black rounded-2xl shadow p-6 col-start-1 row-start-3 col-span-2 lg:col-start-1 lg:row-start-3 lg:col-span-1"
+    >
+      <div class="passkey-panel__header">
+        <div>
+          <p>ACCESO SEGURO</p>
+          <h2><i class="pi pi-shield mr-2"></i> Passkeys</h2>
+        </div>
+        <button
+          type="button"
+          class="passkey-add-button"
+          :disabled="passkeyBusy || !passkeySupported"
+          @click="addPasskey"
+        >
+          <i :class="passkeyBusy ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"></i>
+          <span>{{ passkeys.length ? 'Agregar otro acceso' : 'Agregar passkey' }}</span>
+        </button>
+      </div>
+      <p class="passkey-panel__status" :class="{ unavailable: !passkeySupported }">
+        {{ passkeyStatusLabel }}
+      </p>
+      <div class="passkey-list">
+        <div v-if="passkeysLoading" class="passkey-empty">Cargando passkeys...</div>
+        <div v-else-if="!passkeys.length" class="passkey-empty">Sin passkeys registradas.</div>
+        <template v-else>
+          <article v-for="passkey in passkeys" :key="passkey.id" class="passkey-row">
+            <div>
+              <strong>{{ passkey.name }}</strong>
+              <span>{{ formatPasskeyDate(passkey.createdAt) }}</span>
+            </div>
+            <button
+              type="button"
+              aria-label="Eliminar passkey"
+              title="Eliminar passkey"
+              :disabled="passkeyBusy"
+              @click="removePasskey(passkey)"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </article>
+        </template>
+      </div>
+    </section>
+
+    <!-- 1: BUSCAR Y SELECCIÓN DE USUARIO -->
+    <aside
+      v-if="isAdmin"
+      class="settings-panel users-panel bg-white text-black rounded-2xl shadow p-6 flex flex-col col-start-3 row-start-1 row-span-3 lg:col-start-2 lg:row-start-1 lg:col-span-1 lg:row-span-3"
+    >
+      <div class="users-heading flex flex-col items-center mb-4">
+        <i class="pi pi-users text-3xl"></i>
+        <span class="mt-2 text-lg font-semibold">Buscar</span>
+      </div>
+
+      <label class="user-search app-search-control">
+        <span class="sr-only">Buscar usuarios</span>
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input
+          type="search"
+          v-model="searchQuery"
+          aria-label="Buscar usuarios"
+          autocomplete="off"
+          placeholder="Escribe nombre..."
+          data-search-control
+        />
+      </label>
+
+      <div class="users-list overflow-y-auto">
+        <template v-for="user in filteredUsers" :key="user.id_usuario">
+          <!-- MOBILE: foto, nombre completo y cargo -->
+          <div
+            class="mobile-user-row flex flex-col items-center lg:hidden cursor-pointer mb-4"
+            @click="abrirModal(user)"
+          >
+            <img
+              v-image-fallback
+              :src="user.imagen ? 'data:image/png;base64,' + user.imagen : defaultAvatar"
+              class="w-12 h-12 rounded-full object-cover"
+            />
+            <p class="text-sm mt-2 font-semibold text-center">
+              {{ user.nombre + (!user.activo ? " (INACTIVO)" : "")}}
+            </p>
+            <p class="text-xs text-gray-500">{{ user.puesto }}</p>
+          </div>
+          <!-- DESKTOP: full card with delete -->
+          <div
+            class="user-row hidden lg:flex bg-gray-100 p-4 rounded-xl shadow hover:bg-gray-50 transition items-center space-x-4 mb-4"
+          >
+            <img
+              v-image-fallback
+              :src="user.imagen ? 'data:image/png;base64,' + user.imagen : defaultAvatar"
+              class="w-10 h-10 rounded-full object-cover"
+            />
+            <div class="flex-1 cursor-pointer" @click="abrirModal(user)">
+              <p class="font-semibold">{{ user.nombre + " (" + user.username + ")" }}</p>
+              <p class="text-sm text-gray-500">{{ user.puesto }}</p>
+            </div>
+            <span class="font-semibold" v-if="!user.activo">INACTIVO</span>
+            <button
+              @click.stop="confirmDialogVisible = true; userToDelete = user"
+              class="text-red-500 hover:text-red-700 px-2 cursor-pointer"
+            >
+              <i class="pi pi-trash text-lg"></i>
+            </button>
+            <i
+              class="pi pi-chevron-right text-gray-400 cursor-pointer"
+              @click="abrirModal(user)"
+            ></i>
+          </div>
+        </template>
+      </div>
+    </aside>
+
+    <!-- 2: AÑADIR NUEVO USUARIO -->
+    <section
+      v-if="isAdmin"
+      class="settings-panel create-user-panel bg-white text-black rounded-2xl shadow p-6 col-start-1 row-start-2 col-span-2 lg:col-start-1 lg:row-start-2 lg:col-span-1"
+    >
+      <h2 class="text-xl font-semibold mb-4 flex items-center">
+        <i class="pi pi-user-plus mr-2"></i> Añadir nuevo usuario
+      </h2>
+
+      <div class="create-user-launch">
+        <div class="create-user-launch__mark">
+          <i class="pi pi-user-plus" aria-hidden="true"></i>
+        </div>
+        <div>
+          <strong>Alta guiada del equipo</strong>
+          <p>Completa identidad, contacto y acceso en tres pasos breves.</p>
+        </div>
+        <button type="button" class="create-user-button" @click="openCreateUserModal">
+          Comenzar registro <i class="pi pi-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- CREATE USER / STEPPED MODAL -->
+  <Teleport to="body">
     <transition name="fade-scale">
-      <div v-if="showCreateUserModal" class="user-wizard-overlay" @click.self="closeCreateUserModal">
-        <form class="a11y-form user-wizard" role="dialog" aria-modal="true" aria-labelledby="user-wizard-title" :aria-busy="creatingUser" @submit.prevent="createUser">
+      <div v-if="showCreateUserModal" class="user-wizard-overlay">
+        <form
+          class="a11y-form user-wizard"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="user-wizard-title"
+          :aria-busy="creatingUser"
+          @submit.prevent="createUser"
+        >
           <header>
             <div>
               <p>CUENTA / NUEVO USUARIO</p>
@@ -331,9 +526,14 @@
           </header>
 
           <nav class="wizard-progress" aria-label="Progreso del registro">
-            <button v-for="(title, index) in wizardTitles" :key="title" type="button"
+            <button
+              v-for="(title, index) in wizardTitles"
+              :key="title"
+              type="button"
               :class="{ active: createUserStep === index + 1, complete: createUserStep > index + 1 }"
-              :disabled="index + 1 > createUserStep" @click="createUserStep = index + 1">
+              :disabled="index + 1 > createUserStep"
+              @click="createUserStep = index + 1"
+            >
               <b>{{ String(index + 1).padStart(2, '0') }}</b><span>{{ title }}</span>
             </button>
           </nav>
@@ -346,64 +546,252 @@
                   <small>{{ newUserPreview ? 'VISTA PREVIA LISTA' : 'FOTO OPCIONAL' }}</small>
                 </div>
                 <div class="wizard-avatar__frame">
-                  <img v-image-fallback :src="newUserPreview || defaultAvatar" alt="Vista previa del nuevo usuario" />
+                  <img
+                    v-image-fallback
+                    :src="newUserPreview || defaultAvatar"
+                    alt="Vista previa del nuevo usuario"
+                  />
                   <span class="wizard-avatar__scan" aria-hidden="true"></span>
-                  <label for="wizard-user-photo" class="wizard-avatar__camera" aria-label="Seleccionar foto de perfil">
+                  <label
+                    for="wizard-user-photo"
+                    class="wizard-avatar__camera"
+                    aria-label="Seleccionar foto de perfil"
+                  >
                     <i class="pi pi-camera"></i>
                   </label>
                 </div>
                 <label for="wizard-user-photo" class="wizard-avatar__upload">
-                  <span><b>{{ newUserPreview ? 'Cambiar imagen' : 'Elegir imagen' }}</b><small>JPG o PNG · máximo 5 MB</small></span>
+                  <span
+                    ><b>{{ newUserPreview ? 'Cambiar imagen' : 'Elegir imagen' }}</b
+                    ><small>JPG o PNG · máximo 5 MB</small></span
+                  >
                   <i class="pi pi-arrow-up-right"></i>
                 </label>
-                <input id="wizard-user-photo" type="file" accept="image/*" hidden @change="onNewFileChange" />
+                <input
+                  id="wizard-user-photo"
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  @change="onNewFileChange"
+                />
               </div>
               <div class="wizard-fields">
-                <label class="wizard-field wizard-field--wide"><span>Nombre completo</span><input id="new-user-name" v-model.trim="newUser.nombre" type="text" autocomplete="name" required placeholder="Nombre y apellidos" /></label>
-                <label class="wizard-field"><span>Teléfono</span><input id="new-user-phone" :value="newUser.telefono" type="tel" autocomplete="tel" required aria-describedby="new-user-phone-help" inputmode="numeric" placeholder="317 878 1234" maxlength="12" @input="formatNewUserPhone" /><small id="new-user-phone-help">10 dígitos, con formato automático.</small></label>
-                <label class="wizard-field"><span>Puesto</span><select id="new-user-role" v-model="newUser.puesto" required><option disabled value="">Selecciona un puesto</option><option>Administrador</option><option>Empleado</option></select></label>
+                <label class="wizard-field wizard-field--wide"
+                  ><span>Nombre completo</span
+                  ><input
+                    id="new-user-name"
+                    v-model.trim="newUser.nombre"
+                    type="text"
+                    autocomplete="name"
+                    required
+                    placeholder="Nombre y apellidos"
+                /></label>
+                <label class="wizard-field"
+                  ><span>Teléfono</span
+                  ><input
+                    id="new-user-phone"
+                    :value="newUser.telefono"
+                    type="tel"
+                    autocomplete="tel"
+                    required
+                    aria-describedby="new-user-phone-help"
+                    inputmode="numeric"
+                    placeholder="317 878 1234"
+                    maxlength="12"
+                    @input="formatNewUserPhone"
+                  /><small id="new-user-phone-help"
+                    >10 dígitos, con formato automático.</small
+                  ></label
+                >
+                <label class="wizard-field"
+                  ><span>Puesto</span
+                  ><select id="new-user-role" v-model="newUser.puesto" required>
+                    <option disabled value="">Selecciona un puesto</option>
+                    <option>Administrador</option>
+                    <option>Empleado</option>
+                  </select></label
+                >
                 <div class="wizard-field wizard-field--wide">
                   <span>Correo electrónico</span>
-                  <AppEmailInput id="new-user-email" v-model="newUser.email" label="Correo electrónico del nuevo usuario" required :invalid="Boolean(newUser.email) && !isEmailValid" describedby="new-user-email-help" />
-                  <small id="new-user-email-help">{{ newUser.email || 'gmail.com aparece por defecto; puedes editar el dominio directamente.' }}</small>
+                  <AppEmailInput
+                    id="new-user-email"
+                    v-model="newUser.email"
+                    label="Correo electrónico del nuevo usuario"
+                    required
+                    :invalid="Boolean(newUser.email) && !isEmailValid"
+                    describedby="new-user-email-help"
+                  />
+                  <small id="new-user-email-help"
+                    >{{ newUser.email || 'gmail.com aparece por defecto; puedes editar el dominio directamente.' }}</small
+                  >
                 </div>
               </div>
             </div>
 
             <div v-else-if="createUserStep === 2" class="wizard-step access-step">
-              <div class="access-intro"><i class="pi pi-key"></i><div><strong>Credenciales de acceso</strong><p>Usa una contraseña exclusiva para esta cuenta.</p></div></div>
-              <label class="wizard-field"><span>Nombre de usuario</span><input id="new-user-username" v-model.trim="newUser.username" type="text" autocomplete="username" required placeholder="usuario" /></label>
-              <label class="wizard-field password-field"><span>Contraseña</span><div><input id="new-user-password" v-model="newUser.password" :type="showNewPassword ? 'text' : 'password'" minlength="8" required aria-describedby="new-user-password-strength" autocomplete="new-password" placeholder="Mínimo 8 caracteres" /><button type="button" :aria-label="showNewPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="showNewPassword = !showNewPassword"><i :class="showNewPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i></button></div></label>
-              <div id="new-user-password-strength" class="password-strength" :data-level="passwordStrength.level" role="status" aria-live="polite"><div><span v-for="index in 4" :key="index" :class="{ filled: index <= passwordStrength.bars }"></span></div><p><b>{{ passwordStrength.label }}</b><small>{{ passwordStrength.hint }}</small></p></div>
-              <label class="wizard-field password-field"><span>Confirmar contraseña</span><div><input id="new-user-password-confirm" v-model="newUser.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" minlength="8" required :aria-invalid="newUser.confirmPassword ? !isPasswordMatch : undefined" aria-describedby="new-user-password-match" autocomplete="new-password" placeholder="Repite la contraseña" /><button type="button" :aria-label="showConfirmPassword ? 'Ocultar confirmación' : 'Mostrar confirmación'" @click="showConfirmPassword = !showConfirmPassword"><i :class="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i></button></div><small id="new-user-password-match" role="status" aria-live="polite" :class="{ valid: isPasswordMatch }">{{ newUser.confirmPassword ? (isPasswordMatch ? 'Las contraseñas coinciden.' : 'Las contraseñas no coinciden.') : 'Confirma la contraseña.' }}</small></label>
+              <div class="access-intro">
+                <i class="pi pi-key"></i>
+                <div>
+                  <strong>Credenciales de acceso</strong>
+                  <p>Usa una contraseña exclusiva para esta cuenta.</p>
+                </div>
+              </div>
+              <label class="wizard-field"
+                ><span>Nombre de usuario</span
+                ><input
+                  id="new-user-username"
+                  v-model.trim="newUser.username"
+                  type="text"
+                  autocomplete="username"
+                  required
+                  placeholder="usuario"
+              /></label>
+              <label class="wizard-field password-field"
+                ><span>Contraseña</span>
+                <div>
+                  <input
+                    id="new-user-password"
+                    v-model="newUser.password"
+                    :type="showNewPassword ? 'text' : 'password'"
+                    minlength="8"
+                    required
+                    aria-describedby="new-user-password-strength"
+                    autocomplete="new-password"
+                    placeholder="Mínimo 8 caracteres"
+                  /><button
+                    type="button"
+                    :aria-label="showNewPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                    @click="showNewPassword = !showNewPassword"
+                  >
+                    <i :class="showNewPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                  </button></div
+              ></label>
+              <div
+                id="new-user-password-strength"
+                class="password-strength"
+                :data-level="passwordStrength.level"
+                role="status"
+                aria-live="polite"
+              >
+                <div>
+                  <span
+                    v-for="index in 4"
+                    :key="index"
+                    :class="{ filled: index <= passwordStrength.bars }"
+                  ></span>
+                </div>
+                <p><b>{{ passwordStrength.label }}</b><small>{{ passwordStrength.hint }}</small></p>
+              </div>
+              <label class="wizard-field password-field"
+                ><span>Confirmar contraseña</span>
+                <div>
+                  <input
+                    id="new-user-password-confirm"
+                    v-model="newUser.confirmPassword"
+                    :type="showConfirmPassword ? 'text' : 'password'"
+                    minlength="8"
+                    required
+                    :aria-invalid="newUser.confirmPassword ? !isPasswordMatch : undefined"
+                    aria-describedby="new-user-password-match"
+                    autocomplete="new-password"
+                    placeholder="Repite la contraseña"
+                  /><button
+                    type="button"
+                    :aria-label="showConfirmPassword ? 'Ocultar confirmación' : 'Mostrar confirmación'"
+                    @click="showConfirmPassword = !showConfirmPassword"
+                  >
+                    <i :class="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                  </button>
+                </div>
+                <small
+                  id="new-user-password-match"
+                  role="status"
+                  aria-live="polite"
+                  :class="{ valid: isPasswordMatch }"
+                  >{{ newUser.confirmPassword ? (isPasswordMatch ? 'Las contraseñas coinciden.' :
+                  'Las contraseñas no coinciden.') : 'Confirma la contraseña.' }}</small
+                ></label
+              >
             </div>
 
             <div v-else class="wizard-step review-step">
-              <div class="review-identity"><img v-image-fallback :src="newUserPreview || defaultAvatar" alt="Nuevo usuario" /><div><span>LISTO PARA CREAR</span><h3>{{ newUser.nombre }}</h3><p>{{ newUser.puesto }}</p></div></div>
-              <dl><div><dt>Correo</dt><dd>{{ newUser.email }}</dd></div><div><dt>Teléfono</dt><dd>{{ newUser.telefono }}</dd></div><div><dt>Usuario</dt><dd>{{ newUser.username }}</dd></div><div><dt>Seguridad</dt><dd>{{ passwordStrength.label }}</dd></div></dl>
-              <p class="review-note"><i class="pi pi-info-circle"></i> La contraseña se enviará cifrada y no aparecerá en esta confirmación.</p>
+              <div class="review-identity">
+                <img v-image-fallback :src="newUserPreview || defaultAvatar" alt="Nuevo usuario" />
+                <div>
+                  <span>LISTO PARA CREAR</span>
+                  <h3>{{ newUser.nombre }}</h3>
+                  <p>{{ newUser.puesto }}</p>
+                </div>
+              </div>
+              <dl>
+                <div>
+                  <dt>Correo</dt>
+                  <dd>{{ newUser.email }}</dd>
+                </div>
+                <div>
+                  <dt>Teléfono</dt>
+                  <dd>{{ newUser.telefono }}</dd>
+                </div>
+                <div>
+                  <dt>Usuario</dt>
+                  <dd>{{ newUser.username }}</dd>
+                </div>
+                <div>
+                  <dt>Seguridad</dt>
+                  <dd>{{ passwordStrength.label }}</dd>
+                </div>
+              </dl>
+              <p class="review-note">
+                <i class="pi pi-info-circle"></i> La contraseña se enviará cifrada y no aparecerá en
+                esta confirmación.
+              </p>
             </div>
           </div>
 
           <footer>
-            <button v-if="createUserStep > 1" type="button" class="wizard-secondary" @click="createUserStep--"><i class="pi pi-arrow-left"></i> Anterior</button>
+            <button
+              v-if="createUserStep > 1"
+              type="button"
+              class="wizard-secondary"
+              @click="createUserStep--"
+            >
+              <i class="pi pi-arrow-left"></i> Anterior
+            </button>
             <span v-else></span>
-            <button v-if="createUserStep < 3" type="button" class="wizard-primary" :disabled="!canContinueCreateUser" @click="createUserStep++">Continuar <i class="pi pi-arrow-right"></i></button>
-            <button v-else type="submit" class="wizard-primary" :disabled="!canCreateUser || creatingUser"><i class="pi pi-user-plus"></i> {{ creatingUser ? 'Creando…' : 'Crear usuario' }}</button>
+            <button
+              v-if="createUserStep < 3"
+              type="button"
+              class="wizard-primary"
+              :disabled="!canContinueCreateUser"
+              @click="createUserStep++"
+            >
+              Continuar <i class="pi pi-arrow-right"></i>
+            </button>
+            <button
+              v-else
+              type="submit"
+              class="wizard-primary"
+              :disabled="!canCreateUser || creatingUser"
+            >
+              <i class="pi pi-user-plus"></i> {{ creatingUser ? 'Creando…' : 'Crear usuario' }}
+            </button>
           </footer>
         </form>
       </div>
     </transition>
-    </Teleport>
+  </Teleport>
 
-    <!-- USER DETAILS MODAL -->
-    <Teleport to="body">
+  <!-- USER DETAILS MODAL -->
+  <Teleport to="body">
     <transition name="fade-scale">
-      <div v-if="modalAbierto" @click.self="modalAbierto = false; isDropdown = false"
-        class="modal-overlay fixed user-detail-modal inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4">
+      <div
+        v-if="modalAbierto"
+        class="modal-overlay fixed user-detail-modal inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4"
+      >
         <div
           :class="{ 'permissions-mode': userDetailTab === 'permissions' }"
-          class="modal-content bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[92vh] p-8 overflow-y-auto relative">
+          class="modal-content bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[92vh] p-8 overflow-y-auto relative"
+        >
           <!-- HEADER with delete + close -->
           <header class="settings-detail-header">
             <div>
@@ -411,32 +799,62 @@
               <h3 class="text-2xl font-bold">{{ userDetailTab === 'permissions' ? 'Permisos del usuario' : 'Detalles del usuario' }}</h3>
             </div>
             <div class="detail-header-actions">
-              <button type="button" class="detail-delete-button"
-                @click.stop="confirmDialogVisible = true; userToDelete = usuarioSeleccionado">
+              <button
+                type="button"
+                class="detail-delete-button"
+                @click.stop="confirmDialogVisible = true; userToDelete = usuarioSeleccionado"
+              >
                 <i class="pi pi-trash"></i><span>Eliminar</span>
               </button>
-              <button type="button" class="detail-close-button" aria-label="Cerrar detalles del usuario"
-                @click="modalAbierto=false;isDropdown=false">×</button>
+              <button
+                type="button"
+                class="detail-close-button"
+                aria-label="Cerrar detalles del usuario"
+                @click="modalAbierto=false;isDropdown=false"
+              >
+                ×
+              </button>
             </div>
           </header>
 
           <nav class="detail-section-tabs" aria-label="Secciones del usuario">
-            <button type="button" :class="{ active: userDetailTab === 'account' }" @click="userDetailTab = 'account'">
+            <button
+              type="button"
+              :class="{ active: userDetailTab === 'account' }"
+              @click="userDetailTab = 'account'"
+            >
               <i class="pi pi-id-card"></i>
               <span><strong>Cuenta</strong><small>Identidad y acceso</small></span>
             </button>
-            <button type="button" :class="{ active: userDetailTab === 'permissions' }" @click="openPermissionTab">
+            <button
+              type="button"
+              :class="{ active: userDetailTab === 'permissions' }"
+              @click="openPermissionTab"
+            >
               <i class="pi pi-shield"></i>
-              <span><strong>Permisos</strong><small>{{ permissionSummary.enabled }} de {{ permissionSummary.total }} activos</small></span>
+              <span
+                ><strong>Permisos</strong
+                ><small
+                  >{{ permissionSummary.enabled }} de {{ permissionSummary.total }} activos</small
+                ></span
+              >
             </button>
           </nav>
 
           <!-- USER INFO -->
-          <div v-if="userDetailTab === 'account'" class="detail-profile flex flex-col items-center mb-2">
+          <div
+            v-if="userDetailTab === 'account'"
+            class="detail-profile flex flex-col items-center mb-2"
+          >
             <div class="detail-profile__photo">
-              <img v-image-fallback :src="usuarioSeleccionado.imagen && usuarioSeleccionado.imagen !== 'null'
+              <img
+                v-image-fallback
+                :src="usuarioSeleccionado.imagen && usuarioSeleccionado.imagen !== 'null'
                 ? 'data:image/png;base64,' + usuarioSeleccionado.imagen
-                : defaultAvatar" :alt="'Foto de ' + usuarioSeleccionado.nombre" class="w-28 h-28 rounded-full border-4 border-gray-200 shadow-lg mb-4 object-cover" />
+                : defaultAvatar"
+                :alt="'Foto de ' + usuarioSeleccionado.nombre"
+                class="w-28 h-28 rounded-full border-4 border-gray-200 shadow-lg mb-4 object-cover"
+              />
               <i v-if="selectedUserPhotoBusy" class="pi pi-spin pi-spinner" aria-hidden="true"></i>
             </div>
             <div class="detail-profile__identity">
@@ -445,16 +863,34 @@
               <span v-if="!isDropdown" class="detail-role">{{ usuarioSeleccionado.puesto }}</span>
 
               <div v-if="!isDropdown" class="detail-profile__actions">
-                <button type="button" @click="editSelectedUserField('nombre', 'Nombre completo')"><i class="pi pi-pencil"></i>Editar nombre</button>
-                <label for="selected-user-photo" :class="{ disabled: selectedUserPhotoBusy }"><i class="pi pi-camera"></i>{{ selectedUserPhotoBusy ? 'Guardando…' : 'Cambiar foto' }}</label>
-                <input id="selected-user-photo" type="file" accept="image/jpeg,image/png,image/webp" :disabled="selectedUserPhotoBusy" hidden @change="onSelectedUserFileChange" />
-                <button type="button" class="detail-role-button" @click="isDropdown = true"><i class="pi pi-users"></i>Cambiar rol</button>
+                <button type="button" @click="editSelectedUserField('nombre', 'Nombre completo')">
+                  <i class="pi pi-pencil"></i>Editar nombre
+                </button>
+                <label for="selected-user-photo" :class="{ disabled: selectedUserPhotoBusy }"
+                  ><i class="pi pi-camera"></i>{{ selectedUserPhotoBusy ? 'Guardando…' : 'Cambiar foto' }}</label
+                >
+                <input
+                  id="selected-user-photo"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  :disabled="selectedUserPhotoBusy"
+                  hidden
+                  @change="onSelectedUserFileChange"
+                />
+                <button type="button" class="detail-role-button" @click="isDropdown = true">
+                  <i class="pi pi-users"></i>Cambiar rol
+                </button>
               </div>
 
               <!-- Dropdown cuando isDropdown es true -->
               <div v-else class="relative">
-                <select v-model="selectedLevel" aria-label="Nivel de acceso del usuario" @blur="isDropdown = false" @change="updateLevel(selectedLevel)"
-                  class="w-full p-2 border text-sm border-gray-300 rounded bg-white text-black">
+                <select
+                  v-model="selectedLevel"
+                  aria-label="Nivel de acceso del usuario"
+                  @blur="isDropdown = false"
+                  @change="updateLevel(selectedLevel)"
+                  class="w-full p-2 border text-sm border-gray-300 rounded bg-white text-black"
+                >
                   <option value="Administrador">Administrador</option>
                   <option value="Empleado">Empleado</option>
                 </select>
@@ -464,76 +900,150 @@
           <div v-if="userDetailTab === 'account'" class="status-control text-center mb-4">
             <div>
               <small>ESTADO DE ACCESO</small>
-              <strong>{{ usuarioSeleccionado.activo ? 'Cuenta activa' : 'Cuenta inactiva' }}</strong>
-              <p>{{ usuarioSeleccionado.activo ? 'Puede iniciar sesión y usar sus permisos.' : 'No podrá iniciar sesión hasta que la actives.' }}</p>
+              <strong
+                >{{ usuarioSeleccionado.activo ? 'Cuenta activa' : 'Cuenta inactiva' }}</strong
+              >
+              <p>
+                {{ usuarioSeleccionado.activo ? 'Puede iniciar sesión y usar sus permisos.' : 'No podrá iniciar sesión hasta que la actives.' }}
+              </p>
             </div>
-            <button type="button" class="account-status-switch" :class="{ active: usuarioSeleccionado.activo }" role="switch"
-              :aria-checked="usuarioSeleccionado.activo" :aria-label="usuarioSeleccionado.activo ? 'Desactivar cuenta' : 'Activar cuenta'"
-              @click="usuarioSeleccionado.activo = !usuarioSeleccionado.activo; updateUserStatus(usuarioSeleccionado)">
-              <span aria-hidden="true"></span><b>{{ usuarioSeleccionado.activo ? 'Activa' : 'Inactiva' }}</b>
+            <button
+              type="button"
+              class="account-status-switch"
+              :class="{ active: usuarioSeleccionado.activo }"
+              role="switch"
+              :aria-checked="usuarioSeleccionado.activo"
+              :aria-label="usuarioSeleccionado.activo ? 'Desactivar cuenta' : 'Activar cuenta'"
+              @click="usuarioSeleccionado.activo = !usuarioSeleccionado.activo; updateUserStatus(usuarioSeleccionado)"
+            >
+              <span aria-hidden="true"></span
+              ><b>{{ usuarioSeleccionado.activo ? 'Activa' : 'Inactiva' }}</b>
             </button>
           </div>
           <!-- Datos de acceso y contacto -->
-          <section v-if="userDetailTab === 'account'" class="account-grid" aria-label="Datos de acceso y contacto">
+          <section
+            v-if="userDetailTab === 'account'"
+            class="account-grid"
+            aria-label="Datos de acceso y contacto"
+          >
             <div class="account-grid__heading">
-              <div><span>FICHA / 02</span><h4>Acceso y contacto</h4></div>
+              <div>
+                <span>FICHA / 02</span>
+                <h4>Acceso y contacto</h4>
+              </div>
               <small>Información protegida de la cuenta</small>
             </div>
             <article class="account-item account-item--actions">
               <i class="pi pi-id-card"></i>
-              <div><small>Nombre completo</small><strong>{{ usuarioSeleccionado.nombre }}</strong></div>
-              <button type="button" aria-label="Editar nombre"
-                @click="editSelectedUserField('nombre', 'Nombre completo')">
+              <div>
+                <small>Nombre completo</small><strong>{{ usuarioSeleccionado.nombre }}</strong>
+              </div>
+              <button
+                type="button"
+                aria-label="Editar nombre"
+                @click="editSelectedUserField('nombre', 'Nombre completo')"
+              >
                 <i class="pi pi-pencil"></i><span>Editar</span>
               </button>
             </article>
             <article class="account-item">
               <i class="pi pi-user"></i>
-              <div><small>Nombre de usuario</small><strong>{{ usuarioSeleccionado.username }}</strong></div>
-              <button type="button" aria-label="Editar usuario" title="Editar usuario"
-                @click="editSelectedUserField('username', 'Nombre de usuario')">
+              <div>
+                <small>Nombre de usuario</small><strong>{{ usuarioSeleccionado.username }}</strong>
+              </div>
+              <button
+                type="button"
+                aria-label="Editar usuario"
+                title="Editar usuario"
+                @click="editSelectedUserField('username', 'Nombre de usuario')"
+              >
                 <i class="pi pi-pencil"></i>
               </button>
             </article>
             <article class="account-item">
               <i class="pi pi-envelope"></i>
-              <div><small>Correo electrónico</small><strong>{{ usuarioSeleccionado.email || 'Sin registrar' }}</strong></div>
-              <button type="button" aria-label="Editar correo" title="Editar correo"
-                @click="editSelectedUserField('email', 'Correo electrónico')">
+              <div>
+                <small>Correo electrónico</small
+                ><strong>{{ usuarioSeleccionado.email || 'Sin registrar' }}</strong>
+              </div>
+              <button
+                type="button"
+                aria-label="Editar correo"
+                title="Editar correo"
+                @click="editSelectedUserField('email', 'Correo electrónico')"
+              >
                 <i class="pi pi-pencil"></i>
               </button>
             </article>
             <article class="account-item account-item--password">
               <i class="pi pi-key"></i>
-              <div><small>Contraseña</small><strong>{{ passwordVisible ? usuarioSeleccionado.password : '••••••••' }}</strong></div>
+              <div>
+                <small>Contraseña</small
+                ><strong>{{ passwordVisible ? usuarioSeleccionado.password : '••••••••' }}</strong>
+              </div>
               <div class="account-actions">
-                <button type="button" :disabled="passwordRevealBusy" @click="verPassword" :aria-label="passwordVisible ? 'Ocultar contraseña' : 'Ver contraseña'">
-                  <i :class="passwordRevealBusy ? 'pi pi-spin pi-spinner' : (passwordVisible ? 'pi pi-eye-slash' : 'pi pi-eye')"></i><span>{{ passwordVisible ? 'Ocultar' : 'Mostrar' }}</span>
+                <button
+                  type="button"
+                  :disabled="passwordRevealBusy"
+                  @click="verPassword"
+                  :aria-label="passwordVisible ? 'Ocultar contraseña' : 'Ver contraseña'"
+                >
+                  <i
+                    :class="passwordRevealBusy ? 'pi pi-spin pi-spinner' : (passwordVisible ? 'pi pi-eye-slash' : 'pi pi-eye')"
+                  ></i
+                  ><span>{{ passwordVisible ? 'Ocultar' : 'Mostrar' }}</span>
                 </button>
-                <button type="button" @click="changeSelectedUserPassword" aria-label="Cambiar contraseña">
+                <button
+                  type="button"
+                  @click="changeSelectedUserPassword"
+                  aria-label="Cambiar contraseña"
+                >
                   <i class="pi pi-lock"></i><span>Cambiar</span>
                 </button>
               </div>
               <div v-if="isAdmin" class="password-more-menu" @click.stop>
-                <button type="button" class="password-more-trigger" aria-label="Más opciones de contraseña"
-                  @click="passwordResetMenuOpen = !passwordResetMenuOpen">
+                <button
+                  type="button"
+                  class="password-more-trigger"
+                  aria-label="Más opciones de contraseña"
+                  @click="passwordResetMenuOpen = !passwordResetMenuOpen"
+                >
                   <i class="pi pi-ellipsis-v"></i>
                 </button>
                 <div v-if="passwordResetMenuOpen" class="password-more-dropdown">
-                  <button type="button" :disabled="passwordResetBusy" @click="generatePasswordResetLink">
-                    <i class="pi pi-link"></i><span>{{ passwordResetBusy ? 'Generando…' : 'Generar enlace' }}</span>
+                  <button
+                    type="button"
+                    :disabled="passwordResetBusy"
+                    @click="generatePasswordResetLink"
+                  >
+                    <i class="pi pi-link"></i
+                    ><span>{{ passwordResetBusy ? 'Generando…' : 'Generar enlace' }}</span>
                   </button>
-                  <button type="button" :disabled="passwordResetBusy || !usuarioSeleccionado?.email" @click="sendPasswordResetEmail">
-                    <i class="pi pi-envelope"></i><span>{{ passwordResetBusy ? 'Enviando…' : 'Enviar correo' }}</span>
+                  <button
+                    type="button"
+                    :disabled="passwordResetBusy || !usuarioSeleccionado?.email"
+                    @click="sendPasswordResetEmail"
+                  >
+                    <i class="pi pi-envelope"></i
+                    ><span>{{ passwordResetBusy ? 'Enviando…' : 'Enviar correo' }}</span>
                   </button>
                 </div>
               </div>
             </article>
             <article class="account-item">
               <i class="pi pi-phone"></i>
-              <div><small>Teléfono</small><strong>{{ formatPhoneValue(usuarioSeleccionado.telefono) || 'Sin registrar' }}</strong></div>
-              <button type="button" aria-label="Editar teléfono" title="Editar teléfono"
-                @click="editSelectedUserField('telefono', 'Teléfono')">
+              <div>
+                <small>Teléfono</small
+                ><strong
+                  >{{ formatPhoneValue(usuarioSeleccionado.telefono) || 'Sin registrar' }}</strong
+                >
+              </div>
+              <button
+                type="button"
+                aria-label="Editar teléfono"
+                title="Editar teléfono"
+                @click="editSelectedUserField('telefono', 'Teléfono')"
+              >
                 <i class="pi pi-pencil"></i>
               </button>
             </article>
@@ -551,10 +1061,19 @@
                 <div><dt>Ajustes</dt><dd>{{ permissionSummary.customized }}</dd></div>
                 <div class="permission-save-indicator" :data-state="permissionSaveState">
                   <dt>Estado</dt>
-                  <dd><i :class="permissionSaveState === 'saving' ? 'pi pi-spin pi-spinner' : permissionSaveState === 'saved' ? 'pi pi-check' : permissionSaveState === 'error' ? 'pi pi-exclamation-triangle' : 'pi pi-cloud'"></i>{{ permissionSaveLabel }}</dd>
+                  <dd>
+                    <i
+                      :class="permissionSaveState === 'saving' ? 'pi pi-spin pi-spinner' : permissionSaveState === 'saved' ? 'pi pi-check' : permissionSaveState === 'error' ? 'pi pi-exclamation-triangle' : 'pi pi-cloud'"
+                    ></i
+                    >{{ permissionSaveLabel }}
+                  </dd>
                 </div>
               </dl>
-              <button type="button" class="permission-help-button" @click="permissionTutorialOpen = true">
+              <button
+                type="button"
+                class="permission-help-button"
+                @click="permissionTutorialOpen = true"
+              >
                 <i class="pi pi-question-circle"></i>
                 Cómo funcionan
               </button>
@@ -584,11 +1103,21 @@
               <section v-for="group in permissionGroups" :key="group.name" class="permission-group">
                 <header>
                   <i :class="group.icon"></i>
-                  <div><h5>{{ group.name }}</h5><p>{{ group.description }}</p></div>
-                  <span>{{ group.items.filter((item) => item.enabled).length }} / {{ group.items.length }}</span>
+                  <div>
+                    <h5>{{ group.name }}</h5>
+                    <p>{{ group.description }}</p>
+                  </div>
+                  <span
+                    >{{ group.items.filter((item) => item.enabled).length }} / {{ group.items.length
+                    }}</span
+                  >
                 </header>
                 <div class="permission-list">
-                  <article v-for="permission in group.items" :key="permission.key" :class="{ sensitive: permission.sensitive }">
+                  <article
+                    v-for="permission in group.items"
+                    :key="permission.key"
+                    :class="{ sensitive: permission.sensitive }"
+                  >
                     <i :class="permission.icon"></i>
                     <div>
                       <strong>{{ permission.label }}</strong>
@@ -612,10 +1141,24 @@
         </div>
       </div>
     </transition>
-    </Teleport>
-  </main>
-  <AppTutorial v-model="settingsTutorialOpen" title="Cómo usar Ajustes" :steps="settingsTutorialSteps" storage-key="tourSettingsDone" />
-  <AppTutorial v-model="permissionTutorialOpen" title="Cómo administrar permisos" :steps="permissionTutorialSteps" storage-key="tourSettingsPermissionsDone" />
-  <!-- Confirmación para eliminación -->
-  <ConfirmDeleteDialog v-if="confirmDialogVisible" :element="'¿Estás seguro de eliminar este usuario permanentemente? Se eliminaran los datos de este usuario y las tareas que se le hayan asignado seran regresadas a estado Disponible.'" @confirm="confirmDelete(userToDelete)"
-    @cancel="cancelDelete" />
+  </Teleport>
+</main>
+<AppTutorial
+  v-model="settingsTutorialOpen"
+  title="Cómo usar Ajustes"
+  :steps="settingsTutorialSteps"
+  storage-key="tourSettingsDone"
+/>
+<AppTutorial
+  v-model="permissionTutorialOpen"
+  title="Cómo administrar permisos"
+  :steps="permissionTutorialSteps"
+  storage-key="tourSettingsPermissionsDone"
+/>
+<!-- Confirmación para eliminación -->
+<ConfirmDeleteDialog
+  v-if="confirmDialogVisible"
+  :element="'¿Estás seguro de eliminar este usuario permanentemente? Se eliminaran los datos de este usuario y las tareas que se le hayan asignado seran regresadas a estado Disponible.'"
+  @confirm="confirmDelete(userToDelete)"
+  @cancel="cancelDelete"
+/>

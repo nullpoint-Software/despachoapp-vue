@@ -1,11 +1,15 @@
 .app-filter-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: var(--app-layer-filter-modal, 1200);
   display: grid;
   place-items: center;
   padding: 1rem;
   background: color-mix(in srgb, var(--br-bg) 82%, transparent);
+}
+
+.app-filter-overlay--nested {
+  z-index: var(--app-layer-nested-modal, 10060);
 }
 
 .app-filter-modal {
@@ -29,15 +33,19 @@
 }
 
 .app-filter-modal__header p {
-  margin: 0 0 .35rem;
+  margin: 0 0 0.35rem;
   color: var(--br-accent);
-  font: 800 .62rem "Courier New", monospace;
-  letter-spacing: .08em;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
+  letter-spacing: 0.08em;
 }
 
 .app-filter-modal__header h2 {
   margin: 0;
-  font: 900 1.35rem Arial, sans-serif;
+  font:
+    900 1.35rem Arial,
+    sans-serif;
   text-transform: uppercase;
 }
 
@@ -78,16 +86,18 @@
 
 .app-filter-modal__footer > div {
   display: flex;
-  gap: .65rem;
+  gap: 0.65rem;
 }
 
 .app-filter-modal__reset {
-  padding: .3rem 0;
+  padding: 0.3rem 0;
   border: 0;
   border-bottom: 1px solid var(--br-line-strong);
   background: transparent;
   color: var(--br-muted);
-  font: 800 .65rem "Courier New", monospace;
+  font:
+    800 0.65rem 'Courier New',
+    monospace;
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -100,8 +110,12 @@
 }
 
 @media (max-width: 780px) {
-  .app-filter-overlay { padding: .65rem; }
-  .app-filter-modal { max-height: calc(100dvh - 1.3rem); }
+  .app-filter-overlay {
+    padding: 0.65rem;
+  }
+  .app-filter-modal {
+    max-height: calc(100dvh - 1.3rem);
+  }
 }
 
 @media (max-width: 480px) {
@@ -115,5 +129,7 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  .app-filter-modal__reset { align-self: flex-start; }
+  .app-filter-modal__reset {
+    align-self: flex-start;
+  }
 }

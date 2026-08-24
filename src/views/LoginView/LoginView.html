@@ -1,58 +1,94 @@
 <Loader v-if="isLoading"></Loader>
-  <div class="login-page relative flex justify-center items-center min-h-screen overflow-hidden">
-    <!-- Partículas giratorias -->
-    <div class="background" :class="{ react: reacting }">
-      <span v-for="i in 20" :key="i"></span>
-    </div>
+<div class="login-page relative flex justify-center items-center min-h-screen overflow-hidden">
+  <!-- Partículas giratorias -->
+  <div class="background" :class="{ react: reacting }">
+    <span v-for="i in 20" :key="i"></span>
+  </div>
 
-    <!-- Capa de ondas -->
-    <div class="absolute inset-0 z-10 bg-transparent overflow-hidden">
-      <div class="wave-container" v-for="wave in waves" :key="wave.id" :style="{
+  <!-- Capa de ondas -->
+  <div class="absolute inset-0 z-10 bg-transparent overflow-hidden">
+    <div
+      class="wave-container"
+      v-for="wave in waves"
+      :key="wave.id"
+      :style="{
         top: wave.y + 'px',
         left: wave.x + 'px',
         width: wave.size + 'px',
         height: wave.size + 'px'
-      }"></div>
-    </div>
+      }"
+    ></div>
+  </div>
 
-    <!-- Contenido de login -->
-    <div class="login-shell relative z-20 w-full">
-      <aside class="login-brand"><p>DESPACHO / ACCESO</p><img :src="mainImageSrc" alt="Logo"/><h1>Control<br/>operativo</h1><span>Clientes · Pagos · Tareas · Notas</span></aside>
-      <section class="login-form-panel">
-        <div class="palette-position"><PaletteSelector /></div>
+  <!-- Contenido de login -->
+  <div class="login-shell relative z-20 w-full">
+    <aside class="login-brand">
+      <p>DESPACHO / ACCESO</p>
+      <img :src="mainImageSrc" alt="Logo" />
+      <h1>Control<br />operativo</h1>
+      <span>Clientes · Pagos · Tareas · Notas</span>
+    </aside>
+    <section class="login-form-panel">
+      <div class="palette-position"><PaletteSelector /></div>
       <!-- Logo -->
       <div class="login-logo flex justify-center mb-4">
         <img :src="mainImageSrc" alt="Logo" class="w-16" />
       </div>
 
       <!-- Título y subtítulo -->
-      <h2 id="login-title" class="text-3xl font-bold text-center mb-2">
-        Iniciar Sesión
-      </h2>
-      <p class="login-copy text-center mb-6">
-        Accede a tu cuenta
-      </p>
-      <div v-if="showError" id="login-error" class="a11y-form-status relative bg-red-600 rounded-md mb-1" role="alert" aria-live="assertive">
-        <p class="text-1xl font-bold text-white p-2 ">El usuario o contraseña es incorrecto!</p>
+      <h2 id="login-title" class="text-3xl font-bold text-center mb-2">Iniciar Sesión</h2>
+      <p class="login-copy text-center mb-6">Accede a tu cuenta</p>
+      <div
+        v-if="showError"
+        id="login-error"
+        class="a11y-form-status relative bg-red-600 rounded-md mb-1"
+        role="alert"
+        aria-live="assertive"
+      >
+        <p class="text-1xl font-bold text-white p-2">El usuario o contraseña es incorrecto!</p>
       </div>
       <!-- Formulario -->
       <form aria-labelledby="login-title" @submit.prevent="login">
         <div class="mb-4 relative">
-          <label for="login-identifier" class="block text-white font-medium mb-1">Nombre de usuario o correo electrónico</label>
-          <InputText id="login-identifier" v-model="email" type="text" autocomplete="username" required :aria-invalid="showError ? 'true' : undefined" :aria-describedby="showError ? 'login-error' : undefined"
+          <label for="login-identifier" class="block text-white font-medium mb-1"
+            >Nombre de usuario o correo electrónico</label
+          >
+          <InputText
+            id="login-identifier"
+            v-model="email"
+            type="text"
+            autocomplete="username"
+            required
+            :aria-invalid="showError ? 'true' : undefined"
+            :aria-describedby="showError ? 'login-error' : undefined"
             class="w-full p-3 border border-white/50 rounded-md bg-white text-gray-900 focus:ring-2 focus:ring-blue-300"
-            placeholder="joseramirez@gmail.com" @input="handleInput" />
+            placeholder="joseramirez@gmail.com"
+            @input="handleInput"
+          />
         </div>
 
         <div class="mb-4 relative">
-          <label class="block text-white font-medium mb-1">
-            Contraseña
-          </label>
+          <label class="block text-white font-medium mb-1"> Contraseña </label>
           <div class="relative">
-            <input id="login-password" v-model="password" :type="showPassword ? 'text' : 'password'" autocomplete="current-password" required :aria-invalid="showError ? 'true' : undefined" :aria-describedby="showError ? 'login-error' : undefined"
+            <input
+              id="login-password"
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="current-password"
+              required
+              :aria-invalid="showError ? 'true' : undefined"
+              :aria-describedby="showError ? 'login-error' : undefined"
               class="w-full p-3 border border-white/50 rounded-md bg-white text-gray-900 focus:ring-2 focus:ring-blue-300"
-              placeholder="••••••••" @input="handleInput" />
-            <button type="button" class="password-toggle absolute right-3 top-3" :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" :aria-pressed="showPassword" @click="togglePassword">
+              placeholder="••••••••"
+              @input="handleInput"
+            />
+            <button
+              type="button"
+              class="password-toggle absolute right-3 top-3"
+              :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              :aria-pressed="showPassword"
+              @click="togglePassword"
+            >
               <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
             </button>
           </div>
@@ -60,7 +96,7 @@
         <button type="button" class="forgot-password-link" @click="openResetRequest">
           Olvidé mi contraseña
         </button>
-        <br>
+        <br />
         <!-- <div class="flex justify-between items-center mb-6">
           <label for="remember" class="flex items-center cursor-pointer text-white">
             <input type="checkbox" id="remember" class="hidden" v-model="rememberMe" />
@@ -76,38 +112,93 @@
         </div> -->
 
         <!-- Botón de inicio -->
-        <button type="submit"
-          class="login-submit w-full py-3 font-semibold transition cursor-pointer">
+        <button
+          type="submit"
+          class="login-submit w-full py-3 font-semibold transition cursor-pointer"
+        >
           Iniciar Sesión
         </button>
-      </form></section>
-    </div>
-    <Teleport to="body">
+      </form>
+    </section>
+  </div>
+  <Teleport to="body">
     <div v-if="resetPanelOpen" class="reset-overlay">
-      <form class="reset-panel" role="dialog" aria-modal="true" aria-labelledby="reset-title" @submit.prevent="resetMode === 'confirm' ? confirmResetPassword() : requestResetEmail()">
-        <button type="button" class="reset-close" aria-label="Cerrar recuperación de contraseña" @click="closeResetPanel">×</button>
+      <form
+        class="reset-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reset-title"
+        @submit.prevent="resetMode === 'confirm' ? confirmResetPassword() : requestResetEmail()"
+      >
+        <button
+          type="button"
+          class="reset-close"
+          aria-label="Cerrar recuperación de contraseña"
+          @click="closeResetPanel"
+        >
+          ×
+        </button>
         <p>RECUPERACIÓN</p>
-        <h3 id="reset-title">{{ resetMode === 'confirm' ? 'Nueva contraseña' : 'Restablecer contraseña' }}</h3>
+        <h3 id="reset-title">
+          {{ resetMode === 'confirm' ? 'Nueva contraseña' : 'Restablecer contraseña' }}
+        </h3>
         <span>{{ resetMode === 'confirm' ? 'Escribe una contraseña nueva para tu cuenta.' : 'Te enviaremos un enlace de recuperación si el usuario existe.' }}</span>
         <label v-if="resetMode === 'request'">
           Usuario o correo
-          <InputText id="reset-identifier" v-model="resetIdentifier" type="text" autocomplete="username" required placeholder="admin@dreamsoft-dev.com" :aria-invalid="resetMessageType === 'error'" :aria-describedby="resetMessage ? 'reset-message' : undefined" />
+          <InputText
+            id="reset-identifier"
+            v-model="resetIdentifier"
+            type="text"
+            autocomplete="username"
+            required
+            placeholder="admin@dreamsoft-dev.com"
+            :aria-invalid="resetMessageType === 'error'"
+            :aria-describedby="resetMessage ? 'reset-message' : undefined"
+          />
         </label>
         <label v-if="resetMode === 'confirm'">
           Nueva contraseña
-          <input id="reset-password" v-model="resetPassword" type="password" minlength="8" required :aria-invalid="resetMessageType === 'error'" :aria-describedby="resetMessage ? 'reset-message' : undefined" autocomplete="new-password" placeholder="Mínimo 8 caracteres" />
+          <input
+            id="reset-password"
+            v-model="resetPassword"
+            type="password"
+            minlength="8"
+            required
+            :aria-invalid="resetMessageType === 'error'"
+            :aria-describedby="resetMessage ? 'reset-message' : undefined"
+            autocomplete="new-password"
+            placeholder="Mínimo 8 caracteres"
+          />
         </label>
         <label v-if="resetMode === 'confirm'">
           Confirmar contraseña
-          <input id="reset-password-confirm" v-model="resetPasswordConfirm" type="password" minlength="8" required :aria-invalid="resetMessageType === 'error'" :aria-describedby="resetMessage ? 'reset-message' : undefined" autocomplete="new-password" placeholder="Repite la contraseña" />
+          <input
+            id="reset-password-confirm"
+            v-model="resetPasswordConfirm"
+            type="password"
+            minlength="8"
+            required
+            :aria-invalid="resetMessageType === 'error'"
+            :aria-describedby="resetMessage ? 'reset-message' : undefined"
+            autocomplete="new-password"
+            placeholder="Repite la contraseña"
+          />
         </label>
-        <div v-if="resetMessage" id="reset-message" class="a11y-form-status reset-message" :class="{ error: resetMessageType === 'error' }" :role="resetMessageType === 'error' ? 'alert' : 'status'" aria-live="polite">
+        <div
+          v-if="resetMessage"
+          id="reset-message"
+          class="a11y-form-status reset-message"
+          :class="{ error: resetMessageType === 'error' }"
+          :role="resetMessageType === 'error' ? 'alert' : 'status'"
+          aria-live="polite"
+        >
           {{ resetMessage }}
         </div>
         <button type="submit" class="login-submit reset-submit" :disabled="resetLoading">
-          {{ resetLoading ? 'Enviando...' : (resetMode === 'confirm' ? 'Actualizar contraseña' : 'Enviar enlace') }}
+          {{ resetLoading ? 'Enviando...' : (resetMode === 'confirm' ? 'Actualizar contraseña' :
+          'Enviar enlace') }}
         </button>
       </form>
     </div>
-    </Teleport>
-  </div>
+  </Teleport>
+</div>

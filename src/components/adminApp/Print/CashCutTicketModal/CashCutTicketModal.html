@@ -1,5 +1,5 @@
 <Teleport to="body">
-<div class="thermal-overlay" @mousedown.self="emit('close')">
+  <div class="thermal-overlay">
     <section class="thermal-modal" role="dialog" aria-modal="true" aria-labelledby="thermal-title">
       <header>
         <p>CAJA / IMPRESIÓN TÉRMICA</p>
@@ -10,9 +10,22 @@
       <div class="thermal-body">
         <div v-if="!showDownload" class="printer-selection">
           <label for="cutPrinter">Impresora de tickets</label>
-          <div><select id="cutPrinter" v-model="selectedPrinter"><option disabled value="">Selecciona una impresora</option><option v-for="printer in printers" :key="printer" :value="printer">{{ printer }}</option></select><AppButton label="Refrescar" icon="pi pi-refresh" outlined @click="fetchPrinters" /></div>
+          <div>
+            <select id="cutPrinter" v-model="selectedPrinter">
+              <option disabled value="">Selecciona una impresora</option>
+              <option v-for="printer in printers" :key="printer" :value="printer">
+                {{ printer }}
+              </option></select
+            ><AppButton label="Refrescar" icon="pi pi-refresh" outlined @click="fetchPrinters" />
+          </div>
         </div>
-        <AppButton v-else label="Descargar plugin de impresión" icon="pi pi-download" outlined @click="downloadPlugin" />
+        <AppButton
+          v-else
+          label="Descargar plugin de impresión"
+          icon="pi pi-download"
+          outlined
+          @click="downloadPlugin"
+        />
 
         <div class="ticket-preview">
           <span>VISTA PREVIA / 80 MM</span>
@@ -27,7 +40,12 @@
 
       <footer>
         <AppButton label="Cancelar" outlined @click="emit('close')" />
-        <AppButton label="Imprimir ticket" icon="pi pi-print" class="p-button-primary" @click="doPrint" />
+        <AppButton
+          label="Imprimir ticket"
+          icon="pi pi-print"
+          class="p-button-primary"
+          @click="doPrint"
+        />
       </footer>
     </section>
   </div>

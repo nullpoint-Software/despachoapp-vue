@@ -5,11 +5,7 @@
   "recommendations": {
     "servicios contables": {
       "query": "Servicios contables",
-      "aliases": [
-        "honorarios contables",
-        "contador",
-        "contabilidad"
-      ],
+      "aliases": ["honorarios contables", "contador", "contabilidad"],
       "summary": "Prestación de servicios contables",
       "suggestions": [
         {
@@ -27,11 +23,7 @@
     },
     "calculo de nomina": {
       "query": "Cálculo de nómina",
-      "aliases": [
-        "nómina",
-        "timbrado de nómina",
-        "sueldos y salarios"
-      ],
+      "aliases": ["nómina", "timbrado de nómina", "sueldos y salarios"],
       "summary": "Contabilidad de sueldos y salarios",
       "suggestions": [
         {
@@ -71,11 +63,7 @@
     },
     "desarrollo de software": {
       "query": "Desarrollo de software",
-      "aliases": [
-        "programación de software",
-        "desarrollo de sistemas",
-        "desarrollo de aplicación"
-      ],
+      "aliases": ["programación de software", "desarrollo de sistemas", "desarrollo de aplicación"],
       "summary": "Servicio de desarrollo de software",
       "suggestions": [
         {
@@ -93,11 +81,7 @@
     },
     "pagina web": {
       "query": "Página web",
-      "aliases": [
-        "desarrollo web",
-        "plataforma web",
-        "sitio web"
-      ],
+      "aliases": ["desarrollo web", "plataforma web", "sitio web"],
       "summary": "Desarrollo de plataforma web",
       "suggestions": [
         {
@@ -115,11 +99,7 @@
     },
     "servicio de internet": {
       "query": "Servicio de internet",
-      "aliases": [
-        "internet empresarial",
-        "conexión a internet",
-        "servicio de banda ancha"
-      ],
+      "aliases": ["internet empresarial", "conexión a internet", "servicio de banda ancha"],
       "summary": "Servicio de conectividad a internet",
       "suggestions": [
         {
@@ -159,11 +139,7 @@
     },
     "publicidad en redes sociales": {
       "query": "Publicidad en redes sociales",
-      "aliases": [
-        "anuncios en internet",
-        "campaña digital",
-        "publicidad digital"
-      ],
+      "aliases": ["anuncios en internet", "campaña digital", "publicidad digital"],
       "summary": "Publicidad difundida por internet",
       "suggestions": [
         {
@@ -181,11 +157,7 @@
     },
     "limpieza de oficinas": {
       "query": "Limpieza de oficinas",
-      "aliases": [
-        "servicio de limpieza",
-        "aseo de edificios",
-        "limpieza empresarial"
-      ],
+      "aliases": ["servicio de limpieza", "aseo de edificios", "limpieza empresarial"],
       "summary": "Limpieza de edificios",
       "suggestions": [
         {
@@ -203,11 +175,7 @@
     },
     "renta de automovil": {
       "query": "Renta de automóvil",
-      "aliases": [
-        "renta de carro",
-        "alquiler de vehículo",
-        "arrendamiento de auto"
-      ],
+      "aliases": ["renta de carro", "alquiler de vehículo", "arrendamiento de auto"],
       "summary": "Alquiler temporal de vehículos",
       "suggestions": [
         {
@@ -225,11 +193,7 @@
     },
     "consumo en restaurante": {
       "query": "Consumo en restaurante",
-      "aliases": [
-        "restaurante",
-        "comida preparada",
-        "alimentos en restaurante"
-      ],
+      "aliases": ["restaurante", "comida preparada", "alimentos en restaurante"],
       "summary": "Servicio de restaurante",
       "suggestions": [
         {
@@ -247,11 +211,7 @@
     },
     "hospedaje en hotel": {
       "query": "Hospedaje en hotel",
-      "aliases": [
-        "hotel",
-        "habitación de hotel",
-        "servicio de hospedaje"
-      ],
+      "aliases": ["hotel", "habitación de hotel", "servicio de hospedaje"],
       "summary": "Servicio de hospedaje en hotel",
       "suggestions": [
         {
@@ -269,11 +229,7 @@
     },
     "gasolina regular": {
       "query": "Gasolina regular",
-      "aliases": [
-        "gasolina magna",
-        "combustible regular",
-        "gasolina menor a 91 octanos"
-      ],
+      "aliases": ["gasolina magna", "combustible regular", "gasolina menor a 91 octanos"],
       "summary": "Gasolina regular",
       "suggestions": [
         {
@@ -291,11 +247,7 @@
     },
     "gasolina premium": {
       "query": "Gasolina premium",
-      "aliases": [
-        "gasolina premium",
-        "combustible premium",
-        "gasolina de 91 octanos"
-      ],
+      "aliases": ["gasolina premium", "combustible premium", "gasolina de 91 octanos"],
       "summary": "Gasolina premium",
       "suggestions": [
         {
@@ -313,13 +265,7 @@
     },
     "botanas": {
       "query": "Botanas",
-      "aliases": [
-        "papas fritas",
-        "frituras",
-        "snacks",
-        "Doritos",
-        "Sabritas"
-      ],
+      "aliases": ["papas fritas", "frituras", "snacks", "Doritos", "Sabritas"],
       "summary": "Botanas preparadas",
       "suggestions": [
         {
@@ -337,11 +283,7 @@
     },
     "cafe": {
       "query": "Café",
-      "aliases": [
-        "café molido",
-        "café en grano",
-        "café tostado"
-      ],
+      "aliases": ["café molido", "café en grano", "café tostado"],
       "summary": "Café para consumo",
       "suggestions": [
         {
@@ -359,11 +301,7 @@
     },
     "papel para impresora": {
       "query": "Papel para impresora",
-      "aliases": [
-        "papel bond",
-        "hojas para copiadora",
-        "papel de oficina"
-      ],
+      "aliases": ["papel bond", "hojas para copiadora", "papel de oficina"],
       "summary": "Papel para impresión o fotocopiado",
       "suggestions": [
         {
@@ -381,11 +319,7 @@
     },
     "toner para impresora": {
       "query": "Tóner para impresora",
-      "aliases": [
-        "cartucho de tóner",
-        "tóner láser",
-        "consumible de impresora"
-      ],
+      "aliases": ["cartucho de tóner", "tóner láser", "consumible de impresora"],
       "summary": "Tóner para impresión",
       "suggestions": [
         {
@@ -403,11 +337,7 @@
     },
     "laptop": {
       "query": "Laptop",
-      "aliases": [
-        "computadora portátil",
-        "notebook",
-        "equipo portátil"
-      ],
+      "aliases": ["computadora portátil", "notebook", "equipo portátil"],
       "summary": "Computadora notebook",
       "suggestions": [
         {
@@ -425,11 +355,7 @@
     },
     "computadora de escritorio": {
       "query": "Computadora de escritorio",
-      "aliases": [
-        "PC de escritorio",
-        "equipo de cómputo",
-        "computador desktop"
-      ],
+      "aliases": ["PC de escritorio", "equipo de cómputo", "computador desktop"],
       "summary": "Computador de escritorio",
       "suggestions": [
         {
@@ -447,11 +373,7 @@
     },
     "impresora laser": {
       "query": "Impresora láser",
-      "aliases": [
-        "impresora de oficina",
-        "impresora monocromática",
-        "equipo de impresión láser"
-      ],
+      "aliases": ["impresora de oficina", "impresora monocromática", "equipo de impresión láser"],
       "summary": "Impresora con tecnología láser",
       "suggestions": [
         {
@@ -469,11 +391,7 @@
     },
     "escritorio de oficina": {
       "query": "Escritorio de oficina",
-      "aliases": [
-        "mesa de oficina",
-        "escritorio ejecutivo",
-        "mueble de oficina"
-      ],
+      "aliases": ["mesa de oficina", "escritorio ejecutivo", "mueble de oficina"],
       "summary": "Escritorio",
       "suggestions": [
         {
@@ -491,11 +409,7 @@
     },
     "flete local": {
       "query": "Flete local",
-      "aliases": [
-        "transporte de carga",
-        "envío en camión",
-        "servicio de flete"
-      ],
+      "aliases": ["transporte de carga", "envío en camión", "servicio de flete"],
       "summary": "Transporte local de carga por carretera",
       "suggestions": [
         {
@@ -513,11 +427,7 @@
     },
     "capacitacion administrativa": {
       "query": "Capacitación administrativa",
-      "aliases": [
-        "curso administrativo",
-        "capacitación de oficina",
-        "formación administrativa"
-      ],
+      "aliases": ["curso administrativo", "capacitación de oficina", "formación administrativa"],
       "summary": "Formación profesional administrativa",
       "suggestions": [
         {
@@ -535,11 +445,7 @@
     },
     "renta de oficina": {
       "query": "Renta de oficina",
-      "aliases": [
-        "arrendamiento de local",
-        "alquiler de inmueble",
-        "renta de bodega"
-      ],
+      "aliases": ["arrendamiento de local", "alquiler de inmueble", "renta de bodega"],
       "summary": "Alquiler o arrendamiento de propiedad",
       "suggestions": [
         {
@@ -557,11 +463,7 @@
     },
     "consulta medica": {
       "query": "Consulta médica",
-      "aliases": [
-        "consulta con doctor",
-        "médico general",
-        "atención médica primaria"
-      ],
+      "aliases": ["consulta con doctor", "médico general", "atención médica primaria"],
       "summary": "Consulta médica de atención primaria",
       "suggestions": [
         {
@@ -579,11 +481,7 @@
     },
     "servicio dental": {
       "query": "Servicio dental",
-      "aliases": [
-        "dentista",
-        "consulta dental",
-        "tratamiento odontológico"
-      ],
+      "aliases": ["dentista", "consulta dental", "tratamiento odontológico"],
       "summary": "Servicios dentales",
       "suggestions": [
         {
@@ -601,11 +499,7 @@
     },
     "mantenimiento de automovil": {
       "query": "Mantenimiento de automóvil",
-      "aliases": [
-        "servicio mecánico",
-        "reparación de auto",
-        "mantenimiento de camioneta"
-      ],
+      "aliases": ["servicio mecánico", "reparación de auto", "mantenimiento de camioneta"],
       "summary": "Reparación y mantenimiento automotor",
       "suggestions": [
         {
@@ -623,11 +517,7 @@
     },
     "telefonia celular": {
       "query": "Telefonía celular",
-      "aliases": [
-        "plan celular",
-        "servicio móvil",
-        "línea telefónica móvil"
-      ],
+      "aliases": ["plan celular", "servicio móvil", "línea telefónica móvil"],
       "summary": "Servicio de telefonía celular",
       "suggestions": [
         {
@@ -645,11 +535,7 @@
     },
     "seguridad privada": {
       "query": "Seguridad privada",
-      "aliases": [
-        "guardias de seguridad",
-        "vigilancia de oficina",
-        "servicio de guardia"
-      ],
+      "aliases": ["guardias de seguridad", "vigilancia de oficina", "servicio de guardia"],
       "summary": "Servicio de guardas de seguridad",
       "suggestions": [
         {
@@ -667,11 +553,7 @@
     },
     "reparacion de plomeria": {
       "query": "Reparación de plomería",
-      "aliases": [
-        "plomero",
-        "mantenimiento de tuberías",
-        "reparación de fuga"
-      ],
+      "aliases": ["plomero", "mantenimiento de tuberías", "reparación de fuga"],
       "summary": "Mantenimiento o reparación de plomería",
       "suggestions": [
         {
@@ -689,11 +571,7 @@
     },
     "mantenimiento de aire acondicionado": {
       "query": "Mantenimiento de aire acondicionado",
-      "aliases": [
-        "servicio HVAC",
-        "reparación de clima",
-        "mantenimiento de minisplit"
-      ],
+      "aliases": ["servicio HVAC", "reparación de clima", "mantenimiento de minisplit"],
       "summary": "Construcción y mantenimiento de HVAC",
       "suggestions": [
         {
@@ -711,11 +589,7 @@
     },
     "construccion de casa": {
       "query": "Construcción de casa",
-      "aliases": [
-        "construcción residencial",
-        "obra de vivienda",
-        "casa nueva"
-      ],
+      "aliases": ["construcción residencial", "obra de vivienda", "casa nueva"],
       "summary": "Construcción de casa unifamiliar nueva",
       "suggestions": [
         {
@@ -733,11 +607,7 @@
     },
     "mensajeria local": {
       "query": "Mensajería local",
-      "aliases": [
-        "entrega de paquetes",
-        "servicio de mensajero",
-        "paquetería local"
-      ],
+      "aliases": ["entrega de paquetes", "servicio de mensajero", "paquetería local"],
       "summary": "Entrega local de cartas o paquetes",
       "suggestions": [
         {
@@ -755,11 +625,7 @@
     },
     "servicios legales de contratos": {
       "query": "Servicios legales de contratos",
-      "aliases": [
-        "abogado de contratos",
-        "revisión de contrato",
-        "asesoría contractual"
-      ],
+      "aliases": ["abogado de contratos", "revisión de contrato", "asesoría contractual"],
       "summary": "Servicios legales sobre contratos",
       "suggestions": [
         {
@@ -777,11 +643,7 @@
     },
     "diseno grafico": {
       "query": "Diseño gráfico",
-      "aliases": [
-        "diseño de logotipo",
-        "diseño de publicidad",
-        "arte gráfico"
-      ],
+      "aliases": ["diseño de logotipo", "diseño de publicidad", "arte gráfico"],
       "summary": "Servicios de diseño artístico",
       "suggestions": [
         {
@@ -799,10 +661,7 @@
     },
     "doritos": {
       "query": "Doritos",
-      "aliases": [
-        "Doritos",
-        "Doritos 3D"
-      ],
+      "aliases": ["Doritos", "Doritos 3D"],
       "summary": "Botana preparada",
       "suggestions": [
         {
@@ -820,12 +679,7 @@
     },
     "sabritas": {
       "query": "Sabritas",
-      "aliases": [
-        "Sabritas",
-        "papas Sabritas",
-        "Cheetos",
-        "Takis"
-      ],
+      "aliases": ["Sabritas", "papas Sabritas", "Cheetos", "Takis"],
       "summary": "Botana preparada",
       "suggestions": [
         {
@@ -846,11 +700,7 @@
     "14111507": {
       "code": "14111507",
       "description": "Papel para impresora o fotocopiadora",
-      "examples": [
-        "Resma de papel carta",
-        "Papel bond oficio",
-        "Hojas para fotocopiadora"
-      ],
+      "examples": ["Resma de papel carta", "Papel bond oficio", "Hojas para fotocopiadora"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -858,11 +708,7 @@
     "15101514": {
       "code": "15101514",
       "description": "Gasolina regular menor a 91 octanos",
-      "examples": [
-        "Gasolina Magna",
-        "Combustible regular",
-        "Carga de gasolina menor a 91 octanos"
-      ],
+      "examples": ["Gasolina Magna", "Combustible regular", "Carga de gasolina menor a 91 octanos"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -882,11 +728,7 @@
     "43211503": {
       "code": "43211503",
       "description": "Computadores notebook",
-      "examples": [
-        "Laptop empresarial",
-        "Computadora portátil",
-        "Notebook para oficina"
-      ],
+      "examples": ["Laptop empresarial", "Computadora portátil", "Notebook para oficina"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -894,11 +736,7 @@
     "43211507": {
       "code": "43211507",
       "description": "Computadores de escritorio",
-      "examples": [
-        "PC administrativa",
-        "Computadora de escritorio",
-        "Estación de trabajo"
-      ],
+      "examples": ["PC administrativa", "Computadora de escritorio", "Estación de trabajo"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -918,11 +756,7 @@
     "43232408": {
       "code": "43232408",
       "description": "Software de desarrollo de plataformas web",
-      "examples": [
-        "Sitio corporativo",
-        "Tienda en línea",
-        "Portal de clientes"
-      ],
+      "examples": ["Sitio corporativo", "Tienda en línea", "Portal de clientes"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -942,11 +776,7 @@
     "50192100": {
       "code": "50192100",
       "description": "Botanas",
-      "examples": [
-        "Papas fritas empacadas",
-        "Frituras de maíz",
-        "Botana con chile"
-      ],
+      "examples": ["Papas fritas empacadas", "Frituras de maíz", "Botana con chile"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -954,11 +784,7 @@
     "50201706": {
       "code": "50201706",
       "description": "Café",
-      "examples": [
-        "Café tostado en grano",
-        "Café molido",
-        "Paquete de café"
-      ],
+      "examples": ["Café tostado en grano", "Café molido", "Paquete de café"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -990,11 +816,7 @@
     "72111006": {
       "code": "72111006",
       "description": "Servicio de construcción de casas unifamiliares nuevas",
-      "examples": [
-        "Construcción de vivienda",
-        "Obra de casa habitación",
-        "Casa unifamiliar nueva"
-      ],
+      "examples": ["Construcción de vivienda", "Obra de casa habitación", "Casa unifamiliar nueva"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1050,11 +872,7 @@
     "78111808": {
       "code": "78111808",
       "description": "Alquiler de vehículos",
-      "examples": [
-        "Renta diaria de automóvil",
-        "Alquiler de camioneta",
-        "Vehículo sustituto"
-      ],
+      "examples": ["Renta diaria de automóvil", "Alquiler de camioneta", "Vehículo sustituto"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1062,11 +880,7 @@
     "78181507": {
       "code": "78181507",
       "description": "Reparación y mantenimiento automotor y de camiones ligeros",
-      "examples": [
-        "Afinación de automóvil",
-        "Servicio preventivo",
-        "Reparación mecánica"
-      ],
+      "examples": ["Afinación de automóvil", "Servicio preventivo", "Reparación mecánica"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1074,11 +888,7 @@
     "80101500": {
       "code": "80101500",
       "description": "Servicios de consultoría de negocios y administración corporativa",
-      "examples": [
-        "Diagnóstico administrativo",
-        "Consultoría de procesos",
-        "Asesoría de gestión"
-      ],
+      "examples": ["Diagnóstico administrativo", "Consultoría de procesos", "Asesoría de gestión"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1086,11 +896,7 @@
     "80121704": {
       "code": "80121704",
       "description": "Servicios legales sobre contratos",
-      "examples": [
-        "Elaboración de contrato",
-        "Revisión de convenio",
-        "Asesoría contractual"
-      ],
+      "examples": ["Elaboración de contrato", "Revisión de convenio", "Asesoría contractual"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1122,11 +928,7 @@
     "81112100": {
       "code": "81112100",
       "description": "Servicios de internet",
-      "examples": [
-        "Internet de oficina",
-        "Enlace dedicado",
-        "Conectividad de banda ancha"
-      ],
+      "examples": ["Internet de oficina", "Enlace dedicado", "Conectividad de banda ancha"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1146,11 +948,7 @@
     "82101603": {
       "code": "82101603",
       "description": "Publicidad en internet",
-      "examples": [
-        "Campaña en redes sociales",
-        "Anuncios en buscadores",
-        "Pauta digital"
-      ],
+      "examples": ["Campaña en redes sociales", "Anuncios en buscadores", "Pauta digital"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1170,11 +968,7 @@
     "83111603": {
       "code": "83111603",
       "description": "Servicios de telefonía celular",
-      "examples": [
-        "Plan mensual de celular",
-        "Servicio de voz y datos",
-        "Línea móvil empresarial"
-      ],
+      "examples": ["Plan mensual de celular", "Servicio de voz y datos", "Línea móvil empresarial"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1218,11 +1012,7 @@
     "85122000": {
       "code": "85122000",
       "description": "Servicios dentales",
-      "examples": [
-        "Consulta odontológica",
-        "Limpieza dental",
-        "Tratamiento dental"
-      ],
+      "examples": ["Consulta odontológica", "Limpieza dental", "Tratamiento dental"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1254,11 +1044,7 @@
     "90111501": {
       "code": "90111501",
       "description": "Hoteles",
-      "examples": [
-        "Noche de hotel",
-        "Habitación ejecutiva",
-        "Hospedaje por viaje de trabajo"
-      ],
+      "examples": ["Noche de hotel", "Habitación ejecutiva", "Hospedaje por viaje de trabajo"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"
@@ -1266,11 +1052,7 @@
     "92121504": {
       "code": "92121504",
       "description": "Servicios de guardas de seguridad",
-      "examples": [
-        "Guardia en acceso",
-        "Vigilancia de instalaciones",
-        "Seguridad para evento"
-      ],
+      "examples": ["Guardia en acceso", "Vigilancia de instalaciones", "Seguridad para evento"],
       "note": "Ejemplos comerciales orientativos para facilitar búsquedas internas.",
       "source": "seed",
       "updatedAt": "2026-08-07T00:00:00.000Z"

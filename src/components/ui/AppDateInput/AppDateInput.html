@@ -1,1 +1,6 @@
-<input :type="showTime ? 'datetime-local' : 'date'" :value="displayValue" :step="showSeconds ? 1 : 60" @input="update" />
+<input
+  :type="showTime ? 'datetime-local' : 'date'"
+  :value="displayValue"
+  :step="showSeconds ? 1 : 60"
+  @input="update"
+/>

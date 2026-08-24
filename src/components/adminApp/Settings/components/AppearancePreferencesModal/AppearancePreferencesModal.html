@@ -1,11 +1,6 @@
 <Teleport to="body">
   <transition name="appearance-modal">
-    <div
-      v-if="visible"
-      class="appearance-overlay"
-      role="presentation"
-      @click.self="close"
-    >
+    <div v-if="visible" class="appearance-overlay" role="presentation">
       <section
         class="appearance-dialog"
         role="dialog"
@@ -32,13 +27,20 @@
             <PaletteSelector inline />
           </section>
 
-          <section class="appearance-section appearance-font" aria-labelledby="appearance-font-title">
+          <section
+            class="appearance-section appearance-font"
+            aria-labelledby="appearance-font-title"
+          >
             <div class="appearance-section__heading">
               <h3 id="appearance-font-title">Fuente de la aplicación</h3>
               <span>Se aplica a toda la interfaz</span>
             </div>
             <div class="font-family-list" role="radiogroup" aria-labelledby="appearance-font-title">
-              <label v-for="font in fontFamilies" :key="font.id" :style="{ fontFamily: font.value }">
+              <label
+                v-for="font in fontFamilies"
+                :key="font.id"
+                :style="{ fontFamily: font.value }"
+              >
                 <input
                   type="radio"
                   name="app-font-family"
@@ -51,7 +53,10 @@
               </label>
             </div>
           </section>
-          <section class="appearance-section appearance-scale" aria-labelledby="appearance-scale-title">
+          <section
+            class="appearance-section appearance-scale"
+            aria-labelledby="appearance-scale-title"
+          >
             <div>
               <div class="appearance-section__heading">
                 <h3 id="appearance-scale-title">Escala del texto</h3>
@@ -101,7 +106,9 @@
 
         <footer class="appearance-footer">
           <span>Preferencias guardadas automáticamente</span>
-          <button type="button" @click="close">Aplicar estilo <i class="pi pi-arrow-right"></i></button>
+          <button type="button" @click="close">
+            Aplicar estilo <i class="pi pi-arrow-right"></i>
+          </button>
         </footer>
       </section>
     </div>

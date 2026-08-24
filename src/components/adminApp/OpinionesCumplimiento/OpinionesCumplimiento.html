@@ -1,380 +1,684 @@
 <main class="compliance-view">
-    <header class="compliance-hero">
+  <header class="compliance-hero">
+    <div>
+      <p>FISCAL / 32-D</p>
+      <h1>Cumplimiento fiscal</h1>
+      <span>Últimas opiniones almacenadas, vigencia y estado de consulta de cada cliente.</span>
+    </div>
+    <div class="compliance-actions" aria-label="Acciones de cumplimiento">
+      <AppButton
+        label="Ayuda"
+        icon="pi pi-question-circle"
+        outlined
+        class="app-help-button"
+        @click="opinionsTutorialOpen = true"
+      />
+      <AppButton
+        v-if="isAdmin"
+        label="Programación"
+        icon="pi pi-calendar-clock"
+        outlined
+        :disabled="syncing"
+        @click="openSchedule"
+      />
+      <AppButton
+        v-if="isAdmin"
+        :label="syncing ? `Consultando ${syncProgress.processed}/${syncProgress.total || '?'}...` : 'Consulta pública'"
+        icon="pi pi-globe"
+        :disabled="syncing || loading"
+        @click="syncAll"
+      />
+      <AppButton
+        v-if="isAdmin"
+        label="Consulta por terceros"
+        icon="pi pi-users"
+        :disabled="syncing"
+        @click="openThirdPartyQuery"
+      />
+      <span v-if="!isAdmin" class="read-only-note"><i class="pi pi-eye" /> Vista de consulta</span>
+    </div>
+  </header>
+
+  <section class="compliance-note" aria-label="Alcance de la consulta">
+    <i class="pi pi-shield" aria-hidden="true" />
+    <div>
+      <strong>Dos modalidades, alcances distintos</strong>
+      <span
+        >La consulta pública solo envía el RFC. La consulta por terceros envía las credenciales del
+        despacho al servidor temporal para iniciar sesión en el SAT; no se guardan.</span
+      >
+    </div>
+    <button type="button" class="guide-trigger" @click="showGuide = !showGuide">
+      {{ showGuide ? 'Ocultar guía' : 'Cómo hacerla pública' }}
+      <i class="pi pi-angle-down" aria-hidden="true" />
+    </button>
+  </section>
+
+  <section v-if="showGuide" class="publication-guide" aria-labelledby="publication-guide-title">
+    <header>
       <div>
-        <p>FISCAL / 32-D</p>
-        <h1>Cumplimiento fiscal</h1>
-        <span>Últimas opiniones almacenadas, vigencia y estado de consulta de cada cliente.</span>
+        <h2 id="publication-guide-title">Publicar el resultado de la opinión</h2>
+        <p>El trámite es gratuito y requiere Contraseña o e.firma vigente.</p>
       </div>
-      <div class="compliance-actions" aria-label="Acciones de cumplimiento">
-        <AppButton
-          label="Ayuda"
-          icon="pi pi-question-circle"
-          outlined
-          class="app-help-button"
-          @click="opinionsTutorialOpen = true"
-        />
-        <AppButton
-          v-if="isAdmin"
-          label="Programación"
-          icon="pi pi-calendar-clock"
-          outlined
-          :disabled="syncing"
-          @click="openSchedule"
-        />
-        <AppButton
-          v-if="isAdmin"
-          :label="syncing ? `Consultando ${syncProgress.processed}/${syncProgress.total || '?'}...` : 'Consulta pública'"
-          icon="pi pi-globe"
-          :disabled="syncing || loading"
-          @click="syncAll"
-        />
-        <AppButton
-          v-if="isAdmin"
-          label="Consulta por terceros"
-          icon="pi pi-users"
-          :disabled="syncing"
-          @click="openThirdPartyQuery"
-        />
-        <span v-if="!isAdmin" class="read-only-note"><i class="pi pi-eye" /> Vista de consulta</span>
-      </div>
+      <a
+        href="https://wwwmat.sat.gob.mx/tramites/37836/autoriza-al-sat-a-hacer-publica-tu-opinion-del-cumplimiento"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Iniciar en SAT <i class="pi pi-external-link"
+      /></a>
     </header>
+    <ol>
+      <li>
+        <strong>Abre el trámite</strong
+        ><span
+          >Entra a “Autoriza que el resultado de tu Opinión del cumplimiento sea público”.</span
+        >
+      </li>
+      <li>
+        <strong>Inicia sesión</strong
+        ><span>Ingresa con la Contraseña o e.firma vigente del contribuyente.</span>
+      </li>
+      <li>
+        <strong>Resuelve el Captcha</strong
+        ><span>Captura el texto de la imagen y selecciona Enviar.</span>
+      </li>
+      <li>
+        <strong>Autoriza la publicación</strong
+        ><span>Marca “Autorizo hacer público el resultado de mi Opinión del cumplimiento”.</span>
+      </li>
+      <li>
+        <strong>Guarda la autorización</strong
+        ><span>Selecciona Guardar y conserva la confirmación emitida por el SAT.</span>
+      </li>
+      <li>
+        <strong>Actualiza esta vista</strong><span>Regresa y usa “Consultar todos en SAT”.</span>
+      </li>
+    </ol>
+  </section>
 
-    <section class="compliance-note" aria-label="Alcance de la consulta">
-      <i class="pi pi-shield" aria-hidden="true" />
-      <div>
-        <strong>Dos modalidades, alcances distintos</strong>
-        <span>La consulta pública solo envía el RFC. La consulta por terceros envía las credenciales del despacho al servidor temporal para iniciar sesión en el SAT; no se guardan.</span>
+  <section class="summary-overview" aria-label="Panorama de opiniones de cumplimiento">
+    <article class="positive-overview">
+      <div class="positive-score">
+        <small>RESULTADO PRINCIPAL</small>
+        <div><strong>{{ summary.positiva }}</strong><span>opiniones positivas</span></div>
+        <p>De {{ reviewedCount }} clientes con una consulta registrada.</p>
       </div>
-      <button type="button" class="guide-trigger" @click="showGuide = !showGuide">
-        {{ showGuide ? 'Ocultar guía' : 'Cómo hacerla pública' }} <i class="pi pi-angle-down" aria-hidden="true" />
-      </button>
-    </section>
-
-    <section v-if="showGuide" class="publication-guide" aria-labelledby="publication-guide-title">
-      <header>
-        <div><h2 id="publication-guide-title">Publicar el resultado de la opinión</h2><p>El trámite es gratuito y requiere Contraseña o e.firma vigente.</p></div>
-        <a href="https://wwwmat.sat.gob.mx/tramites/37836/autoriza-al-sat-a-hacer-publica-tu-opinion-del-cumplimiento" target="_blank" rel="noopener noreferrer">Iniciar en SAT <i class="pi pi-external-link" /></a>
-      </header>
-      <ol>
-        <li><strong>Abre el trámite</strong><span>Entra a “Autoriza que el resultado de tu Opinión del cumplimiento sea público”.</span></li>
-        <li><strong>Inicia sesión</strong><span>Ingresa con la Contraseña o e.firma vigente del contribuyente.</span></li>
-        <li><strong>Resuelve el Captcha</strong><span>Captura el texto de la imagen y selecciona Enviar.</span></li>
-        <li><strong>Autoriza la publicación</strong><span>Marca “Autorizo hacer público el resultado de mi Opinión del cumplimiento”.</span></li>
-        <li><strong>Guarda la autorización</strong><span>Selecciona Guardar y conserva la confirmación emitida por el SAT.</span></li>
-        <li><strong>Actualiza esta vista</strong><span>Regresa y usa “Consultar todos en SAT”.</span></li>
-      </ol>
-    </section>
-
-    <section class="summary-grid" aria-label="Resumen de opiniones">
+      <div class="positive-coverage">
+        <header><span>Cobertura favorable</span><strong>{{ positiveRate }}%</strong></header>
+        <div
+          class="positive-meter"
+          role="progressbar"
+          :aria-valuenow="positiveRate"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <i :style="{ width: `${positiveRate}%` }" />
+        </div>
+        <footer>
+          <span>{{ reviewedCount }} revisados</span
+          ><span>{{ summary.total }} clientes en cartera</span>
+        </footer>
+      </div>
+    </article>
+    <div class="summary-grid">
       <article><span>Clientes</span><strong>{{ summary.total }}</strong></article>
-      <article class="positive"><span>Positivas</span><strong>{{ summary.positiva }}</strong></article>
-      <article class="negative"><span>Situación especial</span><strong>{{ summary.especial + summary.negativa }}</strong></article>
+      <article class="negative">
+        <span>Requieren atención</span><strong>{{ summary.especial + summary.negativa }}</strong>
+      </article>
       <article><span>No públicas</span><strong>{{ summary.no_publica }}</strong></article>
       <article><span>Sin consultar</span><strong>{{ summary.sin_consulta }}</strong></article>
-      <article><span>Opiniones con PDF</span><strong>{{ summary.con_documento }}</strong></article>
-    </section>
+      <article><span>PDF archivados</span><strong>{{ summary.con_documento }}</strong></article>
+    </div>
+  </section>
 
-    <section class="filter-strip" aria-label="Filtros de opiniones">
-      <div class="search-row">
-        <label class="search-field">
-          <span>Buscar cliente o RFC <AppFieldHelp label="Búsqueda de opiniones" text="Filtra los resultados almacenados por nombre del cliente o por RFC." /></span>
-          <span class="search-control app-search-control">
-            <i class="pi pi-search" aria-hidden="true" />
-            <AppInput v-model="search" type="search" placeholder="Buscar..." />
-          </span>
-        </label>
-        <AppButton :label="filterButtonLabel" icon="pi pi-sliders-h" outlined @click="openFilters" />
-        <AppButton label="Limpiar filtros" icon="pi pi-filter-slash" outlined @click="clearFilters" />
-        <div class="filter-result">{{ filteredRecords.length }} resultados</div>
+  <section class="filter-strip" aria-label="Filtros de opiniones">
+    <div class="search-row">
+      <label class="search-field">
+        <span
+          >Buscar cliente o RFC
+          <AppFieldHelp
+            label="Búsqueda de opiniones"
+            text="Filtra los resultados almacenados por nombre del cliente o por RFC."
+        /></span>
+        <span class="search-control app-search-control">
+          <i class="pi pi-search" aria-hidden="true" />
+          <AppInput v-model="search" type="search" placeholder="Buscar..." />
+        </span>
+      </label>
+      <AppButton :label="filterButtonLabel" icon="pi pi-sliders-h" outlined @click="openFilters" />
+      <AppButton label="Limpiar filtros" icon="pi pi-filter-slash" outlined @click="clearFilters" />
+      <div class="filter-result">{{ filteredRecords.length }} resultados</div>
+    </div>
+  </section>
+
+  <div v-if="errorMessage" class="feedback error" role="alert">
+    <i class="pi pi-exclamation-triangle" aria-hidden="true" />
+    <span>{{ errorMessage }}</span>
+    <button type="button" @click="loadOpinions()">Reintentar</button>
+  </div>
+  <div v-else-if="successMessage" class="feedback success" role="status">
+    <i class="pi pi-check-circle" aria-hidden="true" />
+    <span>{{ successMessage }}</span>
+    <button type="button" aria-label="Cerrar aviso" @click="successMessage = ''">×</button>
+  </div>
+
+  <section class="compliance-workspace">
+    <div class="records-panel">
+      <header class="panel-heading">
+        <div>
+          <h2>Clientes</h2>
+          <span
+            >Última opinión almacenada; un error de conexión no reemplaza un resultado válido.</span
+          >
+        </div>
+      </header>
+
+      <div v-if="loading" class="records-list skeleton-list" aria-label="Cargando opiniones">
+        <article v-for="index in 6" :key="index" class="record-row skeleton-row">
+          <span /><span /><span />
+        </article>
       </div>
-    </section>
 
-    <div v-if="errorMessage" class="feedback error" role="alert">
-      <i class="pi pi-exclamation-triangle" aria-hidden="true" />
-      <span>{{ errorMessage }}</span>
-      <button type="button" @click="loadOpinions()">Reintentar</button>
-    </div>
-    <div v-else-if="successMessage" class="feedback success" role="status">
-      <i class="pi pi-check-circle" aria-hidden="true" />
-      <span>{{ successMessage }}</span>
-      <button type="button" aria-label="Cerrar aviso" @click="successMessage = ''">×</button>
+      <div v-else-if="!filteredRecords.length" class="empty-state">
+        <i class="pi pi-inbox" aria-hidden="true" />
+        <strong>No hay opiniones para mostrar</strong>
+        <span
+          >{{ records.length ? 'Cambia los filtros para ver otros clientes.' : 'Sincroniza con el SAT para crear la primera consulta.' }}</span
+        >
+      </div>
+
+      <div v-else class="records-list">
+        <section v-for="group in groupedRecords" :key="group.code" class="regime-group">
+          <header class="regime-heading">
+            <h3>{{ group.label }}</h3>
+            <span
+              >{{ group.records.length }} {{ group.records.length === 1 ? 'cliente' : 'clientes'
+              }}</span
+            >
+          </header>
+          <button
+            v-for="record in group.records"
+            :key="record.id_cliente"
+            type="button"
+            class="record-row"
+            :class="{ active: selected?.id_cliente === record.id_cliente }"
+            :data-status="record.status"
+            @click="selected = record"
+          >
+            <span class="client-cell">
+              <strong>{{ record.nombre }}</strong>
+              <small>{{ record.rfc || 'RFC no registrado' }}</small>
+            </span>
+            <span class="status-cell" :class="statusClass(record.status)">
+              <i :class="statusIcon(record.status)" aria-hidden="true" />
+              {{ statusLabel(record.status) }}
+            </span>
+            <span class="date-cell">
+              <small>Última opinión</small>
+              <strong>{{ formatDate(record.fecha_consulta) }}</strong>
+            </span>
+            <i class="pi pi-angle-right row-arrow" aria-hidden="true" />
+          </button>
+        </section>
+      </div>
     </div>
 
-    <section class="compliance-workspace">
-      <div class="records-panel">
-        <header class="panel-heading">
+    <aside class="detail-panel" aria-live="polite">
+      <template v-if="selected">
+        <header>
+          <span :class="['status-mark', statusClass(selected.status)]"
+            ><i :class="statusIcon(selected.status)"
+          /></span>
           <div>
-            <h2>Clientes</h2>
-            <span>Última opinión almacenada; un error de conexión no reemplaza un resultado válido.</span>
+            <small>Opinión 32-D</small>
+            <h2>{{ selected.nombre }}</h2>
+            <p>{{ selected.rfc }}</p>
           </div>
         </header>
 
-        <div v-if="loading" class="records-list skeleton-list" aria-label="Cargando opiniones">
-          <article v-for="index in 6" :key="index" class="record-row skeleton-row">
-            <span /><span /><span />
-          </article>
-        </div>
+        <dl class="opinion-meta">
+          <div>
+            <dt>Resultado</dt>
+            <dd>{{ statusLabel(selected.status) }}</dd>
+          </div>
+          <div>
+            <dt>Emitida por SAT</dt>
+            <dd>{{ formatDateTime(selected.fecha_emision) }}</dd>
+          </div>
+          <div>
+            <dt>Consultada</dt>
+            <dd>{{ formatDateTime(selected.fecha_consulta) }}</dd>
+          </div>
+          <div>
+            <dt>Documento</dt>
+            <dd>{{ selected.documento_guardado ? 'PDF archivado' : 'Sin PDF' }}</dd>
+          </div>
+          <div>
+            <dt>Régimen</dt>
+            <dd>{{ regimenFiscalLabel(selected.regimen_fiscal) }}</dd>
+          </div>
+          <div>
+            <dt>Vigencia</dt>
+            <dd>{{ vigenciaLabel(selected) }}</dd>
+          </div>
+        </dl>
 
-        <div v-else-if="!filteredRecords.length" class="empty-state">
-          <i class="pi pi-inbox" aria-hidden="true" />
-          <strong>No hay opiniones para mostrar</strong>
-          <span>{{ records.length ? 'Cambia los filtros para ver otros clientes.' : 'Sincroniza con el SAT para crear la primera consulta.' }}</span>
-        </div>
-
-        <div v-else class="records-list">
-          <section v-for="group in groupedRecords" :key="group.code" class="regime-group">
-            <header class="regime-heading">
-              <h3>{{ group.label }}</h3>
-              <span>{{ group.records.length }} {{ group.records.length === 1 ? 'cliente' : 'clientes' }}</span>
-            </header>
-            <button
-              v-for="record in group.records"
-              :key="record.id_cliente"
-              type="button"
-              class="record-row"
-              :class="{ active: selected?.id_cliente === record.id_cliente }"
-              @click="selected = record"
+        <div v-if="selected.ultimo_error" class="attempt-warning" role="status">
+          <i class="pi pi-wifi" aria-hidden="true" />
+          <div>
+            <strong>El último intento no reemplazó esta opinión</strong>
+            <span
+              >{{ formatDateTime(selected.ultima_fecha_intento) }} · {{ selected.ultimo_error
+              }}</span
             >
-              <span class="client-cell">
-                <strong>{{ record.nombre }}</strong>
-                <small>{{ record.rfc || 'RFC no registrado' }}</small>
-              </span>
-              <span class="status-cell" :class="statusClass(record.status)">
-                <i :class="statusIcon(record.status)" aria-hidden="true" />
-                {{ statusLabel(record.status) }}
-              </span>
-              <span class="date-cell">
-                <small>Última opinión</small>
-                <strong>{{ formatDate(record.fecha_consulta) }}</strong>
-              </span>
-              <i class="pi pi-angle-right row-arrow" aria-hidden="true" />
-            </button>
-          </section>
+          </div>
         </div>
-      </div>
 
-      <aside class="detail-panel" aria-live="polite">
-        <template v-if="selected">
-          <header>
-            <span :class="['status-mark', statusClass(selected.status)]"><i :class="statusIcon(selected.status)" /></span>
-            <div><small>Opinión 32-D</small><h2>{{ selected.nombre }}</h2><p>{{ selected.rfc }}</p></div>
-          </header>
-
-          <dl class="opinion-meta">
-            <div><dt>Resultado</dt><dd>{{ statusLabel(selected.status) }}</dd></div>
-            <div><dt>Emitida por SAT</dt><dd>{{ formatDateTime(selected.fecha_emision) }}</dd></div>
-            <div><dt>Consultada</dt><dd>{{ formatDateTime(selected.fecha_consulta) }}</dd></div>
-            <div><dt>Documento</dt><dd>{{ selected.documento_guardado ? 'PDF archivado' : 'Sin PDF' }}</dd></div>
-            <div><dt>Régimen</dt><dd>{{ regimenFiscalLabel(selected.regimen_fiscal) }}</dd></div>
-            <div><dt>Vigencia</dt><dd>{{ vigenciaLabel(selected) }}</dd></div>
-          </dl>
-
-          <div v-if="selected.ultimo_error" class="attempt-warning" role="status">
-            <i class="pi pi-wifi" aria-hidden="true" />
+        <section class="issues-section">
+          <div class="issues-heading">
             <div>
-              <strong>El último intento no reemplazó esta opinión</strong>
-              <span>{{ formatDateTime(selected.ultima_fecha_intento) }} · {{ selected.ultimo_error }}</span>
+              <h3>
+                {{ selected.status === 'positiva' ? 'Opinión positiva a la fecha de emisión' :
+                'Detalle del resultado' }}
+              </h3>
+              <span>{{ issueSubtitle(selected) }}</span>
+            </div>
+            <strong>{{ selected.pendientes.length }}</strong>
+          </div>
+          <div v-if="selected.status === 'positiva'" class="all-clear">
+            <span class="all-clear-mark"><i class="pi pi-check" aria-hidden="true" /></span>
+            <div>
+              <small>RESULTADO SAT / SIN PENDIENTES</small>
+              <strong>Opinión positiva</strong>
+              <span
+                >El contribuyente estaba al corriente en las obligaciones evaluadas cuando el SAT
+                emitió este documento.</span
+              >
             </div>
           </div>
-
-          <section class="issues-section">
-            <div class="issues-heading">
-              <div><h3>{{ selected.status === 'positiva' ? 'Opinión positiva a la fecha de emisión' : 'Detalle del resultado' }}</h3><span>{{ issueSubtitle(selected) }}</span></div>
-              <strong>{{ selected.pendientes.length }}</strong>
-            </div>
-            <div v-if="selected.status === 'positiva'" class="all-clear">
-              <i class="pi pi-check" aria-hidden="true" />
-              <div><strong>Resultado positivo</strong><span>El SAT indicó que el contribuyente estaba al corriente en las obligaciones evaluadas cuando emitió el documento.</span></div>
-            </div>
-            <div v-else-if="selected.pendientes.length" class="issue-list">
-              <article v-for="issue in selected.pendientes" :key="issue.code">
-                <i :class="issue.confirmed ? 'pi pi-exclamation-circle' : 'pi pi-question-circle'" aria-hidden="true" />
-                <div>
-                  <span>{{ issue.confirmed ? 'Confirmado por el SAT' : 'Requiere verificación' }}</span>
-                  <strong>{{ issue.title }}</strong>
-                  <p>{{ issue.detail }}</p>
-                  <small v-if="issue.action">Siguiente acción: {{ issue.action }}</small>
-                </div>
-              </article>
-            </div>
-            <div v-else class="special-result"><i :class="statusIcon(selected.status)" /><div><strong>{{ statusLabel(selected.status) }}</strong><span>{{ statusDescription(selected.status) }}</span></div></div>
-          </section>
-
-          <div v-if="selected.mensaje" class="sat-message"><strong>Respuesta del SAT</strong><p>{{ selected.mensaje }}</p></div>
-
-          <footer>
-            <AppButton
-              label="Ver documentos"
-              icon="pi pi-folder-open"
-              outlined
-              @click="documentClient = selected"
-            />
-            <AppButton
-              v-if="isAdmin"
-              :label="syncingClientId === selected.id_cliente ? 'Consultando...' : 'Actualizar cliente'"
-              icon="pi pi-refresh"
-              :disabled="syncing || syncingClientId === selected.id_cliente"
-              @click="syncClient(selected.id_cliente)"
-            />
-          </footer>
-        </template>
-        <div v-else class="empty-state detail-empty-state">
-          <i class="pi pi-file-check" aria-hidden="true" />
-          <strong>Selecciona un cliente</strong>
-          <span>Aquí verás su opinión, vigencia y acciones pendientes.</span>
-        </div>
-      </aside>
-    </section>
-    <Teleport to="body">
-      <div v-if="showFilters" class="filters-overlay" @click.self="closeFilters">
-        <section
-          ref="filtersModal"
-          class="filters-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="opinions-filter-title"
-          tabindex="-1"
-          @keydown.esc="closeFilters"
-        >
-          <header class="filters-modal-header">
-            <div>
-              <p>OPINIONES / FILTROS</p>
-              <h2 id="opinions-filter-title">Filtrar clientes</h2>
-            </div>
-            <button type="button" aria-label="Cerrar filtros" @click="closeFilters">×</button>
-          </header>
-
-          <div class="filters-modal-body">
-            <fieldset class="radio-filter status-filter">
-              <legend>Resultado <AppFieldHelp label="Resultado de la opinión" text="Separa opiniones positivas, pendientes, situaciones especiales, consultas privadas o errores." /></legend>
-              <div class="radio-options">
-                <label v-for="option in statusOptions" :key="option.value" class="radio-option" :class="{ active: draftStatusFilter === option.value }">
-                  <input v-model="draftStatusFilter" type="radio" name="opinion-status" :value="option.value" />
-                  <span>{{ option.label }}</span>
-                </label>
+          <div v-else-if="selected.pendientes.length" class="issue-list">
+            <article v-for="issue in selected.pendientes" :key="issue.code">
+              <i
+                :class="issue.confirmed ? 'pi pi-exclamation-circle' : 'pi pi-question-circle'"
+                aria-hidden="true"
+              />
+              <div>
+                <span
+                  >{{ issue.confirmed ? 'Confirmado por el SAT' : 'Requiere verificación' }}</span
+                >
+                <strong>{{ issue.title }}</strong>
+                <p>{{ issue.detail }}</p>
+                <small v-if="issue.action">Siguiente acción: {{ issue.action }}</small>
               </div>
-            </fieldset>
-
-            <fieldset class="radio-filter regime-filter">
-              <legend>Régimen fiscal <AppFieldHelp label="Régimen fiscal" text="Muestra únicamente clientes registrados bajo el régimen seleccionado." /></legend>
-              <div class="radio-options">
-                <label v-for="option in regimeOptions" :key="option.value" class="radio-option" :class="{ active: draftRegimeFilter === option.value }">
-                  <input v-model="draftRegimeFilter" type="radio" name="opinion-regime" :value="option.value" />
-                  <span>{{ option.label }}</span>
-                </label>
-              </div>
-            </fieldset>
+            </article>
           </div>
-
-          <footer class="filters-modal-footer">
-            <button type="button" class="reset-filters" @click="resetDraftFilters">Restablecer</button>
+          <div v-else class="special-result">
+            <i :class="statusIcon(selected.status)" />
             <div>
-              <AppButton label="Cancelar" outlined @click="closeFilters" />
-              <AppButton label="Aplicar filtros" icon="pi pi-filter" @click="applyFilters" />
+              <strong>{{ statusLabel(selected.status) }}</strong
+              ><span>{{ statusDescription(selected.status) }}</span>
             </div>
-          </footer>
+          </div>
         </section>
+
+        <div v-if="selected.mensaje" class="sat-message">
+          <strong>Respuesta del SAT</strong>
+          <p>{{ selected.mensaje }}</p>
+        </div>
+
+        <footer>
+          <AppButton
+            label="Ver documentos"
+            icon="pi pi-folder-open"
+            outlined
+            @click="documentClient = selected"
+          />
+          <AppButton
+            v-if="isAdmin"
+            :label="syncingClientId === selected.id_cliente ? 'Consultando...' : 'Actualizar cliente'"
+            icon="pi pi-refresh"
+            :disabled="syncing || syncingClientId === selected.id_cliente"
+            @click="syncClient(selected.id_cliente)"
+          />
+        </footer>
+      </template>
+      <div v-else class="empty-state detail-empty-state">
+        <i class="pi pi-file-check" aria-hidden="true" />
+        <strong>Selecciona un cliente</strong>
+        <span>Aquí verás su opinión, vigencia y acciones pendientes.</span>
       </div>
-    </Teleport>
-    <Teleport to="body">
-      <div v-if="scheduleOpen" class="schedule-overlay" @click.self="closeSchedule">
-        <section
-          ref="scheduleModal"
-          class="schedule-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="opinion-schedule-title"
-          tabindex="-1"
-          @keydown.esc="closeSchedule"
-        >
-          <header class="schedule-modal-header">
-            <div>
-              <p>OPINIONES / AUTOMATIZACIÓN</p>
-              <h2 id="opinion-schedule-title">Programar consultas</h2>
-              <span>El servidor consultará al SAT aunque cierres la aplicación.</span>
-            </div>
-            <button type="button" aria-label="Cerrar programación" @click="closeSchedule">×</button>
-          </header>
-
-          <div v-if="scheduleLoading" class="schedule-loading">
-            <i class="pi pi-spin pi-spinner" aria-hidden="true" />
-            <span>Cargando programación…</span>
+    </aside>
+  </section>
+  <AppFilterModal
+    :visible="showFilters"
+    title="Filtrar clientes"
+    eyebrow="OPINIONES / FILTROS"
+    title-id="opinions-filter-title"
+    apply-label="Aplicar filtros"
+    @close="closeFilters"
+    @reset="resetDraftFilters"
+    @apply="applyFilters"
+  >
+    <AppFilterOptions
+      v-model="draftStatusFilter"
+      legend="Resultado de la opinión"
+      name="opinion-status"
+      :options="statusOptions"
+    />
+    <AppFilterOptions
+      v-model="draftRegimeFilter"
+      legend="Régimen fiscal"
+      name="opinion-regime"
+      :options="regimeOptions"
+    />
+  </AppFilterModal>
+  <Teleport to="body">
+    <div v-if="scheduleOpen" class="schedule-overlay">
+      <section
+        ref="scheduleModal"
+        class="schedule-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="opinion-schedule-title"
+        aria-describedby="opinion-schedule-description"
+        tabindex="-1"
+        @keydown.esc="closeSchedule"
+      >
+        <header class="schedule-modal-header">
+          <div class="schedule-modal-heading">
+            <p><span aria-hidden="true">OPINIONES 32-D</span> / SERVICIO OFICIAL DEL SAT</p>
+            <h2 id="opinion-schedule-title">Centro de consultas</h2>
+            <span id="opinion-schedule-description">Programa o ejecuta consultas del SAT.</span>
           </div>
+          <div
+            class="schedule-modal-context schedule-execution-badge"
+            :class="scheduleLastStatusClass"
+          >
+            <i
+              :class="schedule?.lastStatus === 'running' ? 'pi pi-spin pi-spinner' : 'pi pi-history'"
+              aria-hidden="true"
+            />
+            <span>
+              <small>ÚLTIMA EJECUCIÓN</small>
+              <strong>{{ scheduleLastStatusLabel }}</strong>
+            </span>
+          </div>
+          <button
+            type="button"
+            aria-label="Cerrar programación"
+            :disabled="scheduleSaving || scheduleRunningNow"
+            @click="closeSchedule"
+          >
+            <i class="pi pi-times" aria-hidden="true" />
+          </button>
+        </header>
 
-          <div v-else class="schedule-modal-body">
-            <label class="schedule-switch" :class="{ active: scheduleDraft.enabled }">
-              <span class="schedule-switch-copy">
-                <small>{{ scheduleDraft.enabled ? 'ACTIVA' : 'PAUSADA' }}</small>
-                <strong>Consulta automática de Opiniones</strong>
-                <span>{{ scheduleSummary }}</span>
-              </span>
-              <input v-model="scheduleDraft.enabled" type="checkbox" role="switch" />
-              <i aria-hidden="true" />
-            </label>
+        <nav
+          v-if="!scheduleLoading"
+          class="schedule-tabs"
+          role="tablist"
+          aria-label="Tipo de consulta"
+        >
+          <button
+            type="button"
+            id="schedule-automatic-tab"
+            role="tab"
+            aria-controls="schedule-automatic-panel"
+            :aria-selected="scheduleTab === 'automatic'"
+            :class="{ active: scheduleTab === 'automatic' }"
+            @click="scheduleTab = 'automatic'"
+          >
+            <span>01</span><i class="pi pi-calendar-clock" />
+            <strong>Programación automática</strong>
+            <small>Frecuencia, hora y regímenes</small>
+          </button>
+          <button
+            type="button"
+            id="schedule-instant-tab"
+            role="tab"
+            aria-controls="schedule-instant-panel"
+            :aria-selected="scheduleTab === 'instant'"
+            :class="{ active: scheduleTab === 'instant' }"
+            @click="scheduleTab = 'instant'"
+          >
+            <span>02</span><i class="pi pi-play" />
+            <strong>Ejecutar ahora</strong>
+            <small>Una consulta sin cambiar la agenda</small>
+          </button>
+        </nav>
+
+        <div v-if="scheduleLoading" class="schedule-loading">
+          <i class="pi pi-spin pi-spinner" aria-hidden="true" />
+          <span>Cargando programación…</span>
+        </div>
+
+        <div v-else class="schedule-modal-body">
+          <section
+            v-if="scheduleTab === 'automatic'"
+            id="schedule-automatic-panel"
+            class="schedule-tab-panel schedule-automatic-panel"
+            role="tabpanel"
+            aria-labelledby="schedule-automatic-tab"
+          >
+            <div class="schedule-automatic-lead">
+              <label class="schedule-switch" :class="{ active: scheduleDraft.enabled }">
+                <span class="schedule-switch-copy">
+                  <small
+                    >{{ scheduleDraft.enabled ? 'AUTOMATIZACIÓN ACTIVA' : 'AUTOMATIZACIÓN INACTIVA'
+                    }}</small
+                  >
+                  <strong>Consultas recurrentes</strong>
+                  <span>{{ scheduleSummary }}</span>
+                </span>
+                <input v-model="scheduleDraft.enabled" type="checkbox" role="switch" />
+                <i aria-hidden="true" />
+              </label>
+              <div class="schedule-next-run" :class="{ inactive: !scheduleDraft.enabled }">
+                <small>PRÓXIMA EJECUCIÓN</small>
+                <strong
+                  >{{ !scheduleDraft.enabled ? 'Sin próxima ejecución' : scheduleHasChanges ?
+                  'Pendiente de guardar' : formatDateTime(schedule?.nextRunAt || null) }}</strong
+                >
+                <span v-if="!scheduleDraft.enabled"
+                  ><b>Motivo:</b> {{ scheduleAutomationReason }}</span
+                >
+                <span v-else-if="scheduleHasChanges"
+                  >La fecha exacta se calculará cuando guardes la nueva agenda.</span
+                >
+                <span v-else
+                  >Hora del centro de México · {{ schedule?.timezone || 'America/Mexico_City'
+                  }}</span
+                >
+              </div>
+            </div>
+
+            <div v-if="!scheduleDraft.enabled" class="schedule-inactive-guidance" role="status">
+              <i class="pi pi-pause-circle" aria-hidden="true" />
+              <div>
+                <strong>La agenda está pausada</strong
+                ><span
+                  >Activa las consultas recurrentes para editar la frecuencia, la hora y los
+                  regímenes incluidos.</span
+                >
+              </div>
+            </div>
 
             <div class="schedule-controls" :class="{ disabled: !scheduleDraft.enabled }">
               <label>
                 <span>Frecuencia</span>
-                <AppSelect v-model="scheduleDraft.frequency" :options="frequencyOptions" option-label="label" option-value="value" :disabled="!scheduleDraft.enabled" />
+                <AppSelect
+                  v-model="scheduleDraft.frequency"
+                  :options="frequencyOptions"
+                  option-label="label"
+                  option-value="value"
+                  :disabled="!scheduleDraft.enabled"
+                />
               </label>
               <label>
                 <span>Hora del despacho</span>
-                <input v-model="scheduleDraft.runTime" type="time" :disabled="!scheduleDraft.enabled" />
+                <input
+                  v-model="scheduleDraft.runTime"
+                  type="time"
+                  :disabled="!scheduleDraft.enabled"
+                />
               </label>
               <label v-if="scheduleDraft.frequency === 'weekly'">
                 <span>Día</span>
-                <AppSelect :model-value="scheduleDraft.dayOfWeek" :options="weekdayOptions" option-label="label" option-value="value" :disabled="!scheduleDraft.enabled" @update:model-value="scheduleDraft.dayOfWeek = Number($event)" />
+                <AppSelect
+                  :model-value="scheduleDraft.dayOfWeek"
+                  :options="weekdayOptions"
+                  option-label="label"
+                  option-value="value"
+                  :disabled="!scheduleDraft.enabled"
+                  @update:model-value="scheduleDraft.dayOfWeek = Number($event)"
+                />
               </label>
             </div>
 
-            <fieldset class="schedule-regimes" :disabled="!scheduleDraft.enabled">
-              <legend>
+            <div class="schedule-regime-control" :class="{ disabled: !scheduleDraft.enabled }">
+              <div class="schedule-regime-control__copy">
                 <span>Regímenes incluidos</span>
-                <strong>{{ scheduleRegimeSummary }}</strong>
-              </legend>
-              <p>Solo se consultarán clientes cuyo régimen coincida con esta selección.</p>
-              <div class="schedule-regime-grid">
-                <button type="button" :class="{ active: !scheduleDraft.regimes.length }" @click="selectAllScheduleRegimes">
-                  <i :class="!scheduleDraft.regimes.length ? 'pi pi-check' : 'pi pi-users'" />
-                  <span><strong>Todos</strong><small>Sin excluir regímenes</small></span>
-                </button>
-                <button
-                  v-for="regime in regimenesFiscales"
-                  :key="regime.value"
-                  type="button"
-                  :class="{ active: scheduleDraft.regimes.includes(regime.value) }"
-                  @click="toggleScheduleRegime(regime.value)"
-                >
-                  <i :class="scheduleDraft.regimes.includes(regime.value) ? 'pi pi-check' : 'pi pi-circle'" />
-                  <span><strong>{{ regime.value }}</strong><small>{{ regime.label.replace(`${regime.value} - `, '') }}</small></span>
-                </button>
+                <p>Limita qué clientes entran en la consulta automática.</p>
               </div>
-            </fieldset>
-
-            <section class="schedule-status" aria-label="Estado de la programación">
-              <div>
-                <small>ÚLTIMA EJECUCIÓN</small>
-                <strong>{{ formatDateTime(schedule?.lastRunAt || null) }}</strong>
-                <span>{{ schedule?.lastMessage || 'Todavía no se ha ejecutado una consulta programada.' }}</span>
-              </div>
-              <dl>
-                <div><dt>Reintentos</dt><dd>{{ schedule?.pendingRetries || 0 }}</dd></div>
-                <div><dt>Sin respuesta</dt><dd>{{ schedule?.exhaustedRetries || 0 }}</dd></div>
-              </dl>
-            </section>
-          </div>
-
-          <footer class="schedule-modal-footer">
-            <p><i class="pi pi-refresh" /> Si el SAT no responde, se reintenta a los 5, 15, 30 y 60 minutos.</p>
-            <div>
-              <AppButton label="Cancelar" outlined :disabled="scheduleSaving" @click="closeSchedule" />
-              <AppButton :label="scheduleSaving ? 'Guardando…' : 'Guardar programación'" icon="pi pi-check" :disabled="scheduleLoading || scheduleSaving" @click="saveSchedule" />
+              <AppRegimePicker
+                v-model="scheduleDraft.regimes"
+                :options="regimenesFiscales"
+                placeholder="Todos los regímenes"
+                title="Regímenes de la programación"
+                eyebrow="OPINIONES / ALCANCE AUTOMÁTICO"
+                legend="Selecciona uno o varios regímenes"
+                apply-label="Aplicar selección"
+                reset-label="Todos los regímenes"
+                layer="nested"
+                multiple
+                :disabled="!scheduleDraft.enabled"
+              />
             </div>
-          </footer>
-        </section>
-      </div>
-    </Teleport>
-    <ClientDocumentsModal v-if="documentClient" :client="documentClient" @close="documentClient = null" />
-    <ThirdPartyComplianceModal v-if="showThirdParty" @close="showThirdParty = false" @complete="completeThirdParty" />
-    <AppTutorial v-model="opinionsTutorialOpen" title="Cómo usar Opiniones" :steps="opinionsTutorialSteps" storage-key="tourOpinionesDone" />
-  </main>
+          </section>
+
+          <section
+            v-else
+            id="schedule-instant-panel"
+            class="schedule-tab-panel schedule-instant-panel"
+            role="tabpanel"
+            aria-labelledby="schedule-instant-tab schedule-run-now-title"
+          >
+            <header>
+              <div>
+                <p>CONSULTA MANUAL / UNA SOLA VEZ</p>
+                <h3 id="schedule-run-now-title">Elige el alcance de esta revisión</h3>
+                <span
+                  >El resultado se guarda en Opiniones, pero la frecuencia y la hora programadas
+                  permanecen intactas.</span
+                >
+              </div>
+              <i class="pi pi-bolt" aria-hidden="true" />
+            </header>
+            <div class="schedule-instant-controls">
+              <label>
+                <span>Régimen fiscal</span>
+                <AppRegimePicker
+                  v-model="scheduleRunRegime"
+                  :options="regimeOptions"
+                  empty-value="todos"
+                  reset-label="Todos los regímenes"
+                  title="Seleccionar régimen para la consulta"
+                  layer="nested"
+                  :disabled="scheduleRunningNow || schedule?.running"
+                />
+              </label>
+              <div class="schedule-client-count">
+                <small>CLIENTES INCLUIDOS</small>
+                <strong>{{ scheduleRunClientCount }}</strong>
+              </div>
+              <AppButton
+                :label="scheduleRunningNow ? 'Consultando…' : 'Ejecutar ahora'"
+                icon="pi pi-play"
+                :disabled="scheduleRunningNow || scheduleSaving || schedule?.running"
+                @click="runScheduleNow"
+              />
+            </div>
+            <p v-if="scheduleRunMessage" class="schedule-run-feedback success">
+              <i class="pi pi-check-circle" /> {{ scheduleRunMessage }}
+            </p>
+            <p v-else-if="errorMessage" class="schedule-run-feedback error">
+              <i class="pi pi-exclamation-triangle" /> {{ errorMessage }}
+            </p>
+          </section>
+
+          <section class="schedule-activity" aria-label="Actividad de consultas">
+            <header>
+              <div><small>ACTIVIDAD</small><strong>Última consulta registrada</strong></div>
+              <span :class="scheduleLastStatusClass">{{ scheduleLastStatusLabel }}</span>
+            </header>
+            <div class="schedule-activity-grid">
+              <article>
+                <small>INICIO</small>
+                <strong>{{ formatDateTime(schedule?.lastRunAt || null) }}</strong>
+                <span
+                  >{{ schedule?.lastMessage || 'Todavía no existe una ejecución registrada.'
+                  }}</span
+                >
+              </article>
+              <article>
+                <small>RESULTADO</small>
+                <strong>{{ schedule?.lastCompleted || 0 }} / {{ schedule?.lastTotal || 0 }}</strong>
+                <span>Opiniones respondidas en la última ejecución.</span>
+              </article>
+              <article class="schedule-retry-metrics">
+                <div>
+                  <small>REINTENTOS</small><strong>{{ schedule?.pendingRetries || 0 }}</strong>
+                </div>
+                <div>
+                  <small>SIN RESPUESTA</small><strong>{{ schedule?.exhaustedRetries || 0 }}</strong>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <footer class="schedule-modal-footer">
+          <p v-if="scheduleTab === 'automatic'">
+            <i class="pi pi-clock" /> La agenda usa la hora del centro de México.
+          </p>
+          <p v-else>
+            <i class="pi pi-refresh" /> Los fallos del SAT se reintentan a los 5, 15, 30 y 60
+            minutos.
+          </p>
+          <div>
+            <AppButton
+              label="Cerrar"
+              outlined
+              :disabled="scheduleSaving || scheduleRunningNow"
+              @click="closeSchedule"
+            />
+            <AppButton
+              v-if="scheduleTab === 'automatic'"
+              :label="scheduleSaving ? 'Guardando…' : 'Guardar programación'"
+              icon="pi pi-check"
+              :disabled="scheduleLoading || scheduleSaving || scheduleRunningNow || !scheduleHasChanges"
+              @click="saveSchedule"
+            />
+          </div>
+        </footer>
+      </section>
+    </div>
+  </Teleport>
+
+  <ClientDocumentsModal
+    v-if="documentClient"
+    :client="documentClient"
+    @close="documentClient = null"
+  />
+  <ThirdPartyComplianceModal
+    v-if="showThirdParty"
+    @close="showThirdParty = false"
+    @complete="completeThirdParty"
+  />
+  <AppTutorial
+    v-model="opinionsTutorialOpen"
+    title="Cómo usar Opiniones"
+    :steps="opinionsTutorialSteps"
+    storage-key="tourOpinionesDone"
+  />
+</main>

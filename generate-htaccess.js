@@ -1,5 +1,5 @@
 // generate-htaccess.js
-import { writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises'
 
 const htaccessContent = `
 <IfModule mod_rewrite.c>
@@ -10,11 +10,11 @@ const htaccessContent = `
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
 </IfModule>
-`.trim();
+`.trim()
 
 try {
-  await writeFile('./dist/.htaccess', htaccessContent, 'utf8');
-  console.log('.htaccess file generated in /dist ✅');
+  await writeFile('./dist/.htaccess', htaccessContent, 'utf8')
+  console.log('.htaccess file generated in /dist ✅')
 } catch (error) {
-  console.error('❌ Failed to write .htaccess file:', error);
+  console.error('❌ Failed to write .htaccess file:', error)
 }

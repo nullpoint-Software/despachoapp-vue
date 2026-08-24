@@ -1,26 +1,67 @@
 <Teleport to="body">
-    <div class="cut-overlay" @click.self="emit('close')">
-      <section class="cut-modal" role="dialog" aria-modal="true" aria-labelledby="cut-title">
-        <header><p>CAJA / RESUMEN</p><h2 id="cut-title">Corte de caja</h2><button type="button" aria-label="Cerrar" @click="emit('close')">×</button></header>
-        <div class="cut-body">
-          <p class="intro">Define el periodo exacto que debe entrar en el corte. El resumen se recalcula al instante.</p>
-          <div class="period-summary">
-            <div><span>Inicio</span><strong>{{ formatPeriod(from) }}</strong></div>
-            <div><span>Fin</span><strong>{{ formatPeriod(to) }}</strong></div>
-            <AppButton label="Cambiar periodo" icon="pi pi-calendar" class="p-button-primary" @click="periodVisible=true" />
-          </div>
-          <p v-if="error" class="error">{{ error }}</p>
-          <div class="metrics" aria-live="polite">
-            <article><span>Movimientos</span><strong>{{ filtered.length }}</strong></article>
-            <article><span>Cobrado</span><strong>{{ money(totalCollected) }}</strong></article>
-            <article><span>Pagado</span><strong>{{ money(totalPaid) }}</strong></article>
-            <article class="balance"><span>Resultado</span><strong>{{ money(totalCollected-totalPaid) }}</strong></article>
-          </div>
-          <div class="preview"><div><b>Últimos movimientos del periodo</b><span v-if="loading">Cargando…</span></div><ol><li v-for="item in filtered.slice(0,6)" :key="item.id"><span>{{ item.cliente }} · {{ item.asunto }}</span><b>{{ money(item.cobramos) }}</b></li><li v-if="!loading&&!filtered.length">No hay movimientos en este rango.</li></ol></div>
+  <div class="cut-overlay">
+    <section class="cut-modal" role="dialog" aria-modal="true" aria-labelledby="cut-title">
+      <header>
+        <p>CAJA / RESUMEN</p>
+        <h2 id="cut-title">Corte de caja</h2>
+        <button type="button" aria-label="Cerrar" @click="emit('close')">×</button>
+      </header>
+      <div class="cut-body">
+        <p class="intro">
+          Define el periodo exacto que debe entrar en el corte. El resumen se recalcula al instante.
+        </p>
+        <div class="period-summary">
+          <div><span>Inicio</span><strong>{{ formatPeriod(from) }}</strong></div>
+          <div><span>Fin</span><strong>{{ formatPeriod(to) }}</strong></div>
+          <AppButton
+            label="Cambiar periodo"
+            icon="pi pi-calendar"
+            class="p-button-primary"
+            @click="periodVisible=true"
+          />
         </div>
-        <footer><AppButton label="Cancelar" outlined @click="emit('close')"/><AppButton label="Preparar ticket" icon="pi pi-print" class="p-button-primary" :disabled="loading||!!error" @click="printerVisible=true"/></footer>
-      </section>
-      <DateRangeModal v-if="periodVisible" :from="from" :to="to" @close="periodVisible=false" @apply="applyPeriod" />
-      <CashCutTicketModal v-if="printerVisible" :movements="filtered" :from="from" :to="to" @close="printerVisible=false" />
-    </div>
-  </Teleport>
+        <p v-if="error" class="error">{{ error }}</p>
+        <div class="metrics" aria-live="polite">
+          <article><span>Movimientos</span><strong>{{ filtered.length }}</strong></article>
+          <article><span>Cobrado</span><strong>{{ money(totalCollected) }}</strong></article>
+          <article><span>Pagado</span><strong>{{ money(totalPaid) }}</strong></article>
+          <article class="balance">
+            <span>Resultado</span><strong>{{ money(totalCollected-totalPaid) }}</strong>
+          </article>
+        </div>
+        <div class="preview">
+          <div><b>Últimos movimientos del periodo</b><span v-if="loading">Cargando…</span></div>
+          <ol>
+            <li v-for="item in filtered.slice(0,6)" :key="item.id">
+              <span>{{ item.cliente }} · {{ item.asunto }}</span><b>{{ money(item.cobramos) }}</b>
+            </li>
+            <li v-if="!loading&&!filtered.length">No hay movimientos en este rango.</li>
+          </ol>
+        </div>
+      </div>
+      <footer>
+        <AppButton label="Cancelar" outlined @click="emit('close')" /><AppButton
+          label="Preparar ticket"
+          icon="pi pi-print"
+          class="p-button-primary"
+          :disabled="loading||!!error"
+          @click="printerVisible=true"
+        />
+      </footer>
+    </section>
+    <DateRangeModal
+      v-if="periodVisible"
+      :from="from"
+      :to="to"
+      @close="periodVisible=false"
+      @apply="applyPeriod"
+    />
+    <CashCutTicketModal
+      v-if="printerVisible"
+      :movements="filtered"
+      :from="from"
+      :to="to"
+      @close="printerVisible=false"
+    />
+  </div>
+</Teleport>

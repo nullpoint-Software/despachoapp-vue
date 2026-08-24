@@ -1,12 +1,12 @@
-import { useFontSize } from "@/composables/useFontSize";
-import { useFontFamily } from "@/composables/useFontFamily";
-import { onBeforeUnmount, watch } from "vue";
+import { useFontSize } from '@/composables/useFontSize'
+import { useFontFamily } from '@/composables/useFontFamily'
+import { onBeforeUnmount, watch } from 'vue'
 
-const props = defineProps<{ visible: boolean }>();
+const props = defineProps<{ visible: boolean }>()
 
 const emit = defineEmits<{
-  close: [];
-}>();
+  close: []
+}>()
 
 const {
   selectedTextScale,
@@ -15,23 +15,23 @@ const {
   textScaleStep,
   applyTextScale,
   decreaseTextScale,
-  increaseTextScale,
-} = useFontSize();
+  increaseTextScale
+} = useFontSize()
 
-const { fontFamilies, selectedFontFamily, applyFontFamily } = useFontFamily();
+const { fontFamilies, selectedFontFamily, applyFontFamily } = useFontFamily()
 
 function updateTextScaleFromInput(event: Event): void {
-  applyTextScale(Number((event.target as HTMLInputElement).value));
+  applyTextScale(Number((event.target as HTMLInputElement).value))
 }
 
 function close(): void {
-  emit("close");
+  emit('close')
 }
 
 watch(
   () => props.visible,
-  (visible) => document.body.classList.toggle("modal-open", visible),
-  { immediate: true },
-);
+  (visible) => document.body.classList.toggle('modal-open', visible),
+  { immediate: true }
+)
 
-onBeforeUnmount(() => document.body.classList.remove("modal-open"));
+onBeforeUnmount(() => document.body.classList.remove('modal-open'))

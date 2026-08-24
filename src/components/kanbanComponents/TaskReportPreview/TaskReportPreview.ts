@@ -1,19 +1,19 @@
 interface TaskReportPreviewProps {
-  previewUrl: string;
-  fileName: string;
-  taskCount: number;
+  previewUrl: string
+  fileName: string
+  taskCount: number
 }
 
-const props = defineProps<TaskReportPreviewProps>();
-const emit = defineEmits<{ close: [] }>();
+const props = defineProps<TaskReportPreviewProps>()
+const emit = defineEmits<{ close: [] }>()
 
 function close(): void {
-  emit("close");
+  emit('close')
 }
 
 function download(): void {
-  const anchor = document.createElement("a");
-  anchor.href = props.previewUrl;
-  anchor.download = props.fileName;
-  anchor.click();
+  const anchor = document.createElement('a')
+  anchor.href = props.previewUrl
+  anchor.download = props.fileName
+  anchor.click()
 }

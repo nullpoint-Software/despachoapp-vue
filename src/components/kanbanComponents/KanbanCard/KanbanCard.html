@@ -19,13 +19,25 @@
   <p>{{ task.descripcion || "Sin descripci?n." }}</p>
 
   <dl>
-    <div><dt>Creada</dt><dd>{{ formatDate(task.fecha_creacion) }}</dd></div>
-    <div><dt>Finalizada</dt><dd>{{ formatDate(task.fecha_vencimiento) }}</dd></div>
+    <div>
+      <dt>Creada</dt>
+      <dd>{{ formatDate(task.fecha_creacion) }}</dd>
+    </div>
+    <div>
+      <dt>Finalizada</dt>
+      <dd>{{ formatDate(task.fecha_vencimiento) }}</dd>
+    </div>
   </dl>
 
   <footer>
-    <img v-image-fallback :src="responsibleImage" :alt="task.nombre ? `Responsable: ${task.nombre}` : 'Sin responsable'" />
-    <div><small>Responsable</small><strong>{{ task.nombre || task.username || "Por asignar" }}</strong></div>
+    <img
+      v-image-fallback
+      :src="responsibleImage"
+      :alt="task.nombre ? `Responsable: ${task.nombre}` : 'Sin responsable'"
+    />
+    <div>
+      <small>Responsable</small><strong>{{ task.nombre || task.username || "Por asignar" }}</strong>
+    </div>
     <i class="pi pi-arrow-up-right" aria-hidden="true"></i>
   </footer>
 </article>

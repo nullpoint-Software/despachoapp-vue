@@ -1,103 +1,99 @@
 import {
   browserSupportsWebAuthn,
   platformAuthenticatorIsAvailable,
-  startRegistration,
-} from "@simplewebauthn/browser";
-import type { AxiosInstance } from "axios";
+  startRegistration
+} from '@simplewebauthn/browser'
+import type { AxiosInstance } from 'axios'
 
 function base64UrlToBuffer(value: string) {
-  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64.padEnd(base64.length + ((4 - base64.length % 4) % 4), "=");
-  const binary = window.atob(padded);
-  const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
-  return bytes.buffer;
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
+  const binary = window.atob(padded)
+  const bytes = new Uint8Array(binary.length)
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index)
+  return bytes.buffer
 }
 
 function bufferToBase64Url(value: ArrayBuffer) {
-  const bytes = new Uint8Array(value);
-  let binary = "";
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return window.btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  const bytes = new Uint8Array(value)
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return window.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
 }
 
 class PasskeyService {
-  private serverip: string;
-  private axios: AxiosInstance;
-  private authenticationAbortController: AbortController | null = null;
+  private serverip: string
+  private axios: AxiosInstance
+  private authenticationAbortController: AbortController | null = null
 
   constructor(serverip: string, axios: AxiosInstance) {
-    this.serverip = serverip;
-    this.axios = axios;
+    this.serverip = serverip
+    this.axios = axios
   }
 
   supportsPasskeys() {
-    return browserSupportsWebAuthn();
+    return browserSupportsWebAuthn()
   }
 
   platformAuthenticatorAvailable() {
-    return platformAuthenticatorIsAvailable();
+    return platformAuthenticatorIsAvailable()
   }
 
   async getPasskeys() {
-    const response = await this.axios.get(`${this.serverip}/auth/passkeys`);
+    const response = await this.axios.get(`${this.serverip}/auth/passkeys`)
     return response.data as Array<{
-      id: number;
-      name: string;
-      deviceType: string | null;
-      backedUp: boolean;
-      transports: string[];
-      createdAt: string;
-      lastUsedAt: string | null;
-    }>;
+      id: number
+      name: string
+      deviceType: string | null
+      backedUp: boolean
+      transports: string[]
+      createdAt: string
+      lastUsedAt: string | null
+    }>
   }
 
-  async register(name?: string) {
-    const options = (await this.axios.post(
-      `${this.serverip}/auth/passkeys/registration/options`,
-    )).data;
+  async register(name?: string, useAnotherAuthenticator = false) {
+    const options = (await this.axios.post(`${this.serverip}/auth/passkeys/registration/options`))
+      .data
     const authenticatorSelection = {
-      ...(options.authenticatorSelection || {}),
-      residentKey: "required",
-      requireResidentKey: true,
-    };
-    delete authenticatorSelection.authenticatorAttachment;
-    const compatibleOptions = {
+      ...(options.authenticatorSelection || {})
+    }
+    const compatibleOptions: any = {
       ...options,
       authenticatorSelection,
-    };
-    const response = await startRegistration({ optionsJSON: compatibleOptions });
+      ...(useAnotherAuthenticator ? { hints: ['hybrid', 'security-key', 'client-device'] } : {})
+    }
+    const response = await startRegistration({ optionsJSON: compatibleOptions })
     await this.axios.post(`${this.serverip}/auth/passkeys/registration/verify`, {
       name,
-      response,
-    });
+      response
+    })
   }
 
   async authenticate() {
-    const options = (await this.axios.post(
-      `${this.serverip}/auth/passkeys/authentication/options`,
-    )).data;
-    this.cancelAuthentication();
-    this.authenticationAbortController = new AbortController();
+    const options = (await this.axios.post(`${this.serverip}/auth/passkeys/authentication/options`))
+      .data
+    this.cancelAuthentication()
+    this.authenticationAbortController = new AbortController()
     const publicKey = {
       ...options,
       challenge: base64UrlToBuffer(options.challenge),
       allowCredentials: options.allowCredentials?.map((credential: any) => ({
         ...credential,
-        id: base64UrlToBuffer(credential.id),
-      })),
-    };
-    let credential: PublicKeyCredential | null;
-    try {
-      credential = await navigator.credentials.get({
-        publicKey,
-        signal: this.authenticationAbortController.signal,
-      }) as PublicKeyCredential | null;
-    } finally {
-      this.authenticationAbortController = null;
+        id: base64UrlToBuffer(credential.id)
+      }))
     }
-    if (!credential) throw new Error("Authentication was not completed");
-    const response = credential.response as AuthenticatorAssertionResponse;
+    let credential: PublicKeyCredential | null
+    try {
+      credential = (await navigator.credentials.get({
+        publicKey,
+        signal: this.authenticationAbortController.signal
+      })) as PublicKeyCredential | null
+    } finally {
+      this.authenticationAbortController = null
+    }
+    if (!credential) throw new Error('Authentication was not completed')
+    const response = credential.response as AuthenticatorAssertionResponse
     return {
       id: credential.id,
       rawId: bufferToBase64Url(credential.rawId),
@@ -105,29 +101,29 @@ class PasskeyService {
         authenticatorData: bufferToBase64Url(response.authenticatorData),
         clientDataJSON: bufferToBase64Url(response.clientDataJSON),
         signature: bufferToBase64Url(response.signature),
-        userHandle: response.userHandle ? bufferToBase64Url(response.userHandle) : undefined,
+        userHandle: response.userHandle ? bufferToBase64Url(response.userHandle) : undefined
       },
       type: credential.type,
-      clientExtensionResults: credential.getClientExtensionResults(),
-    };
+      clientExtensionResults: credential.getClientExtensionResults()
+    }
   }
 
   cancelAuthentication() {
-    if (!this.authenticationAbortController) return;
-    this.authenticationAbortController.abort();
-    this.authenticationAbortController = null;
+    if (!this.authenticationAbortController) return
+    this.authenticationAbortController.abort()
+    this.authenticationAbortController = null
   }
 
   async verify() {
-    const response = await this.authenticate();
+    const response = await this.authenticate()
     await this.axios.post(`${this.serverip}/auth/passkeys/authentication/verify`, {
-      response,
-    });
+      response
+    })
   }
 
   async delete(id: number) {
-    await this.axios.delete(`${this.serverip}/auth/passkeys/${id}`);
+    await this.axios.delete(`${this.serverip}/auth/passkeys/${id}`)
   }
 }
 
-export default PasskeyService;
+export default PasskeyService

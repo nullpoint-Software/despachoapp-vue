@@ -10,7 +10,10 @@
   <header class="kanban-lane__header">
     <div>
       <span class="kanban-lane__marker" aria-hidden="true"></span>
-      <div><h3>{{ lane.label }}</h3><p>{{ lane.caption }}</p></div>
+      <div>
+        <h3>{{ lane.label }}</h3>
+        <p>{{ lane.caption }}</p>
+      </div>
     </div>
     <strong>{{ String(lane.tasks.length).padStart(2, "0") }}</strong>
   </header>

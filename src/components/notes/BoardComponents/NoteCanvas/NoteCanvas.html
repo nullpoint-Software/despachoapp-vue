@@ -1,38 +1,37 @@
 <div
-    ref="canvasContainer"
-    class="canvas-container relative w-full h-full overflow-hidden bg-theme-main cursor-grab select-none active:cursor-grabbing"
-    @mousedown="onCanvasMouseDown"
-    @wheel.prevent="onWheel"
-    @dragover.prevent
-    @drop.prevent="onDrop"
+  ref="canvasContainer"
+  class="canvas-container relative w-full h-full overflow-hidden bg-theme-main cursor-grab select-none active:cursor-grabbing"
+  @mousedown="onCanvasMouseDown"
+  @wheel.prevent="onWheel"
+  @dragover.prevent
+  @drop.prevent="onDrop"
+>
+  <div
+    ref="canvasContent"
+    class="note-canvas-content relative will-change-transform"
+    :style="canvasContentStyle"
   >
     <div
-      ref="canvasContent"
-      class="note-canvas-content relative will-change-transform"
-      :style="canvasContentStyle"
+      v-for="note in internalNotes"
+      :key="note.id"
+      class="note-wrapper absolute shadow-lg rounded-lg overflow-visible bg-transparent"
+      :data-note-id="note.id"
+      :style="noteInnerStyle(note)"
+      @mousedown.stop="bringToFront($event, note)"
     >
+      <Note
+        :note="note"
+        :search-query="searchQuery"
+        @store-note="$emit('store-note', $event)"
+        @open-note="$emit('open-note', $event)"
+        @toggle-pin="$emit('toggle-pin', $event)"
+        @delete-note="$emit('delete-note', $event)"
+      />
+
       <div
-        v-for="note in internalNotes"
-        :key="note.id"
-        class="note-wrapper absolute shadow-lg rounded-lg overflow-visible bg-transparent"
-        :data-note-id="note.id"
-        :style="noteInnerStyle(note)"
-        @mousedown.stop="bringToFront($event, note)"
-      >
-        <Note
-          :note="note"
-          :search-query="searchQuery"
-          @store-note="$emit('store-note', $event)"
-          @open-note="$emit('open-note', $event)"
-          @toggle-pin="$emit('toggle-pin', $event)"
-          @delete-note="$emit('delete-note', $event)"
-        />
-
-        <div
-          class="note-drag-handle absolute top-0 left-0 w-full h-12 cursor-move"
-          @mousedown.stop.prevent="initDrag($event, note)"
-        ></div>
-      </div>
+        class="note-drag-handle absolute top-0 left-0 w-full h-12 cursor-move"
+        @mousedown.stop.prevent="initDrag($event, note)"
+      ></div>
     </div>
-
-    </div>
+  </div>
+</div>

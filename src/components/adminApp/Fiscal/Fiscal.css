@@ -18,7 +18,7 @@
   margin: 0 0 0.5rem;
   color: var(--br-accent);
   font:
-    800 0.72rem "Courier New",
+    800 0.72rem 'Courier New',
     monospace;
   letter-spacing: 0.12em;
 }
@@ -35,7 +35,7 @@
   margin-top: 1rem;
   color: var(--br-muted);
   font:
-    700 0.9rem "Courier New",
+    700 0.9rem 'Courier New',
     monospace;
 }
 .hero-actions {
@@ -78,19 +78,25 @@
 .sat-download-entry-copy small {
   margin-bottom: 0.25rem;
   color: var(--br-accent);
-  font: 800 0.62rem "Courier New", monospace;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
   letter-spacing: 0.1em;
 }
 .sat-download-entry-copy strong {
   color: var(--br-text);
-  font: 900 clamp(0.9rem, 1.4vw, 1.08rem) Arial, sans-serif;
+  font:
+    900 clamp(0.9rem, 1.4vw, 1.08rem) Arial,
+    sans-serif;
   text-transform: uppercase;
 }
 .sat-download-entry-copy span {
   margin-top: 0.35rem;
   max-width: 65rem;
   color: var(--br-muted);
-  font: 700 0.72rem/1.45 "Courier New", monospace;
+  font:
+    700 0.72rem/1.45 'Courier New',
+    monospace;
 }
 .sat-download-entry :deep(.sat-mass-download-launch) {
   min-height: 3.25rem;
@@ -100,7 +106,9 @@
   grid-column: 1 / -1;
   margin: -0.35rem 0 0 calc(3.25rem + 0.9rem);
   color: var(--br-muted);
-  font: 800 0.63rem "Courier New", monospace;
+  font:
+    800 0.63rem 'Courier New',
+    monospace;
 }
 .sat-download-entry-hint i {
   margin-right: 0.35rem;
@@ -136,10 +144,9 @@
 }
 .filter-strip {
   display: grid;
-  grid-template-columns: minmax(13rem, 1.4fr) repeat(
-      2,
-      minmax(8rem, 0.7fr)
-    ) minmax(14rem, 1.3fr) auto auto;
+  grid-template-columns:
+    minmax(13rem, 1.35fr) repeat(2, minmax(8rem, 0.65fr)) minmax(14rem, 1.25fr)
+    auto auto;
   align-items: end;
   gap: 0.75rem;
   padding: 1rem 0;
@@ -150,7 +157,7 @@ label > span {
   margin-bottom: 0.4rem;
   color: var(--br-muted);
   font:
-    800 0.66rem "Courier New",
+    800 0.66rem 'Courier New',
     monospace;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -199,7 +206,7 @@ label > span {
   margin-bottom: 0.7rem;
   color: var(--br-muted);
   font:
-    800 0.64rem "Courier New",
+    800 0.64rem 'Courier New',
     monospace;
   text-transform: uppercase;
 }
@@ -215,7 +222,74 @@ label > span {
 .summary-grid .accent span {
   color: inherit;
 }
-.fiscal-tabs{display:flex;margin-top:1rem;border:1px solid var(--br-line);border-bottom:0;background:var(--br-panel)}.fiscal-tabs button{min-height:3rem;flex:1;border:0;border-right:1px solid var(--br-line);background:transparent;color:var(--br-muted);font:800 .72rem "Courier New",monospace;text-transform:uppercase;cursor:pointer}.fiscal-tabs button:last-child{border-right:0}.fiscal-tabs button:hover{color:var(--br-text)}.fiscal-tabs button.active{background:var(--br-accent);color:var(--br-accent-text)}.fiscal-tabs+.workspace-grid{margin-top:0}.selected-subtotal{display:block;margin-top:.45rem;color:var(--br-accent);font:800 .72rem "Courier New",monospace}.row-legend{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.55rem}.row-legend span{border-left:4px solid;padding:.2rem .4rem;color:var(--br-muted);font:800 .58rem "Courier New",monospace;text-transform:uppercase}.row-legend .used{border-color:var(--br-warning-line,#d0a928)}.row-legend .blocked{border-color:var(--br-danger-line,#e06a5c)}
+.fiscal-tabs {
+  display: flex;
+  margin-top: 1rem;
+  border: 1px solid var(--br-line);
+  border-bottom: 0;
+  background: var(--br-panel);
+}
+.fiscal-tabs button {
+  min-height: 3rem;
+  flex: 1;
+  border: 0;
+  border-right: 1px solid var(--br-line);
+  background: transparent;
+  color: var(--br-muted);
+  font:
+    800 0.72rem 'Courier New',
+    monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.fiscal-tabs button:last-child {
+  border-right: 0;
+}
+.fiscal-tabs button:hover {
+  color: var(--br-text);
+}
+.fiscal-tabs button.active {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+.fiscal-tabs + .workspace-grid {
+  margin-top: 0;
+}
+.selected-subtotal {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--br-accent);
+  font:
+    800 0.72rem 'Courier New',
+    monospace;
+}
+.row-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+.row-legend span {
+  border-left: 4px solid;
+  padding: 0.2rem 0.4rem;
+  color: var(--br-muted);
+  font:
+    800 0.58rem 'Courier New',
+    monospace;
+  text-transform: uppercase;
+}
+.row-legend .attention {
+  border-color: #d7ad16;
+}
+.row-legend .warning {
+  border-color: #f0c75e;
+}
+.row-legend .used {
+  border-color: var(--br-warning-line, #d0a928);
+}
+.row-legend .blocked {
+  border-color: var(--br-danger-line, #e06a5c);
+}
 .workspace-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 20rem;
@@ -249,7 +323,7 @@ label > span {
   margin: 0.25rem 0 0;
   color: var(--br-muted);
   font:
-    700 0.72rem "Courier New",
+    700 0.72rem 'Courier New',
     monospace;
 }
 .selection-actions {
@@ -263,7 +337,7 @@ label > span {
   color: var(--br-muted);
   padding: 0.35rem;
   font:
-    800 0.65rem "Courier New",
+    800 0.65rem 'Courier New',
     monospace;
   text-transform: uppercase;
   cursor: pointer;
@@ -293,7 +367,9 @@ label > span {
 .active-report-bar small,
 .active-report-bar span {
   color: var(--br-muted);
-  font: 800 0.62rem "Courier New", monospace;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
 }
 .active-report-bar strong {
   overflow: hidden;
@@ -306,7 +382,9 @@ label > span {
   background: transparent;
   color: var(--br-text);
   padding: 0.55rem 0.7rem;
-  font: 800 0.62rem "Courier New", monospace;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
   cursor: pointer;
 }
 .active-report-bar button:hover {
@@ -327,7 +405,7 @@ th {
   padding: 0.7rem;
   text-align: left;
   font:
-    800 0.64rem "Courier New",
+    800 0.64rem 'Courier New',
     monospace;
   text-transform: uppercase;
 }
@@ -355,7 +433,7 @@ td small {
   display: block;
   color: var(--br-muted);
   font:
-    700 0.66rem/1.45 "Courier New",
+    700 0.66rem/1.45 'Courier New',
     monospace;
 }
 td strong {
@@ -369,7 +447,7 @@ td strong {
   color: var(--br-text);
   padding: 0.25rem 0;
   font:
-    800 0.68rem "Courier New",
+    800 0.68rem 'Courier New',
     monospace;
   cursor: pointer;
 }
@@ -382,7 +460,7 @@ td strong {
   padding: 0.2rem 0.35rem;
   color: var(--br-muted);
   font:
-    800 0.58rem "Courier New",
+    800 0.58rem 'Courier New',
     monospace;
   text-transform: uppercase;
 }
@@ -399,7 +477,7 @@ td strong {
   color: var(--br-text);
   padding: 0.2rem 0.35rem;
   font:
-    700 0.6rem "Courier New",
+    700 0.6rem 'Courier New',
     monospace;
 }
 .report-badges {
@@ -427,7 +505,7 @@ td strong {
 .muted {
   color: var(--br-muted);
   font:
-    700 0.65rem "Courier New",
+    700 0.65rem 'Courier New',
     monospace;
 }
 .row-actions {
@@ -462,12 +540,7 @@ td strong {
 .skeleton-row span {
   display: block;
   height: 2.5rem;
-  background: linear-gradient(
-    90deg,
-    var(--br-panel-2),
-    var(--br-line),
-    var(--br-panel-2)
-  );
+  background: linear-gradient(90deg, var(--br-panel-2), var(--br-line), var(--br-panel-2));
   background-size: 200% 100%;
   animation: skeleton 1.2s linear infinite;
 }
@@ -495,7 +568,7 @@ td strong {
   background: var(--br-accent);
   color: var(--br-accent-text);
   font:
-    800 0.72rem "Courier New",
+    800 0.72rem 'Courier New',
     monospace;
 }
 .report-list article {
@@ -519,7 +592,7 @@ td strong {
   display: block;
   color: var(--br-accent);
   font:
-    800 0.6rem "Courier New",
+    800 0.6rem 'Courier New',
     monospace;
   text-transform: uppercase;
 }
@@ -531,7 +604,7 @@ td strong {
 .report-main small {
   color: var(--br-muted);
   font:
-    700 0.62rem "Courier New",
+    700 0.62rem 'Courier New',
     monospace;
 }
 .download {
@@ -551,7 +624,7 @@ td strong {
   padding: 1.25rem;
   color: var(--br-muted);
   font:
-    700 0.72rem/1.5 "Courier New",
+    700 0.72rem/1.5 'Courier New',
     monospace;
 }
 .modal-overlay {
@@ -656,7 +729,7 @@ td strong {
 }
 .invoice-meta dt {
   font:
-    800 0.65rem "Courier New",
+    800 0.65rem 'Courier New',
     monospace;
   text-transform: uppercase;
 }
@@ -668,7 +741,7 @@ td strong {
   display: block;
   color: #56534c;
   font:
-    700 0.65rem "Courier New",
+    700 0.65rem 'Courier New',
     monospace;
 }
 .modal-body h3 {
@@ -693,7 +766,7 @@ td strong {
   display: block;
   color: #56534c;
   font:
-    700 0.65rem "Courier New",
+    700 0.65rem 'Courier New',
     monospace;
 }
 .tax-detail {
@@ -705,7 +778,7 @@ td strong {
   border: 1px solid #77736b;
   padding: 0.4rem;
   font:
-    700 0.68rem "Courier New",
+    700 0.68rem 'Courier New',
     monospace;
 }
 .check-label {
@@ -863,7 +936,7 @@ td strong {
 .xml-dropzone > div:first-child span {
   color: var(--br-muted);
   font:
-    700 0.68rem "Courier New",
+    700 0.68rem 'Courier New',
     monospace;
 }
 .xml-dropzone > button {
@@ -922,7 +995,7 @@ td strong {
   border: 1px solid var(--br-line-strong);
   padding: 0.22rem 0.35rem;
   font:
-    800 0.58rem "Courier New",
+    800 0.58rem 'Courier New',
     monospace;
   text-transform: uppercase;
 }
@@ -964,7 +1037,7 @@ td strong {
 .calendar-reports span {
   color: var(--br-muted);
   font:
-    700 0.6rem "Courier New",
+    700 0.6rem 'Courier New',
     monospace;
 }
 .report-chip {
@@ -977,7 +1050,7 @@ td strong {
   color: inherit;
   padding: 0.3rem 0.4rem;
   font:
-    700 0.62rem "Courier New",
+    700 0.62rem 'Courier New',
     monospace;
   cursor: pointer;
 }
@@ -1022,7 +1095,7 @@ td strong {
   color: var(--br-text);
   padding: 0.4rem;
   font:
-    800 0.61rem "Courier New",
+    800 0.61rem 'Courier New',
     monospace;
   text-transform: uppercase;
   cursor: pointer;
@@ -1032,11 +1105,7 @@ td strong {
   color: var(--br-accent-text);
 }
 tbody tr.used-monthly:not(.selected) {
-  background: color-mix(
-    in srgb,
-    var(--br-warning-line, #d0a928) 14%,
-    var(--br-panel)
-  );
+  background: color-mix(in srgb, var(--br-warning-line, #d0a928) 14%, var(--br-panel));
 }
 tbody tr.used-monthly td:first-child {
   box-shadow: inset 4px 0 0 var(--br-warning-line, #d0a928);
@@ -1045,7 +1114,92 @@ tbody tr.used-monthly td:first-child {
   color: var(--br-warning-line, #d0a928) !important;
   text-transform: uppercase;
 }
-tbody tr.report-blocked:not(.selected){background:color-mix(in srgb,var(--br-danger-line,#e06a5c) 17%,var(--br-panel))}tbody tr.report-blocked td:first-child{box-shadow:inset 4px 0 0 var(--br-danger-line,#e06a5c)}.blocked-label{max-width:16rem;margin-top:.35rem!important;color:var(--br-danger-line,#e06a5c)!important;font-weight:800!important}.check-col input:disabled{cursor:not-allowed;opacity:.55}
+tbody tr.report-blocked:not(.selected) {
+  background: color-mix(in srgb, var(--br-danger-line, #e06a5c) 17%, var(--br-panel));
+}
+tbody tr.report-blocked td:first-child {
+  box-shadow: inset 4px 0 0 var(--br-danger-line, #e06a5c);
+}
+.blocked-label {
+  max-width: 16rem;
+  margin-top: 0.35rem !important;
+  color: var(--br-danger-line, #e06a5c) !important;
+  font-weight: 800 !important;
+}
+.check-col input:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.invoice-group-row td {
+  position: sticky;
+  left: 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--br-ink, #141413) !important;
+  color: var(--br-paper, #fff);
+  border-top: 2px solid var(--br-accent);
+  font:
+    800 0.66rem 'Courier New',
+    monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.invoice-group-row td span {
+  margin-left: 0.75rem;
+  color: color-mix(in srgb, var(--br-paper, #fff) 62%, transparent);
+  font-weight: 400;
+}
+.invoice-group-row:hover td {
+  background: var(--br-ink, #141413) !important;
+}
+.fiscal-attention:not(.report-blocked) {
+  background: color-mix(in srgb, #f0c940 22%, var(--br-panel)) !important;
+}
+.fiscal-attention td:first-child {
+  box-shadow: inset 4px 0 0 #d7ad16;
+}
+.report-warning:not(.report-blocked):not(.fiscal-attention) {
+  background: color-mix(in srgb, #f0c75e 11%, var(--br-panel));
+}
+.warning-label {
+  max-width: 18rem;
+  margin-top: 0.35rem !important;
+  color: color-mix(in srgb, #d7ad16 82%, var(--br-text)) !important;
+  font-weight: 800 !important;
+}
+.payment-reference-list {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.45rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid color-mix(in srgb, var(--br-accent) 35%, transparent);
+}
+.payment-reference-list small {
+  color: var(--br-muted);
+  font:
+    800 0.58rem 'Courier New',
+    monospace;
+  text-transform: uppercase;
+}
+.payment-reference-list button {
+  max-width: 18rem;
+  border: 0;
+  border-left: 3px solid var(--br-accent);
+  background: transparent;
+  color: var(--br-text);
+  padding: 0.2rem 0.4rem;
+  text-align: left;
+  font:
+    700 0.66rem 'Courier New',
+    monospace;
+  cursor: pointer;
+}
+.payment-reference-list button:hover {
+  background: color-mix(in srgb, var(--br-accent) 12%, transparent);
+}
+.payment-reference-list button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
 @media (max-width: 1100px) {
   .workspace-grid {
     grid-template-columns: 1fr;
@@ -1173,7 +1327,9 @@ tbody tr.report-blocked:not(.selected){background:color-mix(in srgb,var(--br-dan
   display: block;
   margin-bottom: 0.35rem;
   color: var(--br-accent);
-  font: 800 0.62rem "Courier New", monospace;
+  font:
+    800 0.62rem 'Courier New',
+    monospace;
   letter-spacing: 0.1em;
 }
 .reports-drawer .report-count {
@@ -1186,7 +1342,9 @@ tbody tr.report-blocked:not(.selected){background:color-mix(in srgb,var(--br-dan
   border-left: 1px solid var(--br-line-strong);
   background: var(--br-accent);
   color: var(--br-accent-text);
-  font: 400 2rem/1 Arial, sans-serif;
+  font:
+    400 2rem/1 Arial,
+    sans-serif;
   cursor: pointer;
 }
 .reports-drawer-close:hover,
@@ -1201,12 +1359,20 @@ tbody tr.report-blocked:not(.selected){background:color-mix(in srgb,var(--br-dan
   grid-template-columns: 6rem minmax(0, 1fr) 8rem;
 }
 @keyframes reports-drawer-in {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 @keyframes drawer-overlay-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @media (max-width: 620px) {
   .selection-actions {

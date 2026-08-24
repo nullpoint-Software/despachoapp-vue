@@ -4,4 +4,4 @@ interface ColumnDef {
   visible?: boolean
 }
 
-export type{ColumnDef}
+export type { ColumnDef }

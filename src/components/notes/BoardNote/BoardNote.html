@@ -1,182 +1,519 @@
 <main ref="pageRef" class="notes-directory">
-    <header class="directory-header">
-      <div><p>ARCHIVO / NOTAS</p><h1>Directorio</h1></div>
-      <label class="directory-search">
-        <span>Buscar //</span>
-        <span class="app-search-control">
-          <i class="pi pi-search" aria-hidden="true" />
-          <input v-model="query" type="search" autocomplete="off" placeholder="Cliente, número o asunto" />
-        </span>
-      </label>
-      <div class="header-actions"><button type="button" @click="createFolder"><i class="pi pi-folder-plus"/> Carpeta</button><button type="button" class="accent" @click="createNote"><i class="pi pi-file-plus"/> Nota</button></div>
-    </header>
-
-    <div class="directory-layout">
-      <aside class="tree-panel">
-        <div class="panel-label"><span>Índice</span><b>{{ visibleNotes.length }} doc.</b></div>
-        <p class="shortcut-tip"><kbd>/</kbd><span>Abre u oculta las notas ancladas desde cualquier vista.</span></p>
-        <button
-          type="button"
-          class="tree-root"
-          :class="{active:currentPath==='General', 'drop-target':dropTarget==='General'}"
-          @click="selectRoot"
-          @dragover.prevent="setDropTarget('General')"
-          @dragleave="clearDropTarget('General')"
-          @drop.prevent="moveDraggedNote('General')"
-        >
-          <span class="branch">{{ rootExpanded ? '−' : '+' }}</span>
-          <i :class="currentPath==='General'?'pi pi-folder-open':'pi pi-folder'"/>
-          <span>General</span>
-        </button>
-        <template v-for="folder in directoryFolders" :key="folder">
-          <div
-            class="tree-item-row"
-            :class="{active:currentPath===folder, 'drop-target':dropTarget===folder}"
-            :style="treeIndent(folder)"
-            @dragover.prevent="setDropTarget(folder)"
-            @dragleave="clearDropTarget(folder)"
-            @drop.prevent="moveDraggedNote(folder)"
-          >
-            <button type="button" class="tree-item" @click="selectFolder(folder)">
-              <span class="branch">{{ branchMark(folder) }}</span>
-              <i :class="currentPath===folder?'pi pi-folder-open':'pi pi-folder'"/>
-              <span>{{ folderName(folder) }}</span>
-              <b>{{ countFolder(folder) }}</b>
-            </button>
-            <button type="button" class="folder-delete" title="Eliminar carpeta" @click="deleteFolder(folder)"><i class="pi pi-trash"/></button>
-          </div>
-        </template>
-        <button type="button" class="archive-link" :class="{active:currentPath==='__storage'}" @click="currentPath='__storage'"><i class="pi pi-inbox"/> Archivadas <b>{{ storageNotes.length }}</b></button>
-      </aside>
-
-      <section class="directory-content">
-        <div class="breadcrumb">
-          <span>Raíz</span><i>/</i><template v-for="part in breadcrumbs" :key="part"><b>{{ part }}</b><i>/</i></template>
-          <strong v-if="moveMessage" class="move-message">{{ moveMessage }}</strong>
-          <em>RUTA {{ currentLabel }}</em>
-        </div>
-        <div v-if="isLoading" class="empty-state"><b>··</b><h2>Cargando archivo</h2></div>
-        <div v-else-if="error" class="empty-state"><b>!!</b><h2>{{ error }}</h2><button @click="fetchNotes">Reintentar</button></div>
-        <div v-else-if="!visibleNotes.length" class="empty-state"><b>00</b><div><h2>Carpeta vacía</h2><p>Crea una nota o una subcarpeta para clasificar información.</p><button @click="createNote">+ Nueva nota aquí</button></div></div>
-        <div v-else class="file-list">
-          <div class="file-list-head"><span>Documento</span><span>Estado</span><span>Acciones</span></div>
-          <article
-            v-for="(note,index) in visibleNotes"
-            :key="note.id"
-            class="file-row"
-            :class="{dragging:draggedNoteId===note.id}"
-            draggable="true"
-            @dragstart="startNoteDrag($event,note)"
-            @dragend="finishNoteDrag"
-            @dblclick="openNote(note)"
-          >
-            <span class="file-index">{{ String(index+1).padStart(2,'0') }}</span><button class="file-name" @click="openNote(note)"><i class="pi pi-file"/><span><b>{{ note.titulo || 'Sin título' }}</b><small>{{ plain(note.descripcion) }}</small></span></button>
-            <span class="file-status"><i v-if="note.pinned" class="pi pi-thumbtack"/>{{ note.status==='storage'?'ARCHIVO':'ACTIVA' }}</span>
-            <span class="file-actions"><button title="Fijar" @click="togglePin(note)"><i class="pi pi-thumbtack"/></button><button :title="note.status==='storage'?'Restaurar':'Archivar'" @click="toggleArchive(note)"><i :class="note.status==='storage'?'pi pi-replay':'pi pi-inbox'"/></button><button title="Eliminar" @click="removeNote(note)"><i class="pi pi-trash"/></button></span>
-          </article>
-        </div>
-      </section>
+  <header class="directory-header">
+    <div>
+      <p>ARCHIVO / NOTAS</p>
+      <h1>Directorio</h1>
     </div>
+    <label class="directory-search">
+      <span>Buscar //</span>
+      <span class="app-search-control">
+        <i class="pi pi-search" aria-hidden="true" />
+        <input
+          v-model="query"
+          type="search"
+          autocomplete="off"
+          placeholder="Cliente, número o asunto"
+        />
+      </span>
+    </label>
+    <div class="header-actions">
+      <button type="button" @click="createFolder"><i class="pi pi-folder-plus" /> Carpeta</button
+      ><button type="button" class="accent" @click="createNote">
+        <i class="pi pi-file-plus" /> Nota
+      </button>
+    </div>
+  </header>
 
-    <Teleport to="body">
-      <div v-if="editorOpen" class="editor-overlay" @click.self="closeEditor">
-        <form class="note-editor" role="dialog" aria-modal="true" aria-labelledby="note-editor-title" :aria-busy="saving" @submit.prevent="saveEditor">
-          <header class="document-editor-header">
-            <h2 id="note-editor-title" class="sr-only">{{ editing?.id ? 'Editar documento' : 'Nuevo documento' }}</h2>
-            <label class="document-title-field document-title-field--header">
-              <span class="sr-only">Título del documento</span>
-              <input id="note-title" v-model="draft.titulo" autocomplete="off" :placeholder="editing?.id ? 'Título del documento' : 'Nuevo documento'" required autofocus />
-            </label>
-            <div class="document-editor-header-actions">
-              <div class="document-header-view-toggle" role="group" aria-label="Modo de visualización">
-                <button type="button" title="Escribir" aria-label="Vista de escritura" :class="{ active: editorMode === 'write' }" :aria-pressed="editorMode === 'write'" @click="setEditorMode('write')"><i class="pi pi-pencil" aria-hidden="true" /></button>
-                <button type="button" title="Dividir" aria-label="Vista dividida" :class="{ active: editorMode === 'split' }" :aria-pressed="editorMode === 'split'" @click="setEditorMode('split')"><i class="pi pi-th-large" aria-hidden="true" /></button>
-                <button type="button" title="Vista previa" aria-label="Vista previa" :class="{ active: editorMode === 'preview' }" :aria-pressed="editorMode === 'preview'" @click="setEditorMode('preview')"><i class="pi pi-eye" aria-hidden="true" /></button>
-              </div>
-              <button class="document-editor-close" type="button" aria-label="Cerrar editor de notas" @click="closeEditor"><i class="pi pi-times" aria-hidden="true" /></button>
-            </div>
-          </header>
+  <div class="directory-layout">
+    <aside class="tree-panel">
+      <div class="panel-label"><span>Índice</span><b>{{ visibleNotes.length }} doc.</b></div>
+      <p class="shortcut-tip">
+        <kbd>/</kbd><span>Abre u oculta las notas ancladas desde cualquier vista.</span>
+      </p>
+      <button
+        type="button"
+        class="tree-root"
+        :class="{active:currentPath==='General', 'drop-target':dropTarget==='General'}"
+        @click="selectRoot"
+        @dragover.prevent="setDropTarget('General')"
+        @dragleave="clearDropTarget('General')"
+        @drop.prevent="moveDraggedNote('General')"
+      >
+        <span class="branch">{{ rootExpanded ? '−' : '+' }}</span>
+        <i :class="currentPath==='General'?'pi pi-folder-open':'pi pi-folder'" />
+        <span>General</span>
+      </button>
+      <template v-for="folder in directoryFolders" :key="folder">
+        <div
+          class="tree-item-row"
+          :class="{active:currentPath===folder, 'drop-target':dropTarget===folder}"
+          :style="treeIndent(folder)"
+          @dragover.prevent="setDropTarget(folder)"
+          @dragleave="clearDropTarget(folder)"
+          @drop.prevent="moveDraggedNote(folder)"
+        >
+          <button type="button" class="tree-item" @click="selectFolder(folder)">
+            <span class="branch">{{ branchMark(folder) }}</span>
+            <i :class="currentPath===folder?'pi pi-folder-open':'pi pi-folder'" />
+            <span>{{ folderName(folder) }}</span>
+            <b>{{ countFolder(folder) }}</b>
+          </button>
+          <button
+            type="button"
+            class="folder-delete"
+            title="Eliminar carpeta"
+            @click="deleteFolder(folder)"
+          >
+            <i class="pi pi-trash" />
+          </button>
+        </div>
+      </template>
+      <button
+        type="button"
+        class="archive-link"
+        :class="{active:currentPath==='__storage'}"
+        @click="currentPath='__storage'"
+      >
+        <i class="pi pi-inbox" /> Archivadas <b>{{ storageNotes.length }}</b>
+      </button>
+    </aside>
 
-          <div class="document-editor-workspace">
-            <section class="document-route-strip" aria-label="Ubicación del documento">
-              <label class="document-menu-route">
-                <span><i class="pi pi-folder" aria-hidden="true" /> Ruta</span>
-                <AppAutocomplete id="note-path" v-model="draft.folderPath" :options="folderOptions" placeholder="General" />
-              </label>
-              <span class="document-character-count"><i class="pi pi-align-left" aria-hidden="true" /> {{ draft.descripcion.length }} caracteres</span>
-            </section>
-
-            <section class="document-body">
-
-
-              <nav class="markdown-ribbon" aria-label="Cinta de herramientas Markdown">
-                <section class="markdown-ribbon-group markdown-ribbon-group--text-styles" aria-label="Texto y estilos">
-                  <div class="markdown-ribbon-controls markdown-ribbon-controls--text-styles">
-                    <button type="button" title="Texto normal" aria-label="Texto normal" @mousedown.prevent @click="applyMarkdown('paragraph')"><i class="pi pi-align-left" aria-hidden="true" /></button>
-                    <button type="button" title="Título principal" aria-label="Título principal" @mousedown.prevent @click="applyMarkdown('heading1')"><span class="markdown-heading-glyph markdown-heading-glyph--h1">T1</span></button>
-                    <button type="button" title="Título de sección" aria-label="Título de sección" @mousedown.prevent @click="applyMarkdown('heading')"><span class="markdown-heading-glyph markdown-heading-glyph--h2">T2</span></button>
-                    <button type="button" title="Subtítulo" aria-label="Subtítulo" @mousedown.prevent @click="applyMarkdown('heading3')"><span class="markdown-heading-glyph markdown-heading-glyph--h3">T3</span></button>
-                    <button type="button" title="Negrita, Ctrl+B" aria-label="Negrita" aria-keyshortcuts="Control+B Meta+B" @mousedown.prevent @click="applyMarkdown('bold')"><strong class="markdown-tool-glyph">N</strong></button>
-                    <button type="button" title="Cursiva, Ctrl+I" aria-label="Cursiva" aria-keyshortcuts="Control+I Meta+I" @mousedown.prevent @click="applyMarkdown('italic')"><em class="markdown-tool-glyph">K</em></button>
-                    <button type="button" title="Aplicar o quitar resaltado, Ctrl+U" aria-label="Aplicar o quitar resaltado" aria-keyshortcuts="Control+U Meta+U" @mousedown.prevent @click="applyMarkdown('underline')"><span class="markdown-tool-glyph markdown-tool-glyph--underline">U</span></button>
-                    <button type="button" title="Quitar resaltado, Ctrl+Shift+U" aria-label="Quitar resaltado" aria-keyshortcuts="Control+Shift+U Meta+Shift+U" @mousedown.prevent @click="applyMarkdown('removeUnderline')"><i class="pi pi-eraser" aria-hidden="true" /></button>
-                    <button type="button" title="Tachar texto" aria-label="Tachar texto" @mousedown.prevent @click="applyMarkdown('strikethrough')"><s class="markdown-tool-glyph">S</s></button>
-                  </div>
-                  <span class="markdown-ribbon-label">Texto y estilos</span>
-                </section>
-
-
-                <section class="markdown-ribbon-group" aria-label="P&aacute;rrafos y listas">
-                  <div class="markdown-ribbon-controls">
-                    <button type="button" title="Lista con viñetas" aria-label="Lista con viñetas" @mousedown.prevent @click="applyMarkdown('bullets')"><i class="pi pi-list" aria-hidden="true" /></button>
-                    <button type="button" title="Lista numerada" aria-label="Lista numerada" @mousedown.prevent @click="applyMarkdown('ordered')"><i class="pi pi-sort-numeric-down" aria-hidden="true" /></button>
-                    <button type="button" title="Lista de tareas" aria-label="Lista de tareas" @mousedown.prevent @click="applyMarkdown('checklist')"><i class="pi pi-check-square" aria-hidden="true" /></button>
-                    <button type="button" title="Insertar cita" aria-label="Insertar cita" @mousedown.prevent @click="applyMarkdown('quote')"><i class="pi pi-comment" aria-hidden="true" /></button>
-                  </div>
-                  <span class="markdown-ribbon-label">P&aacute;rrafo</span>
-                </section>
-
-                <section class="markdown-ribbon-group" aria-label="Insertar contenido">
-                  <div class="markdown-ribbon-controls">
-                    <button type="button" title="Insertar enlace, Ctrl+K" aria-label="Insertar enlace" aria-keyshortcuts="Control+K Meta+K" @mousedown.prevent @click="applyMarkdown('link')"><i class="pi pi-link" aria-hidden="true" /></button>
-                    <button type="button" title="Insertar imagen desde una URL" aria-label="Insertar imagen" @mousedown.prevent @click="applyMarkdown('image')"><i class="pi pi-image" aria-hidden="true" /></button>
-                    <button type="button" title="Insertar tabla" aria-label="Insertar tabla" @mousedown.prevent @click="applyMarkdown('table')"><i class="pi pi-table" aria-hidden="true" /></button>
-                    <button type="button" title="Insertar bloque de código" aria-label="Insertar código" @mousedown.prevent @click="applyMarkdown('code')"><i class="pi pi-code" aria-hidden="true" /></button>
-                    <button type="button" title="Insertar fórmula LaTeX" aria-label="Insertar fórmula" @mousedown.prevent @click="applyMarkdown('formula')"><i class="pi pi-calculator" aria-hidden="true" /></button>
-                    <button type="button" title="Insertar separador" aria-label="Insertar separador" @mousedown.prevent @click="applyMarkdown('horizontalRule')"><i class="pi pi-minus" aria-hidden="true" /></button>
-                  </div>
-                  <span class="markdown-ribbon-label">Insertar</span>
-                </section>
-
-              </nav>
-
-              <div class="markdown-composer" :data-mode="editorMode">
-                <label v-show="editorMode !== 'preview'" class="markdown-source-pane">
-                  <span class="sr-only">Contenido en Markdown</span>
-                  <textarea ref="textareaRef" id="note-content" v-model="draft.descripcion" rows="16" spellcheck="true" aria-label="Contenido en Markdown" aria-keyshortcuts="Control+Z Meta+Z Control+Shift+Z Meta+Shift+Z" placeholder="Escribe un p&aacute;rrafo o usa la barra para insertar un bloque..." @beforeinput="handleEditorBeforeInput" @input="handleSourceInput" @keydown="handleEditorKeydown" />
-                </label>
-                <section v-show="editorMode !== 'write'" class="markdown-preview-pane" aria-label="Editor visual del documento">
-                  <div class="markdown-preview-viewport">
-                    <article ref="visualEditorRef" class="markdown-preview markdown-visual-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Contenido visual del documento" data-placeholder="Empieza a escribir el documento..." spellcheck="true" :style="{ zoom: previewZoom / 100 }" @input="handleVisualInput" @change="handleVisualInput" @keydown="handleVisualKeydown" />
-                  </div>
-                </section>
-              </div>
-            </section>
-          </div>
-
-          <footer class="document-editor-footer">
-            <div class="preview-zoom" role="group" aria-label="Zoom del documento">
-              <output title="Nivel de zoom" aria-live="polite">{{ previewZoom }}%</output>
-              <button type="button" title="Alejar" aria-label="Alejar documento" :disabled="previewZoom <= 70" @click="changePreviewZoom(-10)"><i class="pi pi-minus" aria-hidden="true" /></button>
-              <input v-model.number="previewZoom" class="preview-zoom-range" type="range" min="70" max="160" step="10" aria-label="Nivel de zoom del documento" />
-              <button type="button" title="Acercar" aria-label="Acercar documento" :disabled="previewZoom >= 160" @click="changePreviewZoom(10)"><i class="pi pi-plus" aria-hidden="true" /></button>
-            </div>
-            <div class="document-footer-actions">
-              <button type="button" @click="closeEditor">Cancelar</button>
-              <button class="accent" type="submit" :disabled="saving">{{ saving ? 'Guardando...' : 'Guardar documento' }}</button>
-            </div>
-          </footer>
-        </form>
+    <section class="directory-content">
+      <div class="breadcrumb">
+        <span>Raíz</span><i>/</i
+        ><template v-for="part in breadcrumbs" :key="part"><b>{{ part }}</b><i>/</i></template>
+        <strong v-if="moveMessage" class="move-message">{{ moveMessage }}</strong>
+        <em>RUTA {{ currentLabel }}</em>
       </div>
-    </Teleport>
-  </main>
+      <div v-if="isLoading" class="empty-state">
+        <b>··</b>
+        <h2>Cargando archivo</h2>
+      </div>
+      <div v-else-if="error" class="empty-state">
+        <b>!!</b>
+        <h2>{{ error }}</h2>
+        <button @click="fetchNotes">Reintentar</button>
+      </div>
+      <div v-else-if="!visibleNotes.length" class="empty-state">
+        <b>00</b>
+        <div>
+          <h2>Carpeta vacía</h2>
+          <p>Crea una nota o una subcarpeta para clasificar información.</p>
+          <button @click="createNote">+ Nueva nota aquí</button>
+        </div>
+      </div>
+      <div v-else class="file-list">
+        <div class="file-list-head">
+          <span>Documento</span><span>Estado</span><span>Acciones</span>
+        </div>
+        <article
+          v-for="(note,index) in visibleNotes"
+          :key="note.id"
+          class="file-row"
+          :class="{dragging:draggedNoteId===note.id}"
+          draggable="true"
+          @dragstart="startNoteDrag($event,note)"
+          @dragend="finishNoteDrag"
+          @dblclick="openNote(note)"
+        >
+          <span class="file-index">{{ String(index+1).padStart(2,'0') }}</span
+          ><button class="file-name" @click="openNote(note)">
+            <i class="pi pi-file" /><span
+              ><b>{{ note.titulo || 'Sin título' }}</b
+              ><small>{{ plain(note.descripcion) }}</small></span
+            >
+          </button>
+          <span class="file-status"
+            ><i v-if="note.pinned" class="pi pi-thumbtack" />{{
+            note.status==='storage'?'ARCHIVO':'ACTIVA' }}</span
+          >
+          <span class="file-actions"
+            ><button title="Fijar" @click="togglePin(note)"><i class="pi pi-thumbtack" /></button
+            ><button
+              :title="note.status==='storage'?'Restaurar':'Archivar'"
+              @click="toggleArchive(note)"
+            >
+              <i :class="note.status==='storage'?'pi pi-replay':'pi pi-inbox'" /></button
+            ><button title="Eliminar" @click="removeNote(note)"><i class="pi pi-trash" /></button
+          ></span>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <Teleport to="body">
+    <div v-if="editorOpen" class="editor-overlay">
+      <form
+        class="note-editor"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="note-editor-title"
+        :aria-busy="saving"
+        @submit.prevent="saveEditor"
+      >
+        <header class="document-editor-header">
+          <h2 id="note-editor-title" class="sr-only">
+            {{ editing?.id ? 'Editar documento' : 'Nuevo documento' }}
+          </h2>
+          <label class="document-title-field document-title-field--header">
+            <span class="sr-only">Título del documento</span>
+            <input
+              id="note-title"
+              v-model="draft.titulo"
+              autocomplete="off"
+              :placeholder="editing?.id ? 'Título del documento' : 'Nuevo documento'"
+              required
+              autofocus
+            />
+          </label>
+          <div class="document-editor-header-actions">
+            <div
+              class="document-header-view-toggle"
+              role="group"
+              aria-label="Modo de visualización"
+            >
+              <button
+                type="button"
+                title="Escribir"
+                aria-label="Vista de escritura"
+                :class="{ active: editorMode === 'write' }"
+                :aria-pressed="editorMode === 'write'"
+                @click="setEditorMode('write')"
+              >
+                <i class="pi pi-pencil" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                title="Dividir"
+                aria-label="Vista dividida"
+                :class="{ active: editorMode === 'split' }"
+                :aria-pressed="editorMode === 'split'"
+                @click="setEditorMode('split')"
+              >
+                <i class="pi pi-th-large" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                title="Vista previa"
+                aria-label="Vista previa"
+                :class="{ active: editorMode === 'preview' }"
+                :aria-pressed="editorMode === 'preview'"
+                @click="setEditorMode('preview')"
+              >
+                <i class="pi pi-eye" aria-hidden="true" />
+              </button>
+            </div>
+            <button
+              class="document-editor-close"
+              type="button"
+              aria-label="Cerrar editor de notas"
+              @click="closeEditor"
+            >
+              <i class="pi pi-times" aria-hidden="true" />
+            </button>
+          </div>
+        </header>
+
+        <div class="document-editor-workspace">
+          <section class="document-route-strip" aria-label="Ubicación del documento">
+            <label class="document-menu-route">
+              <span><i class="pi pi-folder" aria-hidden="true" /> Ruta</span>
+              <AppAutocomplete
+                id="note-path"
+                v-model="draft.folderPath"
+                :options="folderOptions"
+                placeholder="General"
+              />
+            </label>
+            <span class="document-character-count"
+              ><i class="pi pi-align-left" aria-hidden="true" /> {{ draft.descripcion.length }}
+              caracteres</span
+            >
+          </section>
+
+          <section class="document-body">
+            <nav class="markdown-ribbon" aria-label="Cinta de herramientas Markdown">
+              <section
+                class="markdown-ribbon-group markdown-ribbon-group--text-styles"
+                aria-label="Texto y estilos"
+              >
+                <div class="markdown-ribbon-controls markdown-ribbon-controls--text-styles">
+                  <button
+                    type="button"
+                    title="Texto normal"
+                    aria-label="Texto normal"
+                    @mousedown.prevent
+                    @click="applyMarkdown('paragraph')"
+                  >
+                    <i class="pi pi-align-left" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Título principal"
+                    aria-label="Título principal"
+                    @mousedown.prevent
+                    @click="applyMarkdown('heading1')"
+                  >
+                    <span class="markdown-heading-glyph markdown-heading-glyph--h1">T1</span>
+                  </button>
+                  <button
+                    type="button"
+                    title="Título de sección"
+                    aria-label="Título de sección"
+                    @mousedown.prevent
+                    @click="applyMarkdown('heading')"
+                  >
+                    <span class="markdown-heading-glyph markdown-heading-glyph--h2">T2</span>
+                  </button>
+                  <button
+                    type="button"
+                    title="Subtítulo"
+                    aria-label="Subtítulo"
+                    @mousedown.prevent
+                    @click="applyMarkdown('heading3')"
+                  >
+                    <span class="markdown-heading-glyph markdown-heading-glyph--h3">T3</span>
+                  </button>
+                  <button
+                    type="button"
+                    title="Negrita, Ctrl+B"
+                    aria-label="Negrita"
+                    aria-keyshortcuts="Control+B Meta+B"
+                    @mousedown.prevent
+                    @click="applyMarkdown('bold')"
+                  >
+                    <strong class="markdown-tool-glyph">N</strong>
+                  </button>
+                  <button
+                    type="button"
+                    title="Cursiva, Ctrl+I"
+                    aria-label="Cursiva"
+                    aria-keyshortcuts="Control+I Meta+I"
+                    @mousedown.prevent
+                    @click="applyMarkdown('italic')"
+                  >
+                    <em class="markdown-tool-glyph">K</em>
+                  </button>
+                  <button
+                    type="button"
+                    title="Aplicar o quitar resaltado, Ctrl+U"
+                    aria-label="Aplicar o quitar resaltado"
+                    aria-keyshortcuts="Control+U Meta+U"
+                    @mousedown.prevent
+                    @click="applyMarkdown('underline')"
+                  >
+                    <span class="markdown-tool-glyph markdown-tool-glyph--underline">U</span>
+                  </button>
+                  <button
+                    type="button"
+                    title="Quitar resaltado, Ctrl+Shift+U"
+                    aria-label="Quitar resaltado"
+                    aria-keyshortcuts="Control+Shift+U Meta+Shift+U"
+                    @mousedown.prevent
+                    @click="applyMarkdown('removeUnderline')"
+                  >
+                    <i class="pi pi-eraser" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Tachar texto"
+                    aria-label="Tachar texto"
+                    @mousedown.prevent
+                    @click="applyMarkdown('strikethrough')"
+                  >
+                    <s class="markdown-tool-glyph">S</s>
+                  </button>
+                </div>
+                <span class="markdown-ribbon-label">Texto y estilos</span>
+              </section>
+
+              <section class="markdown-ribbon-group" aria-label="P&aacute;rrafos y listas">
+                <div class="markdown-ribbon-controls">
+                  <button
+                    type="button"
+                    title="Lista con viñetas"
+                    aria-label="Lista con viñetas"
+                    @mousedown.prevent
+                    @click="applyMarkdown('bullets')"
+                  >
+                    <i class="pi pi-list" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Lista numerada"
+                    aria-label="Lista numerada"
+                    @mousedown.prevent
+                    @click="applyMarkdown('ordered')"
+                  >
+                    <i class="pi pi-sort-numeric-down" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Lista de tareas"
+                    aria-label="Lista de tareas"
+                    @mousedown.prevent
+                    @click="applyMarkdown('checklist')"
+                  >
+                    <i class="pi pi-check-square" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Insertar cita"
+                    aria-label="Insertar cita"
+                    @mousedown.prevent
+                    @click="applyMarkdown('quote')"
+                  >
+                    <i class="pi pi-comment" aria-hidden="true" />
+                  </button>
+                </div>
+                <span class="markdown-ribbon-label">P&aacute;rrafo</span>
+              </section>
+
+              <section class="markdown-ribbon-group" aria-label="Insertar contenido">
+                <div class="markdown-ribbon-controls">
+                  <button
+                    type="button"
+                    title="Insertar enlace, Ctrl+K"
+                    aria-label="Insertar enlace"
+                    aria-keyshortcuts="Control+K Meta+K"
+                    @mousedown.prevent
+                    @click="applyMarkdown('link')"
+                  >
+                    <i class="pi pi-link" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Insertar imagen desde una URL"
+                    aria-label="Insertar imagen"
+                    @mousedown.prevent
+                    @click="applyMarkdown('image')"
+                  >
+                    <i class="pi pi-image" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Insertar tabla"
+                    aria-label="Insertar tabla"
+                    @mousedown.prevent
+                    @click="applyMarkdown('table')"
+                  >
+                    <i class="pi pi-table" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Insertar bloque de código"
+                    aria-label="Insertar código"
+                    @mousedown.prevent
+                    @click="applyMarkdown('code')"
+                  >
+                    <i class="pi pi-code" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Insertar fórmula LaTeX"
+                    aria-label="Insertar fórmula"
+                    @mousedown.prevent
+                    @click="applyMarkdown('formula')"
+                  >
+                    <i class="pi pi-calculator" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Insertar separador"
+                    aria-label="Insertar separador"
+                    @mousedown.prevent
+                    @click="applyMarkdown('horizontalRule')"
+                  >
+                    <i class="pi pi-minus" aria-hidden="true" />
+                  </button>
+                </div>
+                <span class="markdown-ribbon-label">Insertar</span>
+              </section>
+            </nav>
+
+            <div class="markdown-composer" :data-mode="editorMode">
+              <label v-show="editorMode !== 'preview'" class="markdown-source-pane">
+                <span class="sr-only">Contenido en Markdown</span>
+                <textarea
+                  ref="textareaRef"
+                  id="note-content"
+                  v-model="draft.descripcion"
+                  rows="16"
+                  spellcheck="true"
+                  aria-label="Contenido en Markdown"
+                  aria-keyshortcuts="Control+Z Meta+Z Control+Shift+Z Meta+Shift+Z"
+                  placeholder="Escribe un p&aacute;rrafo o usa la barra para insertar un bloque..."
+                  @beforeinput="handleEditorBeforeInput"
+                  @input="handleSourceInput"
+                  @keydown="handleEditorKeydown"
+                />
+              </label>
+              <section
+                v-show="editorMode !== 'write'"
+                class="markdown-preview-pane"
+                aria-label="Editor visual del documento"
+              >
+                <div class="markdown-preview-viewport">
+                  <article
+                    ref="visualEditorRef"
+                    class="markdown-preview markdown-visual-editor"
+                    contenteditable="true"
+                    role="textbox"
+                    aria-multiline="true"
+                    aria-label="Contenido visual del documento"
+                    data-placeholder="Empieza a escribir el documento..."
+                    spellcheck="true"
+                    :style="{ zoom: previewZoom / 100 }"
+                    @input="handleVisualInput"
+                    @change="handleVisualInput"
+                    @keydown="handleVisualKeydown"
+                  />
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+
+        <footer class="document-editor-footer">
+          <div class="preview-zoom" role="group" aria-label="Zoom del documento">
+            <output title="Nivel de zoom" aria-live="polite">{{ previewZoom }}%</output>
+            <button
+              type="button"
+              title="Alejar"
+              aria-label="Alejar documento"
+              :disabled="previewZoom <= 70"
+              @click="changePreviewZoom(-10)"
+            >
+              <i class="pi pi-minus" aria-hidden="true" />
+            </button>
+            <input
+              v-model.number="previewZoom"
+              class="preview-zoom-range"
+              type="range"
+              min="70"
+              max="160"
+              step="10"
+              aria-label="Nivel de zoom del documento"
+              :style="previewZoomStyle"
+            />
+            <button
+              type="button"
+              title="Acercar"
+              aria-label="Acercar documento"
+              :disabled="previewZoom >= 160"
+              @click="changePreviewZoom(10)"
+            >
+              <i class="pi pi-plus" aria-hidden="true" />
+            </button>
+          </div>
+          <div class="document-footer-actions">
+            <button type="button" @click="closeEditor">Cancelar</button>
+            <button class="accent" type="submit" :disabled="saving">
+              {{ saving ? 'Guardando...' : 'Guardar documento' }}
+            </button>
+          </div>
+        </footer>
+      </form>
+    </div>
+  </Teleport>
+</main>

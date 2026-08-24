@@ -1,11 +1,11 @@
 interface MenuItem {
-  name: string;
-  path: string;
-  icon: string;
+  name: string
+  path: string
+  icon: string
 }
 
 interface DesktopSidebarProps {
-  menuItems: MenuItem[];
+  menuItems: MenuItem[]
 }
 
-defineProps<DesktopSidebarProps>();
+defineProps<DesktopSidebarProps>()

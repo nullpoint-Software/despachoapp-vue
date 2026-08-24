@@ -1,35 +1,44 @@
 <Teleport to="body">
-    <div v-if="visible" class="app-filter-overlay" @click.self="$emit('close')">
-      <section
-        ref="modal"
-        class="app-filter-modal"
-        role="dialog"
-        aria-modal="true"
-        :aria-labelledby="titleId"
-        tabindex="-1"
-        @keydown.esc="$emit('close')"
-      >
-        <header class="app-filter-modal__header">
-          <div>
-            <p>{{ eyebrow }}</p>
-            <h2 :id="titleId">{{ title }}</h2>
-          </div>
-          <button type="button" aria-label="Cerrar filtros" @click="$emit('close')">×</button>
-        </header>
-
-        <div class="app-filter-modal__body">
-          <slot />
+  <div
+    v-if="visible"
+    class="app-filter-overlay"
+    :class="{ 'app-filter-overlay--nested': layer === 'nested' }"
+  >
+    <section
+      ref="modal"
+      class="app-filter-modal"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="titleId"
+      tabindex="-1"
+      @keydown.esc="$emit('close')"
+    >
+      <header class="app-filter-modal__header">
+        <div>
+          <p>{{ eyebrow }}</p>
+          <h2 :id="titleId">{{ title }}</h2>
         </div>
+        <button type="button" aria-label="Cerrar filtros" @click="$emit('close')">×</button>
+      </header>
 
-        <footer class="app-filter-modal__footer">
-          <button type="button" class="app-filter-modal__reset" @click="$emit('reset')">
-            Restablecer
-          </button>
-          <div>
-            <AppButton label="Cancelar" outlined @click="$emit('close')" />
-            <AppButton label="Aplicar filtros" icon="pi pi-filter" @click="$emit('apply')" />
-          </div>
-        </footer>
-      </section>
-    </div>
-  </Teleport>
+      <div class="app-filter-modal__body">
+        <slot />
+      </div>
+
+      <footer class="app-filter-modal__footer">
+        <button
+          v-if="showReset"
+          type="button"
+          class="app-filter-modal__reset"
+          @click="$emit('reset')"
+        >
+          {{ resetLabel }}
+        </button>
+        <div>
+          <AppButton label="Cancelar" outlined @click="$emit('close')" />
+          <AppButton :label="applyLabel" icon="pi pi-check" @click="$emit('apply')" />
+        </div>
+      </footer>
+    </section>
+  </div>
+</Teleport>

@@ -1,1 +1,53 @@
-.app-email-input{display:grid;width:100%;grid-template-columns:minmax(7rem,1fr) 2.8rem minmax(8rem,1fr);align-items:stretch}.app-email-input input{min-width:0;min-height:3rem;border:1px solid var(--br-line-strong,#77736b);border-radius:0;background:color-mix(in srgb,var(--br-control,#e7e4dc) 72%,white);color:var(--br-control-text,#141413);padding:.7rem .8rem}.app-email-input input:first-child{border-right:0}.app-email-input input:last-child{border-left:0}.app-email-input__separator{display:grid;place-items:center;border-top:1px solid var(--br-line-strong,#77736b);border-bottom:1px solid var(--br-line-strong,#77736b);background:var(--br-bg,#141413);color:var(--br-accent,#e34b32);font:900 1rem "Courier New",monospace}.app-email-input:focus-within{outline:2px solid var(--br-accent,#e34b32);outline-offset:2px}.app-email-input:focus-within input{outline:0!important}.app-email-input input[aria-invalid="true"]{border-color:var(--br-danger-line,#a52319)!important}.app-email-input:has(input[aria-invalid="true"]){box-shadow:inset 4px 0 0 var(--br-danger-line,#a52319)}@media(max-width:520px){.app-email-input{grid-template-columns:minmax(6rem,1fr) 2.6rem minmax(7rem,1fr)}.app-email-input input{padding:.65rem .55rem}}
+.app-email-input {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(7rem, 1fr) 2.8rem minmax(8rem, 1fr);
+  align-items: stretch;
+}
+.app-email-input input {
+  min-width: 0;
+  min-height: 3rem;
+  border: 1px solid var(--br-line-strong, #77736b);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--br-control, #e7e4dc) 72%, white);
+  color: var(--br-control-text, #141413);
+  padding: 0.7rem 0.8rem;
+}
+.app-email-input input:first-child {
+  border-right: 0;
+}
+.app-email-input input:last-child {
+  border-left: 0;
+}
+.app-email-input__separator {
+  display: grid;
+  place-items: center;
+  border-top: 1px solid var(--br-line-strong, #77736b);
+  border-bottom: 1px solid var(--br-line-strong, #77736b);
+  background: var(--br-bg, #141413);
+  color: var(--br-accent, #e34b32);
+  font:
+    900 1rem 'Courier New',
+    monospace;
+}
+.app-email-input:focus-within {
+  outline: 2px solid var(--br-accent, #e34b32);
+  outline-offset: 2px;
+}
+.app-email-input:focus-within input {
+  outline: 0 !important;
+}
+.app-email-input input[aria-invalid='true'] {
+  border-color: var(--br-danger-line, #a52319) !important;
+}
+.app-email-input:has(input[aria-invalid='true']) {
+  box-shadow: inset 4px 0 0 var(--br-danger-line, #a52319);
+}
+@media (max-width: 520px) {
+  .app-email-input {
+    grid-template-columns: minmax(6rem, 1fr) 2.6rem minmax(7rem, 1fr);
+  }
+  .app-email-input input {
+    padding: 0.65rem 0.55rem;
+  }
+}

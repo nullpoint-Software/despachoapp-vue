@@ -1,6 +1,11 @@
 <Teleport to="body">
-<div class="documents-overlay" @click.self="emit('close')">
-    <section class="documents-modal" role="dialog" aria-modal="true" aria-labelledby="documents-title">
+  <div class="documents-overlay">
+    <section
+      class="documents-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="documents-title"
+    >
       <header>
         <div>
           <p>EXPEDIENTE CIFRADO</p>
@@ -10,23 +15,55 @@
         <AppButton icon="pi pi-times" aria-label="Cerrar" @click="emit('close')" />
       </header>
 
-      <form v-if="!accessToken" class="documents-lock" :aria-busy="verifying" @submit.prevent="unlock">
+      <form
+        v-if="!accessToken"
+        class="documents-lock"
+        :aria-busy="verifying"
+        @submit.prevent="unlock"
+      >
         <div class="lock-mark"><i class="pi pi-lock" aria-hidden="true"></i></div>
         <p>ACCESO PROTEGIDO</p>
         <h3>Verifica tu identidad</h3>
-        <span>Escribe tu contraseña de acceso para abrir este expediente durante cinco minutos.</span>
+        <span
+          >Escribe tu contraseña una vez. El acceso a datos protegidos permanecerá activo durante
+          diez minutos.</span
+        >
         <label>
           <b>Tu contraseña</b>
-          <AppInput id="documents-password" v-model="verificationPassword" type="password" autocomplete="current-password" required :aria-invalid="Boolean(error)" :aria-describedby="error ? 'documents-unlock-error' : undefined"
-            placeholder="Escribe tu contraseña" autofocus />
+          <AppInput
+            id="documents-password"
+            v-model="verificationPassword"
+            type="password"
+            autocomplete="current-password"
+            required
+            :aria-invalid="Boolean(error)"
+            :aria-describedby="error ? 'documents-unlock-error' : undefined"
+            placeholder="Escribe tu contraseña"
+            autofocus
+          />
         </label>
-        <p v-if="error" id="documents-unlock-error" class="a11y-form-status inline-error" role="alert">{{ error }}</p>
-        <AppButton type="submit" label="Desbloquear expediente" icon="pi pi-lock-open"
-          :disabled="!verificationPassword || verifying" />
+        <p
+          v-if="error"
+          id="documents-unlock-error"
+          class="a11y-form-status inline-error"
+          role="alert"
+        >
+          {{ error }}
+        </p>
+        <AppButton
+          type="submit"
+          label="Desbloquear expediente"
+          icon="pi pi-lock-open"
+          :disabled="!verificationPassword || verifying"
+        />
       </form>
 
       <div v-else class="documents-body">
-        <section class="a11y-form upload-section" aria-labelledby="upload-title" :aria-busy="uploading">
+        <section
+          class="a11y-form upload-section"
+          aria-labelledby="upload-title"
+          :aria-busy="uploading"
+        >
           <div class="section-heading">
             <div>
               <h3 id="upload-title">Agregar PDF</h3>
@@ -57,8 +94,17 @@
             @dragleave.prevent="dragging = false"
             @drop.prevent="dropFile"
           >
-            <input ref="fileInput" type="file" accept="application/pdf,.pdf" hidden @change="selectFromInput" />
-            <i :class="pendingFile ? 'pi pi-file-pdf' : 'pi pi-cloud-upload'" aria-hidden="true"></i>
+            <input
+              ref="fileInput"
+              type="file"
+              accept="application/pdf,.pdf"
+              hidden
+              @change="selectFromInput"
+            />
+            <i
+              :class="pendingFile ? 'pi pi-file-pdf' : 'pi pi-cloud-upload'"
+              aria-hidden="true"
+            ></i>
             <template v-if="pendingFile">
               <strong>{{ pendingFile.name }}</strong>
               <span>{{ fileSize(pendingFile.size) }}</span>
@@ -69,14 +115,16 @@
             </template>
           </div>
 
-          <p v-if="error" id="documents-unlock-error" class="a11y-form-status inline-error" role="alert">{{ error }}</p>
+          <p
+            v-if="error"
+            id="documents-unlock-error"
+            class="a11y-form-status inline-error"
+            role="alert"
+          >
+            {{ error }}
+          </p>
           <div class="upload-actions">
-            <AppButton
-              v-if="pendingFile"
-              label="Quitar"
-              outlined
-              @click="pendingFile = null"
-            />
+            <AppButton v-if="pendingFile" label="Quitar" outlined @click="pendingFile = null" />
             <AppButton
               label="Cifrar y guardar"
               icon="pi pi-lock"
@@ -93,10 +141,21 @@
               <h3 id="stored-title">Archivos guardados</h3>
               <p>{{ documents.length }} documentos en este expediente.</p>
             </div>
-            <AppButton icon="pi pi-refresh" aria-label="Actualizar documentos" :disabled="loading" @click="load" />
+            <AppButton
+              icon="pi pi-refresh"
+              aria-label="Actualizar documentos"
+              :disabled="loading"
+              @click="load"
+            />
           </div>
 
-          <div v-if="loading" class="document-loading" role="status" aria-live="polite" aria-label="Cargando documentos">
+          <div
+            v-if="loading"
+            class="document-loading"
+            role="status"
+            aria-live="polite"
+            aria-label="Cargando documentos"
+          >
             <span v-for="item in 3" :key="item"></span>
           </div>
           <div v-else-if="!documents.length" class="document-empty">
@@ -110,7 +169,9 @@
               <div class="document-copy">
                 <span>{{ typeLabel(document.tipo) }}</span>
                 <strong>{{ document.nombre_original }}</strong>
-                <small>{{ fileSize(document.tamano) }} - {{ formatDate(document.creado_en) }}</small>
+                <small
+                  >{{ fileSize(document.tamano) }} - {{ formatDate(document.creado_en) }}</small
+                >
               </div>
               <div class="document-actions">
                 <AppButton

@@ -1,1 +1,1 @@
-export { default as AdminLayout } from "./AdminLayout/AdminLayout.vue";
+export { default as AdminLayout } from './AdminLayout/AdminLayout.vue'

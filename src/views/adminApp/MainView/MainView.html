@@ -1,139 +1,152 @@
-<div
-    class="h-auto min-h-full w-full bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col"
-  >
-    <GridBackground />
-    <PinnedNotesWindow @open-notes="openNotesModal" />
+<div class="h-auto min-h-full w-full bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col">
+  <GridBackground />
+  <PinnedNotesWindow @open-notes="openNotesModal" />
 
-    <template v-if="!isMobile">
-      <TopNavbar
-        :profile-name="ProfileName"
-        :profile-picture="profilePicture"
-        :profile-type="ProfileType"
-        :is-admin="isAdmin"
-        :notes-active="showNotesModal"
-        :logs-active="showLogs"
-        @toggle-menu="toggleMenu"
-        @open-notes="openNotesModal"
-        @open-logs="openLogs"
-        @logout="logOut"
-      />
-      <DesktopSidebar :menu-items="menuItems" />
-      <MobileSidebar
-        :is-open="menuOpen"
-        :profile-name="ProfileName"
-        :profile-picture="profilePicture"
-        :profile-type="ProfileType"
-        :menu-items="menuItems"
-        @close-menu="toggleMenu"
-        @logout="logOut"
-      />
-    </template>
+  <template v-if="!isMobile">
+    <TopNavbar
+      :profile-name="ProfileName"
+      :profile-picture="profilePicture"
+      :profile-type="ProfileType"
+      :is-admin="isAdmin"
+      :notes-active="showNotesModal"
+      :logs-active="showLogs"
+      @toggle-menu="toggleMenu"
+      @open-notes="openNotesModal"
+      @open-logs="openLogs"
+      @logout="logOut"
+    />
+    <DesktopSidebar :menu-items="menuItems" />
+    <MobileSidebar
+      :is-open="menuOpen"
+      :profile-name="ProfileName"
+      :profile-picture="profilePicture"
+      :profile-type="ProfileType"
+      :menu-items="menuItems"
+      @close-menu="toggleMenu"
+      @logout="logOut"
+    />
+  </template>
 
-    <div class="relative">
-      <div>
-        <main
-          class="z-30 w-full h-full"
-          :class="{ 'pb-16': isMobile, 'lg:pl-20': !isMobile }"
-        >
-          <Suspense>
-            <template #default>
-              <RouterView class="p-4 lg:p-6" :class="{ 'mt-16': !isMobile }" />
-            </template>
-            <template #fallback>
-              <Loader />
-            </template>
-          </Suspense>
-        </main>
-      </div>
-      <div>
-        <MobileBottomNav
-          v-if="isMobile"
-          :menu-items="mainNavItems"
-          @open-more-menu="toggleMoreMenu"
-        />
+  <div class="relative">
+    <div>
+      <main class="z-30 w-full h-full" :class="{ 'pb-16': isMobile, 'lg:pl-20': !isMobile }">
+        <Suspense>
+          <template #default>
+            <RouterView class="p-4 lg:p-6" :class="{ 'mt-16': !isMobile }" />
+          </template>
+          <template #fallback>
+            <Loader />
+          </template>
+        </Suspense>
+      </main>
+    </div>
+    <div>
+      <MobileBottomNav
+        v-if="isMobile"
+        :menu-items="mainNavItems"
+        @open-more-menu="toggleMoreMenu"
+      />
+    </div>
+  </div>
+
+  <transition name="slide-up">
+    <div
+      v-if="isMobile && isMoreMenuOpen"
+      class="mobile-more-simple fixed bottom-0 left-0 w-full pt-3 pb-8 bg-[var(--color-bg-secondary)] rounded-t-2xl z-50"
+    >
+      <div class="px-4">
+        <header class="mobile-more-header">
+          <div class="mobile-more-profile">
+            <img v-image-fallback :src="profilePicture" alt="" />
+            <div>
+              <strong>{{ ProfileName }}</strong>
+              <span>{{ ProfileType }}</span>
+            </div>
+          </div>
+          <button type="button" aria-label="Cerrar menú" @click="closeMoreMenu">×</button>
+        </header>
+        <h3 class="text-lg font-bold mb-4">Más Opciones</h3>
+        <ul class="mobile-more-list">
+          <li v-for="item in moreNavItems" :key="item.name">
+            <RouterLink
+              :to="item.path"
+              @click="closeMoreMenu"
+              class="flex items-center space-x-4 py-3 text-lg"
+            >
+              <i :class="item.icon"></i>
+              <span>{{ item.name }}</span>
+            </RouterLink>
+          </li>
+          <li>
+            <button
+              @click="openNotesAndClose"
+              class="flex items-center space-x-4 py-3 text-lg cursor-pointer"
+            >
+              <i class="pi pi-book"></i>
+              <span>Notas</span>
+            </button>
+          </li>
+          <li v-if="isAdmin">
+            <button
+              @click="openLogsAndClose"
+              class="flex items-center space-x-4 py-3 text-lg cursor-pointer"
+            >
+              <i class="pi pi-list"></i>
+              <span>Registros</span>
+            </button>
+          </li>
+          <li>
+            <RouterLink
+              to="/app/settings"
+              @click="closeMoreMenu"
+              class="flex items-center space-x-4 py-3 text-lg"
+            >
+              <i class="pi pi-user"></i>
+              <span>Cuenta</span>
+            </RouterLink>
+          </li>
+          <li>
+            <button
+              class="flex items-center space-x-4 py-3 text-lg cursor-pointer text-[var(--btn-danger-bg)]"
+              @click="logOut"
+            >
+              <i class="pi pi-sign-out"></i>
+              <span>Cerrar sesión</span>
+            </button>
+          </li>
+        </ul>
       </div>
     </div>
+  </transition>
 
-    <transition name="slide-up">
-      <div
-        v-if="isMobile && isMoreMenuOpen"
-        class="mobile-more-simple fixed bottom-0 left-0 w-full pt-3 pb-8 bg-[var(--color-bg-secondary)] rounded-t-2xl z-50"
-      >
-        <div class="px-4">
-          <header class="mobile-more-header">
-            <div class="mobile-more-profile">
-              <img v-image-fallback :src="profilePicture" alt="" />
-              <div>
-                <strong>{{ ProfileName }}</strong>
-                <span>{{ ProfileType }}</span>
-              </div>
-            </div>
-            <button type="button" aria-label="Cerrar menú" @click="closeMoreMenu">×</button>
-          </header>
-          <h3 class="text-lg font-bold mb-4">Más Opciones</h3>
-          <ul class="mobile-more-list">
-            <li v-for="item in moreNavItems" :key="item.name">
-              <RouterLink
-                :to="item.path"
-                @click="closeMoreMenu"
-                class="flex items-center space-x-4 py-3 text-lg"
-              >
-                <i :class="item.icon"></i>
-                <span>{{ item.name }}</span>
-              </RouterLink>
-            </li>
-            <li>
-              <button
-                @click="openNotesAndClose"
-                class="flex items-center space-x-4 py-3 text-lg cursor-pointer"
-              >
-                <i class="pi pi-book"></i>
-                <span>Notas</span>
-              </button>
-            </li>
-            <li v-if="isAdmin">
-              <button
-                @click="openLogsAndClose"
-                class="flex items-center space-x-4 py-3 text-lg cursor-pointer"
-              >
-                <i class="pi pi-list"></i>
-                <span>Registros</span>
-              </button>
-            </li>
-            <li>
-              <RouterLink to="/app/settings" @click="closeMoreMenu" class="flex items-center space-x-4 py-3 text-lg">
-                <i class="pi pi-user"></i>
-                <span>Cuenta</span>
-              </RouterLink>
-            </li>
-            <li>
-              <button class="flex items-center space-x-4 py-3 text-lg cursor-pointer text-[var(--btn-danger-bg)]" @click="logOut">
-                <i class="pi pi-sign-out"></i>
-                <span>Cerrar sesión</span>
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </transition>
-
-    <Teleport to="body">
+  <Teleport to="body">
     <transition name="fade">
       <div
         v-if="showNotesModal"
         class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        @click.self="closeNotesModal"
       >
-        <div class="notes-modal-frame">
-          <button class="notes-modal-close" type="button" aria-label="Cerrar notas" @click="closeNotesModal">×</button>
+        <div
+          class="notes-modal-frame"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Tablero de notas"
+        >
+          <button
+            class="notes-modal-close"
+            type="button"
+            aria-label="Cerrar notas"
+            @click="closeNotesModal"
+          >
+            ×
+          </button>
           <Suspense>
             <BoardNote />
           </Suspense>
         </div>
       </div>
     </transition>
-    </Teleport>
-    <Suspense>
-      <LogsModal :key="logsKey" :visible="showLogs" @close="closeLogs" />
-    </Suspense>
-  </div>
+  </Teleport>
+  <Suspense>
+    <LogsModal :key="logsKey" :visible="showLogs" @close="closeLogs" />
+  </Suspense>
+</div>

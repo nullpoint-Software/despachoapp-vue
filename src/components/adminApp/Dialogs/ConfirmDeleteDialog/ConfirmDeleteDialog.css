@@ -41,4 +41,46 @@
     transform: translateY(0);
   }
 }
-.confirm-body{display:grid;gap:1rem;padding:1.5rem!important}.confirm-message{margin:0!important;font:700 1rem/1.5 Arial,sans-serif;text-align:left!important}.confirm-check{display:flex!important;width:100%;align-items:center!important;justify-content:flex-start!important;gap:.7rem;border:1px solid #77736b;background:#fff;padding:.85rem}.confirm-check label{color:#141413!important;font:800 .75rem/1.2 "Courier New",monospace!important;text-transform:uppercase}.confirm-check input{flex:0 0 1.15rem}.modal-content>.flex.justify-end{padding:1rem 1.5rem!important}@media(max-width:520px){.confirm-check{align-items:flex-start!important}.confirm-body{padding:1rem!important}}
+.confirm-body {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem !important;
+}
+.confirm-message {
+  margin: 0 !important;
+  font:
+    700 1rem/1.5 Arial,
+    sans-serif;
+  text-align: left !important;
+}
+.confirm-check {
+  display: flex !important;
+  width: 100%;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.7rem;
+  border: 1px solid #77736b;
+  background: #fff;
+  padding: 0.85rem;
+}
+.confirm-check label {
+  color: #141413 !important;
+  font:
+    800 0.75rem/1.2 'Courier New',
+    monospace !important;
+  text-transform: uppercase;
+}
+.confirm-check input {
+  flex: 0 0 1.15rem;
+}
+.modal-content > .flex.justify-end {
+  padding: 1rem 1.5rem !important;
+}
+@media (max-width: 520px) {
+  .confirm-check {
+    align-items: flex-start !important;
+  }
+  .confirm-body {
+    padding: 1rem !important;
+  }
+}

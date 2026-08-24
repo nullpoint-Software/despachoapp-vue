@@ -1,8 +1,8 @@
-import { defineComponent } from "vue";
-import { useAdminLayout } from ".././composables/useAdminLayout";
+import { defineComponent } from 'vue'
+import { useAdminLayout } from '.././composables/useAdminLayout'
 export default defineComponent({
-  name: "AdminLayout",
+  name: 'AdminLayout',
   setup() {
-    return useAdminLayout();
-  },
-});
+    return useAdminLayout()
+  }
+})
