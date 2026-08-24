@@ -2,6 +2,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useAppToast } from "@/composables/useAppToast";
 import { subscribeToPermissions } from "@/service/adminApp/permissionsService";
 import { cs, pks } from "@/service/adminApp/client";
+import { clearSensitiveAccess, hasSensitiveAccess } from "@/service/adminApp/sensitiveAccess";
 import type { ColumnDef } from "@/types/ClientesTable";
 import { useBrutalMotion } from "@/composables/useBrutalMotion";
 import { regimenesFiscales, regimenFiscalLabel } from "@/constants/regimenesFiscales";
