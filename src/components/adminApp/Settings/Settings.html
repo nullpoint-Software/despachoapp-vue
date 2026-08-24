@@ -796,9 +796,7 @@
           <header class="settings-detail-header">
             <div>
               <p>CUENTA / EQUIPO</p>
-              <h3 class="text-2xl font-bold">
-                {{ userDetailTab === 'permissions' ? 'Permisos del rol' : 'Detalles del usuario' }}
-              </h3>
+              <h3 class="text-2xl font-bold">{{ userDetailTab === 'permissions' ? 'Permisos del usuario' : 'Detalles del usuario' }}</h3>
             </div>
             <div class="detail-header-actions">
               <button
@@ -1051,22 +1049,16 @@
             </article>
           </section>
 
-          <section v-else class="permissions-shell" aria-label="Permisos del rol">
+          <section v-else class="permissions-shell" aria-label="Permisos del usuario">
             <header class="permission-overview">
               <div>
                 <span>ROL / {{ usuarioSeleccionado.puesto }}</span>
-                <h4>Acceso del equipo</h4>
-                <p>Define qué puede hacer este rol dentro del despacho.</p>
+                <h4>Acceso de {{ usuarioSeleccionado.nombre }}</h4>
+                <p>Consulta y ajusta lo que esta persona puede hacer dentro del despacho.</p>
               </div>
               <dl>
-                <div>
-                  <dt>Activos</dt>
-                  <dd>{{ permissionSummary.enabled }} / {{ permissionSummary.total }}</dd>
-                </div>
-                <div>
-                  <dt>Personas</dt>
-                  <dd>{{ roleUserCount }}</dd>
-                </div>
+                <div><dt>Activos</dt><dd>{{ permissionSummary.enabled }} / {{ permissionSummary.total }}</dd></div>
+                <div><dt>Ajustes</dt><dd>{{ permissionSummary.customized }}</dd></div>
                 <div class="permission-save-indicator" :data-state="permissionSaveState">
                   <dt>Estado</dt>
                   <dd>
@@ -1088,17 +1080,26 @@
             </header>
 
             <aside class="permission-impact-note">
-              <i class="pi pi-users"></i>
+              <i class="pi pi-user-edit"></i>
               <div>
-                <strong>Este ajuste modifica el rol completo</strong>
-                <p>
-                  Los cambios afectarán a {{ roleUserCount }} usuario{{ roleUserCount === 1 ? '' :
-                  's' }} con el rol {{ usuarioSeleccionado.puesto }}. Se aplican inmediatamente.
-                </p>
+                <strong>Los cambios sólo afectan a {{ usuarioSeleccionado.nombre }}</strong>
+                <p>Los permisos personalizados se aplican inmediatamente y no cambian el acceso de otras cuentas.</p>
+                <button type="button" class="permission-reset-button" :disabled="permissionSaving || !permissionSummary.customized" @click="resetPermissionsToRoleDefaults">
+                  <i class="pi pi-refresh"></i> Restablecer permisos del rol
+                </button>
               </div>
             </aside>
 
-            <div v-if="permissionGroups.length" class="permission-groups">
+            <div v-if="permissionLoading" class="permission-empty" role="status">
+              <i class="pi pi-spin pi-spinner"></i>
+              <strong>Cargando permisos…</strong>
+            </div>
+            <div v-else-if="permissionLoadError" class="permission-empty" role="alert">
+              <i class="pi pi-exclamation-triangle"></i>
+              <strong>{{ permissionLoadError }}</strong>
+              <button type="button" class="permission-reset-button" @click="usuarioSeleccionado && loadPermissionProfile(usuarioSeleccionado.id_usuario)">Reintentar</button>
+            </div>
+            <div v-else-if="permissionGroups.length" class="permission-groups">
               <section v-for="group in permissionGroups" :key="group.name" class="permission-group">
                 <header>
                   <i :class="group.icon"></i>
@@ -1121,16 +1122,11 @@
                     <div>
                       <strong>{{ permission.label }}</strong>
                       <p>{{ permission.description }}</p>
+                      <small v-if="permission.customized" class="permission-origin">Ajuste personal</small>
                     </div>
-                    <button
-                      type="button"
-                      class="permission-switch"
-                      role="switch"
-                      :aria-checked="permission.enabled"
-                      :aria-label="permission.label"
-                      :disabled="permissionSaving"
-                      @click="togglePermission(usuarioSeleccionado.puesto, permission.key)"
-                    >
+                    <button type="button" class="permission-switch" role="switch" :aria-checked="permission.enabled"
+                      :aria-label="permission.label" :disabled="permissionSaving"
+                      @click="togglePermission(permission.key)">
                       <span aria-hidden="true"></span>
                     </button>
                   </article>

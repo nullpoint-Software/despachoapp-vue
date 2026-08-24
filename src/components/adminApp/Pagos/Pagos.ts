@@ -1,13 +1,14 @@
-import { nextTick, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { usePaymentActions } from '@/composables/usePaymentActions'
-import { useBrutalMotion } from '@/composables/useBrutalMotion'
-import { hasPermission } from '@/service/adminApp/permissionsService'
-const router = useRouter()
-const pageRef = ref<HTMLElement | null>(null)
-const cashCutVisible = ref(false)
-const canAddPayment = ref(false)
-const paymentTutorialOpen = ref(false)
+import { nextTick, onMounted, onUnmounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { usePaymentActions } from "@/composables/usePaymentActions";
+import { useBrutalMotion } from "@/composables/useBrutalMotion";
+import { subscribeToPermissions } from "@/service/adminApp/permissionsService";
+const router = useRouter();
+const pageRef = ref<HTMLElement | null>(null);
+const cashCutVisible = ref(false);
+const canAddPayment = ref(false);
+let stopPermissionSync = () => {};
+const paymentTutorialOpen = ref(false);
 const paymentTutorialSteps = [
   {
     target: '.records-hero',
@@ -37,10 +38,13 @@ const paymentTutorialSteps = [
 const { requestNewPayment } = usePaymentActions()
 useBrutalMotion(pageRef, ['.records-hero', '.records-content'])
 onMounted(async () => {
-  canAddPayment.value = await hasPermission('canAddPagoConcepto')
-  await nextTick()
-  if (!localStorage.getItem('tourPagosDone')) paymentTutorialOpen.value = true
-})
+  stopPermissionSync = subscribeToPermissions(({ effective }) => {
+    canAddPayment.value = effective.canAddPagoConcepto === true;
+  });
+  await nextTick();
+  if (!localStorage.getItem("tourPagosDone")) paymentTutorialOpen.value = true;
+});
+onUnmounted(() => stopPermissionSync());
 async function newPayment() {
   if (!canAddPayment.value) return
   await router.push('/app/pagos/concepto')

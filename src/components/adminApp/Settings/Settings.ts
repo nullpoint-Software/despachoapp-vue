@@ -1,11 +1,16 @@
 import { as, bs, pks, us } from '@/service/adminApp/client'
 import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import { USER_AVATAR_PLACEHOLDER as defaultAvatar } from '@/constants/brandAssets'
-import imageCompression from 'browser-image-compression'
-import { useAppToast } from '@/composables/useAppToast'
-import { useAppDialog } from '@/composables/useAppDialog'
-import { getPermissions, updatePermissions } from '@/service/adminApp/permissionsService'
-import router from '@/router'
+import imageCompression from "browser-image-compression";
+import { useAppToast } from '@/composables/useAppToast';
+import { useAppDialog } from '@/composables/useAppDialog';
+import {
+  getUserPermissionProfile,
+  resetUserPermissionOverrides,
+  updateUserPermissionOverrides,
+  type PermissionProfile,
+} from '@/service/adminApp/permissionsService';
+import router from '@/router';
 
 import { clearSensitiveAccess, hasSensitiveAccess } from '@/service/adminApp/sensitiveAccess'
 interface SettingsUser {
@@ -34,12 +39,8 @@ interface ApiErrorShape {
   response?: { data?: { error?: string } }
 }
 
-interface PermissionMatrix {
-  [role: string]: Record<string, boolean>
-}
-
-type UserDetailTab = 'account' | 'permissions'
-type PermissionSaveState = 'idle' | 'saving' | 'saved' | 'error'
+type UserDetailTab = 'account' | 'permissions';
+type PermissionSaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 interface PermissionMeta {
   label: string
@@ -204,14 +205,14 @@ const permissionTutorialSteps = [
   {
     target: '.permission-overview',
     eyebrow: 'Permisos / alcance',
-    title: 'Configuras un rol, no una sola cuenta',
-    body: 'El resumen indica cuántos accesos están activos y cuántas personas comparten este rol.'
+    title: 'Configuras una cuenta',
+    body: 'El resumen muestra los permisos efectivos de la persona seleccionada y cuántos tienen ajustes propios.',
   },
   {
     target: '.permission-impact-note',
     eyebrow: 'Permisos / impacto',
-    title: 'Revisa a quién afectará',
-    body: 'Cada cambio se aplica de inmediato a todos los usuarios con el mismo rol. Esta nota te recuerda el alcance antes de editar.'
+    title: 'Distingue los ajustes personales',
+    body: 'Los cambios sólo afectan a esta cuenta. Puedes reconocer las excepciones y restablecer los permisos del rol cuando sea necesario.',
   },
   {
     target: '.permission-group',
@@ -626,16 +627,20 @@ const filteredUsers = computed(() =>
 
 function abrirModal(u: SettingsUser): void {
   usuarioSeleccionado.value = u
+  permissionProfile.value = null
+  permissionLoadError.value = ''
   passwordVisible.value = false
   passwordRevealBusy.value = false
   generatedResetLink.value = ''
   passwordResetMenuOpen.value = false
   userDetailTab.value = 'account'
   modalAbierto.value = true
-  selectedLevel.value = u.puesto
+  selectedLevel.value = u.puesto;
+  void loadPermissionProfile(u.id_usuario)
 }
 async function openPermissionTab(): Promise<void> {
   userDetailTab.value = 'permissions'
+  if (usuarioSeleccionado.value) await loadPermissionProfile(usuarioSeleccionado.value.id_usuario)
   await nextTick()
   if (!localStorage.getItem('tourSettingsPermissionsDone')) permissionTutorialOpen.value = true
 }
@@ -1160,42 +1165,41 @@ const permissionGroupDetails: Record<
   Otros: { icon: 'pi pi-sliders-h', description: 'Accesos adicionales disponibles para este rol.' }
 }
 
-const permissions = ref<PermissionMatrix>(await getPermissions())
+const permissionProfile = ref<PermissionProfile | null>(null)
+const permissionLoading = ref(false)
+const permissionLoadError = ref('')
+let permissionRequestVersion = 0
 const permissionSaving = ref(false)
 const permissionSaveState = ref<PermissionSaveState>('idle')
 
-const activeRolePermissions = computed<Record<string, boolean>>(() => {
-  const role = usuarioSeleccionado.value?.puesto || ''
-  return permissions.value[role] || {}
-})
+const effectivePermissions = computed<Record<string, boolean>>(() => permissionProfile.value?.effective || {})
 
 const permissionSummary = computed(() => {
-  const values = Object.values(activeRolePermissions.value)
+  const values = Object.values(effectivePermissions.value)
   return {
     enabled: values.filter(Boolean).length,
-    total: values.length
+    total: values.length,
+    customized: Object.keys(permissionProfile.value?.overrides || {}).length,
   }
 })
 
-const roleUserCount = computed(() => {
-  const role = usuarioSeleccionado.value?.puesto
-  return role ? usuarios.value.filter((user) => user.puesto === role).length : 0
-})
-
 const permissionGroups = computed(() => {
-  const grouped = new Map<
-    PermissionMeta['group'],
-    Array<PermissionMeta & { key: string; enabled: boolean }>
-  >()
-  Object.entries(activeRolePermissions.value).forEach(([key, enabled]) => {
+  type PermissionItem = PermissionMeta & { key: string; enabled: boolean; customized: boolean }
+  const grouped = new Map<PermissionMeta['group'], PermissionItem[]>()
+  Object.entries(effectivePermissions.value).forEach(([key, enabled]) => {
     const meta = permissionMetadata[key] || {
       label: key,
-      description: 'Acceso adicional configurado para este rol.',
+      description: 'Acceso adicional disponible para esta cuenta.',
       group: 'Otros' as const,
       icon: 'pi pi-key'
     }
     const entries = grouped.get(meta.group) || []
-    entries.push({ ...meta, key, enabled })
+    entries.push({
+      ...meta,
+      key,
+      enabled,
+      customized: Object.prototype.hasOwnProperty.call(permissionProfile.value?.overrides || {}, key),
+    })
     grouped.set(meta.group, entries)
   })
   return (['Tareas', 'Clientes', 'Cobranza', 'Otros'] as const)
@@ -1203,37 +1207,86 @@ const permissionGroups = computed(() => {
     .map((name) => ({ name, ...permissionGroupDetails[name], items: grouped.get(name) || [] }))
 })
 
-const permissionSaveLabel = computed(
-  () =>
-    ({
-      idle: 'Los cambios se guardan al instante',
-      saving: 'Guardando cambios…',
-      saved: 'Permisos actualizados',
-      error: 'No se pudo guardar'
-    })[permissionSaveState.value]
-)
+const permissionSaveLabel = computed(() => ({
+  idle: 'Cambios sólo para esta cuenta',
+  saving: 'Guardando cambios…',
+  saved: 'Permisos actualizados',
+  error: 'No se pudo guardar',
+})[permissionSaveState.value])
 
-async function togglePermission(role: string, key: string): Promise<void> {
-  const rolePermissions = permissions.value[role]
-  if (!rolePermissions || permissionSaving.value) return
-  const previousValue = rolePermissions[key]
-  rolePermissions[key] = !previousValue
+async function loadPermissionProfile(userId: string | number): Promise<void> {
+  if (permissionProfile.value && String(permissionProfile.value.user.id) === String(userId)) return
+  const requestVersion = ++permissionRequestVersion
+  permissionLoading.value = true
+  permissionLoadError.value = ''
+  try {
+    const profile = await getUserPermissionProfile(userId)
+    if (requestVersion === permissionRequestVersion) permissionProfile.value = profile
+  } catch (error) {
+    if (requestVersion === permissionRequestVersion) {
+      permissionLoadError.value = apiErrorMessage(error) || 'No fue posible cargar los permisos.'
+    }
+  } finally {
+    if (requestVersion === permissionRequestVersion) permissionLoading.value = false
+  }
+}
+
+async function togglePermission(key: string): Promise<void> {
+  const profile = permissionProfile.value
+  if (!profile || permissionSaving.value) return
+  const previousOverrides = { ...profile.overrides }
+  const previousEffective = { ...profile.effective }
+  const nextEnabled = !profile.effective[key]
+  const nextOverrides = { ...profile.overrides }
+  if (nextEnabled === profile.template[key]) delete nextOverrides[key]
+  else nextOverrides[key] = nextEnabled
+
+  profile.overrides = nextOverrides
+  profile.effective = { ...profile.template, ...nextOverrides }
   permissionSaving.value = true
   permissionSaveState.value = 'saving'
   try {
-    await updatePermissions(permissions.value)
+    permissionProfile.value = await updateUserPermissionOverrides(profile.user.id, nextOverrides)
     permissionSaveState.value = 'saved'
     window.setTimeout(() => {
       if (permissionSaveState.value === 'saved') permissionSaveState.value = 'idle'
     }, 2200)
   } catch {
-    rolePermissions[key] = previousValue
+    profile.overrides = previousOverrides
+    profile.effective = previousEffective
     permissionSaveState.value = 'error'
     toast.add({
       severity: 'error',
       summary: 'Permisos sin cambios',
-      detail: 'No se pudo actualizar el rol. Intenta de nuevo.',
-      life: 4000
+      detail: 'No se pudo actualizar esta cuenta. Intenta de nuevo.',
+      life: 4000,
+    })
+  } finally {
+    permissionSaving.value = false
+  }
+}
+
+async function resetPermissionsToRoleDefaults(): Promise<void> {
+  const profile = permissionProfile.value
+  if (!profile || permissionSaving.value || !Object.keys(profile.overrides).length) return
+  permissionSaving.value = true
+  permissionSaveState.value = 'saving'
+  try {
+    permissionProfile.value = await resetUserPermissionOverrides(profile.user.id)
+    permissionSaveState.value = 'saved'
+    toast.add({
+      severity: 'success',
+      summary: 'Permisos restablecidos',
+      detail: `${profile.user.name} vuelve a usar los permisos de ${profile.user.role}.`,
+      life: 3000,
+    })
+  } catch {
+    permissionSaveState.value = 'error'
+    toast.add({
+      severity: 'error',
+      summary: 'Permisos sin cambios',
+      detail: 'No se pudieron restablecer los permisos del rol.',
+      life: 4000,
     })
   } finally {
     permissionSaving.value = false

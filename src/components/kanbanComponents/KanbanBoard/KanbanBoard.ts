@@ -1,15 +1,11 @@
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useAppToast } from '@/composables/useAppToast'
-import { base64ToFile } from '@/service/adminApp/authService'
-import { ts } from '@/service/adminApp/client'
-import { hasPermission } from '@/service/adminApp/permissionsService'
-import {
-  prepareTaskReportPreview,
-  revokeTaskReportPreview,
-  type TaskReportPreviewResult
-} from '@/service/reports/taskReportService'
-import type { TareaDto } from '@/service/adminApp/tareasService'
-import type { KanbanLane, KanbanStatus, KanbanTask } from '@/components/kanbanComponents/types'
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import { useAppToast } from "@/composables/useAppToast";
+import { base64ToFile } from "@/service/adminApp/authService";
+import { ts } from "@/service/adminApp/client";
+import { hasPermission, permissionDeniedMessage } from "@/service/adminApp/permissionsService";
+import { prepareTaskReportPreview, revokeTaskReportPreview, type TaskReportPreviewResult } from "@/service/reports/taskReportService";
+import type { TareaDto } from "@/service/adminApp/tareasService";
+import type { KanbanLane, KanbanStatus, KanbanTask } from "@/components/kanbanComponents/types";
 
 interface KanbanBoardProps {
   mini?: boolean
@@ -203,19 +199,20 @@ async function moveTask(taskId: number | string, targetStatus: KanbanStatus): Pr
   try {
     await ts.updateTarea(String(task.id_tarea), assignedUser, targetStatus, task.fecha_vencimiento)
     toast.add({
-      severity: 'success',
-      summary: 'Tarea actualizada',
-      detail: `La tarea ahora est? en ${targetStatus}.`,
-      life: 2200
-    })
-  } catch {
-    Object.assign(task, previous)
+      severity: "success",
+      summary: "Tarea actualizada",
+      detail: `La tarea ahora está en ${targetStatus}.`,
+      life: 2200,
+    });
+  } catch (error) {
+    Object.assign(task, previous);
+    const deniedMessage = permissionDeniedMessage(error);
     toast.add({
-      severity: 'error',
-      summary: 'No se guard? el cambio',
-      detail: 'La tarea volvi? a su estado anterior.',
-      life: 3500
-    })
+      severity: "error",
+      summary: deniedMessage ? "Permiso denegado" : "No se guardó el cambio",
+      detail: deniedMessage || "La tarea volvió a su estado anterior.",
+      life: 3500,
+    });
   }
 }
 

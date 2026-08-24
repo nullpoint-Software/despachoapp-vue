@@ -1,17 +1,17 @@
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useAppToast } from '@/composables/useAppToast'
-import { hasPermission } from '@/service/adminApp/permissionsService'
-import { cs, pks } from '@/service/adminApp/client'
-import type { ColumnDef } from '@/types/ClientesTable'
-import { useBrutalMotion } from '@/composables/useBrutalMotion'
-import { regimenesFiscales, regimenFiscalLabel } from '@/constants/regimenesFiscales'
-import { clearSensitiveAccess, hasSensitiveAccess } from '@/service/adminApp/sensitiveAccess'
-const pageRef = ref<HTMLElement | null>(null)
-useBrutalMotion(pageRef, ['.clients-hero', '#clientes-table'])
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { useAppToast } from "@/composables/useAppToast";
+import { subscribeToPermissions } from "@/service/adminApp/permissionsService";
+import { cs, pks } from "@/service/adminApp/client";
+import type { ColumnDef } from "@/types/ClientesTable";
+import { useBrutalMotion } from "@/composables/useBrutalMotion";
+import { regimenesFiscales, regimenFiscalLabel } from "@/constants/regimenesFiscales";
+const pageRef = ref<HTMLElement | null>(null);
+useBrutalMotion(pageRef, [".clients-hero", "#clientes-table"]);
 const canAddCliente = ref(false)
 const canEditCliente = ref(false)
 const canDeleteCliente = ref(false)
-const clientTutorialOpen = ref(false)
+let stopPermissionSync = () => {}
+const clientTutorialOpen = ref(false);
 const clientTutorialSteps = [
   {
     target: '.clients-hero',
@@ -39,10 +39,12 @@ const clientTutorialSteps = [
   }
 ]
 
-onMounted(async () => {
-  canAddCliente.value = await hasPermission('canAddCliente')
-  canEditCliente.value = await hasPermission('canEditCliente')
-  canDeleteCliente.value = await hasPermission('canDeleteCliente')
+onMounted(() => {
+  stopPermissionSync = subscribeToPermissions(({ effective }) => {
+    canAddCliente.value = effective.canAddCliente === true
+    canEditCliente.value = effective.canEditCliente === true
+    canDeleteCliente.value = effective.canDeleteCliente === true
+  })
 })
 const toast = useAppToast()
 const customers = ref<any[]>([])
@@ -242,9 +244,10 @@ const handleResize = () => {
 }
 onMounted(() => window.addEventListener('resize', handleResize))
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-  if (searchTimer) clearTimeout(searchTimer)
-})
+  stopPermissionSync();
+  window.removeEventListener("resize", handleResize);
+  if (searchTimer) clearTimeout(searchTimer);
+});
 
 onMounted(async () => {
   await loadCustomersPage()

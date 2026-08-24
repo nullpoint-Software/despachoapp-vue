@@ -4,11 +4,11 @@ import {
   ps,
   formatFechaSQL,
   formatFechaHoraFullSQL,
-  formatFechaHoraFullPagoSQL
-} from '@/service/adminApp/client'
-import { useAppToast } from '@/composables/useAppToast'
-import { hasPermission } from '@/service/adminApp/permissionsService'
-import { usePaymentActions } from '@/composables/usePaymentActions'
+  formatFechaHoraFullPagoSQL,
+} from "@/service/adminApp/client";
+import { useAppToast } from "@/composables/useAppToast";
+import { subscribeToPermissions } from "@/service/adminApp/permissionsService";
+import { usePaymentActions } from "@/composables/usePaymentActions";
 
 interface ConceptPayment {
   id: string | number
@@ -39,21 +39,22 @@ function queryText(value: unknown): string {
   return value == null ? '' : String(value)
 }
 
-const printDialogVisible = ref(false)
-const canAddPagoConcepto = ref(false)
-const canEditPagoConcepto = ref(false)
-const canDeletePagoConcepto = ref(false)
-const toast = useAppToast()
-const route = useRoute()
-const payments = ref<ConceptPayment[]>([])
-const totalPayments = ref(0)
-const loadingPayments = ref(false)
-const pageSize = ref(20)
-const currentPage = ref(0)
-const pageSizeOptions = [10, 20, 50]
-let searchTimer: ReturnType<typeof setTimeout> | null = null
-let requestSequence = 0
-const { newPaymentRequest } = usePaymentActions()
+const printDialogVisible = ref(false);
+const canAddPagoConcepto = ref(false);
+const canEditPagoConcepto = ref(false);
+const canDeletePagoConcepto = ref(false);
+let stopPermissionSync = () => {};
+const toast = useAppToast();
+const route = useRoute();
+const payments = ref<ConceptPayment[]>([]);
+const totalPayments = ref(0);
+const loadingPayments = ref(false);
+const pageSize = ref(20);
+const currentPage = ref(0);
+const pageSizeOptions = [10, 20, 50];
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+let requestSequence = 0;
+const { newPaymentRequest } = usePaymentActions();
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
@@ -302,9 +303,10 @@ const handleResize = () => {
 }
 onMounted(() => window.addEventListener('resize', handleResize))
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-  if (searchTimer) clearTimeout(searchTimer)
-})
+  stopPermissionSync();
+  window.removeEventListener("resize", handleResize);
+  if (searchTimer) clearTimeout(searchTimer);
+});
 
 onMounted(async () => {
   const searchParam = route.query.search
@@ -312,11 +314,13 @@ onMounted(async () => {
   if (searchParam) {
     filters.value.global.value = queryText(searchParam)
   }
-  await loadPaymentsPage()
-  canAddPagoConcepto.value = await hasPermission('canAddPagoConcepto')
-  canEditPagoConcepto.value = await hasPermission('canEditPagoConcepto')
-  canDeletePagoConcepto.value = await hasPermission('canDeletePagoConcepto')
-})
+  await loadPaymentsPage();
+  stopPermissionSync = subscribeToPermissions(({ effective }) => {
+    canAddPagoConcepto.value = effective.canAddPagoConcepto === true;
+    canEditPagoConcepto.value = effective.canEditPagoConcepto === true;
+    canDeletePagoConcepto.value = effective.canDeletePagoConcepto === true;
+  });
+});
 watch(
   () => route.query.search,
   (newSearch) => {

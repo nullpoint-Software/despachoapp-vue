@@ -2769,6 +2769,34 @@
     monospace;
 }
 
+.permission-reset-button {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel);
+  color: var(--br-text);
+  padding: 0.45rem 0.65rem;
+  font: 800 0.58rem "Courier New", monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.permission-reset-button:hover:not(:disabled),
+.permission-reset-button:focus-visible {
+  border-color: var(--br-accent);
+  color: var(--br-accent);
+  outline: none;
+}
+
+.permission-reset-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .permission-groups {
   display: grid;
   gap: 1rem;
@@ -2817,8 +2845,8 @@
 }
 
 .permission-group header > span {
-  border: 1px solid var(--br-line);
-  color: var(--br-muted);
+  border: 1px solid var(--br-accent);
+  color: var(--br-accent);
   padding: 0.35rem 0.45rem;
   font:
     800 0.58rem 'Courier New',
@@ -2880,6 +2908,16 @@
     700 0.61rem/1.4 'Courier New',
     monospace;
   text-wrap: pretty;
+}
+
+.permission-origin {
+  display: inline-block;
+  margin-top: 0.45rem;
+  border: 1px solid var(--br-line);
+  color: var(--br-muted);
+  padding: 0.2rem 0.35rem;
+  font: 800 0.52rem "Courier New", monospace;
+  text-transform: uppercase;
 }
 
 .permission-switch {
