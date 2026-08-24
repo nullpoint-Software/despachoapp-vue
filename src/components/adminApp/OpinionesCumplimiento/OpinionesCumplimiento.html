@@ -286,7 +286,9 @@
             <strong>{{ selected.pendientes.length }}</strong>
           </div>
           <div v-if="selected.status === 'positiva'" class="all-clear">
-            <span class="all-clear-mark"><i class="pi pi-check" aria-hidden="true" /></span>
+            <span :class="['status-mark', statusClass(selected.status)]"
+              ><i :class="statusIcon(selected.status)" aria-hidden="true"
+            /></span>
             <div>
               <small>RESULTADO SAT / SIN PENDIENTES</small>
               <strong>Opinión positiva</strong>

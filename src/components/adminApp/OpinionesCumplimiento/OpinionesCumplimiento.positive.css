@@ -36,18 +36,20 @@
 }
 
 .positive-score > div {
-  display: flex;
-  align-items: baseline;
-  gap: 0.55rem;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
   margin-top: 0.35rem;
 }
 
 .positive-score > div strong {
   color: var(--br-success-line, #70b789);
   font:
-    900 clamp(2.6rem, 5vw, 4.5rem)/0.85 Arial,
+    900 clamp(2.6rem, 5vw, 4.5rem)/1 Arial,
     sans-serif;
   letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
 }
 
 .positive-score > div span {
@@ -138,24 +140,18 @@
   padding: 1rem;
 }
 
-.all-clear-mark {
-  display: grid;
-  width: 3.25rem;
-  height: 3.25rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--br-success-line, #70b789);
-  color: var(--br-success-line, #70b789);
-  font-size: 1.25rem;
+.all-clear > .status-mark {
+  flex: 0 0 2.8rem;
+  margin: 0;
 }
 
-.all-clear small,
-.all-clear strong,
-.all-clear span {
+.all-clear > div > small,
+.all-clear > div > strong,
+.all-clear > div > span {
   display: block;
 }
 
-.all-clear small {
+.all-clear > div > small {
   color: var(--br-success-line, #70b789);
   font:
     800 0.56rem 'Courier New',
@@ -163,7 +159,7 @@
   letter-spacing: 0.08em;
 }
 
-.all-clear strong {
+.all-clear > div > strong {
   margin-top: 0.22rem;
   font:
     900 1rem Arial,
@@ -171,7 +167,7 @@
   text-transform: uppercase;
 }
 
-.all-clear span {
+.all-clear > div > span {
   margin-top: 0.3rem;
   color: var(--br-muted);
   font-size: 0.72rem;

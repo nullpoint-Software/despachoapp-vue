@@ -702,9 +702,9 @@
   padding: 1rem;
 }
 .issues-heading {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2rem;
   align-items: flex-start;
-  justify-content: space-between;
   gap: 1rem;
 }
 .issues-heading h3 {
@@ -723,8 +723,9 @@
 }
 .issues-heading > strong {
   display: grid;
-  min-width: 2rem;
+  width: 2rem;
   height: 2rem;
+  box-sizing: border-box;
   place-items: center;
   background: var(--br-accent);
   color: var(--br-accent-text);
@@ -740,11 +741,11 @@
   color: var(--br-success-line, #70b789);
   font-size: 1.2rem;
 }
-.all-clear strong,
-.all-clear span {
+.all-clear > div > strong,
+.all-clear > div > span {
   display: block;
 }
-.all-clear span {
+.all-clear > div > span {
   margin-top: 0.25rem;
   color: var(--br-muted);
   font-size: 0.72rem;

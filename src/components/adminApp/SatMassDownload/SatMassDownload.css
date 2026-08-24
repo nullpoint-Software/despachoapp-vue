@@ -327,21 +327,11 @@
 }
 
 .credential-loading {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
+  display: block;
   margin-top: 0.75rem;
   border: 1px solid var(--br-line, #55444b);
   background: var(--br-panel, #1b1719);
-  padding: 0.8rem;
-  color: var(--br-muted, #b9adb2);
-  font:
-    700 0.75rem Arial,
-    sans-serif;
-}
-
-.credential-loading i {
-  color: var(--br-accent, #ef3d59);
+  padding: 0.5rem;
 }
 
 .stored-credential {
@@ -1286,41 +1276,6 @@
   color: #ef596d;
 }
 
-.portal-skeleton {
-  display: grid;
-  grid-template-columns: 4rem 1fr;
-  gap: 0.45rem;
-  width: min(25rem, 72%);
-  margin-bottom: 0.7rem;
-  opacity: 0.55;
-}
-
-.portal-skeleton i,
-.portal-skeleton span,
-.portal-skeleton b {
-  min-height: 0.72rem;
-  background: #393335;
-  animation: portal-pulse 1.25s ease-in-out infinite alternate;
-}
-
-.portal-skeleton i {
-  grid-row: span 2;
-  min-height: 3rem;
-}
-.portal-skeleton b {
-  grid-column: 1 / -1;
-  min-height: 2.2rem;
-}
-.portal-skeleton b:last-child {
-  width: 70%;
-}
-
-@keyframes portal-pulse {
-  to {
-    background: #665b5f;
-  }
-}
-
 .portal-keyboard-capture {
   position: absolute;
   left: 0;
@@ -1515,14 +1470,6 @@
   }
   .sat-portal-viewport {
     min-height: 24rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .portal-skeleton i,
-  .portal-skeleton span,
-  .portal-skeleton b {
-    animation: none;
   }
 }
 
@@ -2331,6 +2278,7 @@
     'Cascadia Mono',
     monospace;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .portal-captcha-entry input:focus {

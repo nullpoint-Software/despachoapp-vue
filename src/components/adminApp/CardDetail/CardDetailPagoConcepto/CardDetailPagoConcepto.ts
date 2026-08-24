@@ -13,7 +13,7 @@ interface CardDetailPagoConceptoEmits {
 interface Payment {
   [key: string]: any
 }
-type PaymentStep = 1 | 2 | 3
+type PaymentStep = 1 | 2
 
 const props = withDefaults(defineProps<CardDetailPagoConceptoProps>(), {
   pago: () => ({}),
@@ -57,13 +57,7 @@ const paymentSteps: Array<{
     index: 2,
     eyebrow: '02',
     label: 'Movimiento',
-    description: 'Captura los importes y la fecha real del movimiento.'
-  },
-  {
-    index: 3,
-    eyebrow: '03',
-    label: 'Confirmación',
-    description: 'Revisa el resumen antes de guardar el pago.'
+    description: 'Captura los importes y la fecha real; al terminar puedes guardar el pago.'
   }
 ]
 const stepDescription = computed(
@@ -74,7 +68,7 @@ const paymentTutorialSteps = [
     target: '.payment-steps',
     eyebrow: 'Ayuda / pagos',
     title: 'Avanza por partes',
-    body: 'El registro se divide en relación, movimiento y confirmación. Los pasos completados permanecen disponibles para corregir información.'
+    body: 'El registro se divide en relación y movimiento. El primer paso permanece disponible por si necesitas corregir información.'
   },
   {
     target: '.payment-step-shell',
@@ -91,8 +85,8 @@ const paymentTutorialSteps = [
   {
     target: '.payment-form .modal-actions',
     eyebrow: 'Ayuda / navegación',
-    title: 'Revisa antes de guardar',
-    body: 'Usa Anterior y Continuar para moverte. El sistema sólo guarda cuando confirmas el último paso.'
+    title: 'Guarda al terminar',
+    body: 'Usa Anterior y Continuar para moverte. En el segundo paso puedes guardar directamente cuando los datos estén completos.'
   }
 ]
 
@@ -119,35 +113,6 @@ const employeeLabel = (employee: Payment) =>
   `${employee.nombre || 'Sin nombre'}${employee.username ? ` - ${employee.username}` : ''}`
 const clientOptions = computed(() => clientes.value.map(clientLabel))
 const employeeOptions = computed(() => employees.value.map(employeeLabel))
-const reviewClient = computed(
-  () =>
-    clientes.value.find((item) => String(item.id_cliente) === String(payment.value.id_cliente))
-      ?.nombre ||
-    clientSearch.value ||
-    'Sin cliente'
-)
-const reviewEmployee = computed(
-  () =>
-    employees.value.find((item) => String(item.id_usuario) === String(payment.value.id_atendio))
-      ?.nombre ||
-    employeeSearch.value ||
-    'Sin responsable'
-)
-const netAmount = computed(
-  () => (Number(payment.value.cobramos) || 0) - (Number(payment.value.pagamos) || 0)
-)
-const formattedSelectedDate = computed(() =>
-  new Intl.DateTimeFormat('es-MX', { dateStyle: 'long', timeStyle: 'short' }).format(
-    selectedDate.value
-  )
-)
-
-function currency(value: unknown): string {
-  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(
-    Number(value) || 0
-  )
-}
-
 function findClient(value: string) {
   const term = normalize(value)
   return clientes.value.find(
@@ -269,7 +234,7 @@ async function validateStep(step: PaymentStep): Promise<boolean> {
 }
 
 async function nextStep(): Promise<void> {
-  if (currentStep.value < 3 && (await validateStep(currentStep.value)))
+  if (currentStep.value < 2 && (await validateStep(currentStep.value)))
     currentStep.value = (currentStep.value + 1) as PaymentStep
 }
 

@@ -192,7 +192,7 @@ export default {
           'Detalle por contribuyente',
           'Pendientes visibles para seguimiento'
         ],
-        icon: 'pi pi-verified'
+        icon: 'pi pi-check-circle'
       },
       {
         number: '08',

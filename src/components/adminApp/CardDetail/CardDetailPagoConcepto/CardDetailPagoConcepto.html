@@ -220,52 +220,6 @@
               </div>
             </fieldset>
 
-            <section
-              v-else
-              class="payment-review"
-              aria-labelledby="payment-review-title"
-              data-payment-step="review"
-            >
-              <div class="payment-review__heading">
-                <span>03 / Revisión</span>
-                <h3 id="payment-review-title">Confirma antes de guardar</h3>
-                <p>
-                  Verifica la relación, los importes y la fecha. Puedes regresar sin perder
-                  información.
-                </p>
-              </div>
-              <dl>
-                <div>
-                  <dt>Cliente</dt>
-                  <dd>{{ reviewClient }}</dd>
-                </div>
-                <div>
-                  <dt>Atendió</dt>
-                  <dd>{{ reviewEmployee }}</dd>
-                </div>
-                <div class="wide">
-                  <dt>Asunto</dt>
-                  <dd>{{ payment.asunto || "Sin asunto" }}</dd>
-                </div>
-                <div>
-                  <dt>Cobramos</dt>
-                  <dd>{{ currency(payment.cobramos) }}</dd>
-                </div>
-                <div>
-                  <dt>Pagamos</dt>
-                  <dd>{{ currency(payment.pagamos) }}</dd>
-                </div>
-                <div>
-                  <dt>Movimiento neto</dt>
-                  <dd :class="{ negative: netAmount < 0 }">{{ currency(netAmount) }}</dd>
-                </div>
-                <div class="wide">
-                  <dt>Fecha y hora</dt>
-                  <dd>{{ formattedSelectedDate }}</dd>
-                </div>
-              </dl>
-            </section>
-
             <p
               v-if="loadError || saveError"
               class="a11y-form-status form-error"
@@ -298,7 +252,7 @@
               @click="previousStep"
             />
             <Button
-              v-if="currentStep < 3"
+              v-if="currentStep < 2"
               type="button"
               label="Continuar"
               icon="pi pi-arrow-right"

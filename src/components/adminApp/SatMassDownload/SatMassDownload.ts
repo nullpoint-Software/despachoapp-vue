@@ -54,6 +54,12 @@ const portalStarting = ref(false)
 const portalPolling = ref(false)
 const portalLoginSubmitting = ref(false)
 const portalCaptcha = ref('')
+const portalCaptchaModel = computed({
+  get: () => portalCaptcha.value,
+  set: (value: string) => {
+    portalCaptcha.value = String(value || '').toLocaleUpperCase('es-MX')
+  }
+})
 const portalRecoveryOpen = ref(false)
 const portalKeyboardInput = ref<HTMLInputElement | null>(null)
 const portalTypedText = ref('')
@@ -493,12 +499,13 @@ async function openPortalRecovery() {
 }
 
 async function submitPortalLogin() {
-  if (!portalSessionId.value || !portalCaptcha.value || portalLoginSubmitting.value) return
+  const captcha = portalCaptcha.value.trim().toLocaleUpperCase('es-MX')
+  if (!portalSessionId.value || !captcha || portalLoginSubmitting.value) return
   portalLoginSubmitting.value = true
   portalLoginSubmittedAt = Date.now()
   errorMessage.value = ''
   try {
-    const state = await fs.loginSatPortalSession(portalSessionId.value, portalCaptcha.value)
+    const state = await fs.loginSatPortalSession(portalSessionId.value, captcha)
     portalCaptcha.value = ''
     setPortalState(state)
   } catch (error: any) {

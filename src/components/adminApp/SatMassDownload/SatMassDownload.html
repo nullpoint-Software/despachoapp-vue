@@ -151,7 +151,7 @@
                 <span>Validada contra el RFC antes de guardarse</span>
               </div>
               <div v-if="credentialLoading" class="credential-loading">
-                <i class="pi pi-spin pi-spinner" /><span>Verificando e.firma guardada…</span>
+                <Loader contained />
               </div>
               <article
                 v-else-if="credentialInfo.configured && !editingCredentials"
@@ -263,9 +263,7 @@
               </div>
 
               <div v-if="passwordCredentialLoading" class="credential-loading">
-                <i class="pi pi-spin pi-spinner" /><span
-                  >Revisando los datos fiscales del cliente…</span
-                >
+                <Loader contained />
               </div>
               <article v-else-if="passwordCredential?.configured" class="password-credential-card">
                 <div class="password-credential-card__icon"><i class="pi pi-user" /></div>
@@ -345,17 +343,17 @@
                     :src="portalState.captchaImage"
                     alt="CAPTCHA del SAT"
                   />
-                  <span v-else><i class="pi pi-spin pi-spinner" /> Cargando CAPTCHA…</span>
+                  <Loader v-else contained />
                 </div>
                 <div class="portal-captcha-entry">
                   <label>
                     <span>Código</span>
                     <input
-                      v-model.trim="portalCaptcha"
+                      v-model="portalCaptchaModel"
                       type="text"
                       maxlength="16"
                       autocomplete="off"
-                      autocapitalize="none"
+                      autocapitalize="characters"
                       spellcheck="false"
                       placeholder="Escribe el código"
                       autofocus
@@ -451,7 +449,7 @@
               </div>
             </div>
             <div v-if="loading && !jobs.length" class="jobs-empty">
-              <i class="pi pi-spin pi-spinner" /><span>Consultando el SAT…</span>
+              <Loader contained />
             </div>
             <div v-else-if="!jobs.length" class="jobs-empty">
               <i class="pi pi-inbox" /><strong>Aún no hay solicitudes</strong
@@ -522,11 +520,7 @@
                 class="portal-placeholder portal-loading"
                 aria-live="polite"
               >
-                <div class="portal-skeleton" aria-hidden="true">
-                  <i /><span /><span /><b /><b />
-                </div>
-                <strong>Conectando con el SAT</strong>
-                <span>Se está creando un navegador aislado en el servidor.</span>
+                <Loader contained />
               </div>
 
               <div v-else-if="portalPhase === 'login'" class="portal-placeholder">

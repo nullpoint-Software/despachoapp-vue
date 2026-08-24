@@ -57,7 +57,7 @@ const menuItems = ref<MenuItem[]>([
   { name: 'Pagos', path: '/app/pagos', icon: 'pi pi-wallet' },
   { name: 'Fiscal', path: '/app/fiscal', icon: 'pi pi-percentage' },
   { name: 'Códigos SAT', path: '/app/catalogos-sat', icon: 'pi pi-search' },
-  { name: 'Cumplimiento', path: '/app/cumplimiento', icon: 'pi pi-verified' }
+  { name: 'Cumplimiento', path: '/app/cumplimiento', icon: 'pi pi-check-circle' }
 ])
 
 const mainNavItems = computed(() => menuItems.value.slice(0, 3))
