@@ -1477,6 +1477,13 @@
 .detail-delete-button:hover {
   background: color-mix(in srgb, var(--br-danger-line, #e06a5c) 14%, transparent);
 }
+.detail-delete-button:disabled,
+.detail-delete-button:disabled:hover,
+.account-status-switch:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.45;
+  transform: none;
+}
 .detail-close-button {
   display: grid;
   width: 3rem;

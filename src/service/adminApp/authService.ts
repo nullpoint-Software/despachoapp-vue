@@ -7,6 +7,7 @@ export interface AuthSession {
   browser: string
   device: string
   ipAddress: string
+  publicIpv4: string | null
   createdAt: string
   lastSeenAt: string
   expiresAt: string

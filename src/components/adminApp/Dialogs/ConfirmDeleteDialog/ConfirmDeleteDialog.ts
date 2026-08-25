@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 defineProps({
-  element: String
+  element: String,
+  title: String
 })
 const agreed = ref(false)
 const emit = defineEmits(['confirm', 'cancel'])

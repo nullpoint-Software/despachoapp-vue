@@ -1049,21 +1049,24 @@ async function sendPasswordResetEmail() {
 // DELETE USER
 async function deleteUser(u: SettingsUser): Promise<void> {
   try {
+    await us.deleteUsuario(String(u.id_usuario))
     usuarios.value = usuarios.value.filter((x) => x.id_usuario !== u.id_usuario)
+    modalAbierto.value = false
+    toast.add({
+      severity: 'success',
+      summary: 'Usuario dado de baja',
+      detail: 'La cuenta se conservó en el historial y sus accesos fueron cerrados.',
+      life: 3500
+    })
     if (u.id_usuario == localStorage.getItem('userid')) {
-      //si se intenta eliminar a uno mismo xd
-      await us.deleteUsuario(String(u.id_usuario))
       localStorage.clear()
-      router.push('/')
-    } else {
-      await us.deleteUsuario(String(u.id_usuario))
-      window.location.reload()
+      await router.push('/')
     }
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Error',
-      detail: apiErrorMessage(error) || 'No se pudo eliminar el usuario.',
+      summary: 'No se pudo dar de baja',
+      detail: apiErrorMessage(error) || 'No fue posible dar de baja al usuario.',
       life: 3500
     })
   }
@@ -1119,8 +1122,11 @@ async function saveProfileName(): Promise<void> {
 }
 
 async function updateUserStatus(u: SettingsUser): Promise<void> {
+  if (u.puesto === 'Administrador') return
+  const nextStatus = !u.activo
   try {
-    await us.editUsuario(u.id_usuario, { activo: u.activo })
+    await us.editUsuario(u.id_usuario, { activo: nextStatus })
+    syncSelectedUserPatch({ activo: nextStatus })
   } catch (error) {
     toast.add({
       severity: 'error',
