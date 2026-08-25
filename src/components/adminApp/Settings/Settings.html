@@ -789,14 +789,14 @@
         class="modal-overlay fixed user-detail-modal inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm p-4"
       >
         <div
-          :class="{ 'permissions-mode': userDetailTab === 'permissions' }"
+          :class="{ 'permissions-mode': userDetailTab !== 'account' }"
           class="modal-content bg-white/95 text-black rounded-3xl shadow-2xl border border-gray-200 w-full max-w-xl max-h-[92vh] p-8 overflow-y-auto relative"
         >
           <!-- HEADER with delete + close -->
           <header class="settings-detail-header">
             <div>
               <p>CUENTA / EQUIPO</p>
-              <h3 class="text-2xl font-bold">{{ userDetailTab === 'permissions' ? 'Permisos del usuario' : 'Detalles del usuario' }}</h3>
+              <h3 class="text-2xl font-bold">{{ userDetailTitle }}</h3>
             </div>
             <div class="detail-header-actions">
               <button
@@ -837,6 +837,17 @@
                 ><small
                   >{{ permissionSummary.enabled }} de {{ permissionSummary.total }} activos</small
                 ></span
+              >
+            </button>
+            <button
+              type="button"
+              :class="{ active: userDetailTab === 'sessions' }"
+              @click="openSessionsTab"
+            >
+              <i class="pi pi-desktop"></i>
+              <span
+                ><strong>Sesiones</strong
+                ><small>{{ sessionsLoaded ? `${userSessions.length} equipos activos` : 'Revisar equipos' }}</small></span
               >
             </button>
           </nav>
@@ -1049,7 +1060,11 @@
             </article>
           </section>
 
-          <section v-else class="permissions-shell" aria-label="Permisos del usuario">
+          <section
+            v-else-if="userDetailTab === 'permissions'"
+            class="permissions-shell"
+            aria-label="Permisos del usuario"
+          >
             <header class="permission-overview">
               <div>
                 <span>ROL / {{ usuarioSeleccionado.puesto }}</span>
@@ -1136,6 +1151,72 @@
             <div v-else class="permission-empty">
               <i class="pi pi-shield"></i>
               <strong>Este rol todavía no tiene permisos configurables.</strong>
+            </div>
+          </section>
+
+          <section v-else class="sessions-shell" aria-label="Sesiones del usuario">
+            <header class="sessions-overview">
+              <div>
+                <span>SEGURIDAD / EQUIPOS</span>
+                <h4>Accesos de {{ usuarioSeleccionado.nombre }}</h4>
+                <p>Revisa dónde está abierta esta cuenta y cierra cualquier acceso que no reconozcas.</p>
+              </div>
+              <button
+                type="button"
+                class="sessions-close-all"
+                :disabled="sessionsLoading || !userSessions.length || !!sessionActionBusy"
+                @click="closeAllUserSessions"
+              >
+                <i :class="sessionActionBusy === 'all' ? 'pi pi-spin pi-spinner' : 'pi pi-sign-out'"></i>
+                {{ sessionActionBusy === 'all' ? 'Cerrando…' : 'Cerrar todas' }}
+              </button>
+            </header>
+
+            <aside class="sessions-warning">
+              <i class="pi pi-shield"></i>
+              <div>
+                <strong>El cierre es inmediato</strong>
+                <p>El equipo revocado será enviado al inicio de sesión en su siguiente solicitud a la aplicación.</p>
+              </div>
+            </aside>
+
+            <div v-if="sessionsLoading" class="permission-empty" role="status">
+              <i class="pi pi-spin pi-spinner"></i>
+              <strong>Cargando sesiones…</strong>
+            </div>
+            <div v-else-if="sessionsError" class="permission-empty" role="alert">
+              <i class="pi pi-exclamation-triangle"></i>
+              <strong>{{ sessionsError }}</strong>
+              <button type="button" class="permission-reset-button" @click="loadUserSessions">Reintentar</button>
+            </div>
+            <div v-else-if="userSessions.length" class="sessions-list">
+              <article v-for="session in userSessions" :key="session.id" class="session-card">
+                <div class="session-card__icon"><i class="pi pi-desktop"></i></div>
+                <div class="session-card__identity">
+                  <div>
+                    <strong>{{ session.browser }} · {{ session.device }}</strong>
+                    <span v-if="session.current" class="session-current">Sesión actual</span>
+                  </div>
+                  <small>IP {{ session.ipAddress || 'no disponible' }}</small>
+                </div>
+                <dl>
+                  <div><dt>Última actividad</dt><dd>{{ formatSessionDate(session.lastSeenAt) }}</dd></div>
+                  <div><dt>Inicio</dt><dd>{{ formatSessionDate(session.createdAt) }}</dd></div>
+                </dl>
+                <button
+                  type="button"
+                  class="session-revoke"
+                  :disabled="!!sessionActionBusy"
+                  @click="closeUserSession(session)"
+                >
+                  <i :class="sessionActionBusy === session.id ? 'pi pi-spin pi-spinner' : 'pi pi-sign-out'"></i>
+                  {{ sessionActionBusy === session.id ? 'Cerrando…' : 'Cerrar sesión' }}
+                </button>
+              </article>
+            </div>
+            <div v-else class="permission-empty">
+              <i class="pi pi-check-circle"></i>
+              <strong>No hay sesiones activas para esta cuenta.</strong>
             </div>
           </section>
         </div>

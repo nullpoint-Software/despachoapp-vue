@@ -83,10 +83,11 @@ onMounted(async () => {
   }
 })
 
-const logOut = () => {
+const logOut = async () => {
   closeMoreMenu()
+  await as.logout()
   localStorage.clear()
-  router.push('/')
+  await router.push('/')
 }
 
 const openNotesModal = () => (showNotesModal.value = true)

@@ -45,7 +45,23 @@ instance.interceptors.response.use(
     return response
   },
   (error) => {
-    if (error?.response?.data?.code === 'SENSITIVE_ACCESS_EXPIRED') clearSensitiveAccess()
+    const code = error?.response?.data?.code
+    if (code === 'SENSITIVE_ACCESS_EXPIRED') clearSensitiveAccess()
+    if (
+      [
+        'SESSION_REQUIRED',
+        'SESSION_REVOKED',
+        'SESSION_EXPIRED',
+        'ACCOUNT_DISABLED',
+        'TOKEN_INVALID'
+      ].includes(code)
+    ) {
+      clearSensitiveAccess()
+      localStorage.clear()
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.assign('/login?error=session')
+      }
+    }
     return Promise.reject(error)
   }
 )

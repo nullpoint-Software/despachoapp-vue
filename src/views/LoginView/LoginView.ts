@@ -62,11 +62,14 @@ export default {
             life: 6000
           })
           router.push('/login')
-        } else if (errorType === 'token') {
+        } else if (errorType === 'token' || errorType === 'session') {
           toast.add({
             severity: 'warn',
-            summary: 'Sesión caducada o no válida',
-            detail: 'Por favor, inicia sesión nuevamente.',
+            summary: errorType === 'session' ? 'Sesión cerrada' : 'Sesión caducada o no válida',
+            detail:
+              errorType === 'session'
+                ? 'Este acceso fue cerrado o dejó de estar autorizado. Inicia sesión nuevamente.'
+                : 'Por favor, inicia sesión nuevamente.',
             life: 6000
           })
           router.push('/login')

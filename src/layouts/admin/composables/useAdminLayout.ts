@@ -52,10 +52,11 @@ export function useAdminLayout() {
     openLogs()
     closeMoreMenu()
   }
-  function logout(): void {
+  async function logout(): Promise<void> {
     closeMoreMenu()
+    await authService.logout()
     localStorage.clear()
-    void router.push('/')
+    await router.push('/')
   }
 
   useEventListener(document, 'keydown', (event: KeyboardEvent) => {

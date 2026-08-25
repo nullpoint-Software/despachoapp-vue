@@ -1,6 +1,18 @@
 import type { AxiosInstance } from 'axios'
 import axios, { AxiosError } from 'axios'
 import { useRoute, useRouter } from 'vue-router'
+
+export interface AuthSession {
+  id: string
+  browser: string
+  device: string
+  ipAddress: string
+  createdAt: string
+  lastSeenAt: string
+  expiresAt: string
+  current: boolean
+}
+
 class authService {
   private serverip: string
   private axios: AxiosInstance
@@ -46,6 +58,30 @@ class authService {
       password
     })
     return response.data
+  }
+
+  async logout(): Promise<void> {
+    try {
+      await this.axios.post(`${this.serverip}/auth/logout`)
+    } catch (error) {
+      console.warn(
+        'The local session will be closed even though the server did not respond.',
+        error
+      )
+    }
+  }
+
+  async getUserSessions(userId: string | number): Promise<AuthSession[]> {
+    const response = await this.axios.get(`${this.serverip}/auth/users/${userId}/sessions`)
+    return response.data.sessions
+  }
+
+  async revokeUserSession(userId: string | number, sessionId: string): Promise<void> {
+    await this.axios.delete(`${this.serverip}/auth/users/${userId}/sessions/${sessionId}`)
+  }
+
+  async revokeAllUserSessions(userId: string | number): Promise<void> {
+    await this.axios.delete(`${this.serverip}/auth/users/${userId}/sessions`)
   }
 
   getUserInfo = async () => {

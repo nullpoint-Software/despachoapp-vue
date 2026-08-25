@@ -1,18 +1,19 @@
 import { as, bs, pks, us } from '@/service/adminApp/client'
 import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import { USER_AVATAR_PLACEHOLDER as defaultAvatar } from '@/constants/brandAssets'
-import imageCompression from "browser-image-compression";
-import { useAppToast } from '@/composables/useAppToast';
-import { useAppDialog } from '@/composables/useAppDialog';
+import imageCompression from 'browser-image-compression'
+import { useAppToast } from '@/composables/useAppToast'
+import { useAppDialog } from '@/composables/useAppDialog'
 import {
   getUserPermissionProfile,
   resetUserPermissionOverrides,
   updateUserPermissionOverrides,
-  type PermissionProfile,
-} from '@/service/adminApp/permissionsService';
-import router from '@/router';
+  type PermissionProfile
+} from '@/service/adminApp/permissionsService'
+import router from '@/router'
 
 import { clearSensitiveAccess, hasSensitiveAccess } from '@/service/adminApp/sensitiveAccess'
+import type { AuthSession } from '@/service/adminApp/authService'
 interface SettingsUser {
   id_usuario: string | number
   nombre: string
@@ -39,8 +40,8 @@ interface ApiErrorShape {
   response?: { data?: { error?: string } }
 }
 
-type UserDetailTab = 'account' | 'permissions';
-type PermissionSaveState = 'idle' | 'saving' | 'saved' | 'error';
+type UserDetailTab = 'account' | 'permissions' | 'sessions'
+type PermissionSaveState = 'idle' | 'saving' | 'saved' | 'error'
 
 interface PermissionMeta {
   label: string
@@ -137,6 +138,11 @@ const passwordRevealBusy = ref(false)
 const passwordResetMenuOpen = ref(false)
 const passwordResetBusy = ref(false)
 const generatedResetLink = ref('')
+const userSessions = ref<AuthSession[]>([])
+const sessionsLoading = ref(false)
+const sessionsLoaded = ref(false)
+const sessionsError = ref('')
+const sessionActionBusy = ref('')
 
 const confirmDialogVisible = ref(false)
 const userToDelete = ref<SettingsUser | null>(null)
@@ -156,6 +162,11 @@ const { prompt: promptDialog, confirm: confirmDialog } = useAppDialog()
 // PERFIL
 const userInfo = await as.getUserInfo()
 const isAdmin = userInfo && userInfo.level === 'Administrador'
+const userDetailTitle = computed(() => {
+  if (userDetailTab.value === 'permissions') return 'Permisos del usuario'
+  if (userDetailTab.value === 'sessions') return 'Sesiones del usuario'
+  return 'Detalles del usuario'
+})
 
 const settingsTutorialOpen = ref(false)
 const settingsTutorialSteps = computed(() => [
@@ -206,13 +217,13 @@ const permissionTutorialSteps = [
     target: '.permission-overview',
     eyebrow: 'Permisos / alcance',
     title: 'Configuras una cuenta',
-    body: 'El resumen muestra los permisos efectivos de la persona seleccionada y cuántos tienen ajustes propios.',
+    body: 'El resumen muestra los permisos efectivos de la persona seleccionada y cuántos tienen ajustes propios.'
   },
   {
     target: '.permission-impact-note',
     eyebrow: 'Permisos / impacto',
     title: 'Distingue los ajustes personales',
-    body: 'Los cambios sólo afectan a esta cuenta. Puedes reconocer las excepciones y restablecer los permisos del rol cuando sea necesario.',
+    body: 'Los cambios sólo afectan a esta cuenta. Puedes reconocer las excepciones y restablecer los permisos del rol cuando sea necesario.'
   },
   {
     target: '.permission-group',
@@ -633,9 +644,13 @@ function abrirModal(u: SettingsUser): void {
   passwordRevealBusy.value = false
   generatedResetLink.value = ''
   passwordResetMenuOpen.value = false
+  userSessions.value = []
+  sessionsError.value = ''
+  sessionsLoaded.value = false
+  sessionActionBusy.value = ''
   userDetailTab.value = 'account'
   modalAbierto.value = true
-  selectedLevel.value = u.puesto;
+  selectedLevel.value = u.puesto
   void loadPermissionProfile(u.id_usuario)
 }
 async function openPermissionTab(): Promise<void> {
@@ -643,6 +658,97 @@ async function openPermissionTab(): Promise<void> {
   if (usuarioSeleccionado.value) await loadPermissionProfile(usuarioSeleccionado.value.id_usuario)
   await nextTick()
   if (!localStorage.getItem('tourSettingsPermissionsDone')) permissionTutorialOpen.value = true
+}
+
+function formatSessionDate(value: string): string {
+  if (!value) return 'Sin actividad registrada'
+  return new Intl.DateTimeFormat('es-MX', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(new Date(value))
+}
+
+async function loadUserSessions(): Promise<void> {
+  if (!usuarioSeleccionado.value || sessionsLoading.value) return
+  sessionsLoading.value = true
+  sessionsError.value = ''
+  try {
+    userSessions.value = await as.getUserSessions(usuarioSeleccionado.value.id_usuario)
+    sessionsLoaded.value = true
+  } catch (error) {
+    sessionsError.value = apiErrorMessage(error) || 'No fue posible cargar las sesiones.'
+  } finally {
+    sessionsLoading.value = false
+  }
+}
+
+async function openSessionsTab(): Promise<void> {
+  userDetailTab.value = 'sessions'
+  await loadUserSessions()
+}
+
+async function closeUserSession(session: AuthSession): Promise<void> {
+  if (!usuarioSeleccionado.value || sessionActionBusy.value) return
+  const confirmed = await confirmDialog({
+    title: 'Cerrar sesión remota',
+    message: `Se cerrará el acceso de ${session.browser} en ${session.device}.`,
+    tone: 'danger',
+    confirmLabel: 'Cerrar sesión',
+    cancelLabel: 'Cancelar'
+  })
+  if (!confirmed) return
+  sessionActionBusy.value = session.id
+  try {
+    await as.revokeUserSession(usuarioSeleccionado.value.id_usuario, session.id)
+    userSessions.value = userSessions.value.filter((item) => item.id !== session.id)
+    toast.add({
+      severity: 'success',
+      summary: 'Sesión cerrada',
+      detail: 'Ese equipo perderá el acceso en su siguiente solicitud.',
+      life: 3000
+    })
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'No fue posible cerrar la sesión',
+      detail: apiErrorMessage(error) || 'Inténtalo nuevamente.',
+      life: 4000
+    })
+  } finally {
+    sessionActionBusy.value = ''
+  }
+}
+
+async function closeAllUserSessions(): Promise<void> {
+  if (!usuarioSeleccionado.value || sessionActionBusy.value || !userSessions.value.length) return
+  const confirmed = await confirmDialog({
+    title: 'Cerrar todas las sesiones',
+    message: `Se cerrará la sesión de ${usuarioSeleccionado.value.nombre} en todos sus equipos.`,
+    tone: 'danger',
+    confirmLabel: 'Cerrar todas',
+    cancelLabel: 'Cancelar'
+  })
+  if (!confirmed) return
+  sessionActionBusy.value = 'all'
+  try {
+    await as.revokeAllUserSessions(usuarioSeleccionado.value.id_usuario)
+    userSessions.value = []
+    toast.add({
+      severity: 'success',
+      summary: 'Sesiones cerradas',
+      detail: 'La persona deberá iniciar sesión otra vez en cada equipo.',
+      life: 3500
+    })
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'No fue posible cerrar las sesiones',
+      detail: apiErrorMessage(error) || 'Inténtalo nuevamente.',
+      life: 4000
+    })
+  } finally {
+    sessionActionBusy.value = ''
+  }
 }
 async function verPassword() {
   if (passwordRevealBusy.value || !usuarioSeleccionado.value) return
@@ -1172,14 +1278,16 @@ let permissionRequestVersion = 0
 const permissionSaving = ref(false)
 const permissionSaveState = ref<PermissionSaveState>('idle')
 
-const effectivePermissions = computed<Record<string, boolean>>(() => permissionProfile.value?.effective || {})
+const effectivePermissions = computed<Record<string, boolean>>(
+  () => permissionProfile.value?.effective || {}
+)
 
 const permissionSummary = computed(() => {
   const values = Object.values(effectivePermissions.value)
   return {
     enabled: values.filter(Boolean).length,
     total: values.length,
-    customized: Object.keys(permissionProfile.value?.overrides || {}).length,
+    customized: Object.keys(permissionProfile.value?.overrides || {}).length
   }
 })
 
@@ -1198,7 +1306,10 @@ const permissionGroups = computed(() => {
       ...meta,
       key,
       enabled,
-      customized: Object.prototype.hasOwnProperty.call(permissionProfile.value?.overrides || {}, key),
+      customized: Object.prototype.hasOwnProperty.call(
+        permissionProfile.value?.overrides || {},
+        key
+      )
     })
     grouped.set(meta.group, entries)
   })
@@ -1207,12 +1318,15 @@ const permissionGroups = computed(() => {
     .map((name) => ({ name, ...permissionGroupDetails[name], items: grouped.get(name) || [] }))
 })
 
-const permissionSaveLabel = computed(() => ({
-  idle: 'Cambios sólo para esta cuenta',
-  saving: 'Guardando cambios…',
-  saved: 'Permisos actualizados',
-  error: 'No se pudo guardar',
-})[permissionSaveState.value])
+const permissionSaveLabel = computed(
+  () =>
+    ({
+      idle: 'Cambios sólo para esta cuenta',
+      saving: 'Guardando cambios…',
+      saved: 'Permisos actualizados',
+      error: 'No se pudo guardar'
+    })[permissionSaveState.value]
+)
 
 async function loadPermissionProfile(userId: string | number): Promise<void> {
   if (permissionProfile.value && String(permissionProfile.value.user.id) === String(userId)) return
@@ -1259,7 +1373,7 @@ async function togglePermission(key: string): Promise<void> {
       severity: 'error',
       summary: 'Permisos sin cambios',
       detail: 'No se pudo actualizar esta cuenta. Intenta de nuevo.',
-      life: 4000,
+      life: 4000
     })
   } finally {
     permissionSaving.value = false
@@ -1278,7 +1392,7 @@ async function resetPermissionsToRoleDefaults(): Promise<void> {
       severity: 'success',
       summary: 'Permisos restablecidos',
       detail: `${profile.user.name} vuelve a usar los permisos de ${profile.user.role}.`,
-      life: 3000,
+      life: 3000
     })
   } catch {
     permissionSaveState.value = 'error'
@@ -1286,7 +1400,7 @@ async function resetPermissionsToRoleDefaults(): Promise<void> {
       severity: 'error',
       summary: 'Permisos sin cambios',
       detail: 'No se pudieron restablecer los permisos del rol.',
-      life: 4000,
+      life: 4000
     })
   } finally {
     permissionSaving.value = false
