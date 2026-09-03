@@ -1,18 +1,18 @@
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { useAppToast } from "@/composables/useAppToast";
-import { subscribeToPermissions } from "@/service/adminApp/permissionsService";
-import { cs, pks } from "@/service/adminApp/client";
-import { clearSensitiveAccess, hasSensitiveAccess } from "@/service/adminApp/sensitiveAccess";
-import type { ColumnDef } from "@/types/ClientesTable";
-import { useBrutalMotion } from "@/composables/useBrutalMotion";
-import { regimenesFiscales, regimenFiscalLabel } from "@/constants/regimenesFiscales";
-const pageRef = ref<HTMLElement | null>(null);
-useBrutalMotion(pageRef, [".clients-hero", "#clientes-table"]);
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useAppToast } from '@/composables/useAppToast'
+import { subscribeToPermissions } from '@/service/adminApp/permissionsService'
+import { cs, pks } from '@/service/adminApp/client'
+import { clearSensitiveAccess, hasSensitiveAccess } from '@/service/adminApp/sensitiveAccess'
+import type { ColumnDef } from '@/types/ClientesTable'
+import { useBrutalMotion } from '@/composables/useBrutalMotion'
+import { regimenesFiscales, regimenFiscalLabel } from '@/constants/regimenesFiscales'
+const pageRef = ref<HTMLElement | null>(null)
+useBrutalMotion(pageRef, ['.clients-hero', '#clientes-table'])
 const canAddCliente = ref(false)
 const canEditCliente = ref(false)
 const canDeleteCliente = ref(false)
 let stopPermissionSync = () => {}
-const clientTutorialOpen = ref(false);
+const clientTutorialOpen = ref(false)
 const clientTutorialSteps = [
   {
     target: '.clients-hero',
@@ -67,14 +67,6 @@ const columns = ref<ColumnDef[]>([
   { field: 'telefono', header: 'Celular', visible: true },
   { field: 'email', header: 'Correo Electrónico', visible: true }
 ])
-
-// Columna de acciones (siempre se mostrará)
-const actionsColumn = { field: 'actions', header: 'Acciones' }
-// Base de columnas para el slider (excluyendo la columna de acciones)
-const tableColumns = computed<ColumnDef[]>(() => {
-  const showActions = canEditCliente.value || canDeleteCliente.value
-  return showActions ? [...columns.value, actionsColumn] : [...columns.value]
-})
 
 // Filtros
 const filters = ref({
@@ -214,10 +206,6 @@ function nextPage() {
   void loadCustomersPage()
 }
 
-// Clase para las filas
-const rowClass = ((data: any, index: number) =>
-  index % 2 === 0 ? 'bg-white hover:bg-gray-100' : 'bg-gray-50 hover:bg-gray-100') as any
-
 // Función para copiar al portapapeles
 const copyToClipboard = async (text: string, confidential?: boolean) => {
   try {
@@ -245,10 +233,10 @@ const handleResize = () => {
 }
 onMounted(() => window.addEventListener('resize', handleResize))
 onUnmounted(() => {
-  stopPermissionSync();
-  window.removeEventListener("resize", handleResize);
-  if (searchTimer) clearTimeout(searchTimer);
-});
+  stopPermissionSync()
+  window.removeEventListener('resize', handleResize)
+  if (searchTimer) clearTimeout(searchTimer)
+})
 
 onMounted(async () => {
   await loadCustomersPage()
@@ -274,12 +262,21 @@ watch(pageSize, () => {
 
 // Variables para el Card de agregar/editar clientes
 const cardVisible = ref(false)
+const savingCustomer = ref(false)
 const selectedCustomer = ref({})
 const selectedDocumentClient = ref<any | null>(null)
+
 const openDocuments = (customer: any) => {
   selectedDocumentClient.value = { ...customer }
 }
+
+const closeCustomerCard = () => {
+  if (!savingCustomer.value) cardVisible.value = false
+}
+
 const openCard = (customer: any) => {
+  if (savingCustomer.value) return
+  if (!customer && !canAddCliente.value) return
   if (customer) {
     selectedCustomer.value = { ...customer }
   } else {
@@ -296,39 +293,39 @@ const openCard = (customer: any) => {
   }
   cardVisible.value = true
 }
+
 const saveCustomer = async (customer: any) => {
-  if (customer) {
-    const index = customers.value.findIndex((c: any) => c.id_cliente === customer.id_cliente)
-    try {
-      if (index !== -1) {
-        await cs.editCliente(customer)
-        await loadCustomersPage()
-        toast.add({
-          severity: 'success',
-          summary: 'Actualizado',
-          detail: 'Cliente actualizado correctamente',
-          life: 2000
-        })
-      } else {
-        await cs.addCliente(customer)
-        currentPage.value = 0
-        await loadCustomersPage()
-        toast.add({
-          severity: 'success',
-          summary: 'Agregado',
-          detail: 'Cliente agregado correctamente',
-          life: 2000
-        })
-      }
-      cardVisible.value = false
-    } catch (_error) {
-      toast.add({
-        severity: 'error',
-        summary: 'No guardado',
-        detail: 'Revisa la conexión e inténtalo de nuevo.',
-        life: 3500
-      })
+  if (!customer || savingCustomer.value) return
+
+  const customerId = customer.id_cliente
+  const isEditing = customerId !== '' && customerId !== null && customerId !== undefined
+  savingCustomer.value = true
+
+  try {
+    if (isEditing) {
+      await cs.editCliente(customer)
+    } else {
+      await cs.addCliente(customer)
+      currentPage.value = 0
     }
+
+    await loadCustomersPage()
+    toast.add({
+      severity: 'success',
+      summary: isEditing ? 'Actualizado' : 'Agregado',
+      detail: isEditing ? 'Cliente actualizado correctamente' : 'Cliente agregado correctamente',
+      life: 2000
+    })
+    cardVisible.value = false
+  } catch (_error) {
+    toast.add({
+      severity: 'error',
+      summary: 'No guardado',
+      detail: 'Revisa la conexión e inténtalo de nuevo.',
+      life: 3500
+    })
+  } finally {
+    savingCustomer.value = false
   }
 }
 

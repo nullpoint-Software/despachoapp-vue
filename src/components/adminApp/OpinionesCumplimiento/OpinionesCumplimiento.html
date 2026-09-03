@@ -5,7 +5,12 @@
       <h1>Cumplimiento fiscal</h1>
       <span>Últimas opiniones almacenadas, vigencia y estado de consulta de cada cliente.</span>
     </div>
-    <div class="compliance-actions" aria-label="Acciones de cumplimiento">
+    <div class="compliance-hero-aside">
+      <article class="compliance-hero-score">
+        <small>COBERTURA FAVORABLE</small>
+        <strong>{{ positiveRate }}%</strong>
+        <span>{{ summary.positiva }} positivas de {{ reviewedCount }} revisadas</span>
+      </article>
       <AppButton
         label="Ayuda"
         icon="pi pi-question-circle"
@@ -13,9 +18,23 @@
         class="app-help-button"
         @click="opinionsTutorialOpen = true"
       />
+    </div>
+  </header>
+
+  <section class="compliance-command-center" aria-labelledby="compliance-command-title">
+    <header class="compliance-command-heading">
+      <span class="compliance-command-icon"><i class="pi pi-building-columns" /></span>
+      <div>
+        <small>OPERACIÓN SAT</small>
+        <h2 id="compliance-command-title">Centro de consultas</h2>
+        <p>Elige cómo actualizar la evidencia y conserva la última opinión válida de cada cliente.</p>
+      </div>
+    </header>
+
+    <div class="compliance-actions" aria-label="Acciones de cumplimiento">
       <AppButton
         v-if="isAdmin"
-        label="Programación"
+        label="Programar consultas"
         icon="pi pi-calendar-clock"
         outlined
         :disabled="syncing"
@@ -23,35 +42,35 @@
       />
       <AppButton
         v-if="isAdmin"
-        :label="syncing ? `Consultando ${syncProgress.processed}/${syncProgress.total || '?'}...` : 'Consulta pública'"
+        :label="syncing ? `Consultando ${syncProgress.processed}/${syncProgress.total || '?'}...` : 'Consultar por RFC'"
         icon="pi pi-globe"
         :disabled="syncing || loading"
         @click="syncAll"
       />
       <AppButton
         v-if="isAdmin"
-        label="Consulta por terceros"
+        label="Consultar con acceso"
         icon="pi pi-users"
         :disabled="syncing"
         @click="openThirdPartyQuery"
       />
       <span v-if="!isAdmin" class="read-only-note"><i class="pi pi-eye" /> Vista de consulta</span>
     </div>
-  </header>
 
-  <section class="compliance-note" aria-label="Alcance de la consulta">
-    <i class="pi pi-shield" aria-hidden="true" />
-    <div>
-      <strong>Dos modalidades, alcances distintos</strong>
-      <span
-        >La consulta pública solo envía el RFC. La consulta por terceros envía las credenciales del
-        despacho al servidor temporal para iniciar sesión en el SAT; no se guardan.</span
-      >
-    </div>
-    <button type="button" class="guide-trigger" @click="showGuide = !showGuide">
-      {{ showGuide ? 'Ocultar guía' : 'Cómo hacerla pública' }}
-      <i class="pi pi-angle-down" aria-hidden="true" />
-    </button>
+    <section class="compliance-note" aria-label="Alcance de la consulta">
+      <i class="pi pi-shield" aria-hidden="true" />
+      <div>
+        <strong>Dos modalidades, alcances distintos</strong>
+        <span
+          >La consulta pública solo envía el RFC. La consulta por terceros envía las credenciales del
+          despacho al servidor temporal para iniciar sesión en el SAT; no se guardan.</span
+        >
+      </div>
+      <button type="button" class="guide-trigger" @click="showGuide = !showGuide">
+        {{ showGuide ? 'Ocultar guía' : 'Cómo hacerla pública' }}
+        <i class="pi pi-angle-down" aria-hidden="true" />
+      </button>
+    </section>
   </section>
 
   <section v-if="showGuide" class="publication-guide" aria-labelledby="publication-guide-title">
@@ -96,7 +115,15 @@
     </ol>
   </section>
 
-  <section class="summary-overview" aria-label="Panorama de opiniones de cumplimiento">
+  <section class="compliance-overview-section" aria-labelledby="compliance-overview-title">
+    <header class="compliance-section-heading">
+      <div>
+        <small>ESTADO DE LA CARTERA</small>
+        <h2 id="compliance-overview-title">Panorama de cumplimiento</h2>
+      </div>
+      <p>La cobertura se calcula sólo con clientes que ya tienen una consulta registrada.</p>
+    </header>
+    <section class="summary-overview" aria-label="Panorama de opiniones de cumplimiento">
     <article class="positive-overview">
       <div class="positive-score">
         <small>RESULTADO PRINCIPAL</small>
@@ -129,9 +156,18 @@
       <article><span>Sin consultar</span><strong>{{ summary.sin_consulta }}</strong></article>
       <article><span>PDF archivados</span><strong>{{ summary.con_documento }}</strong></article>
     </div>
+    </section>
   </section>
 
-  <section class="filter-strip" aria-label="Filtros de opiniones">
+  <section class="portfolio-toolbar" aria-labelledby="portfolio-toolbar-title">
+    <header class="portfolio-toolbar-heading">
+      <div>
+        <small>EXPEDIENTES 32-D</small>
+        <h2 id="portfolio-toolbar-title">Explorar clientes</h2>
+      </div>
+      <span><strong>{{ filteredRecords.length }}</strong> de {{ records.length }} visibles</span>
+    </header>
+    <div class="filter-strip" aria-label="Filtros de opiniones">
     <div class="search-row">
       <label class="search-field">
         <span
@@ -147,7 +183,8 @@
       </label>
       <AppButton :label="filterButtonLabel" icon="pi pi-sliders-h" outlined @click="openFilters" />
       <AppButton label="Limpiar filtros" icon="pi pi-filter-slash" outlined @click="clearFilters" />
-      <div class="filter-result">{{ filteredRecords.length }} resultados</div>
+      <div class="filter-result">En vista: {{ filteredRecords.length }}</div>
+    </div>
     </div>
   </section>
 
@@ -166,7 +203,7 @@
     <div class="records-panel">
       <header class="panel-heading">
         <div>
-          <h2>Clientes</h2>
+          <h2>Resultados por régimen</h2>
           <span
             >Última opinión almacenada; un error de conexión no reemplaza un resultado válido.</span
           >

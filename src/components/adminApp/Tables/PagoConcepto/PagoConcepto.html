@@ -1,7 +1,7 @@
-<!-- Contenedor de la tabla -->
-<div class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
+<section class="record-table-shell" aria-label="Movimientos de pagos">
   <DataTable
     :value="payments"
+    :loading="loadingPayments"
     :filters="filters"
     :globalFilterFields="[
         'id',
@@ -17,121 +17,131 @@
     removableSort
     :rows="10"
     :rowsPerPageOptions="[10, 20, 50]"
-    :rowClass="rowClass"
-    class="w-full rounded-lg p-5"
+    class="records-table records-table--payments"
   >
-    <!-- Encabezado de la tabla -->
     <template #header>
-      <div
-        class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
-      >
-        <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
-          <!-- Buscador -->
-          <label class="app-search-control w-full sm:w-auto">
+      <div class="records-table__toolbar">
+        <div class="records-table__identity">
+          <span>PAGOS / MOVIMIENTOS</span>
+          <strong>Control de caja</strong>
+        </div>
+        <div class="records-table__controls">
+          <label class="app-search-control records-table__search">
             <span class="sr-only">Buscar pagos</span>
             <i class="pi pi-search" aria-hidden="true"></i>
-            <!-- no se porque pero solamente asi chrome le hace caso de no rellenar -->
             <InputText
               v-model="filters.global.value"
-              autocomplete="new-password"
-              placeholder="Buscar..."
-              aria-autocomplete="none"
-              class="w-full"
+              type="search"
+              autocomplete="off"
+              placeholder="Buscar cliente, concepto o responsable"
+              aria-label="Buscar pagos"
             />
           </label>
-          <!-- Botones -->
-          <div class="flex space-x-2">
+          <div class="records-table__actions">
             <Button
               type="button"
               icon="pi pi-sliders-h"
               :label="isMobile ? activeFilterCount ? String(activeFilterCount) : '' : filterButtonLabel"
               aria-label="Abrir filtros de pagos"
               outlined
-              class="p-2"
+              title="Filtrar pagos"
               @click="openFilters"
             />
             <Button
               type="button"
               icon="pi pi-filter-slash"
-              :label="isMobile ? '' : 'Limpiar Filtros'"
+              :label="isMobile ? '' : 'Limpiar filtros'"
+              aria-label="Limpiar filtros de pagos"
               outlined
-              class="p-2"
+              title="Limpiar filtros"
               @click="clearFilter"
             />
             <ExportExcelButton />
+            <Button
+              type="button"
+              icon="pi pi-plus"
+              :label="isMobile ? '' : 'Nuevo pago'"
+              :disabled="!canAddPagoConcepto"
+              :title="canAddPagoConcepto ? 'Registrar un movimiento' : 'No tienes permiso para agregar pagos'"
+              aria-label="Agregar pago"
+              class="p-button-primary records-table__primary"
+              @click="openCard(null)"
+            />
           </div>
         </div>
       </div>
     </template>
 
-    <!-- Renderizado dinámico de columnas -->
-    <Column
-      v-for="col in tableColumns"
-      :key="col.field"
-      :sortable="col.field !== 'actions'"
-      :field="col.field !== 'actions' ? col.field : undefined"
-    >
+    <!-- La columna de acciones es explícita y permanece fija al extremo derecho. -->
+    <Column v-for="col in columns" :key="col.field" sortable :field="col.field">
       <template #header>
-        <div class="p-1 text-black font-semibold text-center text-sm w-full">{{ col.header }}</div>
+        <span class="records-table__column-label">{{ col.header }}</span>
       </template>
       <template #body="{ data }">
-        <!-- Acciones -->
-        <div v-if="col.field === 'actions'" class="flex justify-center space-x-2">
+        <button
+          v-if="col.field === 'fecha'"
+          type="button"
+          class="records-table__cell-button records-table__cell-content is-date"
+          :title="formatFechaHoraFullPagoSQL(data[col.field])"
+          :aria-label="'Copiar fecha ' + formatFechaHoraFullPagoSQL(data[col.field])"
+          @click="copyToClipboard(formatFechaHoraFullPagoSQL(data[col.field]))"
+        >
+          {{ formatFechaHoraFullPagoSQL(data[col.field]) }}
+        </button>
+        <button
+          v-else-if="col.field === 'cobramos' || col.field === 'pagamos'"
+          type="button"
+          class="records-table__cell-button records-table__cell-content is-money"
+          :title="formatMoney(data[col.field])"
+          :aria-label="'Copiar importe ' + formatMoney(data[col.field])"
+          @click="copyToClipboard(formatMoney(data[col.field]))"
+        >
+          {{ formatMoney(data[col.field]) }}
+        </button>
+        <button
+          v-else
+          type="button"
+          class="records-table__cell-button records-table__cell-content"
+          :title="String(data[col.field] ?? '')"
+          :aria-label="'Copiar ' + col.header + ': ' + String(data[col.field] ?? 'Sin dato')"
+          @click="copyToClipboard(String(data[col.field] ?? ''))"
+        >
+          {{ data[col.field] }}
+        </button>
+      </template>
+    </Column>
+    <Column field="actions">
+      <template #header>
+        <span class="records-table__column-label">Acciones</span>
+      </template>
+      <template #body="{ data }">
+        <div class="records-table__row-actions" role="group" aria-label="Acciones del pago">
           <Button
             v-if="canEditPagoConcepto"
+            type="button"
             icon="pi pi-pencil"
             class="p-button-rounded p-button-warning"
+            aria-label="Editar pago"
+            title="Editar pago"
             @click="openCard(data)"
           />
           <Button
-            v-if="canDeletePagoConcepto"
-            icon="pi pi-trash"
-            class="p-button-rounded p-button-danger"
-            @click="openConfirmDialog(data)"
-          />
-          <!-- Botón Imprimir -->
-          <Button
+            type="button"
             icon="pi pi-print"
             class="p-button-rounded p-button-info"
+            aria-label="Imprimir pago"
+            title="Imprimir pago"
             @click="openPrint(data)"
           />
-        </div>
-        <!-- Celdas normales -->
-        <div
-          v-if="col.field === 'fecha'"
-          class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-          @click="
-              copyToClipboard(formatFechaHoraFullPagoSQL(data[col.field]))
-            "
-        >
-          {{ formatFechaHoraFullPagoSQL(data[col.field]) }}
-        </div>
-        <div
-          v-if="col.field === 'cobramos'"
-          class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-          @click="copyToClipboard('$' + data[col.field])"
-        >
-          {{ "$" + data[col.field] }}
-        </div>
-        <div
-          v-if="col.field === 'pagamos'"
-          class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-          @click="copyToClipboard('$' + data[col.field])"
-        >
-          {{ "$" + data[col.field] }}
-        </div>
-        <div
-          v-else-if="
-              col.field !== 'cobramos' &&
-              col.field !== 'pagamos' &&
-              col.field !== 'saldo' &&
-              col.field !== 'fecha' &&
-              col.field !== 'actions'
-            "
-          class="p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-          @click="copyToClipboard(data[col.field])"
-        >
-          {{ data[col.field] }}
+          <Button
+            v-if="canDeletePagoConcepto"
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-danger"
+            aria-label="Eliminar pago"
+            title="Eliminar pago"
+            @click="openConfirmDialog(data)"
+          />
         </div>
       </template>
     </Column>
@@ -171,7 +181,7 @@
       </select>
     </div>
   </footer>
-</div>
+</section>
 <AppFilterModal
   :visible="showFilters && !showDateRangeModal"
   title="Filtrar pagos"

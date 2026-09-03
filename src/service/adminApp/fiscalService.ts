@@ -82,9 +82,16 @@ export interface SatPortalSessionState {
   authenticated: boolean
   message: string | null
   manualAvailable: boolean
-  query: { direction: 'ambas' | 'emitida' | 'recibida'; startDate: string; endDate: string }
+  query: {
+    direction: 'ambas' | 'emitida' | 'recibida'
+    startDate: string
+    endDate: string
+    receivedMonth?: string
+  }
   automation: {
     status: 'idle' | 'running' | 'complete' | 'error'
+    errorCode?: string | null
+    failedStage?: string | null
     stage: string
     error: string | null
     currentDirection: 'emitida' | 'recibida' | null
@@ -171,6 +178,7 @@ export default class FiscalService {
     direction: 'ambas' | 'emitida' | 'recibida'
     startDate: string
     endDate: string
+    receivedMonth?: string
   }): Promise<SatPortalSessionState> {
     return (
       await this.axios.post(`${this.serverip}/fiscal/sat-portal/sessions`, data, { timeout: 15000 })
@@ -239,8 +247,29 @@ export default class FiscalService {
       .data
   }
 
+  async refreshSatDownload(id: number, clientId: number): Promise<SatDownloadJob> {
+    return (
+      await this.axios.post(
+        `${this.serverip}/fiscal/sat-downloads/${id}/refresh`,
+        { clientId },
+        { timeout: 180_000 }
+      )
+    ).data
+  }
+
   async cancelSatDownload(id: number): Promise<SatDownloadJob> {
     return (await this.axios.delete(`${this.serverip}/fiscal/sat-downloads/${id}`)).data
+  }
+
+  async deleteSatDownloadHistory(
+    id: number,
+    clientId: number
+  ): Promise<{ deleted: true; id: number }> {
+    return (
+      await this.axios.delete(`${this.serverip}/fiscal/sat-downloads/${id}/history`, {
+        params: { clientId }
+      })
+    ).data
   }
 
   async getInvoices(filters: InvoiceFilters) {

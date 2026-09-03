@@ -29,6 +29,19 @@ El cambio de método también cambia el flujo completo:
 
 Si se abandona el método RFC + Contraseña o se cierra el modal, la sesión del navegador remoto se destruye. Volver a e.firma no deja cookies del SAT activas.
 
+## Reconsulta de solicitudes anteriores
+
+El panel de seguimiento permite retomar una consulta sin reconstruirla a mano:
+
+- **e.firma:** las solicitudes se conservan en el servidor. **Consultar estado** fuerza una verificación de la petición existente ante el SAT y actualiza código, mensaje, identificador, intentos y fecha. **Volver a solicitar** crea una petición nueva sólo cuando la anterior ya terminó con error, fue cancelada o no encontró datos. Las solicitudes terminadas pueden eliminarse del historial con una confirmación.
+- **RFC + Contraseña:** el navegador guarda localmente, por cliente, hasta 12 referencias con sus periodos independientes, movimiento, estado y conteos. **Consultar de nuevo** abre una sesión nueva con esos datos y solicita otro CAPTCHA; **Eliminar** borra únicamente esa referencia local.
+
+El historial local de RFC + Contraseña no contiene la contraseña, cookies, CAPTCHA, archivos ni datos de la e.firma. Puede desaparecer si se limpian los datos locales del navegador. Las sesiones del portal siguen siendo temporales y se destruyen al cerrar el modal o cambiar el método de acceso.
+
+### Cuando una solicitud requiere atención
+
+La etiqueta **Requiere atención** siempre se acompaña con el mejor diagnóstico disponible: mensaje y código del SAT, identificador de solicitud, intentos, fecha de actualización y una recomendación concreta. Si el SAT no proporciona una descripción, la interfaz lo dice expresamente y conserva las opciones de consultar otra vez o repetir la solicitud.
+
 ## Flujo automático con e.firma
 
 1. El usuario selecciona el cliente y abre el modal.
@@ -41,7 +54,7 @@ Si se abandona el método RFC + Contraseña o se cierra el modal, la sesión del
    - uso como e.firma, no como Certificado de Sello Digital;
    - coincidencia entre el RFC del certificado y el RFC del cliente.
 4. La interfaz recibe únicamente metadatos públicos: RFC, serie, vigencia y huella SHA-256 abreviada.
-5. El usuario elige fecha inicial, fecha final y dirección: emitidas, recibidas o ambas.
+5. El usuario activa emitidas, recibidas o ambas. Las emitidas usan un rango de fechas de hasta 31 días y las recibidas un selector mensual independiente.
 6. El servidor firma localmente la autenticación y crea la solicitud en el web service del SAT.
 7. Un proceso en segundo plano verifica el estado, descarga los paquetes disponibles y extrae los XML.
 8. Cada XML pasa por el importador fiscal: valida RFC relacionado, UUID, estructura, timbre, clasificación y duplicados.
@@ -84,9 +97,9 @@ Si falta alguno, el modal indica que debe completarse en los datos fiscales del 
 5. El servidor captura únicamente la imagen del CAPTCHA y la presenta en el modal.
 6. El usuario escribe el CAPTCHA.
 7. En ese momento el servidor descifra `ciecf` en memoria, completa RFC, Contraseña y CAPTCHA, y envía el formulario al SAT mediante HTTPS.
-8. Si el acceso es válido, el servidor abre automáticamente la consulta de facturas emitidas y/o recibidas.
-9. Selecciona búsqueda por fecha, completa el rango, ejecuta `Buscar CFDI` y activa la descarga disponible.
-10. El panel derecho muestra etapa, consultas terminadas y archivos descargados, sin exponer el navegador remoto.
+8. Si el acceso es válido, el servidor consulta primero las facturas emitidas por el rango seleccionado y después las recibidas por el mes seleccionado.
+9. En emitidas activa la búsqueda por fecha; en recibidas configura los selectores de año y mes. Después ejecuta `Buscar CFDI` y activa la descarga disponible.
+10. El panel derecho separa **Proceso actual** de **Consultas anteriores** para que el historial no cubra el progreso ni los archivos.
 
 Si el SAT cambia una etiqueta o control, la automatización conserva la sesión autenticada y habilita **Recuperación manual**. Sólo en ese caso se presenta la captura interactiva para resolver el paso inesperado.
 
@@ -194,7 +207,9 @@ Todas las rutas requieren el mismo token que protege el módulo Fiscal.
 | `DELETE` | `/fiscal/sat-credentials/:clientId`    | Elimina la credencial persistente                     |
 | `POST`   | `/fiscal/sat-downloads`                | Crea solicitudes masivas con la e.firma guardada      |
 | `GET`    | `/fiscal/sat-downloads?clientId=...`   | Lista el avance de las solicitudes                    |
-| `DELETE` | `/fiscal/sat-downloads/:id`            | Cancela una solicitud                                 |
+| `POST`   | `/fiscal/sat-downloads/:id/refresh`    | Vuelve a verificar una petición existente ante el SAT |
+| `DELETE` | `/fiscal/sat-downloads/:id/history`    | Elimina una solicitud terminada del historial         |
+| `DELETE` | `/fiscal/sat-downloads/:id`            | Cancela una solicitud activa                          |
 
 ### RFC + Contraseña y portal
 
@@ -273,7 +288,7 @@ El RFC del `.cer` no coincide con el cliente. Corrige el expediente o selecciona
 
 ### El SAT responde HTTP 500
 
-La solicitud usa las operaciones vigentes. Reintenta para descartar indisponibilidad temporal y revisa el mensaje específico. Confirma también que los archivos sean e.firma y no CSD. Si el web service permanece indisponible, selecciona RFC + Contraseña y entra al portal.
+La solicitud usa las operaciones vigentes. Reintenta para descartar indisponibilidad temporal y revisa el mensaje específico. En RFC + Contraseña la interfaz conserva también el código interno y la etapa exacta donde se detuvo la automatización, en lugar de mostrar el aviso genérico “El SAT cambió un paso”. Confirma además que los archivos sean e.firma y no CSD. Si el web service permanece indisponible, selecciona RFC + Contraseña y entra al portal.
 
 ## Referencias oficiales
 

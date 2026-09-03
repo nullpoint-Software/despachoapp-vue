@@ -29,15 +29,25 @@
         :month="Number(filters.month)"
         :reports="reports"
       />
-      <AppButton
-        label="Nuevo reporte"
-        icon="pi pi-file-plus"
-        outlined
-        :disabled="!selectedIds.size"
-        @click="openReportDialog"
-      />
     </div>
   </header>
+
+  <section class="fiscal-command-center" aria-labelledby="fiscal-command-title">
+    <header class="fiscal-command-heading">
+      <div class="fiscal-command-copy">
+        <i class="pi pi-sliders-h" aria-hidden="true" />
+        <div>
+          <small>PREPARAR CONSULTA</small>
+          <h2 id="fiscal-command-title">Cliente, periodo y origen</h2>
+          <p>Define el contexto una sola vez y úsalo para consultar, importar y conciliar.</p>
+        </div>
+      </div>
+      <div class="fiscal-period-context">
+        <span>Contexto activo</span>
+        <strong>{{ clientSearch || 'Selecciona un cliente' }}</strong>
+        <small>{{ months[filters.month].label }} · {{ filters.year }}</small>
+      </div>
+    </header>
 
   <section class="filter-strip" aria-label="Filtros fiscales">
     <label class="client-combobox"
@@ -94,6 +104,7 @@
     <AppButton label="Limpiar" icon="pi pi-times" outlined @click="clearFilters" />
   </section>
 
+  <div class="fiscal-intake-grid">
   <section class="sat-download-entry" aria-label="Descarga masiva de CFDI del SAT">
     <div class="sat-download-entry-copy">
       <i class="pi pi-cloud-download" aria-hidden="true" />
@@ -155,6 +166,8 @@
       />
     </div>
   </section>
+  </div>
+  </section>
 
   <div v-if="notice" class="notice" :class="noticeTone" role="status">
     <i
@@ -168,15 +181,24 @@
     <button type="button" aria-label="Cerrar aviso" @click="notice = ''">×</button>
   </div>
 
-  <section class="summary-grid" aria-label="Resumen de impuestos">
-    <article><span>Documentos</span><strong>{{ invoices.length }}</strong></article>
-    <article><span>Base 16%</span><strong>{{ money(summary.base16) }}</strong></article>
-    <article class="accent">
-      <span>IVA 16%</span><strong>{{ money(summary.iva16) }}</strong>
-    </article>
-    <article><span>Tasa 0%</span><strong>{{ money(summary.zero) }}</strong></article>
-    <article><span>Exento</span><strong>{{ money(summary.exempt) }}</strong></article>
-    <article><span>Total</span><strong>{{ money(summary.total) }}</strong></article>
+  <section class="fiscal-overview" aria-labelledby="fiscal-overview-title">
+    <header class="fiscal-overview-heading">
+      <div>
+        <small>LECTURA DEL PERIODO</small>
+        <h2 id="fiscal-overview-title">Resumen fiscal</h2>
+      </div>
+      <p>Importes calculados con los CFDI visibles en la consulta actual.</p>
+    </header>
+    <div class="summary-grid" aria-label="Resumen de impuestos">
+      <article><span>Documentos</span><strong>{{ invoices.length }}</strong></article>
+      <article><span>Base 16%</span><strong>{{ money(summary.base16) }}</strong></article>
+      <article class="accent">
+        <span>IVA 16%</span><strong>{{ money(summary.iva16) }}</strong>
+      </article>
+      <article><span>Tasa 0%</span><strong>{{ money(summary.zero) }}</strong></article>
+      <article><span>Exento</span><strong>{{ money(summary.exempt) }}</strong></article>
+      <article><span>Total</span><strong>{{ money(summary.total) }}</strong></article>
+    </div>
   </section>
 
   <div class="fiscal-tabs" role="tablist" aria-label="Tipo de facturas">
@@ -219,6 +241,12 @@
           </div>
         </div>
         <div class="selection-actions">
+          <AppButton
+            label="Crear reporte"
+            icon="pi pi-file-plus"
+            :disabled="!selectedIds.size"
+            @click="openReportDialog"
+          />
           <button
             class="reports-drawer-trigger"
             type="button"

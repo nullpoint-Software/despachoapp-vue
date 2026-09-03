@@ -180,3 +180,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Keep preview copy readable when the selected palette uses its accent surface. */
+.palette-selector--inline .palette-copy {
+  min-width: 0;
+  padding-right: 1.25rem;
+}
+.palette-selector--inline .palette-copy small {
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.palette-selector--inline button:is(:hover, .active) .palette-copy,
+.palette-selector--inline button:is(:hover, .active) .palette-copy small,
+.palette-selector--inline button:is(:hover, .active) > .pi-check {
+  color: var(--br-accent-text);
+  -webkit-text-fill-color: var(--br-accent-text);
+}

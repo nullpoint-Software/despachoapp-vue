@@ -19,13 +19,6 @@
         class="app-help-button"
         @click="paymentTutorialOpen = true"
       />
-      <AppButton
-        v-if="canAddPayment"
-        label="Nuevo pago"
-        icon="pi pi-plus"
-        class="p-button-primary"
-        @click="newPayment"
-      />
     </div>
   </header>
   <section class="records-content"><router-view /></section>

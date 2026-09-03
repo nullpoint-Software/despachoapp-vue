@@ -258,36 +258,50 @@ async function validateAll(): Promise<boolean> {
 }
 
 async function save(): Promise<void> {
-  saveError.value = ''
-  if (!(await validateAll())) return
-  const client = clientes.value.find(
-    (item) => String(item.id_cliente) === String(payment.value.id_cliente)
-  )
-  const employee = employees.value.find(
-    (item) => String(item.id_usuario) === String(payment.value.id_atendio)
-  )
-  if (!client || !employee) {
-    saveError.value = 'La selección ya no es válida. Actualiza los catálogos e inténtalo de nuevo.'
-    currentStep.value = 1
-    return
-  }
-  const payload: Payment = {
-    ...payment.value,
-    cliente: client.nombre,
-    atendio: employee.nombre,
-    cobramos: Number(payment.value.cobramos),
-    pagamos: Number(payment.value.pagamos),
-    fecha: formatFechaHoraFullSQL(selectedDate.value.toISOString())
-  }
+  if (saving.value) return
+
   saving.value = true
+  saveError.value = ''
   try {
-    if (payload.id) await ps.updatePagoConcepto(payload.id, payload)
-    else {
-      payload.id = `C-${new Date().toLocaleString('sv-SE').replace('T', '').replace(/[-: ]/g, '')}`
-      payload.isnew = true
-      await ps.addPagoConcepto(payload)
+    if (!(await validateAll())) return
+
+    const client = clientes.value.find(
+      (item) => String(item.id_cliente) === String(payment.value.id_cliente)
+    )
+    const employee = employees.value.find(
+      (item) => String(item.id_usuario) === String(payment.value.id_atendio)
+    )
+    if (!client || !employee) {
+      saveError.value =
+        'La selección ya no es válida. Actualiza los catálogos e inténtalo de nuevo.'
+      currentStep.value = 1
+      return
     }
-    emit('save', payload)
+
+    const originalId = payment.value.id
+    const isEditing = originalId !== '' && originalId !== null && originalId !== undefined
+    const payload: Payment = {
+      ...payment.value,
+      cliente: client.nombre,
+      atendio: employee.nombre,
+      cobramos: Number(payment.value.cobramos),
+      pagamos: Number(payment.value.pagamos),
+      fecha: formatFechaHoraFullSQL(selectedDate.value.toISOString())
+    }
+    delete payload.isnew
+
+    if (isEditing) {
+      await ps.updatePagoConcepto(originalId, payload)
+      emit('save', payload)
+      return
+    }
+
+    const createdPayment = {
+      ...payload,
+      id: `C-${new Date().toLocaleString('sv-SE').replace('T', '').replace(/[-: ]/g, '')}`
+    }
+    await ps.addPagoConcepto(createdPayment)
+    emit('save', { ...createdPayment, isnew: true })
   } catch (error) {
     console.error('No se pudo guardar el pago', error)
     saveError.value = 'No se pudo guardar el pago. Verifica la conexión y vuelve a intentar.'

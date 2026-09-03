@@ -17,6 +17,7 @@ export default defineComponent({
     filters: { type: Object as PropType<Record<string, any>>, default: () => ({}) },
     globalFilterFields: { type: Array as PropType<string[]>, default: () => [] },
     paginator: Boolean,
+    loading: Boolean,
     rows: { type: Number, default: 10 },
     rowsPerPageOptions: { type: Array as PropType<number[]>, default: () => [5, 10, 20, 50] },
     rowClass: Function as PropType<(data: any, index: number) => string>,
@@ -103,115 +104,143 @@ export default defineComponent({
         },
         h('i', { class: icon })
       )
-    return () =>
-      h('section', { ...attrs, class: ['app-data-table', attrs.class] }, [
-        h('div', { style: 'display:none' }, slots.default?.()),
-        slots.header ? h('header', { class: 'app-data-table__header' }, slots.header()) : null,
+    const statusRow = (loading: boolean) =>
+      h(
+        'tr',
+        {},
         h(
-          'div',
-          { class: 'app-data-table__scroll' },
-          h('table', { class: 'app-data-table__table' }, [
+          'td',
+          {
+            colspan: Math.max(1, columns.length),
+            class: loading ? 'app-data-table__loading' : 'app-data-table__empty'
+          },
+          h('div', { class: 'app-data-table__status' }, [
+            h('i', {
+              class: loading ? 'pi pi-spin pi-spinner' : 'pi pi-inbox',
+              'aria-hidden': 'true'
+            }),
+            h('strong', {}, loading ? 'Actualizando registros' : 'Sin registros'),
             h(
-              'thead',
+              'small',
               {},
-              h(
-                'tr',
-                {},
-                columns.map((column) =>
-                  h(
-                    'th',
-                    {
-                      key: String(column.id),
-                      class: { 'is-sortable': column.sortable },
-                      'aria-sort':
-                        column.field === sortField.value
-                          ? sortDirection.value === 1
-                            ? 'ascending'
-                            : 'descending'
-                          : 'none',
-                      onClick: () => toggleSort(column)
-                    },
-                    [
-                      column.slots.header?.(),
-                      column.field === sortField.value
-                        ? h('i', {
-                            class: sortDirection.value === 1 ? 'pi pi-sort-up' : 'pi pi-sort-down'
-                          })
-                        : null
-                    ]
-                  )
-                )
-              )
-            ),
-            h(
-              'tbody',
-              {},
-              visibleRows.value.length
-                ? visibleRows.value.map((row, index) =>
-                    h(
-                      'tr',
-                      {
-                        key: row.id ?? row.id_cliente ?? index,
-                        class: props.rowClass?.(row, index)
-                      },
-                      columns.map((column) => {
-                        const rawValue = String(row?.[column.field || ''] ?? '')
-                        const customBody = column.slots.body?.({ data: row })
-                        return h(
-                          'td',
-                          {
-                            key: String(column.id),
-                            title: customBody ? undefined : rawValue || undefined
-                          },
-                          h('div', { class: 'app-data-table__cell' }, customBody ?? rawValue)
-                        )
-                      })
-                    )
-                  )
-                : h(
-                    'tr',
-                    {},
-                    h(
-                      'td',
-                      { colspan: Math.max(1, columns.length), class: 'app-data-table__empty' },
-                      'No hay registros para mostrar'
-                    )
-                  )
+              loading
+                ? 'Estamos consultando la información más reciente.'
+                : 'Ajusta la búsqueda o los filtros para consultar otros resultados.'
             )
           ])
-        ),
-        showPager.value
-          ? h('footer', { class: 'app-pager' }, [
-              h('span', {}, `${filtered.value.length} registros`),
-              h('div', { class: 'app-pager__controls' }, [
-                pagerButton(
-                  'pi pi-angle-left',
-                  'Página anterior',
-                  page.value === 0,
-                  () => page.value--
-                ),
-                h('samp', {}, `${page.value + 1} / ${pageCount.value}`),
-                pagerButton(
-                  'pi pi-angle-right',
-                  'Página siguiente',
-                  page.value >= pageCount.value - 1,
-                  () => page.value++
-                ),
+        )
+      )
+    return () =>
+      h(
+        'section',
+        {
+          ...attrs,
+          class: ['app-data-table', attrs.class],
+          'aria-busy': props.loading ? 'true' : 'false'
+        },
+        [
+          h('div', { style: 'display:none' }, slots.default?.()),
+          slots.header ? h('header', { class: 'app-data-table__header' }, slots.header()) : null,
+          h(
+            'div',
+            { class: 'app-data-table__scroll' },
+            h('table', { class: 'app-data-table__table' }, [
+              h(
+                'thead',
+                {},
                 h(
-                  'select',
-                  {
-                    value: perPage.value,
-                    'aria-label': 'Registros por página',
-                    onChange: (event: Event) =>
-                      (perPage.value = Number((event.target as HTMLSelectElement).value))
-                  },
-                  props.rowsPerPageOptions.map((option) =>
-                    h('option', { value: option }, `${option} por página`)
+                  'tr',
+                  {},
+                  columns.map((column) =>
+                    h(
+                      'th',
+                      {
+                        key: String(column.id),
+                        class: { 'is-sortable': column.sortable },
+                        'aria-sort':
+                          column.field === sortField.value
+                            ? sortDirection.value === 1
+                              ? 'ascending'
+                              : 'descending'
+                            : 'none',
+                        onClick: () => toggleSort(column)
+                      },
+                      [
+                        column.slots.header?.(),
+                        column.field === sortField.value
+                          ? h('i', {
+                              class: sortDirection.value === 1 ? 'pi pi-sort-up' : 'pi pi-sort-down'
+                            })
+                          : null
+                      ]
+                    )
                   )
                 )
-              ])
+              ),
+              h(
+                'tbody',
+                {},
+                props.loading
+                  ? statusRow(true)
+                  : visibleRows.value.length
+                    ? visibleRows.value.map((row, index) =>
+                        h(
+                          'tr',
+                          {
+                            key: row.id ?? row.id_cliente ?? index,
+                            class: props.rowClass?.(row, index)
+                          },
+                          columns.map((column) => {
+                            const rawValue = String(row?.[column.field || ''] ?? '')
+                            const customBody = column.slots.body?.({ data: row })
+                            return h(
+                              'td',
+                              {
+                                key: String(column.id),
+                                title: customBody ? undefined : rawValue || undefined
+                              },
+                              h('div', { class: 'app-data-table__cell' }, customBody ?? rawValue)
+                            )
+                          })
+                        )
+                      )
+                    : statusRow(false)
+              )
             ])
-          : null
-      ])
+          ),
+          showPager.value
+            ? h('footer', { class: 'app-pager' }, [
+                h('span', {}, `${filtered.value.length} registros`),
+                h('div', { class: 'app-pager__controls' }, [
+                  pagerButton(
+                    'pi pi-angle-left',
+                    'Página anterior',
+                    page.value === 0,
+                    () => page.value--
+                  ),
+                  h('samp', {}, `${page.value + 1} / ${pageCount.value}`),
+                  pagerButton(
+                    'pi pi-angle-right',
+                    'Página siguiente',
+                    page.value >= pageCount.value - 1,
+                    () => page.value++
+                  ),
+                  h(
+                    'select',
+                    {
+                      value: perPage.value,
+                      'aria-label': 'Registros por página',
+                      onChange: (event: Event) =>
+                        (perPage.value = Number((event.target as HTMLSelectElement).value))
+                    },
+                    props.rowsPerPageOptions.map((option) =>
+                      h('option', { value: option }, `${option} por página`)
+                    )
+                  )
+                ])
+              ])
+            : null
+        ]
+      )
   }
 })

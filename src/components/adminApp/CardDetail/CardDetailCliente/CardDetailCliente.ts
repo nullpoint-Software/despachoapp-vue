@@ -1,4 +1,4 @@
-import { nextTick, ref, watch, defineProps, defineEmits } from 'vue'
+import { computed, nextTick, ref, watch, defineProps, defineEmits } from 'vue'
 import AppRegimePicker from '@/components/ui/AppRegimePicker/AppRegimePicker.vue'
 import { regimenesFiscales } from '@/constants/regimenesFiscales'
 
@@ -15,9 +15,14 @@ const props = defineProps({
       telefono: '',
       email: ''
     })
+  },
+  saving: {
+    type: Boolean,
+    default: false
   }
 })
 const emit = defineEmits(['close', 'save'])
+const saving = computed(() => props.saving)
 const steps = [
   { id: 1, label: 'Identidad' },
   { id: 2, label: 'Contacto' },
@@ -110,7 +115,9 @@ const normalizePhoneInput = () => {
         ? `${digits.slice(0, 2)} ${digits.slice(2)}`
         : `${digits.slice(0, 2)} ${digits.slice(2, 6)} ${digits.slice(6)}`
 }
-const close = () => emit('close')
+const close = () => {
+  if (!saving.value) emit('close')
+}
 const nextStep = () => {
   normalizeRfcInput()
   if (validateStep(currentStep.value)) currentStep.value += 1
@@ -123,6 +130,7 @@ const goToStep = (step: number) => {
   else if (step === currentStep.value + 1) nextStep()
 }
 const save = () => {
+  if (saving.value) return
   normalizeRfcInput()
   if (!validateStep(3)) return
   const firstInvalidStep = [1, 2].find((step) => !validateStep(step))

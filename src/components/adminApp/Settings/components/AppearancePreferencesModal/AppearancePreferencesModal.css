@@ -370,3 +370,16 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Preview text keeps a readable semantic ink across every palette. */
+.appearance-preview {
+  min-height: 8rem;
+  color: var(--br-text);
+}
+.appearance-preview strong {
+  display: block;
+  color: var(--br-text);
+  font-size: 1.2rem;
+  line-height: 1.25;
+  text-wrap: balance;
+}

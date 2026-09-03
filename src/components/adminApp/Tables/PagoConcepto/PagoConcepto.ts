@@ -4,11 +4,10 @@ import {
   ps,
   formatFechaSQL,
   formatFechaHoraFullSQL,
-  formatFechaHoraFullPagoSQL,
-} from "@/service/adminApp/client";
-import { useAppToast } from "@/composables/useAppToast";
-import { subscribeToPermissions } from "@/service/adminApp/permissionsService";
-import { usePaymentActions } from "@/composables/usePaymentActions";
+  formatFechaHoraFullPagoSQL
+} from '@/service/adminApp/client'
+import { useAppToast } from '@/composables/useAppToast'
+import { subscribeToPermissions } from '@/service/adminApp/permissionsService'
 
 interface ConceptPayment {
   id: string | number
@@ -39,22 +38,21 @@ function queryText(value: unknown): string {
   return value == null ? '' : String(value)
 }
 
-const printDialogVisible = ref(false);
-const canAddPagoConcepto = ref(false);
-const canEditPagoConcepto = ref(false);
-const canDeletePagoConcepto = ref(false);
-let stopPermissionSync = () => {};
-const toast = useAppToast();
-const route = useRoute();
-const payments = ref<ConceptPayment[]>([]);
-const totalPayments = ref(0);
-const loadingPayments = ref(false);
-const pageSize = ref(20);
-const currentPage = ref(0);
-const pageSizeOptions = [10, 20, 50];
-let searchTimer: ReturnType<typeof setTimeout> | null = null;
-let requestSequence = 0;
-const { newPaymentRequest } = usePaymentActions();
+const printDialogVisible = ref(false)
+const canAddPagoConcepto = ref(false)
+const canEditPagoConcepto = ref(false)
+const canDeletePagoConcepto = ref(false)
+let stopPermissionSync = () => {}
+const toast = useAppToast()
+const route = useRoute()
+const payments = ref<ConceptPayment[]>([])
+const totalPayments = ref(0)
+const loadingPayments = ref(false)
+const pageSize = ref(20)
+const currentPage = ref(0)
+const pageSizeOptions = [10, 20, 50]
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+let requestSequence = 0
 
 // Lectura del usuario desde localStorage
 const usuario = ref({
@@ -75,9 +73,6 @@ const columns = ref<PaymentColumn[]>([
   { field: 'fecha', header: 'Fecha' }
   // { field: "saldo", header: "Saldo" },
 ])
-const actionsColumn = { field: 'actions', header: 'Acciones' }
-const tableColumns = computed(() => [...columns.value, actionsColumn])
-
 // Filtros
 const filters = ref<{ global: GlobalFilter }>({
   global: { value: null, matchMode: 'contains' }
@@ -233,11 +228,20 @@ async function loadPaymentsPage() {
         (!Number.isNaN(date.getTime()) && date >= from && date <= to)
       const matchesSearch =
         !term ||
-        [payment.id, payment.asunto, payment.cliente, payment.atendio, payment.fecha_legible].some(
-          (value) =>
-            String(value ?? '')
-              .toLocaleLowerCase('es-MX')
-              .includes(term)
+        [
+          payment.id,
+          payment.asunto,
+          payment.cliente,
+          payment.atendio,
+          payment.cobramos,
+          payment.pagamos,
+          formatMoney(payment.cobramos),
+          formatMoney(payment.pagamos),
+          payment.fecha_legible
+        ].some((value) =>
+          String(value ?? '')
+            .toLocaleLowerCase('es-MX')
+            .includes(term)
         )
       return matchesMovement && matchesPeriod && matchesSearch
     })
@@ -272,9 +276,11 @@ function nextPage() {
   void loadPaymentsPage()
 }
 
-// Clase para las filas
-const rowClass = (_data: ConceptPayment, index: number): string =>
-  index % 2 === 0 ? 'bg-white hover:bg-gray-100' : 'bg-gray-50 hover:bg-gray-100'
+const paymentCurrency = new Intl.NumberFormat('es-MX', {
+  style: 'currency',
+  currency: 'MXN'
+})
+const formatMoney = (value: unknown): string => paymentCurrency.format(Number(value) || 0)
 
 // Copiar al portapapeles
 const copyToClipboard = async (text: string): Promise<void> => {
@@ -303,10 +309,10 @@ const handleResize = () => {
 }
 onMounted(() => window.addEventListener('resize', handleResize))
 onUnmounted(() => {
-  stopPermissionSync();
-  window.removeEventListener("resize", handleResize);
-  if (searchTimer) clearTimeout(searchTimer);
-});
+  stopPermissionSync()
+  window.removeEventListener('resize', handleResize)
+  if (searchTimer) clearTimeout(searchTimer)
+})
 
 onMounted(async () => {
   const searchParam = route.query.search
@@ -314,13 +320,13 @@ onMounted(async () => {
   if (searchParam) {
     filters.value.global.value = queryText(searchParam)
   }
-  await loadPaymentsPage();
+  await loadPaymentsPage()
   stopPermissionSync = subscribeToPermissions(({ effective }) => {
-    canAddPagoConcepto.value = effective.canAddPagoConcepto === true;
-    canEditPagoConcepto.value = effective.canEditPagoConcepto === true;
-    canDeletePagoConcepto.value = effective.canDeletePagoConcepto === true;
-  });
-});
+    canAddPagoConcepto.value = effective.canAddPagoConcepto === true
+    canEditPagoConcepto.value = effective.canEditPagoConcepto === true
+    canDeletePagoConcepto.value = effective.canDeletePagoConcepto === true
+  })
+})
 watch(
   () => route.query.search,
   (newSearch) => {
@@ -346,6 +352,7 @@ watch(pageSize, () => {
 const cardVisible = ref(false)
 const selectedPayment = ref<Partial<ConceptPayment>>({})
 const openCard = (payment: ConceptPayment | null): void => {
+  if (!payment && !canAddPagoConcepto.value) return
   if (payment) {
     selectedPayment.value = { ...payment }
   } else {
@@ -362,33 +369,19 @@ const openCard = (payment: ConceptPayment | null): void => {
   }
   cardVisible.value = true
 }
-watch(newPaymentRequest, () => {
-  if (canAddPagoConcepto.value) openCard(null)
-})
 const savePayment = async (payment: ConceptPayment): Promise<void> => {
-  if (payment.id) {
-    const index = payments.value.findIndex((p) => p.id === payment.id)
-    if (index !== -1) {
-      await loadPaymentsPage()
-      toast.add({
-        severity: 'success',
-        summary: 'Actualizado',
-        detail: 'Pago concepto actualizado correctamente',
-        life: 2000
-      })
-    }
-  }
-  if (payment.isnew) {
-    currentPage.value = 0
-    await loadPaymentsPage()
-    toast.add({
-      severity: 'success',
-      summary: 'Agregado',
-      detail: 'Pago concepto agregado correctamente',
-      life: 2000
-    })
-    printDialogVisible.value = true
-  }
+  const isNew = payment.isnew === true
+  if (isNew) currentPage.value = 0
+
+  await loadPaymentsPage()
+  toast.add({
+    severity: 'success',
+    summary: isNew ? 'Agregado' : 'Actualizado',
+    detail: isNew ? 'Pago agregado correctamente' : 'Pago actualizado correctamente',
+    life: 2000
+  })
+
+  if (isNew) printDialogVisible.value = true
   cardVisible.value = false
 }
 

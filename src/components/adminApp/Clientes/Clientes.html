@@ -20,10 +20,11 @@
       </div>
     </div>
   </header>
-  <div id="clientes-table" class="flex-grow w-full overflow-hidden rounded-xl shadow-lg">
+  <section id="clientes-table" class="record-table-shell" aria-label="Directorio de clientes">
     <DataTable
       id="inner-info"
       :value="customers"
+      :loading="loadingCustomers"
       :filters="filters"
       :globalFilterFields="[
         'id_cliente',
@@ -33,6 +34,7 @@
         'fiel',
         'ciecf',
         'telefono',
+        'email',
         'correo',
       ]"
       :paginator="false"
@@ -40,17 +42,16 @@
       removableSort
       :rows="10"
       :rowsPerPageOptions="[10, 20, 50]"
-      :rowClass="rowClass"
-      class="w-full rounded-lg p-5"
+      class="records-table records-table--clients"
     >
-      <!-- Encabezado de la tabla -->
       <template #header>
-        <div
-          class="flex flex-col sm:flex-row justify-between items-center p-3 text-white font-bold text-lg rounded-t-lg"
-        >
-          <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
-            <!-- Buscador con ícono -->
-            <label id="search-bar" class="app-search-control w-full sm:w-auto">
+        <div class="records-table__toolbar">
+          <div class="records-table__identity">
+            <span>CLIENTES / DIRECTORIO</span>
+            <strong>Expedientes activos</strong>
+          </div>
+          <div class="records-table__controls">
+            <label id="search-bar" class="app-search-control records-table__search">
               <span class="sr-only">Buscar clientes</span>
               <i class="pi pi-search" aria-hidden="true"></i>
               <InputText
@@ -58,35 +59,37 @@
                 type="search"
                 autocomplete="off"
                 aria-label="Buscar clientes"
-                placeholder="Buscar..."
-                class="w-full"
+                placeholder="Buscar nombre, RFC, régimen o contacto"
               />
             </label>
-            <!-- Botones -->
-            <div class="flex space-x-2">
+            <div class="records-table__actions">
               <Button
                 type="button"
                 icon="pi pi-sliders-h"
                 :label="isMobile ? activeFilterCount ? String(activeFilterCount) : '' : filterButtonLabel"
                 aria-label="Abrir filtros de clientes"
                 outlined
-                class="p-2"
+                title="Filtrar clientes"
                 @click="openFilters"
               />
               <Button
                 type="button"
                 icon="pi pi-filter-slash"
-                :label="isMobile ? '' : 'Limpiar Filtros'"
+                :label="isMobile ? '' : 'Limpiar filtros'"
+                aria-label="Limpiar filtros de clientes"
                 outlined
-                class="p-2"
+                title="Limpiar filtros"
                 @click="clearFilter"
               />
               <Button
-                icon="pi pi-plus"
-                v-if="canAddCliente"
-                :label="isMobile ? '' : 'Agregar Cliente'"
-                class="p-button-success p-2"
                 id="agregar-cliente-btn"
+                type="button"
+                icon="pi pi-plus"
+                :label="isMobile ? '' : 'Nuevo cliente'"
+                :disabled="!canAddCliente"
+                :title="canAddCliente ? 'Crear un expediente' : 'No tienes permiso para agregar clientes'"
+                aria-label="Agregar cliente"
+                class="p-button-primary records-table__primary"
                 @click="openCard(null)"
               />
             </div>
@@ -94,60 +97,60 @@
         </div>
       </template>
 
-      <!-- Renderizado dinámico de columnas usando la página actual -->
-      <Column
-        v-for="col in tableColumns"
-        :key="col.field"
-        :sortable="col.field !== 'actions'"
-        :field="col.field !== 'actions' ? col.field : undefined"
-      >
-        <!-- Encabezado de columna: color negro -->
+      <!-- Las columnas de datos y acciones se registran por separado para mantener las acciones visibles. -->
+      <Column v-for="col in columns" :key="col.field" sortable :field="col.field">
         <template #header>
-          <div class="p-1 text-black font-semibold text-center text-sm w-full">
-            {{ col.header }}
-          </div>
+          <span class="records-table__column-label">{{ col.header }}</span>
         </template>
         <template #body="{ data }">
-          <!-- Si la columna es de acciones, mostrar botones -->
-          <div v-if="col.field === 'actions'" class="client-actions flex justify-center space-x-2">
-            <Button
-              v-if="canEditCliente"
-              icon="pi pi-pencil"
-              class="p-button-rounded p-button-warning"
-              :aria-label="'Editar a ' + data.nombre"
-              @click="openCard(data)"
-            />
-            <Button
-              v-if="canEditCliente"
-              icon="pi pi-folder"
-              class="p-button-rounded p-button-info"
-              :aria-label="'Abrir documentos de ' + data.nombre"
-              @click="openDocuments(data)"
-            />
-            <Button
-              v-if="canDeleteCliente"
-              icon="pi pi-trash"
-              class="p-button-rounded p-button-danger"
-              :aria-label="'Eliminar a ' + data.nombre"
-              @click="openConfirmDialog(data)"
-            />
-          </div>
-          <!-- Sino, mostrar el contenido de la celda -->
           <button
-            v-else
             type="button"
             :title="col.visible || isFieldVisible(data, col.field) ? String(col.field === 'regimen_fiscal' ? regimenFiscalLabel(data[col.field]) : data[col.field] ?? '') : 'Dato protegido'"
-            class="w-full p-1 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200 text-sm"
-            :aria-label="col.header + ': ' + (col.visible || isFieldVisible(data, col.field) ? String(data[col.field] ?? 'Sin dato') : 'Dato protegido')"
+            class="records-table__cell-button"
+            :aria-label="col.header + ': ' + (col.visible || isFieldVisible(data, col.field) ? String(col.field === 'regimen_fiscal' ? regimenFiscalLabel(data[col.field]) : data[col.field] ?? 'Sin dato') : 'Dato protegido')"
             @click="handleCellClick(data, col.field, col)"
           >
             <span v-if="col.visible || isFieldVisible(data, col.field)">
               {{ col.field === 'regimen_fiscal' ? regimenFiscalLabel(data[col.field]) :
               data[col.field] }}
             </span>
-            <!-- Caso contrario, mostrar enmascarado -->
             <span v-else> ***** </span>
           </button>
+        </template>
+      </Column>
+      <Column field="actions">
+        <template #header>
+          <span class="records-table__column-label">Acciones</span>
+        </template>
+        <template #body="{ data }">
+          <div class="records-table__row-actions" role="group" :aria-label="'Acciones para ' + data.nombre">
+            <Button
+              v-if="canEditCliente"
+              type="button"
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-warning"
+              :aria-label="'Editar a ' + data.nombre"
+              title="Editar cliente"
+              @click="openCard(data)"
+            />
+            <Button
+              type="button"
+              icon="pi pi-folder"
+              class="p-button-rounded p-button-info"
+              :aria-label="'Abrir documentos de ' + data.nombre"
+              title="Abrir documentos"
+              @click="openDocuments(data)"
+            />
+            <Button
+              v-if="canDeleteCliente"
+              type="button"
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-danger"
+              :aria-label="'Eliminar a ' + data.nombre"
+              title="Eliminar cliente"
+              @click="openConfirmDialog(data)"
+            />
+          </div>
         </template>
       </Column>
     </DataTable>
@@ -186,7 +189,7 @@
         </select>
       </div>
     </footer>
-  </div>
+  </section>
 
   <AppFilterModal
     :visible="showFilters"
@@ -217,7 +220,8 @@
   <CardDetailCliente
     v-if="cardVisible"
     :customer="selectedCustomer"
-    @close="cardVisible = false"
+    :saving="savingCustomer"
+    @close="closeCustomerCard"
     @save="saveCustomer"
   />
   <ClientDocumentsModal

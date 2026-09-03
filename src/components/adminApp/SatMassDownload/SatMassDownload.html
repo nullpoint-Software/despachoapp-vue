@@ -43,33 +43,29 @@
                 </div>
                 <div
                   class="authentication-method"
-                  role="radiogroup"
+                  role="group"
                   aria-label="Método de acceso al SAT"
                 >
-                  <label :class="{ active: authenticationMethod === 'efirma' }">
-                    <input
-                      type="radio"
-                      name="sat-authentication-method"
-                      value="efirma"
-                      :checked="authenticationMethod === 'efirma'"
-                      @change="selectAuthenticationMethod('efirma')"
-                    />
+                  <button
+                    type="button"
+                    :class="{ active: authenticationMethod === 'efirma' }"
+                    :aria-pressed="authenticationMethod === 'efirma'"
+                    @click="selectAuthenticationMethod('efirma')"
+                  >
                     <i class="pi pi-verified" />
                     <span><strong>e.firma</strong><small>Sin CAPTCHA</small></span>
                     <i class="pi pi-check method-check" />
-                  </label>
-                  <label :class="{ active: authenticationMethod === 'password' }">
-                    <input
-                      type="radio"
-                      name="sat-authentication-method"
-                      value="password"
-                      :checked="authenticationMethod === 'password'"
-                      @change="selectAuthenticationMethod('password')"
-                    />
+                  </button>
+                  <button
+                    type="button"
+                    :class="{ active: authenticationMethod === 'password' }"
+                    :aria-pressed="authenticationMethod === 'password'"
+                    @click="selectAuthenticationMethod('password')"
+                  >
                     <i class="pi pi-lock" />
                     <span><strong>RFC + Contraseña</strong><small>Requiere CAPTCHA</small></span>
                     <i class="pi pi-check method-check" />
-                  </label>
+                  </button>
                 </div>
               </div>
             </div>
@@ -78,71 +74,100 @@
               <header>
                 <div>
                   <small>PASO 02 / CONSULTA</small
-                  ><strong id="sat-request-title">Periodo y movimiento</strong>
+                  ><strong id="sat-request-title">Qué quieres consultar</strong>
                 </div>
-                <span
-                  >{{ receivedOnly ? 'Las recibidas se consultan por mes.' : 'Define el alcance que enviarás al SAT.' }}</span
-                >
+                <span>Activa una o ambas consultas; cada una conserva su propio periodo.</span>
               </header>
-              <div class="sat-download-grid" :class="{ 'received-month-grid': receivedOnly }">
-                <div v-if="receivedOnly" class="sat-date-field full">
-                  <span
-                    >Mes a consultar
-                    <AppFieldHelp
-                      label="Mes de recibidas"
-                      text="El portal del SAT consulta las facturas recibidas por año y mes, no mediante un rango de fechas."
-                  /></span>
-                  <DateTimePicker
-                    v-model="startDateModel"
-                    :show-time="false"
-                    month-only
-                    modal
-                    title="Mes de facturas recibidas"
-                  />
-                </div>
-                <template v-else>
-                  <div class="sat-date-field">
-                    <span
-                      >Desde
-                      <AppFieldHelp
-                        label="Inicio del periodo"
-                        text="Primer día de emisión que solicitarás al SAT. Cada solicitud puede abarcar hasta 31 días."
-                    /></span>
-                    <DateTimePicker
-                      v-model="startDateModel"
-                      :show-time="false"
-                      modal
-                      title="Inicio del periodo"
-                    />
-                  </div>
-                  <div class="sat-date-field">
-                    <span
-                      >Hasta
-                      <AppFieldHelp
-                        label="Fin del periodo"
-                        text="Último día de emisión incluido en la descarga."
-                    /></span>
-                    <DateTimePicker
-                      v-model="endDateModel"
-                      :show-time="false"
-                      modal
-                      title="Fin del periodo"
-                    />
-                  </div>
-                </template>
-                <label class="full">
-                  <span>Movimiento</span>
-                  <AppSelect
-                    v-model="direction"
-                    :options="directionOptions"
-                    option-label="label"
-                    option-value="value"
-                  />
-                </label>
-                <p class="sat-request-scope full">
-                  <i class="pi pi-info-circle" />{{ requestScopeLabel }}
-                </p>
+
+              <div class="sat-query-type-selector" role="group" aria-label="Tipos de CFDI">
+                <button
+                  type="button"
+                  :class="{ active: includesIssued }"
+                  :aria-pressed="includesIssued"
+                  @click="toggleQueryDirection('emitida')"
+                >
+                  <i class="pi pi-arrow-up-right" aria-hidden="true" />
+                  <span><strong>Emitidas</strong><small>Rango de fechas</small></span>
+                  <i class="pi pi-check query-type-check" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  :class="{ active: includesReceived }"
+                  :aria-pressed="includesReceived"
+                  @click="toggleQueryDirection('recibida')"
+                >
+                  <i class="pi pi-arrow-down-left" aria-hidden="true" />
+                  <span><strong>Recibidas</strong><small>Mes completo</small></span>
+                  <i class="pi pi-check query-type-check" aria-hidden="true" />
+                </button>
               </div>
+
+              <div class="sat-query-periods" :class="{ single: direction !== 'ambas' }">
+                <section v-if="includesIssued" class="sat-query-period" data-kind="issued">
+                  <header>
+                    <div><small>EMITIDAS</small><strong>Rango de emisión</strong></div>
+                    <i class="pi pi-calendar" aria-hidden="true" />
+                  </header>
+                  <div class="sat-query-period__fields">
+                    <div class="sat-date-field">
+                      <span
+                        >Desde
+                        <AppFieldHelp
+                          label="Inicio de emitidas"
+                          text="Primer día de emisión que consultarás. El rango puede abarcar hasta 31 días."
+                      /></span>
+                      <DateTimePicker
+                        v-model="startDateModel"
+                        :show-time="false"
+                        modal
+                        title="Inicio de facturas emitidas"
+                      />
+                    </div>
+                    <div class="sat-date-field">
+                      <span
+                        >Hasta
+                        <AppFieldHelp
+                          label="Fin de emitidas"
+                          text="Último día de emisión incluido en la consulta."
+                      /></span>
+                      <DateTimePicker
+                        v-model="endDateModel"
+                        :show-time="false"
+                        modal
+                        title="Fin de facturas emitidas"
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                <section v-if="includesReceived" class="sat-query-period" data-kind="received">
+                  <header>
+                    <div><small>RECIBIDAS</small><strong>Mes a consultar</strong></div>
+                    <i class="pi pi-calendar-clock" aria-hidden="true" />
+                  </header>
+                  <div class="sat-query-period__fields one-field">
+                    <div class="sat-date-field">
+                      <span
+                        >Mes completo
+                        <AppFieldHelp
+                          label="Mes de recibidas"
+                          text="El portal del SAT consulta las facturas recibidas por año y mes."
+                      /></span>
+                      <DateTimePicker
+                        v-model="receivedMonthModel"
+                        :show-time="false"
+                        month-only
+                        modal
+                        title="Mes de facturas recibidas"
+                      />
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <p class="sat-request-scope">
+                <i class="pi pi-info-circle" aria-hidden="true" />{{ requestScopeLabel }}
+              </p>
             </section>
 
             <template v-if="authenticationMethod === 'efirma'">
@@ -187,6 +212,13 @@
                   </button>
                 </div>
               </article>
+              <div v-if="credentialAttention" class="credential-attention" role="alert">
+                <i class="pi pi-exclamation-triangle" aria-hidden="true" />
+                <div>
+                  <strong>La e.firma necesita atención</strong>
+                  <span>{{ credentialAttention }}</span>
+                </div>
+              </div>
               <div v-if="editingCredentials || !credentialInfo.configured" class="credential-grid">
                 <label class="file-field" :class="{ selected: certificate }">
                   <input
@@ -304,14 +336,14 @@
 
               <div v-if="!portalSessionId" class="password-session-start">
                 <div>
-                  <strong>Abrir sesión del SAT</strong>
-                  <span>Continúa con el CAPTCHA.</span>
+                  <strong>Iniciar sesión en el SAT</strong>
+                  <span>Después del CAPTCHA consultaremos los periodos seleccionados.</span>
                 </div>
                 <AppButton
-                  label="Continuar"
+                  label="Iniciar sesión SAT"
                   icon="pi pi-arrow-right"
                   :loading="portalStarting"
-                  :disabled="!passwordCredential?.configured || !startDate || !endDate || portalStarting"
+                  :disabled="!passwordCredential?.configured || !queryReady || portalStarting"
                   @click="startPortalSession"
                 />
               </div>
@@ -425,17 +457,19 @@
             <header>
               <div>
                 <small>SEGUIMIENTO</small>
-                <h3>Solicitudes recientes</h3>
+                <h3>Solicitudes con e.firma</h3>
+                <span>El servidor conserva su estado aunque cierres esta ventana.</span>
               </div>
               <div class="sat-history-tools">
                 <span class="sat-history-count">{{ jobs.length }}</span
                 ><button
+                  class="sat-history-refresh"
                   type="button"
                   :disabled="loading"
-                  aria-label="Actualizar solicitudes"
+                  aria-label="Actualizar todas las solicitudes"
                   @click="loadJobs()"
                 >
-                  <i class="pi pi-refresh" :class="{ 'pi-spin': loading }" />
+                  <i class="pi pi-refresh" :class="{ 'pi-spin': loading }" />Actualizar
                 </button>
               </div>
             </header>
@@ -461,25 +495,93 @@
                 <div class="job-copy">
                   <div><strong>{{ jobDirection(job) }}</strong><span>#{{ job.id }}</span></div>
                   <b>{{ jobCopy(job).label }}</b>
-                  <p>{{ job.ultimo_error || job.mensaje_sat || jobCopy(job).detail }}</p>
+                  <p>{{ jobMessage(job) }}</p>
                   <small
                     >{{ dateLabel(String(job.fecha_inicial).slice(0, 10)) }} — {{
                     dateLabel(String(job.fecha_final).slice(0, 10)) }}</small
                   >
+                  <div v-if="job.id_solicitud || job.proxima_revision" class="job-reference">
+                    <code v-if="job.id_solicitud" :title="job.id_solicitud"
+                      >SAT {{ job.id_solicitud }}</code
+                    >
+                    <span v-if="job.proxima_revision"
+                      >Próxima revisión {{ jobDateTime(job.proxima_revision) }}</span
+                    >
+                  </div>
+                  <dl v-if="job.estado === 'error'" class="job-diagnostics">
+                    <div>
+                      <dt>Código SAT</dt>
+                      <dd>{{ job.codigo_sat || 'Sin código' }}</dd>
+                    </div>
+                    <div>
+                      <dt>Solicitud SAT</dt>
+                      <dd :title="job.id_solicitud">{{ job.id_solicitud || 'No disponible' }}</dd>
+                    </div>
+                    <div>
+                      <dt>Intentos</dt>
+                      <dd>{{ job.intentos || 0 }}</dd>
+                    </div>
+                    <div>
+                      <dt>Actualizada</dt>
+                      <dd>{{ jobDateTime(job.fecha_actualizacion) }}</dd>
+                    </div>
+                  </dl>
+                  <p v-if="job.estado === 'error'" class="job-advice">
+                    <i class="pi pi-lightbulb" aria-hidden="true" />{{ jobAdvice(job) }}
+                  </p>
                   <div v-if="job.estado === 'completada'" class="job-counts">
                     <span><b>{{ job.importados }}</b> nuevos</span
                     ><span><b>{{ job.duplicados }}</b> existentes</span
                     ><span><b>{{ job.rechazados }}</b> rechazados</span>
                   </div>
+                  <div class="job-actions">
+                    <button
+                      type="button"
+                      :disabled="refreshingJobId !== null"
+                      @click="refreshJob(job)"
+                    >
+                      <i
+                        class="pi pi-refresh"
+                        :class="{ 'pi-spin': refreshingJobId === job.id }"
+                        aria-hidden="true"
+                      />
+                      Consultar estado
+                    </button>
+                    <button
+                      v-if="canRetryJob(job)"
+                      type="button"
+                      :disabled="submitting"
+                      @click="retryJob(job)"
+                    >
+                      <i class="pi pi-replay" aria-hidden="true" />Volver a solicitar
+                    </button>
+                    <button
+                      v-if="activeStates.has(job.estado)"
+                      class="job-cancel"
+                      type="button"
+                      @click="cancelJob(job)"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      v-else
+                      class="job-delete"
+                      type="button"
+                      :disabled="deletingJobId !== null"
+                      @click="deleteJob(job)"
+                    >
+                      <i
+                        :class="deletingJobId === job.id ? 'pi pi-spin pi-spinner' : 'pi pi-trash'"
+                        aria-hidden="true"
+                      />
+                      {{
+                        deleteConfirmJobId === job.id
+                          ? 'Confirmar eliminación'
+                          : 'Eliminar'
+                      }}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  v-if="activeStates.has(job.estado)"
-                  class="job-cancel"
-                  type="button"
-                  @click="cancelJob(job)"
-                >
-                  Cancelar
-                </button>
               </article>
             </div>
           </aside>
@@ -490,18 +592,61 @@
             aria-label="Automatización de descarga del SAT"
           >
             <header>
-              <div class="portal-phase-dot" :data-phase="portalPhase"><i /></div>
-              <div>
-                <small>AUTOMATIZACIÓN SAT</small>
-                <h3>{{ portalStatusTitle }}</h3>
-                <span>{{ portalStatusDetail }}</span>
+              <div
+                v-if="portalWorkspaceView === 'current'"
+                class="portal-phase-dot"
+                :data-phase="portalPhase"
+              >
+                <i />
               </div>
-              <span v-if="portalState" class="portal-session-time"
+              <div>
+                <small>{{
+                  portalWorkspaceView === 'history' ? 'HISTORIAL LOCAL' : 'AUTOMATIZACIÓN SAT'
+                }}</small>
+                <h3>
+                  {{
+                    portalWorkspaceView === 'history'
+                      ? 'Consultas anteriores'
+                      : portalStatusTitle
+                  }}
+                </h3>
+                <span>{{
+                  portalWorkspaceView === 'history'
+                    ? 'Reabre o elimina consultas sin perder de vista el proceso actual.'
+                    : portalStatusDetail
+                }}</span>
+              </div>
+              <span
+                v-if="portalWorkspaceView === 'current' && portalState"
+                class="portal-session-time"
                 >{{ portalState.expiresInSeconds }} s</span
               >
             </header>
 
+            <nav class="portal-workspace-tabs" aria-label="Panel de descarga SAT">
+              <button
+                type="button"
+                :class="{ active: portalWorkspaceView === 'current' }"
+                :aria-pressed="portalWorkspaceView === 'current'"
+                @click="portalWorkspaceView = 'current'"
+              >
+                <i class="pi pi-bolt" aria-hidden="true" />
+                Proceso actual
+              </button>
+              <button
+                type="button"
+                :class="{ active: portalWorkspaceView === 'history' }"
+                :aria-pressed="portalWorkspaceView === 'history'"
+                @click="portalWorkspaceView = 'history'"
+              >
+                <i class="pi pi-history" aria-hidden="true" />
+                Consultas anteriores
+                <span>{{ portalHistory.length }}</span>
+              </button>
+            </nav>
+
             <div
+              v-show="portalWorkspaceView === 'current'"
               class="sat-portal-viewport"
               :class="{ interactive: portalRecoveryOpen && portalAuthenticated && portalState?.image }"
               tabindex="0"
@@ -568,11 +713,14 @@
                 role="alert"
               >
                 <i class="pi pi-exclamation-circle" />
-                <strong>El SAT cambió un paso</strong>
-                <span
-                  >{{ portalState?.message || 'No se pudo completar la consulta automática.'
-                  }}</span
+                <strong>{{ portalFailureTitle }}</strong>
+                <span>{{ portalFailureMessage }}</span>
+                <small
+                  v-if="portalState?.automation.failedStage"
+                  class="portal-failure-stage"
                 >
+                  Se detuvo en: {{ portalState.automation.failedStage }}
+                </small>
                 <div class="portal-recovery-actions">
                   <button type="button" @click.stop="retryPortal">Intentar de nuevo</button>
                   <button
@@ -602,7 +750,12 @@
               />
             </div>
 
-            <div v-if="portalState?.downloads.length" class="portal-downloads" aria-live="polite">
+            <div
+              v-if="portalState?.downloads.length"
+              v-show="portalWorkspaceView === 'current'"
+              class="portal-downloads"
+              aria-live="polite"
+            >
               <article
                 v-for="download in portalState.downloads.slice(0, 3)"
                 :key="download.id"
@@ -615,7 +768,84 @@
               </article>
             </div>
 
-            <footer>
+            <section
+              v-show="portalWorkspaceView === 'history'"
+              class="portal-query-history"
+              aria-labelledby="portal-query-history-title"
+            >
+              <header>
+                <div>
+                  <small>CONSULTAS ANTERIORES</small>
+                  <h4 id="portal-query-history-title">RFC + Contraseña</h4>
+                </div>
+                <span class="portal-history-count">{{ portalHistory.length }}</span>
+              </header>
+
+              <div v-if="!portalHistory.length" class="portal-history-empty">
+                <i class="pi pi-history" aria-hidden="true" />
+                <div>
+                  <strong>Sin consultas guardadas</strong>
+                  <span>Al iniciar una consulta aparecerá aquí para volver a intentarla.</span>
+                </div>
+              </div>
+
+              <div v-else class="portal-query-list">
+                <article
+                  v-for="item in portalHistory"
+                  :key="item.id"
+                  :data-status="item.status"
+                >
+                  <i :class="portalHistoryIcon(item.status)" aria-hidden="true" />
+                  <div class="portal-query-copy">
+                    <header>
+                      <strong>{{ directionLabel(item.direction) }}</strong>
+                      <span>{{ portalHistoryStatusLabel(item.status) }}</span>
+                    </header>
+                    <time :datetime="item.updatedAt"
+                      >{{ portalHistoryPeriodLabel(item) }} · Actualizada
+                      {{ jobDateTime(item.updatedAt) }}</time
+                    >
+                    <p>{{ item.message }}</p>
+                    <small
+                      >{{ item.downloads }} archivos · {{ item.imported }} nuevos · {{
+                      item.duplicate }} existentes<span v-if="item.rejected">
+                        · {{ item.rejected }} rechazados</span
+                      ></small
+                    >
+                  </div>
+                  <div class="portal-history-actions">
+                    <button
+                      type="button"
+                      :disabled="portalStarting || Boolean(repeatingPortalHistoryId)"
+                      @click="repeatPortalQuery(item)"
+                    >
+                      <i
+                        class="pi pi-refresh"
+                        :class="{ 'pi-spin': repeatingPortalHistoryId === item.id }"
+                        aria-hidden="true"
+                      />
+                      {{ portalSessionId === item.id ? 'Consultar estado' : 'Consultar de nuevo' }}
+                    </button>
+                    <button
+                      type="button"
+                      class="danger"
+                      :aria-label="`Eliminar consulta ${directionLabel(item.direction)}`"
+                      @click="removePortalHistoryItem(item.id)"
+                    >
+                      <i class="pi pi-trash" aria-hidden="true" />
+                      Eliminar
+                    </button>
+                  </div>
+                </article>
+              </div>
+
+              <p class="portal-history-note">
+                <i class="pi pi-lock" aria-hidden="true" />Sólo se conserva en este equipo el
+                periodo, el movimiento y el resultado; nunca la contraseña.
+              </p>
+            </section>
+
+            <footer v-show="portalWorkspaceView === 'current'">
               <span
                 ><i class="pi pi-file-import" /> Los XML y ZIP se validan e importan automáticamente
                 al expediente.</span

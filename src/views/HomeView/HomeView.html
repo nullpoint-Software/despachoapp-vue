@@ -1,61 +1,29 @@
 <div ref="pageRef" class="home-page">
-  <FaultyTerminal />
-  <div class="home-progress" aria-hidden="true"></div>
   <a class="home-skip" href="#contenido">Saltar al contenido principal</a>
 
   <header class="home-header">
     <nav class="home-nav" aria-label="Navegación principal">
       <router-link class="home-brand" to="/" aria-label="Despacho Sánchez, inicio">
-        <img :src="mainImageSrc" alt="" />
+        <img :src="logoMarkSrc" alt="" width="42" height="42" />
         <span><b>Despacho</b><small>Sánchez</small></span>
       </router-link>
 
-      <div
-        class="home-nav__links"
-        :style="{ '--nav-index': navIndicatorIndex }"
-        @pointerleave="navHoverIndex = null"
-      >
-        <svg class="home-nav__filter" aria-hidden="true" width="0" height="0">
-          <defs>
-            <filter
-              id="home-nav-liquid"
-              x="-45%"
-              y="-80%"
-              width="190%"
-              height="260%"
-              color-interpolation-filters="sRGB"
-            >
-              <feGaussianBlur in="SourceGraphic" stdDeviation="5.5" result="blur" />
-              <feColorMatrix
-                in="blur"
-                mode="matrix"
-                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9"
-                result="goo"
-              />
-              <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-            </filter>
-          </defs>
-        </svg>
-        <span class="home-nav__goo" aria-hidden="true"><i></i><b></b><em></em><small></small></span>
+      <div class="home-nav__links">
         <a
           v-for="(item, index) in navItems"
           :key="item.href"
           :href="item.href"
-          :class="{ active: navIndicatorIndex === index }"
+          :class="{ active: activeNavIndex === index }"
           :aria-current="activeNavIndex === index ? 'location' : undefined"
           @click="navigateToSection(item, index, $event)"
-          @pointerenter="navHoverIndex = index"
-          @focus="navHoverIndex = index"
-          @blur="navHoverIndex = null"
         >
-          <small aria-hidden="true">0{{ index + 1 }}</small>
-          <span>{{ item.label }}</span>
+          {{ item.label }}
         </a>
       </div>
 
       <button class="home-login home-login--desktop" type="button" @click="goLogin">
         {{ accessLabel }}
-        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+        <i class="pi pi-arrow-up-right" aria-hidden="true"></i>
       </button>
 
       <button
@@ -66,7 +34,7 @@
         :aria-label="menuOpen ? 'Cerrar menú' : 'Abrir menú'"
         @click="menuOpen = !menuOpen"
       >
-        <i :class="menuOpen ? 'pi pi-times' : 'pi pi-bars'" aria-hidden="true"></i>
+        <span>{{ menuOpen ? 'CERRAR' : 'MENÚ' }}</span>
       </button>
     </nav>
 
@@ -83,7 +51,6 @@
         :aria-current="activeNavIndex === index ? 'location' : undefined"
         @click="navigateToSection(item, index, $event)"
       >
-        <small aria-hidden="true">0{{ index + 1 }}</small>
         <span>{{ item.label }}</span>
         <i class="pi pi-arrow-down-right" aria-hidden="true"></i>
       </a>
@@ -96,328 +63,304 @@
   <main id="contenido">
     <section class="home-hero" aria-labelledby="home-title">
       <div class="home-hero__copy" data-reveal>
-        <p class="home-eyebrow">CONTROL CONTABLE / OPERACIÓN DIARIA</p>
-        <h1 id="home-title">
-          <span>Todo el despacho.</span>
-          <span class="home-rotating-text">
-            <Transition name="rotate-text">
-              <em :key="rotatingIndex">{{ rotatingPhrases[rotatingIndex] }}</em>
-            </Transition>
-          </span>
-        </h1>
+        <span
+          class="home-shape home-shape--01 home-hero__shape--copy"
+          aria-hidden="true"
+        ></span>
+        <p class="home-kicker">SISTEMA OPERATIVO PARA DESPACHOS CONTABLES</p>
+        <h1 id="home-title"><span>Todo el despacho.</span><span>Una vista.</span></h1>
         <p class="home-lead">
-          Clientes, cobros, tareas y obligaciones fiscales conectados para operar con contexto,
-          trazabilidad y menos pasos.
+          Clientes, cobros, tareas y obligaciones fiscales conectados en una sola operación.
         </p>
         <div class="home-hero__actions">
           <button type="button" @click="goLogin">
             {{ accessLabel }} <i class="pi pi-arrow-up-right" aria-hidden="true"></i>
           </button>
-          <a href="#funciones">Conocer funciones</a>
+          <a href="#funciones" @click="navigateToSection(navItems[0], 0, $event)">
+            Conocer funciones
+          </a>
         </div>
       </div>
 
-      <div class="home-hero__visual is-visible" data-reveal>
-        <AsciiOrb />
-      </div>
-    </section>
-
-    <section class="home-marquee" aria-label="Funciones conectadas por la aplicación">
-      <svg
-        class="home-curved-loop"
-        viewBox="0 0 2400 310"
-        preserveAspectRatio="xMidYMid slice"
-        role="img"
-        aria-label="Las funciones del sistema se conectan en un mismo flujo"
-      >
-        <defs>
-          <path
-            id="home-function-wave"
-            pathLength="7200"
-            d="M -1800 158 C -1500 50 -1200 266 -900 158 S -300 50 0 158 S 600 266 900 158 S 1500 50 1800 158 S 2400 266 2700 158 S 3300 50 3600 158 S 4200 266 4500 158 S 5100 50 5400 158"
+      <figure class="home-hero__figure" data-reveal>
+        <div class="home-visual-bar" aria-hidden="true">
+          <span>DESPACHO / PANEL</span>
+          <span><i class="pi pi-shield"></i> INFORMACIÓN PROTEGIDA</span>
+        </div>
+        <div class="home-hero__scene">
+          <span
+            class="home-shape home-shape--02 home-hero__shape--media"
+            aria-hidden="true"
+          ></span>
+          <div class="home-hero__rail" aria-hidden="true">
+            <span><i class="pi pi-home"></i></span>
+            <span><i class="pi pi-users"></i></span>
+            <span><i class="pi pi-check-square"></i></span>
+            <span><i class="pi pi-file"></i></span>
+          </div>
+          <img
+            class="home-hero__building"
+            :src="heroBuildingSrc"
+            alt="Fachada del Despacho Contable y Fiscal Sánchez"
+            width="1254"
+            height="1254"
+            fetchpriority="high"
           />
-        </defs>
-        <use class="home-curved-loop__ribbon" href="#home-function-wave" />
-        <text class="home-curved-loop__text">
-          <textPath href="#home-function-wave" startOffset="1500">
-            RESUMEN OPERATIVO / TAREAS Y SEGUIMIENTO / EXPEDIENTES DE CLIENTES / PAGOS Y COBRANZA /
-            OPERACIÓN FISCAL / CATÁLOGOS SAT / CUMPLIMIENTO / NOTAS DE TRABAJO / DOCUMENTOS Y
-            SALIDAS / ACCESO Y CONFIGURACIÓN / COPIAS DE SEGURIDAD / RESUMEN OPERATIVO / TAREAS Y
-            SEGUIMIENTO / EXPEDIENTES DE CLIENTES / PAGOS Y COBRANZA / OPERACIÓN FISCAL / CATÁLOGOS
-            SAT / CUMPLIMIENTO / NOTAS DE TRABAJO / DOCUMENTOS Y SALIDAS / ACCESO Y CONFIGURACIÓN /
-            COPIAS DE SEGURIDAD /
-            <animate
-              attributeName="startOffset"
-              from="1500"
-              to="-900"
-              dur="32s"
-              repeatCount="indefinite"
-            />
-          </textPath>
-        </text>
-      </svg>
+          <img
+            class="home-hero__emblem"
+            :src="mainImageSrc"
+            alt="Emblema del Despacho Sánchez"
+            width="1254"
+            height="1254"
+          />
+        </div>
+      </figure>
     </section>
 
-    <section class="home-intro" aria-labelledby="intro-title" data-reveal>
-      <div class="home-intro__copy">
-        <h2 id="intro-title">Una sola captura.<br />Todo el equipo trabaja con ella.</h2>
+    <section class="home-statement" aria-labelledby="statement-title">
+      <div class="home-statement__intro" data-reveal>
+        <span
+          class="home-shape home-shape--03 home-statement__shape"
+          aria-hidden="true"
+        ></span>
+        <h2 id="statement-title">Una captura entra.<br />El contexto sigue.</h2>
         <p>
-          El expediente del cliente se convierte en el punto de partida. Pagos, tareas, CFDI, notas,
-          documentos y respaldos conservan esa relación.
+          El expediente del cliente es el punto de partida para pagos, tareas, CFDI, notas,
+          documentos y respaldos.
         </p>
+        <figure class="home-statement__asset">
+          <div class="home-visual-bar" aria-hidden="true">
+            <span>CONTROL / CRECIMIENTO</span>
+            <i class="pi pi-chart-line"></i>
+          </div>
+          <div class="home-asset-stage">
+            <img
+              :src="collageGrowthSrc"
+              alt="Collage editorial sobre crecimiento fiscal y contable"
+              width="1254"
+              height="1254"
+              loading="lazy"
+            />
+          </div>
+        </figure>
       </div>
-      <dl class="home-intro__outcomes" aria-label="Resultados del sistema">
-        <div>
-          <dt>Ubica la prioridad</dt>
-          <dd>
-            El resumen combina cobros, tareas y actividad fiscal para mostrar qué requiere atención.
-          </dd>
-        </div>
-        <div>
-          <dt>Trabaja con contexto</dt>
-          <dd>
-            Cada movimiento conserva su cliente, periodo, responsable y documentos relacionados.
-          </dd>
-        </div>
-        <div>
-          <dt>Entrega sin recapturar</dt>
-          <dd>
-            Comprobantes y reportes reutilizan información registrada y disponible para revisión.
-          </dd>
+      <dl class="home-outcomes" aria-label="Resultados del sistema" data-reveal>
+        <div v-for="outcome in outcomes" :key="outcome.title">
+          <dt>{{ outcome.title }}</dt>
+          <dd>{{ outcome.text }}</dd>
+          <i class="pi pi-arrow-down-right" aria-hidden="true"></i>
         </div>
       </dl>
     </section>
 
-    <section id="funciones" class="home-features" aria-labelledby="features-title">
-      <div class="home-card-swap" data-reveal>
-        <header class="home-card-swap__intro">
-          <p>UNA OPERACIÓN COMPLETA</p>
-          <h2 id="features-title">No son módulos aislados. Es un flujo de trabajo.</h2>
-          <p>
-            El sistema conecta la operación diaria con clientes, cobros, obligaciones fiscales,
-            documentos y respaldos. Un dato registrado queda disponible para el siguiente paso.
-          </p>
-          <div class="home-card-swap__status" aria-live="polite">
-            <span>RECORRIDO AUTOMÁTICO DE 11 FUNCIONES</span>
-            <strong>Muestra cómo cada registro alimenta el siguiente paso.</strong>
-          </div>
-        </header>
-
-        <div class="home-feature-stage" aria-live="polite" aria-atomic="true">
-          <TransitionGroup name="card-swap" tag="div" class="home-feature-deck">
-            <article
-              v-for="card in featureDeck"
-              :key="card.feature.number"
-              class="home-feature-card"
-              :class="'home-feature-card--' + card.position"
-              :aria-hidden="card.position !== 'active'"
-            >
-              <header>
-                <span>FUNCIÓN CONECTADA</span><i :class="card.feature.icon" aria-hidden="true"></i>
-              </header>
-              <div class="home-feature-card__body">
-                <h3>{{ card.feature.title }}</h3>
-                <div class="home-feature-card__value-grid">
-                  <section>
-                    <span>Qué hace</span>
-                    <p>{{ card.feature.summary }}</p>
-                  </section>
-                  <section>
-                    <span>Cómo lo hace</span>
-                    <p>{{ card.feature.how }}</p>
-                  </section>
-                  <section>
-                    <span>En qué te ayuda</span>
-                    <p>{{ card.feature.benefit }}</p>
-                  </section>
-                </div>
-                <p class="home-feature-card__details-label">INCLUYE</p>
-                <div class="home-feature-card__details">
-                  <span v-for="detail in card.feature.details" :key="detail"
-                    ><i class="pi pi-check" aria-hidden="true"></i>{{ detail }}</span
-                  >
-                </div>
-              </div>
-            </article>
-          </TransitionGroup>
+    <section id="funciones" class="home-capabilities" aria-labelledby="features-title">
+      <header class="home-section-heading" data-reveal>
+        <div class="home-count" aria-label="Once funciones conectadas">
+          <img
+            class="home-count__asset"
+            :src="calculatorAssetSrc"
+            alt=""
+            width="1254"
+            height="1254"
+            loading="lazy"
+          />
+          <strong>11</strong><span>funciones<br />conectadas</span>
         </div>
-      </div>
-
-      <div class="home-capability-overview" data-reveal>
-        <header class="home-capability-overview__header">
-          <div class="home-capability-overview__count" aria-label="Once funciones conectadas">
-            <strong>11</strong>
-            <span>FUNCIONES<br />CONECTADAS</span>
-          </div>
-          <div class="home-capability-overview__copy">
-            <p>MAPA DE CAPACIDADES</p>
-            <h3>Cuatro frentes. Una sola operación.</h3>
-            <p>
-              Desde la agenda diaria hasta el respaldo de la información, cada función cubre una
-              parte del trabajo y comparte contexto con las demás.
-            </p>
-          </div>
-        </header>
-        <div class="home-capability-groups">
-          <article
-            v-for="(group, groupIndex) in capabilityGroups"
-            :key="group.title"
-            class="home-capability-group"
-            :class="'home-capability-group--' + groupIndex"
-          >
-            <header>
-              <div>
-                <span>FRENTE 0{{ groupIndex + 1 }}</span
-                ><strong>{{ group.features.length }} FUNCIONES</strong>
-              </div>
-              <h4>{{ group.title }}</h4>
-              <p>{{ group.description }}</p>
-            </header>
-            <ol class="home-capability-group__items">
-              <li
-                v-for="feature in group.features"
-                :key="feature.number"
-                class="home-capability-item"
-              >
-                <span class="home-capability-item__number">{{ feature.number }}</span>
-                <i :class="feature.icon" aria-hidden="true"></i>
-                <div>
-                  <h5>{{ feature.title }}</h5>
-                  <p>{{ feature.benefit }}</p>
-                </div>
-                <i class="pi pi-arrow-up-right home-capability-item__arrow" aria-hidden="true"></i>
-              </li>
-            </ol>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="flujo" class="home-workflow" aria-labelledby="workflow-title">
-      <header data-reveal>
-        <h2 id="workflow-title">Todo lo que cubre el sistema.</h2>
-        <p>Cada bloque aprovecha lo capturado antes y deja listo el siguiente movimiento.</p>
-      </header>
-      <div class="home-scroll-stack">
-        <article v-for="step in workflow" :key="step.title" class="home-stack-card">
-          <div class="home-stack-card__surface">
-            <div class="home-stack-card__icon"><i :class="step.icon" aria-hidden="true"></i></div>
-            <div class="home-stack-card__copy">
-              <span>{{ step.label }}</span>
-              <h3>{{ step.title }}</h3>
-              <p>{{ step.text }}</p>
+        <div>
+          <figure class="home-section-heading__asset" aria-hidden="true">
+            <div class="home-visual-bar">
+              <span>FISCAL / CONTROL</span>
+              <i class="pi pi-verified"></i>
             </div>
-            <aside>
-              <span>Resultado</span>
-              <p>{{ step.result }}</p>
-            </aside>
-          </div>
+            <img
+              :src="clipboardComplianceSrc"
+              alt=""
+              width="1254"
+              height="1254"
+              loading="lazy"
+            />
+          </figure>
+          <h2 id="features-title">Cuatro frentes.<br />Una sola operación.</h2>
+          <p>Cada función cubre una parte del trabajo y comparte información con la siguiente.</p>
+        </div>
+      </header>
+
+      <div class="home-capability-index" data-reveal>
+        <article v-for="group in capabilityGroups" :key="group.title">
+          <h3>{{ group.title }}</h3>
+          <p>{{ group.description }}</p>
+          <ul>
+            <li v-for="feature in group.features" :key="feature">
+              <i class="pi pi-arrow-right" aria-hidden="true"></i>{{ feature }}
+            </li>
+          </ul>
         </article>
       </div>
     </section>
 
-    <section id="seguridad" class="home-security" aria-labelledby="security-title">
-      <header class="home-security__copy" data-reveal>
-        <p>ACCESO Y TRAZABILIDAD</p>
-        <h2 id="security-title">Cada persona ve lo que necesita.</h2>
-        <p>
-          Identidad, permisos, actividad y preferencias forman un mismo círculo de control alrededor
-          de la operación.
-        </p>
+    <section class="home-product" aria-labelledby="product-title">
+      <header data-reveal>
+        <div>
+          <h2 id="product-title">El trabajo real,<br />a la vista.</h2>
+          <p>
+            Responsables, prioridades y fechas permanecen visibles sin reconstruir el contexto
+            desde otras herramientas.
+          </p>
+        </div>
+        <figure class="home-product__asset" aria-hidden="true">
+          <div class="home-visual-bar">
+            <span>REPORTES / CONTROL</span>
+            <i class="pi pi-chart-bar"></i>
+          </div>
+          <img
+            :src="reportGrowthSrc"
+            alt=""
+            width="1254"
+            height="1254"
+            loading="lazy"
+          />
+        </figure>
       </header>
 
-      <div
-        ref="securityGalleryRef"
-        class="home-security-gallery"
-        data-reveal
-        @pointerenter="handleSecurityPointerEnter"
-        @pointerleave="handleSecurityPointerLeave"
-        @focusin="pauseSecurityAutoplay"
-        @focusout="handleSecurityFocusOut"
-      >
+      <figure class="home-product__demo" data-reveal>
         <div
-          class="home-security-gallery__viewport"
+          class="home-demo"
           role="region"
-          aria-roledescription="galería circular"
-          aria-label="Controles de acceso y trazabilidad"
-          tabindex="0"
-          @pointerdown="beginSecurityDrag"
-          @pointermove="moveSecurityDrag"
-          @pointerup="finishSecurityDrag"
-          @pointercancel="finishSecurityDrag"
-          @keydown.left.prevent="controlSecurity(-1)"
-          @keydown.right.prevent="controlSecurity(1)"
+          aria-label="Demostración interactiva del tablero de tareas"
         >
-          <div
-            ref="securityTrackRef"
-            class="home-security-gallery__track"
-            :class="{ 'is-dragging': securityDragging }"
-            :style="securityGalleryStyle"
-          >
-            <article
-              v-for="(item, index) in securityFeatures"
-              :key="item.title"
-              class="home-security-card"
-              :class="{ 'is-active': securityActiveIndex === index }"
-              :style="securityCardStyle(index)"
-              :aria-hidden="securityActiveIndex !== index"
+          <header class="home-demo__toolbar">
+            <div>
+              <span>TRABAJO / EQUIPO</span>
+              <strong>Tablero de tareas</strong>
+            </div>
+            <p>DEMO INTERACTIVA</p>
+          </header>
+
+          <div class="home-demo__board">
+            <section
+              v-for="lane in demoLanes"
+              :key="lane.id"
+              class="home-demo__lane"
+              @dragover.prevent
+              @drop="dropDemoTask(lane.id)"
             >
               <header>
-                <span>CONTROL DE ACCESO</span><i :class="item.icon" aria-hidden="true"></i>
+                <span>{{ lane.label }}</span>
+                <strong>{{ demoTasksFor(lane.id).length }}</strong>
               </header>
-              <div>
-                <h3>{{ item.title }}</h3>
-                <p>{{ item.text }}</p>
+              <div class="home-demo__lane-items">
+                <button
+                  v-for="task in demoTasksFor(lane.id)"
+                  :key="task.id"
+                  class="home-demo__task"
+                  type="button"
+                  draggable="true"
+                  :aria-label="`${task.title}. Seleccionar para avanzar de estado.`"
+                  @click="advanceDemoTask(task.id)"
+                  @dragstart="startDemoDrag(task.id)"
+                >
+                  <span class="home-demo__task-meta">
+                    <i class="pi pi-file-check"></i>{{ task.area }}
+                  </span>
+                  <strong>{{ task.title }}</strong>
+                  <small>{{ task.owner }}</small>
+                  <span class="home-demo__task-action">
+                    Avanzar <i class="pi pi-arrow-right"></i>
+                  </span>
+                </button>
+                <p v-if="demoTasksFor(lane.id).length === 0">Sin tareas en esta etapa.</p>
               </div>
-            </article>
+            </section>
           </div>
-        </div>
 
-        <div class="home-security-gallery__controls">
-          <button
-            type="button"
-            aria-label="Mostrar control anterior"
-            title="Anterior"
-            @click="controlSecurity(-1)"
-          >
-            <i class="pi pi-arrow-left" aria-hidden="true"></i>
-          </button>
-          <strong>{{ activeSecurity.title }}</strong>
-          <button
-            type="button"
-            :aria-label="securityAutoplayPaused ? 'Reanudar rotación automática' : 'Pausar rotación automática'"
-            :title="securityAutoplayPaused ? 'Reanudar' : 'Pausar'"
-            @click="toggleSecurityAutoplay"
-          >
-            <i
-              :class="securityAutoplayPaused ? 'pi pi-play' : 'pi pi-pause'"
-              aria-hidden="true"
-            ></i>
-          </button>
-          <button
-            type="button"
-            aria-label="Mostrar control siguiente"
-            title="Siguiente"
-            @click="controlSecurity(1)"
-          >
-            <i class="pi pi-arrow-right" aria-hidden="true"></i>
-          </button>
+          <footer class="home-demo__footer">
+            <p aria-live="polite">{{ demoFeedback }}</p>
+            <button type="button" @click="resetDemo">
+              Restablecer demo <i class="pi pi-refresh"></i>
+            </button>
+          </footer>
         </div>
-        <p class="home-security-gallery__result">
-          <span>EN LA OPERACIÓN</span>{{ activeSecurity.result }}
-        </p>
-        <p class="home-security-gallery__hint">
-          Arrastra la galería, usa las flechas o navega con el teclado.
-        </p>
+        <figcaption>
+          <strong>Tablero de tareas</strong>
+          <span>Haz clic en una tarjeta o arrástrala para probar el flujo.</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="flujo" class="home-workflow" aria-labelledby="workflow-title">
+      <header data-reveal>
+        <figure class="home-workflow__asset" aria-hidden="true">
+          <div class="home-visual-bar">
+            <span>FLUJO / DIRECCIÓN</span>
+            <i class="pi pi-sitemap"></i>
+          </div>
+          <img
+            :src="collageDirectionSrc"
+            alt=""
+            width="1254"
+            height="1254"
+            loading="lazy"
+          />
+        </figure>
+        <h2 id="workflow-title">Del alta al respaldo.</h2>
+        <p>Cinco acciones conectan el trabajo del despacho de principio a fin.</p>
+      </header>
+      <ol data-reveal>
+        <li v-for="step in workflow" :key="step.title">
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.text }}</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="seguridad" class="home-security" aria-labelledby="security-title">
+      <div class="home-security__intro" data-reveal>
+        <span
+          class="home-shape home-shape--01 home-security__shape"
+          aria-hidden="true"
+        ></span>
+        <h2 id="security-title">Cada persona ve lo que necesita.</h2>
+        <p>Identidad, permisos y trazabilidad protegen la información sin frenar el trabajo diario.</p>
+        <figure class="home-security__asset" aria-hidden="true">
+          <div class="home-visual-bar">
+            <span>ACCESO / SEGURIDAD</span>
+            <i class="pi pi-lock"></i>
+          </div>
+          <img
+            :src="accountingBriefcaseSrc"
+            alt=""
+            width="1254"
+            height="1254"
+            loading="lazy"
+          />
+        </figure>
       </div>
+      <dl data-reveal>
+        <div v-for="item in securityFeatures" :key="item.title">
+          <dt>{{ item.title }}</dt>
+          <dd>{{ item.text }}</dd>
+        </div>
+      </dl>
     </section>
 
     <section class="home-cta" aria-labelledby="cta-title" data-reveal>
-      <h2 id="cta-title">Trabaja con una sola fuente de información.</h2>
-      <p>
-        Convierte expedientes, cobros, tareas y obligaciones en una operación que el equipo puede
-        seguir de principio a fin.
-      </p>
+      <div>
+        <h2 id="cta-title">Trabaja desde una sola fuente.</h2>
+        <p>Clientes, cobros, tareas y obligaciones con contexto compartido.</p>
+      </div>
+      <figure class="home-cta__asset" aria-hidden="true">
+        <div class="home-visual-bar">
+          <span>DESPACHO / IDENTIDAD</span>
+          <i class="pi pi-verified"></i>
+        </div>
+        <img
+          :src="collageBrandSrc"
+          alt=""
+          width="1254"
+          height="1254"
+          loading="lazy"
+        />
+      </figure>
       <button type="button" @click="goLogin">
         {{ accessLabel }} <i class="pi pi-arrow-right" aria-hidden="true"></i>
       </button>
@@ -426,17 +369,17 @@
 
   <footer id="contacto" class="home-footer" data-reveal>
     <div class="home-footer__brand">
-      <img :src="mainImageSrc" alt="" />
+      <img :src="logoMarkSrc" alt="" width="50" height="50" />
       <p>Despacho Contable y Fiscal Sánchez</p>
     </div>
     <address>
-      <span>L.C.P. Antonio Sánchez Gutiérrez</span
-      ><a href="mailto:contador_sanchez@yahoo.com.mx">contador_sanchez@yahoo.com.mx</a
-      ><a href="tel:+523163720279">316 372 0279</a>
+      <span>L.C.P. Antonio Sánchez Gutiérrez</span>
+      <a href="mailto:contador_sanchez@yahoo.com.mx">contador_sanchez@yahoo.com.mx</a>
+      <a href="tel:+523163720279">316 372 0279</a>
     </address>
     <div class="home-footer__end">
-      <router-link to="/aboutus">Sobre el despacho</router-link
-      ><small>© {{ currentYear }}. Todos los derechos reservados</small>
+      <router-link to="/aboutus">Sobre el despacho</router-link>
+      <small>© {{ currentYear }}. Todos los derechos reservados</small>
     </div>
   </footer>
 </div>

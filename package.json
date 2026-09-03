@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "vite --host",
     "prebuild": "node generate-build-time.js",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "run-p verify:contrast type-check \"build-only {@}\" --",
     "postbuild": "node generate-htaccess.js",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
+    "verify:contrast": "node scripts/verify-palette-contrast.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -59,6 +60,7 @@
     "@types/node": "^22.10.7",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitejs/plugin-vue-jsx": "^4.1.1",
+    "@vue/compiler-dom": "^3.5.13",
     "@vue/tsconfig": "^0.7.0",
     "concurrently": "^9.1.2",
     "daisyui": "^5.3.8",

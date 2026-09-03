@@ -7,6 +7,7 @@
         aria-modal="true"
         aria-labelledby="client-form-title"
         :aria-describedby="`client-step-help-${currentStep}`"
+        :aria-busy="saving"
         @submit.prevent="save"
         @keydown.esc="close"
       >
@@ -20,6 +21,7 @@
             type="button"
             class="standard-modal-close"
             aria-label="Cerrar formulario de cliente"
+            :disabled="saving"
             @click="close"
           >
             ×
@@ -33,7 +35,7 @@
             type="button"
             :class="{ active: currentStep === step.id, complete: currentStep > step.id }"
             :aria-current="currentStep === step.id ? 'step' : undefined"
-            :disabled="step.id > currentStep + 1"
+            :disabled="saving || step.id > currentStep + 1"
             @click="goToStep(step.id)"
           >
             <span>{{ currentStep > step.id ? '✓' : step.id }}</span
@@ -237,6 +239,7 @@
             label="Cancelar"
             icon="pi pi-times"
             outlined
+            :disabled="saving"
             @click="close"
           />
           <Button
@@ -245,6 +248,7 @@
             label="Anterior"
             icon="pi pi-arrow-left"
             outlined
+            :disabled="saving"
             @click="previousStep"
           />
           <span class="step-count" aria-live="polite"
@@ -256,15 +260,17 @@
             label="Continuar"
             icon="pi pi-arrow-right"
             icon-pos="right"
+            :disabled="saving"
             class="p-button-primary"
             @click="nextStep"
           />
           <Button
             v-else
             type="submit"
-            label="Guardar cliente"
-            icon="pi pi-check"
+            :label="saving ? 'Guardando...' : customer.id_cliente ? 'Guardar cambios' : 'Crear cliente'"
+            :icon="saving ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
             class="p-button-primary"
+            :disabled="saving"
           />
         </footer>
       </form>

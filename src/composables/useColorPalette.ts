@@ -18,7 +18,7 @@ export interface ColorPalette {
   id: PaletteId
   name: string
   description: string
-  /** Fondo, componente, texto y acento; combinaciones revisadas para contraste AA. */
+  /** Fondo, componente, texto y acento; texto principal AAA y roles secundarios AA. */
   colors: readonly [string, string, string, string]
 }
 
@@ -27,107 +27,107 @@ export const paletteColorLabels = ['Fondo', 'Componentes', 'Texto', 'Acento'] as
 export const colorPalettes: readonly ColorPalette[] = [
   {
     id: 'phantom',
-    name: 'Grafito',
-    description: 'Grafito cálido con carmín nítido',
+    name: 'Obsidiana',
+    description: 'Obsidiana cálida con coral rubí',
     colors: [
-      'oklch(14.5% 0.018 8)',
-      'oklch(20% 0.024 8)',
-      'oklch(96% 0.010 8)',
-      'oklch(69% 0.185 18)'
+      'oklch(13.5% 0.012 20)',
+      'oklch(19.5% 0.018 20)',
+      'oklch(97% 0.006 20)',
+      'oklch(73% 0.16 25)'
     ]
   },
   {
     id: 'darkhour',
-    name: 'Azul noche',
-    description: 'Azul profundo de lectura prolongada',
+    name: 'Atlántico',
+    description: 'Azul tinta con acento glaciar',
     colors: [
-      'oklch(14.5% 0.025 250)',
-      'oklch(20% 0.035 250)',
-      'oklch(97% 0.012 250)',
-      'oklch(76% 0.145 245)'
+      'oklch(13.5% 0.016 255)',
+      'oklch(20% 0.022 255)',
+      'oklch(97% 0.006 255)',
+      'oklch(77% 0.105 235)'
     ]
   },
   {
     id: 'golden',
-    name: 'Ámbar',
-    description: 'Carbón cálido con ámbar luminoso',
+    name: 'Latón',
+    description: 'Carbón oliva con latón luminoso',
     colors: [
-      'oklch(15% 0.025 95)',
-      'oklch(20.5% 0.035 95)',
-      'oklch(97% 0.035 95)',
-      'oklch(84% 0.155 95)'
+      'oklch(14% 0.014 75)',
+      'oklch(20% 0.02 75)',
+      'oklch(97% 0.008 75)',
+      'oklch(83% 0.13 85)'
     ]
   },
   {
     id: 'tachyon',
-    name: 'Ciruela',
-    description: 'Ciruela mineral con menta precisa',
+    name: 'Mora',
+    description: 'Mora mineral con menta fresca',
     colors: [
-      'oklch(15% 0.025 315)',
-      'oklch(20.5% 0.035 315)',
-      'oklch(96% 0.015 315)',
-      'oklch(78% 0.120 165)'
+      'oklch(13.5% 0.014 315)',
+      'oklch(20% 0.022 315)',
+      'oklch(97% 0.006 315)',
+      'oklch(79% 0.105 165)'
     ]
   },
   {
     id: 'ledger',
-    name: 'Libro mayor',
-    description: 'Verde sobrio para concentración',
+    name: 'Jade',
+    description: 'Verde bosque con jade sobrio',
     colors: [
-      'oklch(15% 0.025 165)',
-      'oklch(20.5% 0.035 165)',
-      'oklch(96% 0.015 165)',
-      'oklch(76% 0.115 160)'
+      'oklch(13.5% 0.012 155)',
+      'oklch(20% 0.018 155)',
+      'oklch(97% 0.006 155)',
+      'oklch(76% 0.125 155)'
     ]
   },
   {
     id: 'indigo',
-    name: 'Índigo',
-    description: 'Índigo profesional de contraste sereno',
+    name: 'Ultramar',
+    description: 'Índigo tinta con lavanda eléctrica',
     colors: [
-      'oklch(15% 0.025 275)',
-      'oklch(20.5% 0.035 275)',
-      'oklch(96% 0.012 275)',
-      'oklch(77% 0.125 275)'
+      'oklch(13.5% 0.016 280)',
+      'oklch(20% 0.023 280)',
+      'oklch(97% 0.006 280)',
+      'oklch(78% 0.105 285)'
     ]
   },
   {
     id: 'oled',
     name: 'OLED',
-    description: 'Negro real con verde eficiente',
-    colors: ['oklch(0% 0 0)', 'oklch(8% 0.014 160)', 'oklch(97% 0.012 160)', 'oklch(79% 0.160 155)']
+    description: 'Negro absoluto con lima digital',
+    colors: ['oklch(0% 0 0)', 'oklch(8% 0.01 155)', 'oklch(97% 0.006 155)', 'oklch(82% 0.135 145)']
   },
   {
     id: 'ember',
-    name: 'Terracota',
-    description: 'Grafito cálido con naranja encendido',
+    name: 'Cobre',
+    description: 'Tierra tostada con cobre vivo',
     colors: [
-      'oklch(15% 0.022 45)',
-      'oklch(20.5% 0.032 45)',
-      'oklch(96% 0.018 45)',
-      'oklch(74% 0.175 45)'
+      'oklch(14% 0.014 45)',
+      'oklch(20% 0.02 45)',
+      'oklch(97% 0.007 45)',
+      'oklch(77% 0.14 45)'
     ]
   },
   {
     id: 'sakura',
-    name: 'Granate',
-    description: 'Granate oscuro con rosa editorial',
+    name: 'Bugambilia',
+    description: 'Borgoña profundo con rosa bugambilia',
     colors: [
-      'oklch(15% 0.028 345)',
-      'oklch(20.5% 0.040 345)',
-      'oklch(96% 0.018 345)',
-      'oklch(75% 0.165 350)'
+      'oklch(13.5% 0.016 350)',
+      'oklch(20% 0.024 350)',
+      'oklch(97% 0.006 350)',
+      'oklch(78% 0.135 350)'
     ]
   },
   {
     id: 'steel',
-    name: 'Acero',
-    description: 'Gris mineral con cian técnico',
+    name: 'Glaciar',
+    description: 'Pizarra fría con cian glaciar',
     colors: [
-      'oklch(15% 0.018 220)',
-      'oklch(20.5% 0.028 220)',
-      'oklch(96% 0.012 220)',
-      'oklch(78% 0.110 215)'
+      'oklch(13.5% 0.012 220)',
+      'oklch(20% 0.018 220)',
+      'oklch(97% 0.006 220)',
+      'oklch(80% 0.085 210)'
     ]
   }
 ] as const
