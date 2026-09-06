@@ -3222,3 +3222,67 @@
     max-height: calc(100dvh - 5rem);
   }
 }
+
+/* Cabecera del editor alineada con los demás modales. */
+.editor-overlay {
+  background: rgb(0 0 0 / 0.82);
+  backdrop-filter: blur(3px);
+}
+.note-editor {
+  border: 2px solid var(--br-line-strong);
+  border-radius: 0;
+  box-shadow: 12px 12px 0 var(--br-accent);
+}
+.note-editor .document-editor-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  background: var(--br-panel);
+  border-bottom: 1px solid var(--br-line-strong);
+}
+.document-modal-heading {
+  grid-column: 1;
+  padding: 1.35rem 1.5rem 1rem;
+}
+.note-editor .document-modal-heading h2 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+.note-editor .document-title-field--header {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--br-line);
+}
+.note-editor .document-title-field--header input {
+  font-size: 1.1rem;
+  caret-color: var(--br-text) !important;
+}
+.note-editor .document-title-field--header input::placeholder {
+  color: var(--br-muted) !important;
+  -webkit-text-fill-color: var(--br-muted) !important;
+}
+.note-editor .document-editor-header-actions {
+  grid-column: 2;
+  grid-row: 1;
+}
+.note-editor .document-editor-close {
+  width: 4rem;
+  border-left: 1px solid var(--br-line);
+}
+.note-editor .document-header-view-toggle button:hover {
+  background: var(--br-control);
+  color: var(--br-control-text);
+}
+@media (max-width: 650px) {
+  .document-modal-heading {
+    padding: 1rem;
+  }
+  .note-editor .document-header-view-toggle {
+    grid-template-columns: repeat(3, 2.2rem);
+  }
+  .note-editor .document-editor-close {
+    width: 2.75rem;
+  }
+  .note-editor .document-modal-heading h2 {
+    font-size: 1.6rem;
+  }
+}

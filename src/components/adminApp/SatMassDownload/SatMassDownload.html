@@ -344,7 +344,7 @@
                   icon="pi pi-arrow-right"
                   :loading="portalStarting"
                   :disabled="!passwordCredential?.configured || !queryReady || portalStarting"
-                  @click="startPortalSession"
+                  @click="startPortalSession()"
                 />
               </div>
 
@@ -812,6 +812,10 @@
                         · {{ item.rejected }} rechazados</span
                       ></small
                     >
+                    <div v-if="item.folios?.length" class="portal-history-folios">
+                      <span>Folios SAT</span>
+                      <code v-for="folio in item.folios" :key="folio">{{ folio }}</code>
+                    </div>
                   </div>
                   <div class="portal-history-actions">
                     <button
@@ -824,7 +828,7 @@
                         :class="{ 'pi-spin': repeatingPortalHistoryId === item.id }"
                         aria-hidden="true"
                       />
-                      {{ portalSessionId === item.id ? 'Consultar estado' : 'Consultar de nuevo' }}
+                      {{ portalSessionId && activePortalHistoryId === item.id ? 'Consultar estado' : 'Reanudar consulta' }}
                     </button>
                     <button
                       type="button"
@@ -846,10 +850,16 @@
             </section>
 
             <footer v-show="portalWorkspaceView === 'current'">
-              <span
-                ><i class="pi pi-file-import" /> Los XML y ZIP se validan e importan automáticamente
-                al expediente.</span
-              >
+              <div class="portal-download-folios">
+                <span>
+                  <i class="pi pi-receipt" aria-hidden="true" />
+                  {{ portalDownloadFolios.length ? 'Folios de Descarga SAT' : 'Esperando Folio de Descarga SAT' }}
+                </span>
+                <div v-if="portalDownloadFolios.length" class="portal-download-folio-list">
+                  <code v-for="folio in portalDownloadFolios" :key="folio">{{ folio }}</code>
+                </div>
+                <small v-else>El folio aparecerá aquí cuando el SAT registre la solicitud.</small>
+              </div>
               <button
                 v-if="portalState?.manualAvailable && !portalRecoveryOpen"
                 type="button"
@@ -857,7 +867,7 @@
               >
                 <i class="pi pi-desktop" />Recuperación manual
               </button>
-              <button v-if="portalSessionId" type="button" @click="startPortalSession">
+              <button v-if="portalSessionId" type="button" @click="retryPortal">
                 <i class="pi pi-refresh" />Reiniciar sesión
               </button>
             </footer>

@@ -74,6 +74,7 @@ export interface SatPortalSessionState {
   rfc: string
   image: string | null
   captchaImage: string | null
+  loginPending?: boolean
   width: number
   height: number
   title: string
@@ -99,6 +100,7 @@ export interface SatPortalSessionState {
     totalDirections: number
     downloads: number
   }
+  downloadFolios: string[]
   downloads: SatPortalDownload[]
   expiresInSeconds: number
 }
@@ -174,6 +176,7 @@ export default class FiscalService {
   }
 
   async startSatPortalSession(data: {
+    resumeFolios?: string[]
     clientId: number
     direction: 'ambas' | 'emitida' | 'recibida'
     startDate: string
@@ -225,17 +228,10 @@ export default class FiscalService {
     ).data
   }
 
-  async sendSatPortalInput(
-    sessionId: string,
-    input: SatPortalInput
-  ): Promise<SatPortalSessionState> {
-    return (
-      await this.axios.post(
-        `${this.serverip}/fiscal/sat-portal/sessions/${sessionId}/input`,
-        input,
-        { timeout: 30000 }
-      )
-    ).data
+  async sendSatPortalInput(sessionId: string, input: SatPortalInput): Promise<void> {
+    await this.axios.post(`${this.serverip}/fiscal/sat-portal/sessions/${sessionId}/input`, input, {
+      timeout: 10000
+    })
   }
 
   async closeSatPortalSession(sessionId: string) {
@@ -303,6 +299,10 @@ export default class FiscalService {
 
   async deleteInvoice(id: number) {
     return (await this.axios.delete(`${this.serverip}/fiscal/invoices/${id}`)).data
+  }
+
+  async getInvoiceXml(id: number): Promise<string> {
+    return (await this.axios.get(`${this.serverip}/fiscal/invoices/${id}/xml`, { responseType: 'text' })).data
   }
 
   async downloadInvoiceXml(id: number, uuid: string) {

@@ -1,4 +1,5 @@
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, reactive, watch } from 'vue'
+import { useDocumentWorkbench } from '@/composables/useDocumentWorkbench'
 import { useNotesStore, type Note } from '@/composables/useNotesStore'
 import { useBrutalMotion } from '@/composables/useBrutalMotion'
 import { useAppDialog } from '@/composables/useAppDialog'
@@ -25,10 +26,77 @@ const draft = ref({ titulo: '', descripcion: '', folderPath: 'General' })
 const editorMode = ref<'write' | 'split' | 'preview'>('preview')
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const visualEditorRef = ref<HTMLElement | null>(null)
-const previewZoom = ref(100)
-const previewZoomStyle = computed(() => ({
-  '--range-progress': `${((previewZoom.value - 70) / 90) * 100}%`
+const workbench = useDocumentWorkbench({
+  editor: visualEditorRef,
+  open: editorOpen,
+  mode: editorMode,
+  beforeChange: rememberEditorState,
+  commit: syncMarkdownFromVisual
+})
+const {
+  viewport: previewViewport,
+  zoom: previewZoom,
+  zoomStyle: previewZoomStyle,
+  zoomMode,
+  setZoom,
+  fitZoom,
+  wheelZoom,
+  ribbonTab,
+  fontFamily,
+  fontSize,
+  lineHeight,
+  fonts,
+  sizes,
+  activeFormats,
+  inTable,
+  refreshStats,
+  command: richCommand,
+  applyFont,
+  paragraphSpacing,
+  editTable,
+  findOpen,
+  searchText,
+  replacement,
+  findNext,
+  replaceMatch,
+  feedback: editorFeedback,
+  wordCount,
+  characters
+} = workbench
+const initialDraft = ref('')
+const ribbonTabs = [
+  { id: 'home', label: 'Inicio', description: "Dar formato al texto: fuente, tamaño, alineación y listas" },
+  { id: 'insert', label: 'Insertar', description: "Insertar enlaces, imágenes, tablas, código y fórmulas" },
+  { id: 'view', label: 'Vista', description: "Cambiar la visualización y el zoom de la hoja" },
+  { id: 'markdown', label: 'Markdown', description: "Editar el código Markdown solo o junto al documento" }
+] as const
+function updatePreviewZoom(event: Event) {
+  void setZoom(Number((event.target as HTMLInputElement).value))
+}
+const editorDirty = computed(() => JSON.stringify(draft.value) !== initialDraft.value)
+watch(editorOpen, (open) => {
+  if (open) initialDraft.value = JSON.stringify(draft.value)
+})
+const historyAvailable = computed(() => ({
+  undo: undoHistory.length > 0,
+  redo: redoHistory.length > 0
 }))
+function handleDocumentShortcut(event: KeyboardEvent) {
+  if (!(event.ctrlKey || event.metaKey)) return
+  if (event.key.toLowerCase() === 's') {
+    event.preventDefault()
+    if (!saving.value) void saveEditor()
+  }
+  if (event.key.toLowerCase() === 'f' && editorMode.value !== 'write') {
+    event.preventDefault()
+    findOpen.value = true
+    nextTick(() => document.getElementById('document-find')?.focus())
+  }
+}
+function runHistory(redo = false) {
+  if (redo) redoEditorChange()
+  else undoEditorChange()
+}
 let syncingVisual = false
 type MarkdownCommand =
   | 'paragraph'
@@ -53,8 +121,8 @@ type MarkdownCommand =
 type EditorSelection = { start: number; end: number; selected: string }
 type EditorSnapshot = { value: string; start: number; end: number }
 const HISTORY_LIMIT = 150
-const undoHistory: EditorSnapshot[] = []
-const redoHistory: EditorSnapshot[] = []
+const undoHistory = reactive<EditorSnapshot[]>([])
+const redoHistory = reactive<EditorSnapshot[]>([])
 
 function captureSelection(): EditorSelection {
   const value = draft.value.descripcion
@@ -81,8 +149,14 @@ function rememberEditorState() {
 }
 function restoreEditorSnapshot(snapshot: EditorSnapshot) {
   draft.value.descripcion = snapshot.value
-  editorMode.value = 'split'
   syncVisualFromMarkdown()
+  if (editorMode.value === 'preview') {
+    nextTick(() => {
+      visualEditorRef.value?.focus()
+      refreshStats()
+    })
+    return
+  }
   nextTick(() => {
     const textarea = textareaRef.value
     if (!textarea) return
@@ -109,7 +183,7 @@ function resetEditorHistory() {
   redoHistory.length = 0
 }
 function changePreviewZoom(delta: number) {
-  previewZoom.value = Math.min(160, Math.max(70, previewZoom.value + delta))
+  void setZoom(previewZoom.value + delta)
 }
 function syncVisualFromMarkdown(focus = false) {
   nextTick(() => {
@@ -118,6 +192,7 @@ function syncVisualFromMarkdown(focus = false) {
     syncingVisual = true
     editor.innerHTML = markdownToVisualHtml(draft.value.descripcion)
     syncingVisual = false
+    refreshStats()
     if (focus) {
       editor.focus()
       const selection = window.getSelection()
@@ -209,6 +284,7 @@ async function applyVisualMarkdown(command: MarkdownCommand) {
   editor.focus()
   const selectedText = window.getSelection()?.toString().trim() || ''
   const savedRange = captureVisualRange()
+  rememberEditorState()
   switch (command) {
     case 'paragraph':
       runVisualCommand('formatBlock', 'p')
@@ -319,6 +395,7 @@ async function applyVisualMarkdown(command: MarkdownCommand) {
 }
 function handleVisualInput() {
   syncMarkdownFromVisual()
+  refreshStats()
 }
 function leaveImageCaption() {
   const editor = visualEditorRef.value
@@ -354,6 +431,11 @@ function handleVisualKeydown(event: KeyboardEvent) {
   }
   if (!(event.ctrlKey || event.metaKey)) return
   const command = event.key.toLocaleLowerCase()
+  if (command === 'z' || command === 'y') {
+    event.preventDefault()
+    runHistory(command === 'y' || event.shiftKey)
+    return
+  }
   if (['b', 'i', 'u', 'k'].includes(command)) {
     event.preventDefault()
     const mapped: MarkdownCommand =
@@ -824,7 +906,10 @@ function closeEditor() {
 }
 async function saveEditor() {
   if (editorMode.value !== 'write') syncMarkdownFromVisual()
-  if (!draft.value.titulo.trim()) return
+  if (!draft.value.titulo.trim()) {
+    document.getElementById('note-title')?.focus()
+    return
+  }
   saving.value = true
   const path = normalizePath(draft.value.folderPath)
   if (path !== 'General') {

@@ -16,6 +16,7 @@ import { cos, cs, es, fs, ts } from '@/service/adminApp/client'
 import type { ComplianceSummary, ComplianceStatus } from '@/service/adminApp/cumplimientoService'
 import { useColorPalette } from '@/composables/useColorPalette'
 import { useBrutalMotion } from '@/composables/useBrutalMotion'
+import { hasCompletedTutorial } from '@/utils/tutorialStorage'
 
 ChartJS.register(
   Title,
@@ -370,5 +371,5 @@ const emptyDataPlugin = {
 
 onMounted(async () => {
   await Promise.allSettled([loadFinancialSummary(), loadOperationalSummary()])
-  if (!localStorage.getItem('tourInicioDone')) homeTutorialOpen.value = true
+  if (!hasCompletedTutorial('tourInicioDone')) homeTutorialOpen.value = true
 })

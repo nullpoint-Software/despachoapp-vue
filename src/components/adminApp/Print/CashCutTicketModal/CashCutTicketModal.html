@@ -8,31 +8,14 @@
       </header>
 
       <div class="thermal-body">
-        <div v-if="!showDownload" class="printer-selection">
-          <label for="cutPrinter">Impresora de tickets</label>
-          <div>
-            <select id="cutPrinter" v-model="selectedPrinter">
-              <option disabled value="">Selecciona una impresora</option>
-              <option v-for="printer in printers" :key="printer" :value="printer">
-                {{ printer }}
-              </option></select
-            ><AppButton label="Refrescar" icon="pi pi-refresh" outlined @click="fetchPrinters" />
-          </div>
-        </div>
-        <AppButton
-          v-else
-          label="Descargar plugin de impresión"
-          icon="pi pi-download"
-          outlined
-          @click="downloadPlugin"
-        />
-
+        <AgnesConnectionNotice :refresh-key="agnesConnectionRevision" />
+        <p>Se usará la impresora guardada en <strong>Configuración</strong>.</p>
         <div class="ticket-preview">
-          <span>VISTA PREVIA / 80 MM</span>
+          <span>Vista previa / {{ paperWidth }} mm</span>
           <div class="ticket-logo"><img :src="logo" alt="Logo" /></div>
           <pre>{{ formattedTicket }}</pre>
           <div class="ticket-barcode" aria-label="Codigo de barras">
-            <div class="ticket-barcode__bars"></div>
+            <img v-if="barcodeImage" :src="barcodeImage" :alt="barcodeValue" style="width: 100%; max-width: 100%; height: auto" />
             <span>{{ barcodeValue }}</span>
           </div>
         </div>
@@ -44,7 +27,7 @@
           label="Imprimir ticket"
           icon="pi pi-print"
           class="p-button-primary"
-          @click="doPrint"
+          :disabled="printing" @click="doPrint"
         />
       </footer>
     </section>

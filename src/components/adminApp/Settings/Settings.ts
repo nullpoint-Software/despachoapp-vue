@@ -1,3 +1,4 @@
+import PrinterPreferences from './PrinterPreferences.vue'
 import { as, bs, pks, us } from '@/service/adminApp/client'
 import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import { USER_AVATAR_PLACEHOLDER as defaultAvatar } from '@/constants/brandAssets'
@@ -11,6 +12,8 @@ import {
   type PermissionProfile
 } from '@/service/adminApp/permissionsService'
 import router from '@/router'
+import { clearAuthSession } from '@/utils/authStorage'
+import { hasCompletedTutorial } from '@/utils/tutorialStorage'
 
 import { clearSensitiveAccess, hasSensitiveAccess } from '@/service/adminApp/sensitiveAccess'
 import type { AuthSession } from '@/service/adminApp/authService'
@@ -89,6 +92,7 @@ interface BackupConfig {
 
 const apiErrorMessage = (error: unknown): string | undefined =>
   (error as ApiErrorShape).response?.data?.error
+const showPrinterPreferences = ref(false)
 const showAppearanceModal = ref(false)
 const showBackupManager = ref(false)
 const backupLoading = ref(false)
@@ -248,7 +252,7 @@ function scrollToSettings(target: string): void {
 }
 
 onMounted(() => {
-  if (!localStorage.getItem('tourSettingsDone')) settingsTutorialOpen.value = true
+  if (!hasCompletedTutorial('tourSettingsDone')) settingsTutorialOpen.value = true
 })
 
 const userFullName = ref(localStorage.getItem('fullname'))
@@ -657,7 +661,7 @@ async function openPermissionTab(): Promise<void> {
   userDetailTab.value = 'permissions'
   if (usuarioSeleccionado.value) await loadPermissionProfile(usuarioSeleccionado.value.id_usuario)
   await nextTick()
-  if (!localStorage.getItem('tourSettingsPermissionsDone')) permissionTutorialOpen.value = true
+  if (!hasCompletedTutorial('tourSettingsPermissionsDone')) permissionTutorialOpen.value = true
 }
 
 function formatSessionDate(value: string): string {
@@ -1059,7 +1063,7 @@ async function deleteUser(u: SettingsUser): Promise<void> {
       life: 3500
     })
     if (u.id_usuario == localStorage.getItem('userid')) {
-      localStorage.clear()
+      clearAuthSession()
       await router.push('/')
     }
   } catch (error) {

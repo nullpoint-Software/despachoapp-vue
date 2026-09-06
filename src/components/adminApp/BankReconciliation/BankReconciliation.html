@@ -241,12 +241,16 @@
             </div>
           </section>
 
+          <p v-if="result.meta.excludedOutsidePeriod" class="reconciliation-info">
+            Se excluyeron {{ result.meta.excludedOutsidePeriod }} movimientos bancarios de otros
+            periodos. Los resultados incluyen únicamente el mes y ejercicio seleccionados.
+          </p>
           <p v-if="result.meta.skipped.unpaidPpd" class="reconciliation-info">
             {{ result.meta.skipped.unpaidPpd }} CFDI PPD no tenían complemento de pago en el periodo
             y no se consideraron como movimiento esperado.
           </p>
           <p v-if="result.meta.skipped.nonBankPayment" class="reconciliation-info">
-            {{ result.meta.skipped.nonBankPayment }} CFDI pagados en efectivo se excluyeron porque
+            {{ result.meta.skipped.nonBankPayment }} CFDI o pagos en efectivo se excluyeron porque
             no deben aparecer en el estado bancario.
           </p>
 
@@ -329,7 +333,15 @@
       </div>
 
       <footer class="bank-reconciliation-footer">
+        <p v-if="pdfError" class="reconciliation-error" role="alert">{{ pdfError }}</p>
         <AppButton label="Cerrar" outlined @click="closeDialog" />
+        <AppButton
+          v-if="result"
+          :label="exportingPdf ? 'Generando PDF…' : 'Descargar reporte PDF'"
+          icon="pi pi-file-pdf"
+          :disabled="exportingPdf"
+          @click="downloadPdf()"
+        />
         <AppButton
           v-if="result"
           label="Exportar hallazgos"
@@ -338,7 +350,7 @@
           @click="exportFindings"
         />
         <AppButton
-          v-else
+          v-if="!result"
           :label="loading ? 'Extrayendo y comparando' : 'Extraer y comparar'"
           class="reconciliation-run-button"
           icon="pi pi-sync"

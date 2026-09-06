@@ -2,7 +2,7 @@
   <Transition name="modal">
     <div class="modal-overlay app-modal-overlay" role="presentation">
       <section
-        class="modal-shell app-modal-surface"
+        class="modal-shell app-modal-surface app-record-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="payment-title"
@@ -44,7 +44,7 @@
               data-payment-step="identity"
             >
               <legend>
-                <b>01</b
+                <b data-color-surface="panel">01</b
                 ><span
                   ><strong>Concepto y responsables</strong
                   ><small
@@ -84,6 +84,10 @@
                         label="Asunto"
                         text="Describe por qué se recibió o entregó dinero. Se mostrará en reportes, búsquedas y comprobantes." /></span
                   ></label>
+                  <button type="button" class="suggestions-manage" :aria-expanded="editingSuggestions" aria-controls="subject-suggestion-editor" @click="editingSuggestions ? editingSuggestions = false : openSuggestionEditor()">
+                    <i class="pi pi-pencil" aria-hidden="true"></i> {{ editingSuggestions ? 'Cerrar editor' : 'Administrar sugerencias' }}
+                  </button>
+                  <p v-if="suggestionStatus" role="status" class="suggestions-status">{{ suggestionStatus }}</p>
                   <div class="quick-options" aria-label="Asuntos frecuentes">
                     <button
                       v-for="suggestion in subjectSuggestions.slice(0, 6)"
@@ -144,7 +148,7 @@
               data-payment-step="amounts"
             >
               <legend>
-                <b>02</b
+                <b data-color-surface="panel">02</b
                 ><span
                   ><strong>Importes y fecha</strong
                   ><small>Captura cuánto entró, cuánto salió y cuándo ocurrió.</small></span
@@ -158,7 +162,7 @@
                       text="Cantidad que el despacho recibió del cliente. Usa cero cuando este movimiento sólo represente una salida."
                   /></span>
                   <div class="money">
-                    <b aria-hidden="true">$</b
+                    <b data-color-surface="panel" aria-hidden="true">$</b
                     ><InputText
                       id="payment-charged"
                       v-model="payment.cobramos"
@@ -182,7 +186,7 @@
                       text="Cantidad que salió del despacho para cubrir gastos, derechos o pagos por cuenta del cliente. Usa cero si no hubo salida."
                   /></span>
                   <div class="money">
-                    <b aria-hidden="true">$</b
+                    <b data-color-surface="panel" aria-hidden="true">$</b
                     ><InputText
                       id="payment-paid"
                       v-model="payment.pagamos"
@@ -277,6 +281,30 @@
           storage-key="tutorialPagoFormulario"
         />
       </section>
+    </div>
+  </Transition>
+  <Transition name="suggestions-drawer">
+    <div v-if="editingSuggestions" class="suggestions-overlay" @click.self="editingSuggestions = false">
+<section ref="suggestionDrawer" role="dialog" aria-modal="true" tabindex="-1" @keydown="handleSuggestionKeys" id="subject-suggestion-editor" class="suggestions-editor app-side-drawer" aria-labelledby="subject-suggestions-title">
+                    <header class="suggestions-header"><div><small>PAGOS / AUTOCOMPLETADO</small><h3 id="subject-suggestions-title">Sugerencias de Asunto</h3></div><button type="button" aria-label="Cerrar sugerencias" @click="editingSuggestions = false">×</button></header><div class="suggestions-body">
+                    <p>Edita las opciones o agrega una nueva. Se guardan solo en este navegador.</p>
+                    <ol class="suggestions-list">
+                      <li v-for="(_, index) in suggestionDrafts" :key="index">
+                        <label :for="'subject-suggestion-' + index">Opción {{ index + 1 }}</label>
+                        <input :id="'subject-suggestion-' + index" v-model="suggestionDrafts[index]" @keydown.enter.prevent type="text" maxlength="200" autocomplete="off" />
+                      </li>
+                    </ol>
+                    <label for="new-subject-suggestion">Nueva sugerencia</label>
+                    <div class="suggestions-new">
+                      <input id="new-subject-suggestion" v-model="newSuggestion" type="text" maxlength="200" autocomplete="off" placeholder="Escribe un asunto frecuente" @keydown.enter.stop.prevent="addSuggestion" />
+                      <button type="button" :disabled="!newSuggestion.trim()" @click="addSuggestion">Agregar</button>
+                    </div>
+                    <p v-if="suggestionError" class="form-error" role="alert">{{ suggestionError }}</p>
+                    </div><footer class="suggestions-actions">
+                      <button type="button" @click="editingSuggestions = false">Cancelar</button>
+                      <button type="button" data-color-surface="accent" @click="persistSuggestions">Guardar sugerencias</button>
+                    </footer>
+                  </section>
     </div>
   </Transition>
 </Teleport>

@@ -42,28 +42,22 @@
       />
       <AppButton
         v-if="isAdmin"
-        :label="syncing ? `Consultando ${syncProgress.processed}/${syncProgress.total || '?'}...` : 'Consultar por RFC'"
+        :label="syncing ? `Consultando ${syncProgress.processed}/${syncProgress.total || '?'}...` : 'Consultar todos'"
         icon="pi pi-globe"
         :disabled="syncing || loading"
         @click="syncAll"
       />
-      <AppButton
-        v-if="isAdmin"
-        label="Consultar con acceso"
-        icon="pi pi-users"
-        :disabled="syncing"
-        @click="openThirdPartyQuery"
-      />
       <span v-if="!isAdmin" class="read-only-note"><i class="pi pi-eye" /> Vista de consulta</span>
     </div>
+
+    <ComplianceProgress v-if="syncing || syncProgress.processed > 0" label="Consulta de todos los clientes" :processed="syncProgress.processed" :total="syncProgress.total" :active="syncing" />
 
     <section class="compliance-note" aria-label="Alcance de la consulta">
       <i class="pi pi-shield" aria-hidden="true" />
       <div>
-        <strong>Dos modalidades, alcances distintos</strong>
+        <strong>Consulta pública por RFC</strong>
         <span
-          >La consulta pública solo envía el RFC. La consulta por terceros envía las credenciales del
-          despacho al servidor temporal para iniciar sesión en el SAT; no se guardan.</span
+          >La consulta pública solo envía el RFC y permite consultar las opiniones que el contribuyente ha autorizado publicar.</span
         >
       </div>
       <button type="button" class="guide-trigger" @click="showGuide = !showGuide">
@@ -650,6 +644,8 @@
               <div><small>ACTIVIDAD</small><strong>Última consulta registrada</strong></div>
               <span :class="scheduleLastStatusClass">{{ scheduleLastStatusLabel }}</span>
             </header>
+            <ComplianceProgress v-if="scheduleRunningNow || schedule?.running || (schedule?.lastTotal || 0) > 0" label="Avance de la consulta" :processed="(schedule?.lastCompleted || 0) + (schedule?.lastFailed || 0)" :total="schedule?.lastTotal || 0" :failed="schedule?.lastFailed || 0" :active="scheduleRunningNow || Boolean(schedule?.running)" />
+            <p v-if="scheduleProgressError" role="status">{{ scheduleProgressError }}</p>
             <div class="schedule-activity-grid">
               <article>
                 <small>INICIO</small>
@@ -708,11 +704,6 @@
     v-if="documentClient"
     :client="documentClient"
     @close="documentClient = null"
-  />
-  <ThirdPartyComplianceModal
-    v-if="showThirdParty"
-    @close="showThirdParty = false"
-    @complete="completeThirdParty"
   />
   <AppTutorial
     v-model="opinionsTutorialOpen"

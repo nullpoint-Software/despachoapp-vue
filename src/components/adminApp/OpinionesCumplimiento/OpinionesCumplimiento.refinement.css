@@ -564,8 +564,12 @@
 }
 
 .compliance-command-center > .compliance-actions {
-  grid-template-columns: repeat(3, minmax(10rem, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   width: 100%;
+}
+
+.compliance-command-center > .compliance-actions > .read-only-note {
+  grid-column: 1 / -1;
 }
 
 .compliance-command-center > .compliance-note {
@@ -663,7 +667,7 @@
   }
 
   .compliance-command-center > .compliance-actions {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -706,4 +710,27 @@
   .compliance-command-center > .compliance-note .guide-trigger {
     grid-column: 1 / -1;
   }
+}
+
+@media (min-width: 1081px) {
+  .compliance-workspace { align-items: stretch; }
+  .compliance-workspace > .records-panel,
+  .compliance-workspace > .detail-panel {
+    box-sizing: border-box;
+    height: min(48rem, calc(100dvh - 2rem));
+    min-height: 0;
+  }
+  .compliance-workspace > .records-panel {
+    display: flex;
+    flex-direction: column;
+  }
+  .records-panel > .panel-heading { flex-shrink: 0; }
+  .records-panel > .records-list,
+  .records-panel > .empty-state {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    overflow: auto;
+  }
+  .compliance-workspace > .detail-panel { position: static; }
 }

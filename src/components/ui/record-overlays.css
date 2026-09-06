@@ -1,0 +1,215 @@
+/* Diseño común para formularios de clientes y pagos. */
+html body [role='dialog'].app-record-modal {
+  width: min(60rem, 100%);
+  max-height: calc(100dvh - 2rem);
+  padding: 0 !important;
+  border: 2px solid var(--br-line-strong) !important;
+  border-radius: 0 !important;
+  background: var(--br-control) !important;
+  color: var(--br-control-text) !important;
+  box-shadow: 12px 12px 0 var(--br-accent) !important;
+  overflow: hidden;
+}
+html body [role='dialog'].app-record-modal > .app-modal-header {
+  position: relative;
+  flex-shrink: 0;
+  display: block !important;
+  margin: 0 !important;
+  padding: 1.4rem 5rem 1.4rem 1.5rem !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--br-line-strong) !important;
+  background: var(--br-panel-2) !important;
+  color: var(--br-text) !important;
+  box-shadow: none !important;
+}
+html body [role='dialog'].app-record-modal > .app-modal-header::before {
+  content: none !important;
+}
+html body [role='dialog'].app-record-modal > .app-modal-header :is(h2, h3) {
+  margin: 0.5rem 0 0 !important;
+  color: var(--br-text) !important;
+  font: 900 clamp(1.8rem, 5vw, 3rem)/0.95 var(--font-family) !important;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+}
+html body [role='dialog'].app-record-modal > .app-modal-header > :is(p, span) {
+  display: block;
+  margin: 0.7rem 0 0;
+  color: var(--br-muted) !important;
+  font: 650 0.78rem/1.45 var(--font-family) !important;
+}
+html body [role='dialog'].app-record-modal > .app-modal-header > p:first-child {
+  margin: 0;
+  color: var(--br-accent) !important;
+  font: 800 0.68rem/1 var(--font-family) !important;
+  letter-spacing: 0.1em;
+}
+html body [role='dialog'].app-record-modal > .app-modal-header > button {
+  position: absolute;
+  inset: 0 0 auto auto;
+  width: 4rem;
+  height: 4rem;
+  display: grid;
+  place-items: center;
+  padding: 0 !important;
+  margin: 0;
+  border-radius: 0;
+  border: 0;
+  border-left: 1px solid var(--br-line-strong);
+  border-bottom: 1px solid var(--br-line-strong);
+  background: var(--br-accent) !important;
+  color: var(--br-accent-text) !important;
+  font: 400 2rem/1 Arial !important;
+}
+html body .app-record-modal :is(.form-steps, .payment-steps) {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  background: var(--br-control);
+}
+html body .app-record-modal :is(.form-steps, .payment-steps) > button {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 4.5rem;
+  padding: 0.75rem 1rem;
+}
+html body .app-record-modal :is(.form-steps, .payment-steps) > button.active {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+html body .app-record-modal .form-steps button > span,
+html body .app-record-modal .payment-steps button > b {
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid currentColor;
+  color: inherit !important;
+}
+html body .app-record-modal :is(.client-form-body, .payment-step-shell, .record-modal-body) {
+  padding: 1.5rem;
+  min-height: 0;
+  overflow-y: auto;
+}
+html body .app-record-modal--simple {
+  display: flex;
+  flex-direction: column;
+}
+html body .app-record-modal .record-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--br-line-strong);
+}
+/* Los drawers comparten una franja lateral y una cabecera compacta de archivo. */
+html body [role='dialog'].app-side-drawer {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-height: 100dvh;
+  width: min(42rem, 100vw);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-left: 0.4rem solid var(--br-accent);
+  border-radius: 0;
+  background: var(--br-control);
+  color: var(--br-control-text);
+  box-shadow: -16px 0 48px rgb(0 0 0 / 0.25);
+  --app-modal-ink: var(--br-control-text);
+  --app-modal-muted: var(--br-control-muted);
+}
+html body [role='dialog'].app-side-drawer > header {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 5rem 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--br-line-strong);
+  background: var(--br-panel);
+  color: var(--br-text);
+}
+html body [role='dialog'].app-side-drawer > header > div {
+  padding: 0;
+  min-width: 0;
+  flex: 1;
+}
+html body [role='dialog'].app-side-drawer > header small {
+  color: var(--br-accent) !important;
+  font: 800 0.64rem/1 var(--font-family);
+  letter-spacing: 0.12em;
+}
+html body [role='dialog'].app-side-drawer > header :is(h2, h3) {
+  margin: 0.6rem 0 0;
+  font: 900 clamp(1.7rem, 4vw, 2.3rem)/1 var(--font-family);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: var(--br-text);
+}
+html body [role='dialog'].app-side-drawer > header > button {
+  position: absolute;
+  top: 1.4rem;
+  right: 1.2rem;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--br-line-strong);
+  background: var(--br-panel-2);
+  color: var(--br-text);
+  font: 400 1.7rem/1 Arial;
+  cursor: pointer;
+}
+html body [role='dialog'].app-side-drawer > header > button:hover {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+}
+html body .app-side-drawer > :is(.calendar-reports, .suggestions-body, .reports-loading) {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  overscroll-behavior: contain;
+}
+html body .app-side-drawer .report-count {
+  background: var(--br-accent);
+  color: var(--br-accent-text);
+  border: 0;
+  padding: 0.4rem 0.6rem;
+}
+html body .app-side-drawer .suggestions-actions {
+  margin: 0;
+  padding: 1rem 1.5rem;
+  background: var(--br-control);
+  border-top: 1px solid var(--br-line-strong);
+}
+html body .app-side-drawer .form-error {
+  background: var(--br-danger);
+  color: var(--br-danger-text);
+}
+@media (max-width: 600px) {
+  html body [role='dialog'].app-record-modal {
+    box-shadow: 5px 5px 0 var(--br-accent) !important;
+  }
+  html body .app-record-modal :is(.client-form-body, .payment-step-shell, .record-modal-body) {
+    padding: 1rem;
+  }
+  html body [role='dialog'].app-side-drawer > header {
+    padding-left: 1rem;
+  }
+  html body .app-side-drawer > :is(.calendar-reports, .suggestions-body) {
+    padding: 1rem;
+  }
+}
+
+html body .reports-drawer-overlay { inset: 0; z-index: 1500; }
+html body .app-record-modal :is(.client-form-actions,.modal-actions) { padding: 1rem 1.5rem; border-top: 1px solid var(--br-line-strong); background: var(--br-control); }
+html body .app-side-drawer .calendar-reports :is(article,.annual-row) { background: var(--br-control); border-color: var(--br-line-strong); color: var(--br-control-text); }
+html body .app-side-drawer .calendar-reports :is(article,.annual-row) > strong { color: var(--br-control-text); }
+html body .app-side-drawer .calendar-reports span { color: var(--br-control-muted); }

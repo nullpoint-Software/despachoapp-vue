@@ -6,13 +6,13 @@
     >
       <div
         v-if="note"
-        class="modal-content relative bg-[var(--bg-modal)] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+        class="note-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="note-detail-title"
       >
         <header
-          class="standard-modal-header p-5 border-b border-[var(--color-border)] flex justify-between items-center flex-shrink-0"
+          class="note-detail-header"
         >
-          <h2 class="text-2xl font-bold">{{ note.titulo }}</h2>
-          <button @click="$emit('close')" class="standard-modal-close">
+          <div><p>NOTAS / DOCUMENTOS</p><h2 id="note-detail-title">{{ note.titulo }}</h2></div>
+          <button type="button" aria-label="Cerrar nota" @click="$emit('close')" class="note-detail-close">
             <i class="pi pi-times text-xl"></i>
           </button>
         </header>

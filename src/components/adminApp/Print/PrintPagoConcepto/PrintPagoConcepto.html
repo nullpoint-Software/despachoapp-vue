@@ -8,34 +8,15 @@
       </header>
       <div class="ticket-modal-body">
         <!-- Seccion para seleccionar la impresora -->
-        <div class="printer-selection" v-if="!showDownload">
-          <select
-            id="printerSelect"
-            v-model="selectedPrinter"
-            aria-label="Impresora de tickets"
-            required
-          >
-            <option disabled value="">Seleccione una impresora</option>
-            <option v-for="impresora in printers" :key="impresora" :value="impresora">
-              {{ impresora }}
-            </option>
-          </select>
-          <Button label="Refrescar" icon="pi pi-refresh" @click="fetchPrinters" outlined />
-        </div>
-        <Button
-          icon="pi pi-download"
-          v-if="showDownload"
-          label="Descargar plugin de impresión"
-          @click="downloadPlugin"
-          outlined
-        />
+        <AgnesConnectionNotice :refresh-key="agnesConnectionRevision" />
+        <p>Se usará la impresora guardada en <strong>Configuración</strong>.</p>
         <!-- Vista previa del ticket -->
         <div class="ticket">
-          <span>Vista previa / 80 mm</span>
+          <span>Vista previa / {{ paperWidth }} mm</span>
           <div class="ticket-logo"><img :src="logo" alt="Logo" /></div>
           <pre class="ticket-content">{{ formattedTicket }}</pre>
           <div v-if="barcodeValue" class="ticket-barcode" aria-label="Codigo de barras">
-            <div class="ticket-barcode__bars"></div>
+            <img v-if="barcodeImage" :src="barcodeImage" :alt="barcodeValue" style="width: 100%; max-width: 100%; height: auto" />
             <span>{{ barcodeValue }}</span>
           </div>
         </div>
@@ -47,7 +28,7 @@
         <Button
           label="Imprimir ticket"
           icon="pi pi-print"
-          @click="doPrint"
+          :disabled="printing" @click="doPrint"
           class="p-button-primary"
         />
       </div>

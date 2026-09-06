@@ -1,7 +1,8 @@
-const serverip = import.meta.env.VITE_API_SERVER_IP
-import { ref, computed, onMounted } from 'vue'
+import AgnesConnectionNotice from '../AgnesConnectionNotice.vue'
+import { ref, computed } from 'vue'
+import { getPrinterPreferences } from '@/utils/printerSettings'
 import logoAsset from '@/assets/img/logsymbolblack.png'
-import connetor_plugin from '@abrazasoft/thermal_printer_vuejs'
+import { printLocalTicket, ticketBarcode } from '@/utils/localTicketPrinter'
 
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
@@ -34,11 +35,10 @@ const emit = defineEmits(['close'])
 const toast = useAppToast()
 
 // estado
-const printers = ref<string[]>([])
-const selectedPrinter = ref('')
-const apiKey = '123456'
+const paperWidth = getPrinterPreferences().paperWidth
+const printing = ref(false)
+const agnesConnectionRevision = ref(0)
 const logo = logoAsset
-const showDownload = ref(false)
 // props
 const props = defineProps<{ ticket: MonthlyPaymentTicket }>()
 
@@ -113,89 +113,42 @@ const formattedTicket = computed(() => {
   return lines.join('\n')
 })
 
-// cargar impresoras
-const fetchPrinters = async () => {
-  try {
-    const list = await connetor_plugin.obtenerImpresoras()
-    printers.value = list
-    if (!list.includes(selectedPrinter.value)) selectedPrinter.value = ''
-  } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: 'Impresión no disponible',
-      detail: e instanceof Error ? e.message : String(e),
-      life: 4500
-    })
-    showDownload.value = true
-  }
-}
-onMounted(fetchPrinters)
-const downloadPlugin = async () => {
-  const url = `${serverip}/Plugin_Impresora_termica.exe`
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'Plugin_Impresora_termica.exe'
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-}
 // imprimir
-const doPrint = async () => {
-  if (!selectedPrinter.value) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Falta una impresora',
-      detail: 'Selecciona una impresora.',
-      life: 3000
-    })
-    return
-  }
+async function doPrint() {
+  if (printing.value) return
+  printing.value = true
   try {
-    const con = new connetor_plugin()
-    // logo
-    con.textaling('center')
-    con.img_url(`${serverip}/sm.png`)
-    con.feed('1')
-    // titulo
-    con.fontsize('2')
-    con.textaling('center')
-    con.text('Ticket de Pago')
-    con.feed('1')
-    // contenido ASCII
-    con.fontsize('1')
-    con.textaling('left')
-    formattedTicket.value.split('\n').forEach((line) => con.text(line))
-    // barcode
-    if (barcodeValue.value) {
-      con.feed('1')
-      con.barcode_128(barcodeValue.value)
-      con.textaling('center')
-      con.text(barcodeValue.value)
-    }
-    // cierre
-    con.feed('5')
-    con.cut('0')
-    const resp = await con.imprimir(selectedPrinter.value, apiKey)
-    if (resp === true)
-      toast.add({
-        severity: 'success',
-        summary: 'Ticket enviado',
-        detail: 'La impresión fue solicitada.',
-        life: 3000
-      })
-    else
-      toast.add({
-        severity: 'error',
-        summary: 'No se pudo imprimir',
-        detail: String(resp),
-        life: 4500
-      })
-  } catch (err) {
+    await printLocalTicket({
+      title: 'Ticket de pago',
+      text: formattedTicket.value,
+      logo,
+      barcode: barcodeValue.value
+    })
+    toast.add({
+      severity: 'success',
+      summary: 'Ticket enviado',
+      detail: 'El agente envió el ticket a la cola de impresión.',
+      life: 3500
+    })
+  } catch (error) {
+    agnesConnectionRevision.value++
     toast.add({
       severity: 'error',
-      summary: 'No se pudo imprimir',
-      detail: err instanceof Error ? err.message : String(err),
-      life: 4500
+      summary: 'No se pudo enviar el ticket',
+      detail: error instanceof Error ? error.message : String(error),
+      life: 6000
     })
+  } finally {
+    printing.value = false
   }
 }
+
+const barcodeImage = computed(() => {
+  try {
+    return (
+      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ticketBarcode(barcodeValue.value))
+    )
+  } catch {
+    return ''
+  }
+})

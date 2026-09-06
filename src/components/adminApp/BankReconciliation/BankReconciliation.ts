@@ -1,6 +1,7 @@
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { saveAs } from 'file-saver'
 import { fs } from '@/service/adminApp/client'
+import { hasCompletedTutorial } from '@/utils/tutorialStorage'
 
 type ReconciliationStatus = 'matched' | 'review' | 'bank_only' | 'report_only'
 type ReportMovement = {
@@ -41,6 +42,7 @@ type ReconciliationResult = {
     format: string
     reports: Array<{ id: number; nombre: string; direccion: string }>
     statementMovements: number
+    excludedOutsidePeriod?: number
     reportMovements: number
     skipped: { unpaidPpd: number; nonCashDocument: number; nonBankPayment: number }
     privacy: string
@@ -112,6 +114,9 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const statementFile = ref<File | null>(null)
 const errorMessage = ref('')
 const result = ref<ReconciliationResult | null>(null)
+const exportingPdf = ref(false)
+const pdfError = ref('')
+let comparisonRequest = 0
 const draft = reactive({
   bank: 'auto',
   password: '',
@@ -253,6 +258,7 @@ const reportTotal = (row: ReconciliationRow) =>
   row.reportItems.reduce((total, item) => total + Number(item.amount || 0), 0)
 
 async function openDialog() {
+  resetComparison()
   errorMessage.value = ''
   result.value = null
   statementFile.value = null
@@ -260,15 +266,20 @@ async function openDialog() {
   draft.filter = 'discrepancies'
   show.value = true
   await nextTick()
-  if (!localStorage.getItem('tourBankReconciliationSetupDone'))
+  if (!hasCompletedTutorial('tourBankReconciliationSetupDone'))
     reconciliationTutorialOpen.value = true
 }
 function closeDialog() {
+  resetComparison()
   draft.password = ''
   reconciliationTutorialOpen.value = false
   show.value = false
 }
 function resetComparison() {
+  exportingPdf.value = false
+  pdfError.value = ''
+  comparisonRequest += 1
+  loading.value = false
   reconciliationTutorialOpen.value = false
   result.value = null
   statementFile.value = null
@@ -278,6 +289,7 @@ function resetComparison() {
 function selectFile(file?: File | null) {
   errorMessage.value = ''
   if (!file) return
+  statementFile.value = null
   const extension = file.name.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1] || ''
   if (!['pdf', 'xml', 'csv', 'txt'].includes(extension)) {
     errorMessage.value = 'Usa un archivo PDF digital, XML, CSV o TXT.'
@@ -302,6 +314,7 @@ function dropFile(event: DragEvent) {
   selectFile(event.dataTransfer?.files?.[0])
 }
 async function runComparison() {
+  if (loading.value) return
   errorMessage.value = ''
   if (!props.clientId) {
     errorMessage.value = 'Selecciona un cliente en los filtros fiscales.'
@@ -320,8 +333,9 @@ async function runComparison() {
     return
   }
   loading.value = true
+  const request = ++comparisonRequest
   try {
-    result.value = await fs.reconcileBankStatement({
+    const comparison = await fs.reconcileBankStatement({
       clienteId: props.clientId,
       year: props.year,
       month: props.month,
@@ -331,17 +345,43 @@ async function runComparison() {
       dateWindow: Number(draft.dateWindow),
       file: statementFile.value
     })
+    if (request !== comparisonRequest) return
+    result.value = comparison
     draft.password = ''
     draft.filter = 'discrepancies'
+    await downloadPdf(comparison, request)
     await nextTick()
-    if (!localStorage.getItem('tourBankReconciliationResultsDone')) {
+    if (request !== comparisonRequest) return
+    if (!hasCompletedTutorial('tourBankReconciliationResultsDone')) {
       reconciliationTutorialOpen.value = true
     }
   } catch (error: any) {
+    if (request !== comparisonRequest) return
     errorMessage.value =
       error.response?.data?.error || 'No se pudo extraer y comparar el estado de cuenta.'
   } finally {
-    loading.value = false
+    if (request === comparisonRequest) {
+      loading.value = false
+      draft.password = ''
+    }
+  }
+}
+
+async function downloadPdf(comparison = result.value, request = comparisonRequest) {
+  if (!comparison || exportingPdf.value) return
+  exportingPdf.value = true
+  pdfError.value = ''
+  try {
+    const { buildBankReconciliationPdf } = await import('@/utils/bankReconciliationPdf')
+    if (request !== comparisonRequest) return
+    const { doc, filename } = buildBankReconciliationPdf(comparison)
+    await doc.save(filename, { returnPromise: true })
+  } catch {
+    if (request === comparisonRequest)
+      pdfError.value =
+        'La conciliación terminó, pero no se pudo descargar el PDF. Puedes intentarlo de nuevo.'
+  } finally {
+    if (request === comparisonRequest) exportingPdf.value = false
   }
 }
 
@@ -390,7 +430,6 @@ function exportFindings() {
 watch(
   () => [props.clientId, props.year, props.month],
   () => {
-    if (!show.value) return
     resetComparison()
   }
 )

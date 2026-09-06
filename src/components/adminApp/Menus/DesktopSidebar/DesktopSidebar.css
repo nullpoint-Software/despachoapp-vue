@@ -83,6 +83,7 @@
   padding: 0;
 }
 .sidebar-footer > .sidebar-link {
+  grid-template-columns: 5rem minmax(0, 1fr);
   height: 5rem;
   min-height: 5rem;
   margin: 0;
@@ -91,4 +92,9 @@
 .desktop-sidebar .sidebar-footer > a.router-link-active {
   background: var(--br-accent);
   box-shadow: inset 0 0 0 1px var(--br-control) !important;
+}
+
+.sidebar-footer .sidebar-icon-shell {
+  width: 5rem;
+  height: 5rem;
 }

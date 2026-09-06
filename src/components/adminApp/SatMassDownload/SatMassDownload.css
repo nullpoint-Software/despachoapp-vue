@@ -1163,9 +1163,14 @@
 }
 
 .sat-portal-viewport > img {
+  position: absolute;
+  inset: 0;
   display: block;
-  width: 100%;
+  width: auto;
   height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
   user-select: none;
 }
 
@@ -1338,6 +1343,7 @@
 
 .sat-portal-workspace > footer {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
@@ -1345,18 +1351,53 @@
   border-top: 1px solid var(--br-line, #55444b);
 }
 
-.sat-portal-workspace > footer > span {
+.portal-download-folios {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+}
+
+.portal-download-folios > span {
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  color: var(--br-text, #f4f1eb);
+  font:
+    800 0.67rem / 1.35 Arial,
+    sans-serif;
+  text-transform: uppercase;
+}
+
+.portal-download-folios > span i {
+  color: var(--br-accent, #ef3d59);
+}
+
+.portal-download-folios > small {
   color: var(--br-muted, #b9adb2);
   font:
-    600 0.7rem / 1.35 Arial,
+    600 0.62rem / 1.35 Arial,
     sans-serif;
 }
 
-.sat-portal-workspace > footer > span i {
-  color: var(--br-accent, #ef3d59);
+.portal-download-folio-list {
+  display: flex;
+  max-height: 4.5rem;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  overflow: auto;
+}
+
+.portal-download-folio-list code,
+.portal-history-folios code {
+  border: 1px solid color-mix(in srgb, var(--br-accent, #ef3d59) 62%, transparent);
+  background: color-mix(in srgb, var(--br-accent, #ef3d59) 10%, transparent);
+  padding: 0.22rem 0.36rem;
+  color: var(--br-text, #f4f1eb);
+  font:
+    700 0.56rem ui-monospace,
+    'Cascadia Mono',
+    monospace;
+  overflow-wrap: anywhere;
 }
 
 .sat-download-modal-enter-active,
@@ -2709,6 +2750,23 @@
     700 0.56rem ui-monospace,
     'Cascadia Mono',
     monospace;
+}
+
+.portal-history-folios {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.portal-history-folios > span {
+  color: var(--br-accent, #ef3d59);
+  font:
+    850 0.53rem ui-monospace,
+    'Cascadia Mono',
+    monospace;
+  text-transform: uppercase;
 }
 
 .portal-query-list > article > button {

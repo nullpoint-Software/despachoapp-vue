@@ -1,4 +1,5 @@
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import ComplianceProgress from './ComplianceProgress.vue'
 import AppRegimePicker from '@/components/ui/AppRegimePicker/AppRegimePicker.vue'
 import AppFilterModal from '@/components/ui/AppFilterModal/AppFilterModal.vue'
 import { cos } from '@/service/adminApp/client'
@@ -10,6 +11,7 @@ import type {
   ComplianceSummary
 } from '@/service/adminApp/cumplimientoService'
 import { regimenesFiscales, regimenFiscalLabel } from '@/constants/regimenesFiscales'
+import { hasCompletedTutorial } from '@/utils/tutorialStorage'
 
 const records = ref<ComplianceRecord[]>([])
 const selected = ref<ComplianceRecord | null>(null)
@@ -19,7 +21,6 @@ const syncing = ref(false)
 const syncingClientId = ref<number | null>(null)
 const syncProgress = ref({ processed: 0, total: 0, documents: 0 })
 const showGuide = ref(false)
-const showThirdParty = ref(false)
 const showFilters = ref(false)
 const search = ref('')
 const statusFilter = ref('todos')
@@ -39,6 +40,32 @@ type ScheduleTab = 'automatic' | 'instant'
 const scheduleTab = ref<ScheduleTab>('automatic')
 const scheduleModal = ref<HTMLElement | null>(null)
 const schedule = ref<ComplianceScheduleConfig | null>(null)
+const scheduleProgressError = ref('')
+let schedulePollTimer: ReturnType<typeof setTimeout> | undefined
+let schedulePollGeneration = 0
+function stopSchedulePolling() {
+  schedulePollGeneration++
+  clearTimeout(schedulePollTimer)
+}
+watch(scheduleOpen, (open) => {
+  stopSchedulePolling()
+  if (!open) return
+  const generation = schedulePollGeneration
+  const poll = async () => {
+    try {
+      const config = await cos.getProgramacion()
+      if (generation !== schedulePollGeneration) return
+      schedule.value = config
+      scheduleProgressError.value = ''
+    } catch {
+      if (generation !== schedulePollGeneration) return
+      scheduleProgressError.value = 'No se pudo actualizar el avance. Reintentando…'
+    }
+    if (generation === schedulePollGeneration) schedulePollTimer = setTimeout(poll, 2000)
+  }
+  schedulePollTimer = setTimeout(poll, 2000)
+})
+onBeforeUnmount(stopSchedulePolling)
 type ScheduleDraft = Pick<
   ComplianceScheduleConfig,
   'enabled' | 'frequency' | 'runTime' | 'dayOfWeek' | 'regimes'
@@ -73,9 +100,9 @@ const opinionsTutorialSteps = [
   },
   {
     target: '.compliance-note',
-    eyebrow: 'Opiniones / modalidades',
-    title: 'Elige el tipo de consulta',
-    body: 'La consulta pública usa el RFC; la consulta por terceros inicia sesión temporalmente con las credenciales autorizadas.'
+    eyebrow: 'Opiniones / consulta pública',
+    title: 'Consulta por RFC',
+    body: 'La consulta pública usa el RFC. Consulta la guía para autorizar la publicación de la opinión del contribuyente.'
   },
   {
     target: '.summary-overview',
@@ -300,7 +327,9 @@ async function saveSchedule() {
 }
 
 async function runScheduleNow() {
+  if (scheduleRunningNow.value || schedule.value?.running) return
   scheduleRunningNow.value = true
+  if (schedule.value) schedule.value = { ...schedule.value, lastTotal: 0, lastCompleted: 0, lastFailed: 0, lastStatus: 'running', running: true }
   errorMessage.value = ''
   scheduleRunMessage.value = ''
   try {
@@ -333,17 +362,8 @@ async function loadOpinions(preserveSelection = true) {
   }
 }
 
-function openThirdPartyQuery() {
-  showThirdParty.value = true
-}
-
-async function completeThirdParty(message: string) {
-  showThirdParty.value = false
-  successMessage.value = message
-  await loadOpinions()
-}
-
 async function syncAll() {
+  if (syncing.value) return
   syncing.value = true
   errorMessage.value = ''
   successMessage.value = ''
@@ -468,5 +488,5 @@ function issueSubtitle(record: ComplianceRecord) {
 
 onMounted(async () => {
   await loadOpinions(false)
-  if (!localStorage.getItem('tourOpinionesDone')) opinionsTutorialOpen.value = true
+  if (!hasCompletedTutorial('tourOpinionesDone')) opinionsTutorialOpen.value = true
 })

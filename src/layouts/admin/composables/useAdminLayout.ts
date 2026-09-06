@@ -7,6 +7,7 @@ import { useMobileDetection } from '@/composables/useMobileDetection'
 import { useNotesStore } from '@/composables/useNotesStore'
 import { authService } from '@/service/adminApp/client'
 import { logger } from '@/utils/logger'
+import { clearAuthSession } from '@/utils/authStorage'
 
 function getProfilePicture(): string {
   const storedPhoto = localStorage.getItem('userphoto')
@@ -55,7 +56,7 @@ export function useAdminLayout() {
   async function logout(): Promise<void> {
     closeMoreMenu()
     await authService.logout()
-    localStorage.clear()
+    clearAuthSession()
     await router.push('/')
   }
 

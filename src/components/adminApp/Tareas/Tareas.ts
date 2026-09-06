@@ -1,4 +1,5 @@
 import { nextTick, onMounted, ref } from 'vue'
+import { hasCompletedTutorial } from '@/utils/tutorialStorage'
 
 const taskTutorialOpen = ref(false)
 const taskTutorialSteps = [
@@ -35,5 +36,5 @@ const taskTutorialSteps = [
 ]
 onMounted(async () => {
   await nextTick()
-  if (!localStorage.getItem('tourTareasDone')) taskTutorialOpen.value = true
+  if (!hasCompletedTutorial('tourTareasDone')) taskTutorialOpen.value = true
 })

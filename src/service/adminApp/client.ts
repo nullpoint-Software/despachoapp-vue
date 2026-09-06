@@ -18,6 +18,7 @@ import {
   getSensitiveAccessToken,
   storeSensitiveAccess
 } from './sensitiveAccess'
+import { clearAuthSession } from '@/utils/authStorage'
 
 const instance = axios.create()
 instance.interceptors.request.use((config) => {
@@ -57,7 +58,7 @@ instance.interceptors.response.use(
       ].includes(code)
     ) {
       clearSensitiveAccess()
-      localStorage.clear()
+      clearAuthSession()
       if (!window.location.pathname.startsWith('/login')) {
         window.location.assign('/login?error=session')
       }

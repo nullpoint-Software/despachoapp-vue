@@ -1,5 +1,6 @@
 import { nextTick, onMounted, ref } from 'vue'
 import { useBrutalMotion } from '@/composables/useBrutalMotion'
+import { hasCompletedTutorial } from '@/utils/tutorialStorage'
 const pageRef = ref<HTMLElement | null>(null)
 const cashCutVisible = ref(false)
 const paymentTutorialOpen = ref(false)
@@ -32,5 +33,5 @@ const paymentTutorialSteps = [
 useBrutalMotion(pageRef, ['.records-hero', '.records-content'])
 onMounted(async () => {
   await nextTick()
-  if (!localStorage.getItem('tourPagosDone')) paymentTutorialOpen.value = true
+  if (!hasCompletedTutorial('tourPagosDone')) paymentTutorialOpen.value = true
 })

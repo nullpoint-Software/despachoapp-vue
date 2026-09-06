@@ -623,9 +623,10 @@
 }
 
 .fiscal-overview > .summary-grid {
-  margin-top: 0;
+  margin: 0;
   border: 0;
-  box-shadow: none;
+  /* The overview owns the border and shadow, including the global card override. */
+  box-shadow: none !important;
 }
 
 .fiscal-overview .summary-grid article {

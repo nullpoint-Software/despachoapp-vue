@@ -6,6 +6,7 @@ import { clearSensitiveAccess, hasSensitiveAccess } from '@/service/adminApp/sen
 import type { ColumnDef } from '@/types/ClientesTable'
 import { useBrutalMotion } from '@/composables/useBrutalMotion'
 import { regimenesFiscales, regimenFiscalLabel } from '@/constants/regimenesFiscales'
+import { hasCompletedTutorial } from '@/utils/tutorialStorage'
 const pageRef = ref<HTMLElement | null>(null)
 useBrutalMotion(pageRef, ['.clients-hero', '#clientes-table'])
 const canAddCliente = ref(false)
@@ -241,7 +242,7 @@ onUnmounted(() => {
 onMounted(async () => {
   await loadCustomersPage()
   await refreshPasskeyAvailability()
-  if (!localStorage.getItem('tourClientesDone')) clientTutorialOpen.value = true
+  if (!hasCompletedTutorial('tourClientesDone')) clientTutorialOpen.value = true
 })
 
 watch(

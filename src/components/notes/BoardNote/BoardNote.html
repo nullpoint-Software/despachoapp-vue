@@ -150,11 +150,12 @@
         aria-labelledby="note-editor-title"
         :aria-busy="saving"
         @submit.prevent="saveEditor"
+        @keydown="handleDocumentShortcut"
       >
         <header class="document-editor-header">
-          <h2 id="note-editor-title" class="sr-only">
+          <div class="document-modal-heading"><p>NOTAS / DOCUMENTOS</p><h2 id="note-editor-title">
             {{ editing?.id ? 'Editar documento' : 'Nuevo documento' }}
-          </h2>
+          </h2></div>
           <label class="document-title-field document-title-field--header">
             <span class="sr-only">Título del documento</span>
             <input
@@ -226,15 +227,48 @@
               />
             </label>
             <span class="document-character-count"
-              ><i class="pi pi-align-left" aria-hidden="true" /> {{ draft.descripcion.length }}
-              caracteres</span
+              ><i class="pi pi-align-left" aria-hidden="true" /> {{ wordCount }} palabras · {{ characters }} caracteres</span
             >
           </section>
 
           <section class="document-body">
-            <nav class="markdown-ribbon" aria-label="Cinta de herramientas Markdown">
+            <div class="document-ribbon-tabs" role="tablist" aria-label="Herramientas del documento">
+              <button v-for="tab in ribbonTabs" :key="tab.id" :title="tab.description" :id="'ribbon-tab-' + tab.id" type="button" role="tab" :aria-selected="ribbonTab === tab.id" aria-controls="document-ribbon-panel" :class="{active:ribbonTab === tab.id}" @click="ribbonTab = tab.id">{{ tab.label }}</button>
+              <span class="document-save-state">{{ saving ? 'Guardando…' : editorDirty ? 'Cambios sin guardar' : 'Sin cambios pendientes' }}</span>
+            </div>
+            <nav id="document-ribbon-panel" class="markdown-ribbon" :data-tab="ribbonTab" role="tabpanel" :aria-labelledby="'ribbon-tab-' + ribbonTab">
+              <section v-if="ribbonTab === 'home'" class="word-toolbar" aria-label="Fuente, párrafo y edición">
+                <div class="word-tool-group">
+                  <button type="button" title="Deshacer (Ctrl+Z)" aria-label="Deshacer" :disabled="!historyAvailable.undo" @mousedown.prevent @click="runHistory()"><i class="pi pi-undo" /></button>
+                  <button type="button" title="Rehacer (Ctrl+Y)" aria-label="Rehacer" :disabled="!historyAvailable.redo" @mousedown.prevent @click="runHistory(true)"><i class="pi pi-refresh" /></button>
+                </div>
+                <div class="word-tool-group">
+                  <label>Fuente<select title="Cambiar la fuente del texto seleccionado" v-model="fontFamily" :disabled="editorMode === 'write'" @change="applyFont('fontName',fontFamily)"><option v-for="font in fonts" :key="font">{{ font }}</option></select></label>
+                  <label>Tamaño<select title="Cambiar el tamaño del texto seleccionado, en puntos" v-model="fontSize" :disabled="editorMode === 'write'" @change="applyFont('fontSize',fontSize)"><option v-for="size in sizes" :key="size" :value="String(size)">{{ size }}</option></select></label>
+                </div>
+                <div class="word-tool-group" aria-label="Alineación">
+                  <button v-for="item in [{command:'justifyLeft',icon:'pi-align-left',label:'Alinear a la izquierda'},{command:'justifyCenter',icon:'pi-align-center',label:'Centrar'},{command:'justifyRight',icon:'pi-align-right',label:'Alinear a la derecha'},{command:'justifyFull',icon:'pi-align-justify',label:'Justificar'}]" :key="item.command" type="button" :title="item.label" :aria-label="item.label" :aria-pressed="Boolean(activeFormats[item.command])" :disabled="editorMode === 'write'" @mousedown.prevent @click="richCommand(item.command)"><i :class="['pi',item.icon]" /></button>
+                  <label>Interlineado<select title="Cambiar el espacio entre las líneas del párrafo" v-model="lineHeight" :disabled="editorMode === 'write'" @change="paragraphSpacing(lineHeight)"><option v-for="value in ['1','1.15','1.5','2']" :key="value">{{ value }}</option></select></label>
+                </div>
+                <div class="word-tool-group">
+                  <button type="button" title="Quitar formato de texto" aria-label="Quitar formato de texto" :disabled="editorMode === 'write'" @mousedown.prevent @click="richCommand('removeFormat')"><i class="pi pi-eraser" /></button>
+                  <button type="button" title="Buscar y reemplazar (Ctrl+F)" :aria-expanded="findOpen" :disabled="editorMode === 'write'" @click="findOpen = !findOpen"><i class="pi pi-search" /> Buscar</button>
+                </div>
+              </section>
+              <section v-if="ribbonTab === 'view'" class="word-toolbar" aria-label="Vista del documento">
+                <button title="Mostrar y editar la hoja sin el código Markdown" type="button" @click="setEditorMode('preview')" :aria-pressed="editorMode === 'preview'">Ver documento</button>
+                <button title="Ajustar la hoja al espacio disponible, hasta un máximo del 100 %" type="button" :disabled="editorMode === 'write'" @click="fitZoom('width')">Ajustar al ancho</button>
+                <button title="Reducir el zoom para ver la página completa" type="button" :disabled="editorMode === 'write'" @click="fitZoom('page')">Página completa</button>
+                <button title="Mostrar el documento al 100 %" type="button" :disabled="editorMode === 'write'" @click="setZoom(100)">Tamaño real</button>
+              </section>
+              <section v-if="ribbonTab === 'markdown'" class="word-toolbar" aria-label="Edición Markdown">
+                <button title="Editar directamente el código Markdown del documento" type="button" @click="setEditorMode('write')" :aria-pressed="editorMode === 'write'">Solo código</button>
+                <button title="Mostrar el código Markdown y el documento uno junto al otro" type="button" @click="setEditorMode('split')" :aria-pressed="editorMode === 'split'">Código y documento</button>
+                <button title="Ocultar el código y volver a editar la hoja" type="button" @click="setEditorMode('preview')" :aria-pressed="editorMode === 'preview'">Volver al documento</button>
+              </section>
               <section
                 class="markdown-ribbon-group markdown-ribbon-group--text-styles"
+                v-show="ribbonTab === 'home'"
                 aria-label="Texto y estilos"
               >
                 <div class="markdown-ribbon-controls markdown-ribbon-controls--text-styles">
@@ -280,7 +314,7 @@
                     aria-label="Negrita"
                     aria-keyshortcuts="Control+B Meta+B"
                     @mousedown.prevent
-                    @click="applyMarkdown('bold')"
+                    :aria-pressed="Boolean(activeFormats.bold)" @click="applyMarkdown('bold')"
                   >
                     <strong class="markdown-tool-glyph">N</strong>
                   </button>
@@ -290,7 +324,7 @@
                     aria-label="Cursiva"
                     aria-keyshortcuts="Control+I Meta+I"
                     @mousedown.prevent
-                    @click="applyMarkdown('italic')"
+                    :aria-pressed="Boolean(activeFormats.italic)" @click="applyMarkdown('italic')"
                   >
                     <em class="markdown-tool-glyph">K</em>
                   </button>
@@ -300,7 +334,7 @@
                     aria-label="Aplicar o quitar resaltado"
                     aria-keyshortcuts="Control+U Meta+U"
                     @mousedown.prevent
-                    @click="applyMarkdown('underline')"
+                    :aria-pressed="Boolean(activeFormats.underline)" @click="applyMarkdown('underline')"
                   >
                     <span class="markdown-tool-glyph markdown-tool-glyph--underline">U</span>
                   </button>
@@ -319,7 +353,7 @@
                     title="Tachar texto"
                     aria-label="Tachar texto"
                     @mousedown.prevent
-                    @click="applyMarkdown('strikethrough')"
+                    :aria-pressed="Boolean(activeFormats.strikeThrough)" @click="applyMarkdown('strikethrough')"
                   >
                     <s class="markdown-tool-glyph">S</s>
                   </button>
@@ -327,14 +361,14 @@
                 <span class="markdown-ribbon-label">Texto y estilos</span>
               </section>
 
-              <section class="markdown-ribbon-group" aria-label="P&aacute;rrafos y listas">
+              <section v-show="ribbonTab === 'home'" class="markdown-ribbon-group" aria-label="P&aacute;rrafos y listas">
                 <div class="markdown-ribbon-controls">
                   <button
                     type="button"
                     title="Lista con viñetas"
                     aria-label="Lista con viñetas"
                     @mousedown.prevent
-                    @click="applyMarkdown('bullets')"
+                    :aria-pressed="Boolean(activeFormats.insertUnorderedList)" @click="applyMarkdown('bullets')"
                   >
                     <i class="pi pi-list" aria-hidden="true" />
                   </button>
@@ -343,7 +377,7 @@
                     title="Lista numerada"
                     aria-label="Lista numerada"
                     @mousedown.prevent
-                    @click="applyMarkdown('ordered')"
+                    :aria-pressed="Boolean(activeFormats.insertOrderedList)" @click="applyMarkdown('ordered')"
                   >
                     <i class="pi pi-sort-numeric-down" aria-hidden="true" />
                   </button>
@@ -369,7 +403,7 @@
                 <span class="markdown-ribbon-label">P&aacute;rrafo</span>
               </section>
 
-              <section class="markdown-ribbon-group" aria-label="Insertar contenido">
+              <section v-show="ribbonTab === 'insert'" class="markdown-ribbon-group word-insert-group" aria-label="Insertar contenido">
                 <div class="markdown-ribbon-controls">
                   <button
                     type="button"
@@ -431,6 +465,20 @@
               </section>
             </nav>
 
+            <div v-if="findOpen && editorMode !== 'write'" class="document-findbar" aria-label="Buscar y reemplazar">
+              <label>Buscar<input id="document-find" v-model="searchText" type="search" @keydown.enter.prevent="findNext" /></label>
+              <label>Reemplazar con<input v-model="replacement" type="text" @keydown.enter.prevent="replaceMatch" /></label>
+              <button title="Seleccionar la siguiente coincidencia del texto buscado" type="button" :disabled="!searchText" @click="findNext">Siguiente</button>
+              <button title="Sustituir la coincidencia seleccionada por el texto indicado" type="button" :disabled="!searchText" @click="replaceMatch">Reemplazar</button>
+              <button type="button" title="Cerrar la barra de búsqueda y reemplazo" aria-label="Cerrar búsqueda" @click="findOpen = false">×</button>
+            </div>
+            <div v-if="inTable && editorMode !== 'write'" class="document-tablebar" aria-label="Herramientas de tabla">
+              <strong>Tabla</strong>
+              <button title="Insertar una fila debajo de la celda seleccionada" type="button" @mousedown.prevent @click="editTable('row')">Agregar fila</button>
+              <button title="Insertar una columna a la derecha de la celda seleccionada" type="button" @mousedown.prevent @click="editTable('column')">Agregar columna</button>
+              <button title="Eliminar la fila de la celda seleccionada" type="button" @mousedown.prevent @click="editTable('removeRow')">Quitar fila</button>
+              <button title="Eliminar la columna de la celda seleccionada" type="button" @mousedown.prevent @click="editTable('removeColumn')">Quitar columna</button>
+            </div>
             <div class="markdown-composer" :data-mode="editorMode">
               <label v-show="editorMode !== 'preview'" class="markdown-source-pane">
                 <span class="sr-only">Contenido en Markdown</span>
@@ -453,7 +501,7 @@
                 class="markdown-preview-pane"
                 aria-label="Editor visual del documento"
               >
-                <div class="markdown-preview-viewport">
+                <div ref="previewViewport" class="markdown-preview-viewport" @wheel="wheelZoom">
                   <article
                     ref="visualEditorRef"
                     class="markdown-preview markdown-visual-editor"
@@ -465,6 +513,7 @@
                     spellcheck="true"
                     :style="{ zoom: previewZoom / 100 }"
                     @input="handleVisualInput"
+                    @beforeinput="handleEditorBeforeInput"
                     @change="handleVisualInput"
                     @keydown="handleVisualKeydown"
                   />
@@ -476,23 +525,23 @@
 
         <footer class="document-editor-footer">
           <div class="preview-zoom" role="group" aria-label="Zoom del documento">
-            <output title="Nivel de zoom" aria-live="polite">{{ previewZoom }}%</output>
+            <label class="zoom-value"><span class="sr-only">Porcentaje de zoom</span><select title="Elegir el porcentaje de zoom del documento" :value="previewZoom" :disabled="editorMode === 'write'" @change="updatePreviewZoom"><option v-if="![25,50,75,100,125,150,200].includes(previewZoom)" :value="previewZoom">{{ previewZoom }}%</option><option v-for="level in [25,50,75,100,125,150,200]" :key="level" :value="level">{{ level }}%</option></select></label>
             <button
               type="button"
               title="Alejar"
               aria-label="Alejar documento"
-              :disabled="previewZoom <= 70"
+              :disabled="editorMode === 'write' || previewZoom <= 25"
               @click="changePreviewZoom(-10)"
             >
               <i class="pi pi-minus" aria-hidden="true" />
             </button>
             <input
-              v-model.number="previewZoom"
-              class="preview-zoom-range"
+              :value="previewZoom" @input="updatePreviewZoom" :disabled="editorMode === 'write'"
+              class="preview-zoom-range" title="Arrastrar para acercar o alejar la hoja; también puedes usar Ctrl y la rueda del ratón"
               type="range"
-              min="70"
-              max="160"
-              step="10"
+              min="25"
+              max="200"
+              step="5"
               aria-label="Nivel de zoom del documento"
               :style="previewZoomStyle"
             />
@@ -500,15 +549,18 @@
               type="button"
               title="Acercar"
               aria-label="Acercar documento"
-              :disabled="previewZoom >= 160"
+              :disabled="editorMode === 'write' || previewZoom >= 200"
               @click="changePreviewZoom(10)"
             >
               <i class="pi pi-plus" aria-hidden="true" />
             </button>
           </div>
           <div class="document-footer-actions">
-            <button type="button" @click="closeEditor">Cancelar</button>
-            <button class="accent" type="submit" :disabled="saving">
+            <button type="button" title="Ajustar al ancho" :aria-pressed="zoomMode === 'width'" :disabled="editorMode === 'write'" @click="fitZoom('width')">Ancho</button>
+            <button type="button" title="Ver página completa" :aria-pressed="zoomMode === 'page'" :disabled="editorMode === 'write'" @click="fitZoom('page')">Página</button>
+            <span class="editor-feedback" role="status">{{ editorFeedback }}</span>
+            <button title="Cerrar el editor sin guardar los cambios" type="button" @click="closeEditor">Cancelar</button>
+            <button class="accent" type="submit" title="Guardar los cambios del documento (Ctrl+S)" :disabled="saving">
               {{ saving ? 'Guardando...' : 'Guardar documento' }}
             </button>
           </div>

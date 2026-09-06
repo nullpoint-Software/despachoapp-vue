@@ -1,3 +1,4 @@
+import { buildInvoicePdf } from '@/utils/fiscalInvoicePdf'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { jsPDF } from 'jspdf'
 import autoTable, { type UserOptions } from 'jspdf-autotable'
@@ -8,6 +9,7 @@ import { loadProgressively } from '@/service/adminApp/progressiveLoader'
 import { useAppDialog } from '@/composables/useAppDialog'
 import BankReconciliation from '@/components/adminApp/BankReconciliation/BankReconciliation.vue'
 import SatMassDownload from '@/components/adminApp/SatMassDownload/SatMassDownload.vue'
+import { hasCompletedTutorial } from '@/utils/tutorialStorage'
 
 type Direction = 'emitida' | 'recibida'
 type ReportType = 'mensual' | 'anual' | 'diot'
@@ -783,52 +785,8 @@ function addPdfLogo(
 async function previewInvoice(invoice: Invoice) {
   try {
     const data = await fs.getInvoice(Number(invoice.id))
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' })
-    const image = await logoData()
-    addPdfLogo(doc, image, 14, 8, 48, 18)
-    doc.setDrawColor(20, 20, 19)
-    doc.line(14, 29, 196, 29)
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Representación del CFDI', 14, 38)
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`UUID: ${data.uuid}`, 14, 45)
-    doc.text(`Emisor: ${data.emisor_nombre || ''} - ${data.emisor_rfc}`, 14, 51)
-    doc.text(`Receptor: ${data.receptor_nombre || ''} - ${data.receptor_rfc}`, 14, 57)
-    doc.text(
-      `Fecha: ${date(data.fecha_emision)}   Tipo: ${typeLabel(data.tipo_comprobante)}   Pago: ${data.metodo_pago || 'Sin método'}/${data.forma_pago || 'Sin forma'}`,
-      14,
-      63
-    )
-    autoTable(doc, {
-      startY: 70,
-      head: [['Producto / servicio', 'Cantidad', 'V. unitario', 'Importe']],
-      body: data.concepts.map((concept: any) => [
-        concept.descripcion,
-        String(concept.cantidad),
-        currencyMoney(concept.valor_unitario, data.moneda),
-        currencyMoney(concept.importe, data.moneda)
-      ]),
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [20, 20, 19] }
-    })
-    const finalY = (doc as any).lastAutoTable?.finalY || 88
-    doc.setFontSize(11)
-    doc.text(`Subtotal: ${currencyMoney(data.subtotal, data.moneda)}`, 196, finalY + 10, {
-      align: 'right'
-    })
-    doc.text(
-      `IVA: ${currencyMoney(num(data.iva_16) + num(data.iva_8), data.moneda)}`,
-      196,
-      finalY + 16,
-      { align: 'right' }
-    )
-    doc.setFontSize(14)
-    doc.setFont('helvetica', 'bold')
-    doc.text(`Total: ${currencyMoney(data.total, data.moneda)}`, 196, finalY + 24, {
-      align: 'right'
-    })
+    const xml = await fs.getInvoiceXml(Number(invoice.id)).catch(() => '')
+    const doc = await buildInvoicePdf(data, await logoData(), { xml, paymentFormLabel: paymentLabel(data) })
     showPdf(doc, `CFDI ${shortUuid(data.uuid)}`)
   } catch {
     setNotice('No se pudo generar la vista previa de la factura.', 'error')
@@ -837,13 +795,13 @@ async function previewInvoice(invoice: Invoice) {
 
 const reportHead = [
   [
-    'Estatus',
     'Forma de pago',
     'Nombre',
     'RFC',
     'Abonado',
     'Subt. 16%',
     'Subt. 8%',
+    'Descuento',
     'IVA 16%',
     'IVA 8%',
     'Pendiente',
@@ -859,7 +817,7 @@ function reportRows(items: Invoice[]) {
   const section = (label: string, count: number) => [
     {
       content: `${label} · ${count}`,
-      colSpan: 14,
+      colSpan: reportHead[0].length,
       styles: { fillColor: [36, 35, 33], textColor: [255, 255, 255], fontStyle: 'bold' as const }
     }
   ]
@@ -870,13 +828,13 @@ function reportRows(items: Invoice[]) {
           ? `${paymentLabel(invoice)}\nAplica a: ${paymentReferenceText(invoice, true)}`
           : paymentLabel(invoice)
       const values = [
-        invoice.estatus_calculado || typeLabel(invoice.tipo_comprobante),
         payment,
         counterpartName(invoice),
         counterpartRfc(invoice),
         money(mxn(invoice, invoice.abonado)),
         money(mxn(invoice, invoice.base_iva_16)),
         money(mxn(invoice, invoice.base_iva_8)),
+        money(mxn(invoice, invoice.descuento)),
         money(mxn(invoice, invoice.iva_16)),
         money(mxn(invoice, invoice.iva_8)),
         money(mxn(invoice, invoice.pendiente)),
@@ -908,7 +866,7 @@ function reportFoot(items: Invoice[]) {
     [
       {
         content: `TOTALES (${items.length} CFDI)`,
-        colSpan: 4,
+        colSpan: 3,
         styles: {
           halign: 'left' as const,
           cellPadding: { top: 2.2, right: 2, bottom: 2.2, left: 2 }
@@ -917,6 +875,7 @@ function reportFoot(items: Invoice[]) {
       money(reportTotal(items, 'abonado')),
       money(reportTotal(items, 'base_iva_16')),
       money(reportTotal(items, 'base_iva_8')),
+      money(reportTotal(items, 'descuento')),
       money(reportTotal(items, 'iva_16')),
       money(reportTotal(items, 'iva_8')),
       money(reportTotal(items, 'pendiente')),
@@ -1281,7 +1240,7 @@ onMounted(async () => {
   } catch {
     setNotice('No se pudieron cargar los clientes.', 'error')
   }
-  if (!localStorage.getItem('tourFiscalDone')) fiscalTutorialOpen.value = true
+  if (!hasCompletedTutorial('tourFiscalDone')) fiscalTutorialOpen.value = true
 })
 onBeforeUnmount(() => {
   closePdf()

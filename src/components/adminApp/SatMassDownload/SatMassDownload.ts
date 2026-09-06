@@ -37,6 +37,7 @@ interface PortalQueryHistoryItem {
   duplicate: number
   rejected: number
   downloads: number
+  folios: string[]
   createdAt: string
   updatedAt: string
 }
@@ -89,6 +90,9 @@ const portalCaptchaModel = computed({
   }
 })
 const repeatingPortalHistoryId = ref('')
+const activePortalHistoryId = ref('')
+let portalHistoryBaseline = { imported: 0, duplicate: 0, rejected: 0, downloads: 0 }
+let portalLoginRequestPending = false
 const portalRecoveryOpen = ref(false)
 const portalKeyboardInput = ref<HTMLInputElement | null>(null)
 const portalTypedText = ref('')
@@ -152,6 +156,7 @@ const requestScopeLabel = computed(() => {
   return `Emitidas del ${dateLabel(startDate.value)} al ${dateLabel(endDate.value)}.`
 })
 const portalPhase = computed(() => portalState.value?.phase || 'idle')
+const portalDownloadFolios = computed(() => [...new Set(portalState.value?.downloadFolios || [])])
 const portalAuthenticated = computed(() => Boolean(portalState.value?.authenticated))
 const portalFailureMessage = computed(
   () =>
@@ -166,13 +171,21 @@ const portalFailureTitle = computed(() => {
   if (code === 'SAT_DATE_FIELDS_NOT_FOUND') return 'No se encontraron las fechas de emitidas'
   if (code === 'SAT_QUERY_LINK_NOT_FOUND') return 'No se encontró la consulta solicitada'
   if (code === 'SAT_SEARCH_CONTROL_NOT_FOUND') return 'No se encontró el botón de búsqueda'
+  if (code === 'SAT_SERVICE_UNAVAILABLE') return 'Servicio SAT no disponible'
+  if (code === 'SAT_SESSION_ENDED') return 'La sesión SAT terminó'
+  if (code === 'SAT_ACCESS_DENIED') return 'Acceso rechazado por el SAT'
+  if (code === 'SAT_NAVIGATION_ERROR' || code === 'SAT_ERROR_PAGE')
+    return 'El SAT redirigió a una página de error'
+  if (code === 'SAT_DOWNLOAD_NOT_STARTED') return 'El paquete no inició su descarga'
+  if (code === 'SAT_DOWNLOAD_INCOMPLETE') return 'La descarga quedó incompleta'
+  if (code === 'SAT_DOWNLOAD_IMPORT_FAILED') return 'El paquete no pudo guardarse'
   return 'No se completó la consulta'
 })
 const portalStatusTitle = computed(
   () =>
     ({
       idle: 'Descarga lista para iniciar',
-      loading: 'Preparando acceso SAT',
+      loading: portalState.value?.loginPending ? 'Validando acceso con el SAT' : 'Preparando acceso SAT',
       login: 'CAPTCHA pendiente',
       portal: 'Iniciando automatización',
       automating: 'Consultando tus CFDI',
@@ -186,7 +199,9 @@ const portalStatusDetail = computed(
   () =>
     ({
       idle: 'Selecciona qué consultar y prepara el acceso.',
-      loading: 'Creando una sesión aislada para este cliente.',
+      loading: portalState.value?.loginPending
+        ? 'El formulario ya se envió. Esperando la respuesta del SAT.'
+        : 'Creando una sesión aislada para este cliente.',
       login: 'Escribe el código para iniciar sesión.',
       portal: 'La sesión quedó iniciada; comienza la consulta.',
       automating: portalState.value?.automation.stage || 'Navegando por el portal oficial.',
@@ -496,6 +511,10 @@ function loadPortalHistory() {
     const stored = JSON.parse(localStorage.getItem(portalHistoryStorageKey()) || '[]')
     portalHistory.value = (Array.isArray(stored) ? stored : [])
       .filter(isPortalHistoryItem)
+      .map((item) => ({
+        ...item,
+        folios: Array.isArray(item.folios) ? [...new Set(item.folios.map(String))] : []
+      }))
       .slice(0, PORTAL_HISTORY_LIMIT)
   } catch {
     portalHistory.value = []
@@ -528,18 +547,20 @@ function portalHistoryMessageFromState(state: SatPortalSessionState) {
   ).trim()
 }
 function rememberPortalState(state: SatPortalSessionState) {
-  if (hiddenPortalHistoryIds.has(state.id)) return
-  const existing = portalHistory.value.find((item) => item.id === state.id)
+  const historyId = activePortalHistoryId.value || state.id
+  if (hiddenPortalHistoryIds.has(historyId)) return
+  const existing = portalHistory.value.find((item) => item.id === historyId)
   const counts = state.downloads.reduce(
     (total, download) => ({
       imported: total.imported + Number(download.imported || 0),
       duplicate: total.duplicate + Number(download.duplicate || 0),
       rejected: total.rejected + Number(download.rejected || 0)
     }),
-    { imported: 0, duplicate: 0, rejected: 0 }
+    { imported: portalHistoryBaseline.imported, duplicate: portalHistoryBaseline.duplicate, rejected: portalHistoryBaseline.rejected }
   )
   const status = portalHistoryStatusFromState(state)
   const message = portalHistoryMessageFromState(state)
+  const folios = [...new Set([...(existing?.folios || []), ...(state.downloadFolios || [])])]
   const unchanged =
     existing &&
     existing.status === status &&
@@ -547,12 +568,13 @@ function rememberPortalState(state: SatPortalSessionState) {
     existing.imported === counts.imported &&
     existing.duplicate === counts.duplicate &&
     existing.rejected === counts.rejected &&
-    existing.downloads === state.downloads.length
+    existing.downloads === portalHistoryBaseline.downloads + state.downloads.length &&
+    existing.folios.join('|') === folios.join('|')
   if (unchanged) return
 
   const now = new Date().toISOString()
   const next: PortalQueryHistoryItem = {
-    id: state.id,
+    id: historyId,
     clientId: Number(state.clientId),
     direction: state.query.direction,
     startDate: state.query.startDate,
@@ -563,11 +585,12 @@ function rememberPortalState(state: SatPortalSessionState) {
     imported: counts.imported,
     duplicate: counts.duplicate,
     rejected: counts.rejected,
-    downloads: state.downloads.length,
+    downloads: portalHistoryBaseline.downloads + state.downloads.length,
+    folios,
     createdAt: existing?.createdAt || now,
     updatedAt: now
   }
-  portalHistory.value = [next, ...portalHistory.value.filter((item) => item.id !== state.id)].slice(
+  portalHistory.value = [next, ...portalHistory.value.filter((item) => item.id !== historyId)].slice(
     0,
     PORTAL_HISTORY_LIMIT
   )
@@ -580,7 +603,7 @@ function markPortalSessionClosed(sessionId: string) {
     ...existing,
     status: 'attention',
     message:
-      'La sesión temporal terminó antes de completar la consulta. Puedes abrir una nueva con el mismo periodo.',
+      'La sesión temporal terminó antes de completar la consulta. Puedes reanudarla para recuperar los folios guardados.',
     updatedAt: new Date().toISOString()
   }
   portalHistory.value = [
@@ -629,15 +652,16 @@ async function repeatPortalQuery(item: PortalQueryHistoryItem) {
   successMessage.value = ''
   try {
     await nextTick()
-    if (portalSessionId.value === item.id) {
-      await refreshPortal()
+    if (portalSessionId.value && activePortalHistoryId.value === item.id) {
+      if (portalPhase.value === "error" || portalPhase.value === "manual") await retryPortal()
+      else await refreshPortal()
       successMessage.value = 'Consultamos el estado más reciente de esta sesión.'
       return
     }
-    await startPortalSession()
+    await startPortalSession(item)
     if (portalSessionId.value)
       successMessage.value =
-        'La consulta anterior quedó cargada. Resuelve el nuevo CAPTCHA para volver a ejecutarla.'
+        'La consulta anterior quedó cargada. Resuelve el nuevo CAPTCHA para retomar sus folios de descarga.'
   } finally {
     repeatingPortalHistoryId.value = ''
   }
@@ -739,18 +763,20 @@ function setPortalState(state: SatPortalSessionState) {
   if (state.phase !== 'manual') portalRecoveryOpen.value = false
   processPortalDownloads(state)
   rememberPortalState(state)
-  if (portalLoginSubmitting.value && state.phase !== 'login') portalLoginSubmitting.value = false
+  if (portalLoginSubmitting.value && !state.loginPending && state.phase !== 'login') portalLoginSubmitting.value = false
 }
 
 function startPortalPolling() {
   window.clearInterval(portalPollTimer)
-  portalPollTimer = window.setInterval(refreshPortal, 1400)
+  portalPollTimer = window.setInterval(refreshPortal, portalRecoveryOpen.value ? 1000 : 1400)
 }
 
 async function closePortalSession(reset = true) {
   window.clearInterval(portalPollTimer)
   const sessionId = portalSessionId.value
-  markPortalSessionClosed(sessionId)
+  markPortalSessionClosed(activePortalHistoryId.value || sessionId)
+  activePortalHistoryId.value = ''
+  portalHistoryBaseline = { imported: 0, duplicate: 0, rejected: 0, downloads: 0 }
   portalSessionId.value = ''
   portalLoginSubmitting.value = false
   portalCaptcha.value = ''
@@ -759,14 +785,22 @@ async function closePortalSession(reset = true) {
   if (sessionId) await fs.closeSatPortalSession(sessionId).catch(() => {})
 }
 
-async function startPortalSession() {
+async function startPortalSession(historyItem?: PortalQueryHistoryItem) {
   if (!passwordCredential.value?.configured || !queryReady.value || portalStarting.value) return
   portalStarting.value = true
   errorMessage.value = ''
   successMessage.value = ''
   await closePortalSession()
   try {
-    const state = await fs.startSatPortalSession(portalQueryPayload())
+    const state = await fs.startSatPortalSession({
+      ...portalQueryPayload(),
+      resumeFolios: historyItem?.folios || []
+    })
+    activePortalHistoryId.value = historyItem?.id || state.id
+    if (historyItem) portalHistoryBaseline = {
+      imported: historyItem.imported, duplicate: historyItem.duplicate,
+      rejected: historyItem.rejected, downloads: historyItem.downloads
+    }
     portalSessionId.value = state.id
     setPortalState(state)
     startPortalPolling()
@@ -781,13 +815,17 @@ async function refreshPortal() {
   if (
     !portalSessionId.value ||
     portalPolling.value ||
+    portalLoginRequestPending ||
     !open.value ||
     authenticationMethod.value !== 'password'
   )
     return
   portalPolling.value = true
+  const sessionId = portalSessionId.value
+  const loginAttempt = portalLoginSubmittedAt
   try {
-    const state = await fs.getSatPortalSession(portalSessionId.value)
+    const state = await fs.getSatPortalSession(sessionId)
+    if (sessionId !== portalSessionId.value || loginAttempt !== portalLoginSubmittedAt) return
     setPortalState(state)
     if (
       portalLoginSubmitting.value &&
@@ -797,7 +835,7 @@ async function refreshPortal() {
       portalLoginSubmitting.value = false
       portalCaptcha.value = ''
       errorMessage.value =
-        'El SAT no aceptó el acceso. Revisa el nuevo CAPTCHA o actualiza la Contraseña del cliente.'
+        state.message || 'El SAT volvió al acceso. Revisa el nuevo CAPTCHA o actualiza la Contraseña del cliente.'
     }
   } catch (error: any) {
     if (isPortalRequestTimeout(error)) return
@@ -843,6 +881,7 @@ async function submitPortalLogin() {
   const captcha = portalCaptcha.value.trim().toLocaleUpperCase('es-MX')
   if (!portalSessionId.value || !captcha || portalLoginSubmitting.value) return
   portalLoginSubmitting.value = true
+  portalLoginRequestPending = true
   portalLoginSubmittedAt = Date.now()
   errorMessage.value = ''
   try {
@@ -859,6 +898,8 @@ async function submitPortalLogin() {
     }
     portalCaptcha.value = ''
     errorMessage.value = errorText(error, 'No se pudo iniciar sesión en el SAT.')
+  } finally {
+    portalLoginRequestPending = false
   }
 }
 
@@ -867,8 +908,8 @@ function queuePortalInput(input: SatPortalInput) {
   const sessionId = portalSessionId.value
   portalInputQueue = portalInputQueue
     .then(async () => {
-      const state = await fs.sendSatPortalInput(sessionId, input)
-      if (portalSessionId.value === sessionId) setPortalState(state)
+      await fs.sendSatPortalInput(sessionId, input)
+      if (portalSessionId.value === sessionId && !portalPolling.value) void refreshPortal()
     })
     .catch((error) => {
       if (portalSessionId.value === sessionId)

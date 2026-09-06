@@ -17,7 +17,7 @@ export interface PermissionProfile {
 let currentProfile: PermissionProfile | null = null;
 let currentProfileRequest: Promise<PermissionProfile> | null = null;
 let currentProfileLoadedAt = 0;
-let permissionPollTimer: ReturnType<typeof window.setInterval> | null = null;
+let permissionPollTimer: number | null = null;
 const permissionListeners = new Set<(profile: PermissionProfile) => void>();
 const PERMISSION_REFRESH_MS = 3000;
 

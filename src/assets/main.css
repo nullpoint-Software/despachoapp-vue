@@ -4,15 +4,16 @@
 @import 'primeicons/primeicons.css';
 @import '../components/ui/AppDataTable/AppDataTable.css';
 @import '../components/ui/form-controls.css';
+@import '../components/ui/record-overlays.css';
 
 /* Scroll y controles nativos integrados con la paleta activa */
 html {
   scroll-behavior: smooth;
-  scrollbar-width: thin;
+  scrollbar-width: auto;
   scrollbar-color: var(--br-line-strong) var(--br-bg);
 }
 * {
-  scrollbar-width: thin;
+  scrollbar-width: auto;
   scrollbar-color: var(--br-line-strong) var(--br-panel);
 }
 *::-webkit-scrollbar {
@@ -1838,8 +1839,8 @@ body
     .thermal-modal,
     .ticket-printer-modal
   )
-  :is(label, legend, p, h2, h3, h4, strong) {
-  color: var(--br-control-text);
+  :is(label, legend, p, h2, h3, h4, strong):not(:where(button *, a *, [role='button'] *)) {
+  color: var(--app-modal-ink, var(--br-control-text));
 }
 body
   > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
@@ -1851,8 +1852,8 @@ body
     .thermal-modal,
     .ticket-printer-modal
   )
-  :is(small, .field-help, .modal-description) {
-  color: var(--br-control-muted) !important;
+  :is(small, .field-help, .modal-description):not(:where(button *, a *, [role='button'] *)) {
+  color: var(--app-modal-muted, var(--br-control-muted)) !important;
 }
 body
   > :is(.modal-overlay, .period-overlay, .cut-overlay, .thermal-overlay, .ticket-printer-overlay)
@@ -1932,8 +1933,8 @@ html
     .thermal-modal,
     .ticket-printer-modal
   )
-  :is(label, legend, p, h2, h3, h4, strong) {
-  color: var(--br-control-text) !important;
+  :is(label, legend, p, h2, h3, h4, strong):not(:where(button *, a *, [role='button'] *)) {
+  color: var(--app-modal-ink, var(--br-control-text)) !important;
 }
 html
   body
@@ -2346,7 +2347,7 @@ html
     .dt-panel
   )[role='dialog']
   :where(button, a, [role='button'])
-  :where(span, strong, b, i) {
+  :where(span, small, strong, b, i) {
   color: inherit !important;
 }
 html
@@ -2433,7 +2434,7 @@ html
   :where(.form-error, .period-error, .task-modal__error, .error, [role='alert']) {
   --app-modal-ink: var(--br-danger-text);
   border-color: var(--br-danger) !important;
-  background: color-mix(in srgb, var(--br-danger) 34%, var(--br-control)) !important;
+  background: var(--br-danger) !important;
   color: var(--br-danger-text) !important;
 }
 html body :where(.ticket, .ticket-preview, .ticket-content, .ticket-logo, .ticket-barcode) {
@@ -2527,7 +2528,7 @@ html
     .dt-panel
   )[role='dialog']
   :where(.p-button-success, .p-button-warning, .p-button-danger)
-  :where(span, strong, b, i) {
+  :where(span, small, strong, b, i) {
   color: inherit !important;
 }
 
@@ -2535,8 +2536,22 @@ html
 html
   body
   :where([role='dialog'][aria-modal='true'])
-  :where(.modal-description, .field-help, .task-field-help, .muted, small) {
+  :where(.modal-description, .field-help, .task-field-help, .muted, small):not(:where(button *, a *, [role='button'] *)) {
   color: var(--app-modal-muted) !important;
+}
+
+/* Un bloque con fondo propio establece también la tinta de sus descendientes. */
+html body [role='dialog'] [data-color-surface='panel'] {
+  --app-modal-ink: var(--br-text);
+  --app-modal-muted: var(--br-muted);
+  background: var(--br-panel-2);
+  color: var(--app-modal-ink) !important;
+}
+html body [role='dialog'] [data-color-surface='accent'] {
+  --app-modal-ink: var(--br-accent-text);
+  --app-modal-muted: var(--br-accent-text);
+  background: var(--br-accent);
+  color: var(--app-modal-ink) !important;
 }
 
 /*
@@ -2885,4 +2900,14 @@ body input[type='range']:disabled {
   body input[type='range']::-webkit-slider-thumb {
     transition: none;
   }
+}
+
+/* Las barras conservan el arrastre y la rueda, sin botones de flecha. */
+*::-webkit-scrollbar-button:single-button, *::-webkit-scrollbar-button:double-button, *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+
+/* Chrome/Edge: los colores nativos anulan los pseudo-elementos WebKit. */
+@supports selector(::-webkit-scrollbar) {
+  html, body, body * { scrollbar-width: auto !important; scrollbar-color: auto !important; }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-button { display: none !important; width: 0 !important; height: 0 !important; }
 }

@@ -1,6 +1,7 @@
 import type { AxiosInstance } from 'axios'
 import axios, { AxiosError } from 'axios'
 import { useRoute, useRouter } from 'vue-router'
+import { clearAuthSession } from '@/utils/authStorage'
 
 export interface AuthSession {
   id: string
@@ -117,7 +118,7 @@ class authService {
     const token = await localStorage.getItem('token')
     if (!isLogin) {
       if (!(await this.getUserInfo())) {
-        localStorage.clear()
+        clearAuthSession()
         await router.push({ path: '/login', query: { error: 'token' } })
         this.authStatus = false
         return
@@ -125,7 +126,7 @@ class authService {
     }
     if (isLogin && token) {
       if (!(await this.getUserInfo())) {
-        localStorage.clear()
+        clearAuthSession()
         await router.push({ path: '/login', query: { error: 'server' } })
         this.authStatus = false
         return
@@ -134,7 +135,7 @@ class authService {
 
     if (!token) {
       // If the token doesn't exist, redirect to /auth/login
-      localStorage.clear()
+      clearAuthSession()
       await router.push('/login')
       this.authStatus = false
     } else if (token && currentRoute.path === '/auth/login') {

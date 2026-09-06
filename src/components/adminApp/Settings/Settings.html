@@ -12,9 +12,13 @@
         @click="startSettingsTutorial"
       >
         <span><small>AYUDA</small><strong>Recorrido guiado</strong></span>
-        <i class="pi pi-compass"></i>
+        <i class="pi pi-question-circle"></i>
       </button>
       <small>Compilación<br /><strong>{{ buildTime ?? "desarrollo" }}</strong></small>
+      <button type="button" class="appearance-launch" aria-haspopup="dialog" @click="showPrinterPreferences = true">
+        <span><small>EQUIPO</small><strong>Configurar impresora</strong></span>
+        <i class="pi pi-print" aria-hidden="true"></i>
+      </button>
       <button type="button" class="appearance-launch" @click="showAppearanceModal = true">
         <span><small>INTERFAZ</small><strong>Personalizar apariencia</strong></span>
         <i class="pi pi-sliders-h"></i>
@@ -30,6 +34,7 @@
       </button>
     </div>
   </header>
+  <PrinterPreferences v-if="showPrinterPreferences" @close="showPrinterPreferences = false" />
   <AppearancePreferencesModal :visible="showAppearanceModal" @close="showAppearanceModal = false" />
   <Teleport to="body">
     <transition name="fade-scale">
@@ -306,7 +311,7 @@
           <i class="pi pi-camera"></i>
           <span
             ><strong>{{ profilePhotoBusy ? 'Guardando foto…' : 'Cambiar foto' }}</strong
-            ><small>JPG, PNG o WebP · máx. 5 MB</small></span
+            ><small>MAX. 5 MB</small></span
           >
         </label>
         <input

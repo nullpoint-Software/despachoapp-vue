@@ -1,5 +1,10 @@
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { cs, ps, us, formatFechaHoraFullSQL } from '@/service/adminApp/client'
+import {
+  loadSubjectSuggestions,
+  saveSubjectSuggestions,
+  validateSubjectSuggestions
+} from '@/utils/paymentSubjectSuggestions'
 import { loadProgressively } from '@/service/adminApp/progressiveLoader'
 
 interface CardDetailPagoConceptoProps {
@@ -90,18 +95,78 @@ const paymentTutorialSteps = [
   }
 ]
 
-const subjectSuggestions = [
-  'Pago de honorarios del mes de',
-  'Cuota IMSS del mes de',
-  'Préstamo de',
-  'Impresión de',
-  'Cita SAT',
-  'Impuestos',
-  'Declaración mensual',
-  'Pago provisional',
-  'Trámite ante el SAT',
-  'Renovación de e.firma'
-]
+const subjectSuggestions = ref(loadSubjectSuggestions())
+const editingSuggestions = ref(false)
+const suggestionDrawer = ref<HTMLElement | null>(null)
+let suggestionTrigger: HTMLElement | null = null
+watch(editingSuggestions, async (open) => {
+  if (open)
+    suggestionTrigger =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+  await nextTick()
+  if (open) suggestionDrawer.value?.focus()
+  else if (suggestionTrigger?.isConnected) suggestionTrigger.focus()
+})
+function handleSuggestionKeys(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    editingSuggestions.value = false
+  }
+  if (event.key !== 'Tab' || !suggestionDrawer.value) return
+  const items = [
+    ...suggestionDrawer.value.querySelectorAll<HTMLElement>(
+      'button:not(:disabled), input:not(:disabled)'
+    )
+  ]
+  const first = items[0],
+    last = items[items.length - 1]
+  if (
+    event.shiftKey &&
+    (document.activeElement === first || document.activeElement === suggestionDrawer.value)
+  ) {
+    event.preventDefault()
+    last?.focus()
+  } else if (
+    !event.shiftKey &&
+    (document.activeElement === last || document.activeElement === suggestionDrawer.value)
+  ) {
+    event.preventDefault()
+    first?.focus()
+  }
+}
+const suggestionDrafts = ref<string[]>([])
+const newSuggestion = ref('')
+const suggestionError = ref('')
+const suggestionStatus = ref('')
+function openSuggestionEditor() {
+  suggestionDrafts.value = [...subjectSuggestions.value]
+  newSuggestion.value = ''
+  suggestionError.value = ''
+  suggestionStatus.value = ''
+  editingSuggestions.value = true
+}
+function addSuggestion() {
+  try {
+    const values = validateSubjectSuggestions([...suggestionDrafts.value, newSuggestion.value])
+    suggestionDrafts.value = values
+    newSuggestion.value = ''
+    suggestionError.value = ''
+  } catch (error) {
+    suggestionError.value = error instanceof Error ? error.message : String(error)
+  }
+}
+function persistSuggestions() {
+  try {
+    const values = newSuggestion.value.trim()
+      ? [...suggestionDrafts.value, newSuggestion.value]
+      : suggestionDrafts.value
+    subjectSuggestions.value = saveSubjectSuggestions(values)
+    editingSuggestions.value = false
+    suggestionStatus.value = 'Sugerencias guardadas en este navegador.'
+  } catch (error) {
+    suggestionError.value = error instanceof Error ? error.message : String(error)
+  }
+}
 
 const normalize = (value: unknown) =>
   String(value || '')

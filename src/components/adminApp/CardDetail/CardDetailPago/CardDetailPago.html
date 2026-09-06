@@ -1,24 +1,15 @@
 <Teleport to="body">
   <transition name="fade">
-    <div class="modal-overlay">
-      <div class="modal-content relative bg-gray-50">
-        <!-- Encabezado, mostrando datos del usuario -->
-        <div
-          class="standard-modal-header flex items-center space-x-4 mb-6 p-4 bg-white rounded-lg shadow"
-        >
-          <button type="button" class="standard-modal-close" aria-label="Cerrar" @click="close">
-            ×
-          </button>
-          <div>
-            <h3 class="text-2xl font-bold text-black">
-              <i class="pi pi-receipt text-3xl text-blue-500"></i>
-              {{ pago.nombreCompleto ? 'Editar pago' : 'Agregar pago' }}
-            </h3>
-          </div>
-        </div>
-
+    <div class="modal-overlay app-modal-overlay">
+      <div class="modal-content app-record-modal app-record-modal--simple" role="dialog" aria-modal="true" aria-labelledby="monthly-payment-title">
+        <header class="app-modal-header">
+          <p class="modal-kicker">REGISTRO / CAJA</p>
+          <h2 id="monthly-payment-title">{{ pago.nombreCompleto ? 'Editar pago' : 'Agregar pago' }}</h2>
+          <p>Completa los datos del movimiento y sus importes.</p>
+          <button type="button" class="standard-modal-close" aria-label="Cerrar pago" @click="close">×</button>
+        </header>
         <!-- Formulario -->
-        <div class="space-y-4 px-4">
+        <div class="space-y-4 record-modal-body">
           <!-- Nombre completo -->
           <div class="flex flex-col">
             <label class="font-semibold text-black">Nombre completo</label>
@@ -114,7 +105,7 @@
         </div>
 
         <!-- Botones -->
-        <div class="flex justify-end space-x-6 mt-6 px-4">
+        <div class="record-modal-footer">
           <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="close" />
           <Button label="Guardar" icon="pi pi-check" class="p-button-primary" @click="save" />
         </div>

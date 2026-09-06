@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { completeTutorial } from '@/utils/tutorialStorage'
 
 interface TutorialStep {
   target: string
@@ -33,7 +34,7 @@ const progress = computed(() =>
 let previousFocus: HTMLElement | null = null
 
 function rememberCompletion(): void {
-  if (props.storageKey) localStorage.setItem(props.storageKey, 'true')
+  if (props.storageKey) completeTutorial(props.storageKey)
 }
 
 function close(remember = true): void {

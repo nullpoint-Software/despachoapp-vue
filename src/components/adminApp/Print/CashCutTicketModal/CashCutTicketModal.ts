@@ -1,6 +1,8 @@
-import { computed, onMounted, ref } from 'vue'
+import AgnesConnectionNotice from '../AgnesConnectionNotice.vue'
+import { computed, ref } from 'vue'
 import dayjs from 'dayjs'
-import connetor_plugin from '@abrazasoft/thermal_printer_vuejs'
+import { printLocalTicket, ticketBarcode } from '@/utils/localTicketPrinter'
+import { getPrinterPreferences } from '@/utils/printerSettings'
 import logoAsset from '@/assets/img/logsymbolblack.png'
 import { useAppToast } from '@/composables/useAppToast'
 
@@ -15,16 +17,14 @@ interface CashCutTicketProps {
   to: Date
 }
 
-const serverip = import.meta.env.VITE_API_SERVER_IP
 const logo = logoAsset
 const props = defineProps<CashCutTicketProps>()
 const emit = defineEmits(['close'])
 const toast = useAppToast()
-const printers = ref<string[]>([]),
-  selectedPrinter = ref(''),
-  showDownload = ref(false)
-const apiKey = '123456',
-  width = 48,
+const paperWidth = getPrinterPreferences().paperWidth
+const printing = ref(false)
+const agnesConnectionRevision = ref(0)
+const width = 48,
   line = '-'.repeat(width),
   doubleLine = '='.repeat(width)
 const center = (text: unknown): string => {
@@ -79,76 +79,41 @@ const formattedTicket = computed(() => {
   )
   return rows.join('\n')
 })
-async function fetchPrinters() {
+async function doPrint() {
+  if (printing.value) return
+  printing.value = true
   try {
-    const list = await connetor_plugin.obtenerImpresoras()
-    printers.value = Array.isArray(list) ? list : []
-    if (!printers.value.includes(selectedPrinter.value)) selectedPrinter.value = ''
-    showDownload.value = false
+    await printLocalTicket({
+      title: 'Corte de caja',
+      text: formattedTicket.value,
+      logo,
+      barcode: barcodeValue.value
+    })
+    toast.add({
+      severity: 'success',
+      summary: 'Ticket enviado',
+      detail: 'El agente envió el ticket a la cola de impresión.',
+      life: 3500
+    })
   } catch (error) {
-    showDownload.value = true
+    agnesConnectionRevision.value++
     toast.add({
       severity: 'error',
-      summary: 'Impresión no disponible',
-      detail: 'No se pudo conectar con el plugin de impresión térmica.',
-      life: 4500
+      summary: 'No se pudo enviar el ticket',
+      detail: error instanceof Error ? error.message : String(error),
+      life: 6000
     })
+  } finally {
+    printing.value = false
   }
 }
-function downloadPlugin() {
-  const anchor = document.createElement('a')
-  anchor.href = `${serverip}/Plugin_Impresora_termica.exe`
-  anchor.download = 'Plugin_Impresora_termica.exe'
-  document.body.appendChild(anchor)
-  anchor.click()
-  anchor.remove()
-}
-async function doPrint() {
-  if (!selectedPrinter.value) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Falta una impresora',
-      detail: 'Selecciona una impresora térmica.',
-      life: 3000
-    })
-    return
-  }
+
+const barcodeImage = computed(() => {
   try {
-    const connector = new connetor_plugin()
-    connector.textaling('center')
-    connector.img_url(`${serverip}/sm.png`)
-    connector.feed('1')
-    connector.fontsize('2')
-    connector.text('CORTE DE CAJA')
-    connector.feed('1')
-    connector.fontsize('1')
-    connector.textaling('left')
-    formattedTicket.value.split('\n').forEach((row) => connector.text(row))
-    connector.feed('1')
-    connector.textaling('center')
-    connector.barcode_128(barcodeValue.value)
-    connector.text(barcodeValue.value)
-    connector.feed('5')
-    connector.cut('0')
-    const response = await connector.imprimir(selectedPrinter.value, apiKey)
-    if (response === true) {
-      toast.add({
-        severity: 'success',
-        summary: 'Ticket enviado',
-        detail: 'El corte se envió a la impresora.',
-        life: 3000
-      })
-      emit('close')
-    } else
-      toast.add({
-        severity: 'error',
-        summary: 'No se pudo imprimir',
-        detail: String(response),
-        life: 4500
-      })
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : String(error)
-    toast.add({ severity: 'error', summary: 'No se pudo imprimir', detail, life: 4500 })
+    return (
+      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ticketBarcode(barcodeValue.value))
+    )
+  } catch {
+    return ''
   }
-}
-onMounted(fetchPrinters)
+})

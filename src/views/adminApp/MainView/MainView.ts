@@ -6,6 +6,7 @@ import { useMobileDetection } from '@/composables/useMobileDetection.ts'
 import { useNotesStore } from '@/composables/useNotesStore.ts'
 import { as } from '@/service/adminApp/client'
 import { useEventListener } from '@vueuse/core'
+import { clearAuthSession } from '@/utils/authStorage'
 
 interface MenuItem {
   name: string
@@ -86,7 +87,7 @@ onMounted(async () => {
 const logOut = async () => {
   closeMoreMenu()
   await as.logout()
-  localStorage.clear()
+  clearAuthSession()
   await router.push('/')
 }
 

@@ -1,4 +1,5 @@
 import { renderMarkdown } from './markdown'
+import DOMPurify from 'dompurify'
 
 const EMPTY_DOCUMENT = '<p><br></p>'
 
@@ -214,6 +215,20 @@ function serializeBlock(node: Node): string {
 }
 
 export function visualHtmlToMarkdown(root: HTMLElement) {
+  // Rich documents keep their HTML formatting inside the existing Markdown field.
+  if (root.querySelector('[data-doc-format]')) {
+    const clone = root.cloneNode(true) as HTMLElement
+    clone.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((input, index) => {
+      input.toggleAttribute(
+        'checked',
+        root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')[index].checked
+      )
+    })
+    clone
+      .querySelectorAll('[contenteditable]')
+      .forEach((el) => el.removeAttribute('contenteditable'))
+    return DOMPurify.sanitize(clone.innerHTML).trim()
+  }
   return Array.from(root.childNodes)
     .map(serializeBlock)
     .join('')
