@@ -145,8 +145,8 @@ async function save() {
             <summary>Abrir y vincular el agente de Windows</summary>
             <ol>
               <li>
-                <a href="/printing/AgnesPrinterPlugin-1.2.zip" download
-                  >Descarga Agnes Printer Plugin 1.2</a
+                <a href="/printing/AgnesPrinterPlugin-1.2.2.zip" download
+                  >Descarga Agnes Printer Plugin 1.2.2</a
                 >, extrae el ZIP y abre AgnesPrinterPlugin.exe.
               </li>
               <li>

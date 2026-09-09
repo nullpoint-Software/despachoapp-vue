@@ -513,6 +513,8 @@
     </section>
   </div>
 
+  <LegacyMigration v-if="isAdmin" />
+
   <!-- CREATE USER / STEPPED MODAL -->
   <Teleport to="body">
     <transition name="fade-scale">

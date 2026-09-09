@@ -1,11 +1,11 @@
-# Agnes Printer Plugin 1.2 en DespachoApp
+# Agnes Printer Plugin 1.2.2 en DespachoApp
 
 El código de Agnes está en el proyecto independiente
 `../AgnesPrinterPlugin` dentro de la carpeta Proyectos. Su README, SDK JavaScript,
 ejemplo web y contrato HTTP describen cómo conectarlo a otras aplicaciones.
 
 DespachoApp mantiene su integración de impresión y el paquete descargable
-`public/printing/AgnesPrinterPlugin-1.2.zip`. No conserva una segunda copia del
+`public/printing/AgnesPrinterPlugin-1.2.2.zip`. No conserva una segunda copia del
 código nativo. `local-printer/build.ps1` compila el proyecto hermano y copia ese
 ZIP; admite `-AgnesProject <ruta>` para otras ubicaciones.
 
@@ -17,7 +17,7 @@ la impresora compartida. Las otras apps se agregan con el campo de dirección y 
 reemplazar la dirección de DespachoApp para usarlas.
 
 Las cuentas de la aplicación comparten impresora y papel. La vinculación persiste
-entre reinicios. La versión 1.2 importa los datos históricos y guarda la nueva
+entre reinicios. La versión 1.2.2 importa los datos históricos y guarda la nueva
 configuración en `%LOCALAPPDATA%\AgnesPrinterPlugin\connection.json`.
 
 Inicio automático sigue siendo opcional, con pregunta una vez y control desde el
@@ -42,7 +42,7 @@ envío corresponde a la cola de Windows; la salida física depende del controlad
 ## Detección y descarga
 
 Configuración y los tres tipos de ticket comprueban /v1/info al abrirse. Si no
-se puede conectar, muestran Descargar Agnes Printer Plugin 1.2 y Volver a detectar.
+se puede conectar, muestran Descargar Agnes Printer Plugin 1.2.2 y Volver a detectar.
 El ZIP se sirve desde public/printing de DespachoApp. Un error de red puede indicar
 agente cerrado, origen sin autorizar o permiso local pendiente; no demuestra que
 el programa esté desinstalado. La descarga se inicia al pulsar el enlace.

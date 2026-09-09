@@ -1,4 +1,5 @@
 import PrinterPreferences from './PrinterPreferences.vue'
+import LegacyMigration from './LegacyMigration.vue'
 import { as, bs, pks, us } from '@/service/adminApp/client'
 import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import { USER_AVATAR_PLACEHOLDER as defaultAvatar } from '@/constants/brandAssets'

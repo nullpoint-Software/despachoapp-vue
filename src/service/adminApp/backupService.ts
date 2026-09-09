@@ -76,6 +76,34 @@ class BackupService {
       })
     ).data
   }
+  async previewLegacy(file: File, decisions: Record<string, string> = {}): Promise<any> {
+    const data = new FormData()
+    data.append('file', file)
+    data.append('decisions', JSON.stringify(decisions))
+    return (
+      await this.axios.post(`${this.serverip}/legacy-migration/preview`, data, { timeout: 120000 })
+    ).data
+  }
+  async migrateLegacy(
+    file: File,
+    token: string,
+    confirmation: string,
+    decisions: Record<string, string> = {}
+  ): Promise<any> {
+    const data = new FormData()
+    data.append('file', file)
+    data.append('decisions', JSON.stringify(decisions))
+    data.append('token', token)
+    data.append('confirmation', confirmation)
+    return (
+      await this.axios.post(`${this.serverip}/legacy-migration/execute`, data, { timeout: 600000 })
+    ).data
+  }
+  async legacyEvents(): Promise<Blob> {
+    return (
+      await this.axios.get(`${this.serverip}/legacy-migration/events`, { responseType: 'blob' })
+    ).data
+  }
 }
 
 export default BackupService

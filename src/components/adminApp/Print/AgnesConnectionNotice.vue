@@ -4,6 +4,7 @@ import { AGNES_DOWNLOAD_URL, detectAgnes, type AgnesDetection } from '@/utils/ag
 import { getPrinterPreferences } from '@/utils/printerSettings'
 const props = withDefaults(defineProps<{ refreshKey?: number }>(), { refreshKey: 0 })
 const status = ref<AgnesDetection | 'checking'>('checking')
+const appOrigin = window.location.origin
 let generation = 0
 async function check() {
   const current = ++generation
@@ -23,7 +24,12 @@ onUnmounted(() => {
     <p v-if="status === 'checking'" role="status">Comprobando Agnes…</p>
     <template v-else>
       <p role="status">
-        <template v-if="status === 'pairing'"
+        <template v-if="status === 'origin-denied'">
+          Agnes está abierto, pero falta autorizar este sitio. Haz clic derecho en el icono de
+          Agnes junto al reloj → Preferencias del equipo → Apps autorizadas. Agrega
+          <strong>{{ appOrigin }}</strong>, pulsa Agregar; se guarda automáticamente.
+        </template>
+        <template v-else-if="status === 'pairing'"
           >Agnes está disponible. Revisa la clave de vinculación en Configuración y autoriza esta
           app en Agnes.</template
         >
@@ -32,15 +38,15 @@ onUnmounted(() => {
         >
         <template v-else
           >No se pudo conectar con Agnes. Si ya lo tienes, ábrelo, agrega esta app a la lista
-          autorizada y permite el acceso local del navegador.</template
+          autorizada (<strong>{{ appOrigin }}</strong>) y permite el acceso local del navegador.</template
         >
       </p>
       <div class="agnes-connection-actions">
         <a
           v-if="status === 'unavailable' || status === 'incompatible'"
           :href="AGNES_DOWNLOAD_URL"
-          download="AgnesPrinterPlugin-1.2.zip"
-          >Descargar Agnes Printer Plugin 1.2</a
+          download="AgnesPrinterPlugin-1.2.2.zip"
+          >Descargar Agnes Printer Plugin 1.2.2</a
         >
         <button type="button" @click="check">Volver a detectar</button>
       </div>
