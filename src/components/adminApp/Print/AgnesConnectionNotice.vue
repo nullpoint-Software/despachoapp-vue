@@ -45,8 +45,8 @@ onUnmounted(() => {
         <a
           v-if="status === 'unavailable' || status === 'incompatible'"
           :href="AGNES_DOWNLOAD_URL"
-          download="AgnesPrinterPlugin-1.2.2.zip"
-          >Descargar Agnes Printer Plugin 1.2.2</a
+          download="AgnesPrinterPlugin-1.2.3.zip"
+          >Descargar Agnes Printer Plugin 1.2.3</a
         >
         <button type="button" @click="check">Volver a detectar</button>
       </div>

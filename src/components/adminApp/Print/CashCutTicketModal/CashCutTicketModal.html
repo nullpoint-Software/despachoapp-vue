@@ -10,15 +10,7 @@
       <div class="thermal-body">
         <AgnesConnectionNotice :refresh-key="agnesConnectionRevision" />
         <p>Se usará la impresora guardada en <strong>Configuración</strong>.</p>
-        <div class="ticket-preview">
-          <span>Vista previa / {{ paperWidth }} mm</span>
-          <div class="ticket-logo"><img :src="logo" alt="Logo" /></div>
-          <pre>{{ formattedTicket }}</pre>
-          <div class="ticket-barcode" aria-label="Codigo de barras">
-            <img v-if="barcodeImage" :src="barcodeImage" :alt="barcodeValue" style="width: 100%; max-width: 100%; height: auto" />
-            <span>{{ barcodeValue }}</span>
-          </div>
-        </div>
+        <ThermalTicketPreview :paper-width="paperWidth" :text="formattedTicket" :logo="logo" :barcode="barcodeValue" />
       </div>
 
       <footer>

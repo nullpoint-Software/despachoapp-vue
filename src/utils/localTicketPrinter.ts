@@ -7,6 +7,7 @@ import {
 import { rasterTicket } from './ticketRaster'
 
 export interface LocalTicket {
+  paperWidth?: 58 | 80
   title: string
   text: string
   logo: string
@@ -37,6 +38,10 @@ export async function printLocalTicket(ticket: LocalTicket): Promise<void> {
   sending = true
   try {
     settings = await effectivePrinterPreferences(settings)
+    if (ticket.paperWidth && ticket.paperWidth !== settings.paperWidth)
+      throw new Error(
+        'El papel configurado cambió. Abre de nuevo la vista previa antes de imprimir.'
+      )
     const pages = await rasterTicket(ticket, settings.paperWidth)
     const result = await printerRequest<{ status: string }>('/print', settings.token, {
       id: crypto.randomUUID(),

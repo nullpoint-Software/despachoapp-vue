@@ -16,7 +16,7 @@ vm.runInNewContext(
 const { detectAgnes, AGNES_DOWNLOAD_URL } = context.exports
 
 test('download points to the Agnes ZIP bundled with DespachoApp', () => {
-  assert.equal(AGNES_DOWNLOAD_URL, '/printing/AgnesPrinterPlugin-1.2.2.zip')
+  assert.equal(AGNES_DOWNLOAD_URL, '/printing/AgnesPrinterPlugin-1.2.3.zip')
   assert.ok(fs.statSync('public' + AGNES_DOWNLOAD_URL).size > 0)
 })
 test('unreachable or browser-blocked agent offers the unavailable state', async () => {
@@ -46,7 +46,7 @@ test('compatible agent is detected without changing preferences or printing', as
     return {
       status: 200,
       ok: true,
-      json: async () => ({ name: 'Agnes Printer Plugin', apiVersion: 1, version: '1.2.2' })
+      json: async () => ({ name: 'Agnes Printer Plugin', apiVersion: 1, version: '1.2.3' })
     }
   })
   assert.equal(result, 'ready')

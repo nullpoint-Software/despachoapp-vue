@@ -1,8 +1,10 @@
+import ThermalTicketPreview from '../ThermalTicketPreview.vue'
+import { ticketTextLayout, paymentBarcodeId } from '@/utils/ticketLayout'
 import AgnesConnectionNotice from '../AgnesConnectionNotice.vue'
-import { ref, computed } from 'vue'
-import { getPrinterPreferences } from '@/utils/printerSettings'
+import { ref, computed, onMounted } from 'vue'
+import { getPrinterPreferences, effectivePrinterPreferences } from '@/utils/printerSettings'
 import logoAsset from '@/assets/img/logsymbolblack.png'
-import { printLocalTicket, ticketBarcode } from '@/utils/localTicketPrinter'
+import { printLocalTicket } from '@/utils/localTicketPrinter'
 
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
@@ -35,7 +37,14 @@ const emit = defineEmits(['close'])
 const toast = useAppToast()
 
 // estado
-const paperWidth = getPrinterPreferences().paperWidth
+const paperWidth = ref(getPrinterPreferences().paperWidth)
+onMounted(async () => {
+  try {
+    paperWidth.value = (await effectivePrinterPreferences(getPrinterPreferences())).paperWidth
+  } catch {
+    /* Connection notice provides setup actions. */
+  }
+})
 const printing = ref(false)
 const agnesConnectionRevision = ref(0)
 const logo = logoAsset
@@ -43,45 +52,9 @@ const logo = logoAsset
 const props = defineProps<{ ticket: MonthlyPaymentTicket }>()
 
 // ASCII params
-const totalWidth = 48
-const leftCol = 14
-const rightCol = totalWidth - 7 - leftCol
-const dashLine = '-'.repeat(totalWidth)
-const eqLine = '='.repeat(totalWidth)
-const barcodeValue = computed(() => {
-  const id = props.ticket?.id ?? props.ticket?.folio
-  if (id) return String(id)
-  return `PAGO-${dayjs(props.ticket?.fechapago || new Date()).format('YYYYMMDDHHmmss')}`
-})
-
-function centerText(txt: unknown): string {
-  const value = String(txt).slice(0, totalWidth)
-  const pad = Math.max(0, Math.floor((totalWidth - value.length) / 2))
-  return ' '.repeat(pad) + value + ' '.repeat(Math.max(0, totalWidth - value.length - pad))
-}
-
-function wrapText(text: unknown, width: number): string[] {
-  const lines: string[] = []
-  let rem = String(text ?? '')
-  while (String(rem).length > width) {
-    lines.push(rem.slice(0, width))
-    rem = rem.slice(width)
-  }
-  lines.push(rem)
-  return lines
-}
-
-function row(label: unknown, val: unknown): string {
-  const lab = String(label).padEnd(leftCol).slice(0, leftCol)
-  const vals = wrapText(val, rightCol)
-  const first = `| ${lab} | ${String(vals[0]).padEnd(rightCol)} |`
-  const rest = vals
-    .slice(1)
-    .map((l: string) => `| ${' '.repeat(leftCol)} | ${l.padEnd(rightCol)} |`)
-  return [first, ...rest].join('\n')
-}
-
+const barcodeValue = computed(() => paymentBarcodeId(props.ticket))
 const formattedTicket = computed(() => {
+  const { row, centerText, dashLine, eqLine } = ticketTextLayout(paperWidth.value)
   const t = props.ticket
   const lines = []
   lines.push(dashLine)
@@ -97,7 +70,7 @@ const formattedTicket = computed(() => {
   lines.push(dashLine)
   lines.push(row('Mes y Ano', formatFechaMesAnoSQL(t.mes_ano)))
   lines.push(dashLine)
-  lines.push(row('Fecha de pago', formatFechaHoraFullPagoSQL(t.fechapago)))
+  lines.push(row('Fecha pago', formatFechaHoraFullPagoSQL(t.fechapago)))
   lines.push(dashLine)
   lines.push('')
   lines.push(eqLine)
@@ -118,7 +91,15 @@ async function doPrint() {
   if (printing.value) return
   printing.value = true
   try {
+    const current = (await effectivePrinterPreferences(getPrinterPreferences())).paperWidth
+    if (current !== paperWidth.value) {
+      paperWidth.value = current
+      throw new Error(
+        'El ancho de papel cambió. Revisa la vista previa actualizada y vuelve a imprimir.'
+      )
+    }
     await printLocalTicket({
+      paperWidth: paperWidth.value,
       title: 'Ticket de pago',
       text: formattedTicket.value,
       logo,
@@ -142,13 +123,3 @@ async function doPrint() {
     printing.value = false
   }
 }
-
-const barcodeImage = computed(() => {
-  try {
-    return (
-      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ticketBarcode(barcodeValue.value))
-    )
-  } catch {
-    return ''
-  }
-})

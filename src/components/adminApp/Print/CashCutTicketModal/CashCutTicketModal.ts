@@ -1,8 +1,10 @@
+import ThermalTicketPreview from '../ThermalTicketPreview.vue'
+import { ticketTextLayout } from '@/utils/ticketLayout'
 import AgnesConnectionNotice from '../AgnesConnectionNotice.vue'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import dayjs from 'dayjs'
-import { printLocalTicket, ticketBarcode } from '@/utils/localTicketPrinter'
-import { getPrinterPreferences } from '@/utils/printerSettings'
+import { printLocalTicket } from '@/utils/localTicketPrinter'
+import { getPrinterPreferences, effectivePrinterPreferences } from '@/utils/printerSettings'
 import logoAsset from '@/assets/img/logsymbolblack.png'
 import { useAppToast } from '@/composables/useAppToast'
 
@@ -21,20 +23,20 @@ const logo = logoAsset
 const props = defineProps<CashCutTicketProps>()
 const emit = defineEmits(['close'])
 const toast = useAppToast()
-const paperWidth = getPrinterPreferences().paperWidth
+const paperWidth = ref(getPrinterPreferences().paperWidth)
+onMounted(async () => {
+  try {
+    paperWidth.value = (await effectivePrinterPreferences(getPrinterPreferences())).paperWidth
+  } catch {
+    /* Connection notice provides setup actions. */
+  }
+})
 const printing = ref(false)
 const agnesConnectionRevision = ref(0)
-const width = 48,
-  line = '-'.repeat(width),
-  doubleLine = '='.repeat(width)
-const center = (text: unknown): string => {
-  const value = String(text).slice(0, width)
-  const left = Math.max(0, Math.floor((width - value.length) / 2))
-  return ' '.repeat(left) + value
-}
 const amount = (value: unknown): string =>
   Number(value || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const valueRow = (label: unknown, value: unknown): string => {
+  const width = ticketTextLayout(paperWidth.value).width
   const right = String(value).slice(0, width)
   const safeLabel = String(label).slice(0, Math.max(1, width - right.length - 1))
   const available = Math.max(1, width - safeLabel.length)
@@ -51,6 +53,12 @@ const barcodeValue = computed(
     `CORTE-${dayjs(props.from).format('YYYYMMDDHHmm')}-${dayjs(props.to).format('YYYYMMDDHHmm')}`
 )
 const formattedTicket = computed(() => {
+  const {
+    width,
+    dashLine: line,
+    eqLine: doubleLine,
+    centerText: center
+  } = ticketTextLayout(paperWidth.value)
   const rows = [
     line,
     center('CORTE DE CAJA'),
@@ -83,7 +91,15 @@ async function doPrint() {
   if (printing.value) return
   printing.value = true
   try {
+    const current = (await effectivePrinterPreferences(getPrinterPreferences())).paperWidth
+    if (current !== paperWidth.value) {
+      paperWidth.value = current
+      throw new Error(
+        'El ancho de papel cambió. Revisa la vista previa actualizada y vuelve a imprimir.'
+      )
+    }
     await printLocalTicket({
+      paperWidth: paperWidth.value,
       title: 'Corte de caja',
       text: formattedTicket.value,
       logo,
@@ -107,13 +123,3 @@ async function doPrint() {
     printing.value = false
   }
 }
-
-const barcodeImage = computed(() => {
-  try {
-    return (
-      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ticketBarcode(barcodeValue.value))
-    )
-  } catch {
-    return ''
-  }
-})

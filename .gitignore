@@ -37,3 +37,6 @@ env.d.ts
 .env
 public/build-time.txt
 /local-printer/out/
+
+# Temporary working files
+/tmp/

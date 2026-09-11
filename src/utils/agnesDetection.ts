@@ -1,4 +1,4 @@
-export const AGNES_DOWNLOAD_URL = `${import.meta.env.BASE_URL}printing/AgnesPrinterPlugin-1.2.2.zip`
+export const AGNES_DOWNLOAD_URL = `${import.meta.env.BASE_URL}printing/AgnesPrinterPlugin-1.2.3.zip`
 export type AgnesDetection = 'ready' | 'pairing' | 'origin-denied' | 'unavailable' | 'incompatible'
 
 /** A failed connection cannot distinguish a closed agent from browser/CORS restrictions. */

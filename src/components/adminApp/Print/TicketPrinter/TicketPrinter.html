@@ -5,16 +5,7 @@
       <AgnesConnectionNotice :refresh-key="agnesConnectionRevision" />
         <p>Se usará la impresora guardada en <strong>Configuración</strong>.</p>
         <!-- Vista previa del ticket -->
-      <div class="ticket">
-        <div class="logo">
-          <img :src="logo" alt="Logo" />
-        </div>
-        <pre class="ticket-content">{{ formattedTicket }}</pre>
-        <div v-if="barcodeValue" class="ticket-barcode" aria-label="Codigo de barras">
-          <img v-if="barcodeImage" :src="barcodeImage" :alt="barcodeValue" style="width: 100%; max-width: 100%; height: auto" />
-          <span>{{ barcodeValue }}</span>
-        </div>
-      </div>
+      <ThermalTicketPreview :paper-width="paperWidth" :text="formattedTicket" :logo="logo" :barcode="barcodeValue" />
 
       <!-- Botones de accion -->
       <div class="actions">

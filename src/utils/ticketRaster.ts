@@ -1,14 +1,17 @@
 import JsBarcode from 'jsbarcode'
+import { ticketProfile } from './ticketLayout'
 
-/** Raster pages at 203.2 dpi (8 pixels/mm), independent of a browser print dialog. */
+/** One source for preview and printing: 8 dots/mm, solid black pixels, no barcode resampling. */
 export async function rasterTicket(
   ticket: { title: string; text: string; logo: string; barcode: string },
   paperWidth: 58 | 80
 ): Promise<string[]> {
-  const width = paperWidth * 8
-  const padding = 24
-  const fontSize = Math.floor((width - padding * 2) / 48 / 0.61)
-  const lineHeight = Math.ceil(fontSize * 1.3)
+  if (!ticket.barcode)
+    throw new Error('El pago no tiene ID. No se puede generar su código de barras.')
+  const { columns, printableWidth, fontSize, lineHeight } = ticketProfile(paperWidth)
+  const width = paperWidth * 8,
+    padding = (width - printableWidth) / 2,
+    verticalPadding = 24
   const logo = new Image()
   logo.src = ticket.logo
   await logo.decode()
@@ -16,64 +19,84 @@ export async function rasterTicket(
   JsBarcode(barcode, ticket.barcode, {
     format: 'CODE128',
     width: 2,
-    height: 70,
-    fontSize: 18,
-    margin: 16
+    height: 96,
+    margin: 20,
+    displayValue: false,
+    background: '#ffffff',
+    lineColor: '#000000'
   })
-  const pages: string[] = []
-  const canvas = document.createElement('canvas')
+  const rotated = barcode.width > printableWidth
+  const symbolWidth = rotated ? barcode.height : barcode.width,
+    symbolHeight = rotated ? barcode.width : barcode.height
+  if (
+    symbolWidth > printableWidth ||
+    symbolHeight + Math.ceil(Array.from(ticket.barcode).length / columns) * lineHeight + 48 > 1500
+  )
+    throw new Error('La ID es demasiado larga para un código de barras legible en este papel.')
+  const pages: string[] = [],
+    canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = 1500
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('No se pudo preparar el ticket para imprimir.')
-  let y = padding
+  if (!ctx) throw new Error('No se pudo preparar el ticket.')
+  let y = verticalPadding
   function clear() {
     ctx!.fillStyle = '#fff'
     ctx!.fillRect(0, 0, width, canvas.height)
     ctx!.fillStyle = '#000'
-    ctx!.font = `${fontSize}px "Courier New", monospace`
+    ctx!.font = 'bold ' + fontSize + 'px "Courier New", monospace'
     ctx!.textBaseline = 'top'
-    y = padding
+    ctx!.imageSmoothingEnabled = false
+    y = verticalPadding
   }
   function flush() {
     const page = document.createElement('canvas')
     page.width = width
-    page.height = Math.min(canvas.height, y + padding)
-    const output = page.getContext('2d')
-    if (!output) throw new Error('No se pudo preparar el ticket.')
-    output.drawImage(canvas, 0, 0)
+    page.height = Math.ceil(y + verticalPadding)
+    const out = page.getContext('2d')
+    if (!out) throw new Error('No se pudo preparar el ticket.')
+    out.drawImage(canvas, 0, 0)
+    const pixels = out.getImageData(0, 0, page.width, page.height)
+    for (let i = 0; i < pixels.data.length; i += 4) {
+      const v =
+        (pixels.data[i] * 299 + pixels.data[i + 1] * 587 + pixels.data[i + 2] * 114) / 1000 < 200
+          ? 0
+          : 255
+      pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = v
+      pixels.data[i + 3] = 255
+    }
+    out.putImageData(pixels, 0, 0)
     pages.push(page.toDataURL('image/png').split(',')[1])
     if (pages.length > 40)
       throw new Error('El ticket es demasiado largo. Reduce el periodo del corte.')
     clear()
   }
-  clear()
-  const scale = Math.min(240 / logo.naturalWidth, 110 / logo.naturalHeight)
-  const logoWidth = logo.naturalWidth * scale,
-    logoHeight = logo.naturalHeight * scale
-  ctx.drawImage(logo, (width - logoWidth) / 2, y, logoWidth, logoHeight)
-  y += logoHeight + lineHeight
-  const rows = [ticket.title, '', ...ticket.text.replace(/\r/g, '').split('\n')]
-  for (const row of rows) {
-    // Break unusually long input as well as preformatted 48-column ticket rows.
-    const parts = row.match(/.{1,48}/gu) || ['']
-    for (const part of parts) {
-      if (y + lineHeight + padding > canvas.height) flush()
-      ctx.fillText(part, padding, y)
+  function text(value: string) {
+    const chars = Array.from(value)
+    for (let i = 0; i < Math.max(1, chars.length); i += columns) {
+      if (y + lineHeight + verticalPadding > canvas.height) flush()
+      ctx!.fillText(chars.slice(i, i + columns).join(''), padding, y)
       y += lineHeight
     }
   }
-  const barcodeScale = Math.min(1, (width - padding * 2) / barcode.width)
-  const barcodeHeight = barcode.height * barcodeScale
-  if (y + barcodeHeight + padding > canvas.height) flush()
-  ctx.drawImage(
-    barcode,
-    (width - barcode.width * barcodeScale) / 2,
-    y,
-    barcode.width * barcodeScale,
-    barcodeHeight
-  )
-  y += barcodeHeight
+  clear()
+  const scale = Math.min(160 / logo.naturalWidth, 96 / logo.naturalHeight),
+    lw = Math.round(logo.naturalWidth * scale),
+    lh = Math.round(logo.naturalHeight * scale)
+  ctx.drawImage(logo, Math.floor((width - lw) / 2), y, lw, lh)
+  y += lh + lineHeight
+  for (const row of ticket.text.replace(/\r/g, '').split('\n')) text(row)
+  const idLines = Math.ceil(Array.from(ticket.barcode).length / columns)
+  if (y + symbolHeight + idLines * lineHeight + verticalPadding > canvas.height) flush()
+  ctx.save()
+  if (rotated) {
+    ctx.translate(Math.floor((width + symbolWidth) / 2), y)
+    ctx.rotate(Math.PI / 2)
+    ctx.drawImage(barcode, 0, 0)
+  } else ctx.drawImage(barcode, Math.floor((width - symbolWidth) / 2), y)
+  ctx.restore()
+  y += symbolHeight
+  text(ticket.barcode)
   flush()
   return pages
 }
