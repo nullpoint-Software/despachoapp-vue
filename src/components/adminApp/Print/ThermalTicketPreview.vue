@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { rasterTicket } from '@/utils/ticketRaster'
-import { ticketProfile } from '@/utils/ticketLayout'
 const props = defineProps<{ text: string; logo: string; barcode: string; paperWidth: 58 | 80 }>()
 const pages = ref<string[]>([]),
   error = ref(''),
@@ -31,10 +30,9 @@ watch(
 </script>
 <template>
   <section class="thermal-proof">
-    <p>
-      Vista previa · {{ paperWidth }} mm · {{ ticketProfile(paperWidth).columns }} caracteres por
-      línea
-    </p>
+    <div class="thermal-proof-heading">
+      <strong>Vista previa</strong><span>Así se imprimirá tu ticket</span>
+    </div>
     <p v-if="loading" role="status">Preparando ticket…</p>
     <p v-if="error" role="alert">{{ error }}</p>
     <div class="thermal-proof-scroll">
@@ -54,6 +52,18 @@ watch(
   max-width: 100%;
   margin: 1rem 0;
 }
+.thermal-proof-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.8rem;
+}
+.thermal-proof-heading span {
+  font-size: 0.75rem;
+}
 .thermal-proof > p {
   font:
     700 0.75rem/1.5 'Courier New',
@@ -61,19 +71,21 @@ watch(
   color: var(--br-text);
 }
 .thermal-proof-scroll {
-  max-height: 60vh;
   max-width: 100%;
-  overflow: auto;
-  background: var(--br-panel-2);
+  min-width: 0;
+  background: color-mix(in srgb, var(--br-control) 85%, var(--br-line-strong));
   border: 1px solid var(--br-line-strong);
-  padding: 12px;
+  padding: clamp(0.5rem, 2vw, 1.25rem);
 }
 .thermal-proof-scroll img {
   display: block;
-  max-width: none;
+  max-width: 100%;
   height: auto;
-  image-rendering: pixelated;
-  margin: 0 auto 12px;
+  margin: 0 auto 1rem;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
   background: white;
+}
+.thermal-proof-scroll img:last-child {
+  margin-bottom: 0;
 }
 </style>

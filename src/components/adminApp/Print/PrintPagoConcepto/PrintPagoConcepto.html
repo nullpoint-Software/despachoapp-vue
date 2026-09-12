@@ -1,29 +1,24 @@
 <Teleport to="body">
   <div class="ticket-printer-overlay">
-    <div class="ticket-printer-modal">
-      <header class="ticket-modal-header">
-        <p>CAJA / IMPRESIÓN TÉRMICA</p>
-        <h2>Ticket de pago</h2>
-        <button type="button" aria-label="Cerrar" @click="$emit('close')">×</button>
+    <section class="ticket-printer-modal app-record-modal app-record-modal--simple ticket-document-modal" role="dialog" aria-modal="true" aria-labelledby="ticket-dialog-title">
+      <header class="app-modal-header ticket-modal-header">
+        <p>CAJA / IMPRESIÓN</p>
+        <h2 id="ticket-dialog-title">Ticket de pago</h2>
+        <button type="button" aria-label="Cerrar" @click="emit('close')">×</button>
       </header>
-      <div class="ticket-modal-body">
-        <!-- Seccion para seleccionar la impresora -->
+      <div class="record-modal-body ticket-modal-body">
+        <div class="ticket-printer-summary">
+          <i class="pi pi-print" aria-hidden="true"></i>
+          <div><strong>Impresora del equipo</strong><p>Se utilizará la impresora guardada en Configuración.</p></div>
+          <span>{{ paperWidth }} mm</span>
+        </div>
         <AgnesConnectionNotice :refresh-key="agnesConnectionRevision" />
-        <p>Se usará la impresora guardada en <strong>Configuración</strong>.</p>
-        <!-- Vista previa del ticket -->
         <ThermalTicketPreview :paper-width="paperWidth" :text="formattedTicket" :logo="logo" :barcode="barcodeValue" />
       </div>
-
-      <!-- Botones de accion -->
-      <div class="actions">
-        <Button label="Cancelar" @click="$emit('close')" outlined />
-        <Button
-          label="Imprimir ticket"
-          icon="pi pi-print"
-          :disabled="printing" @click="doPrint"
-          class="p-button-primary"
-        />
-      </div>
-    </div>
+      <footer class="record-modal-footer actions">
+        <Button label="Cancelar" outlined @click="emit('close')" />
+        <Button :label="printing ? 'Enviando…' : 'Imprimir ticket'" icon="pi pi-print" class="p-button-primary" :disabled="printing" @click="doPrint" />
+      </footer>
+    </section>
   </div>
 </Teleport>

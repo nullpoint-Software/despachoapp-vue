@@ -1,3 +1,4 @@
+import Button from '@/components/ui/AppButton/AppButton.vue'
 import ThermalTicketPreview from '../ThermalTicketPreview.vue'
 import { ticketTextLayout, paymentBarcodeId } from '@/utils/ticketLayout'
 import AgnesConnectionNotice from '../AgnesConnectionNotice.vue'
@@ -7,12 +8,6 @@ import logoAsset from '@/assets/img/logsymbolblack.png'
 import { printLocalTicket } from '@/utils/localTicketPrinter'
 
 import dayjs from 'dayjs'
-import advancedFormat from 'dayjs/plugin/advancedFormat'
-import localizedFormat from 'dayjs/plugin/localizedFormat'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
-import weekday from 'dayjs/plugin/weekday'
-import utc from 'dayjs/plugin/utc'
-import { formatFechaHoraFullPagoSQL, formatFechaMesAnoSQL } from '@/service/adminApp/client'
 import { useAppToast } from '@/composables/useAppToast'
 
 interface MonthlyPaymentTicket {
@@ -25,12 +20,6 @@ interface MonthlyPaymentTicket {
   mes_ano: string
   fechapago: string
 }
-
-dayjs.extend(advancedFormat)
-dayjs.extend(localizedFormat)
-dayjs.extend(customParseFormat)
-dayjs.extend(weekday)
-dayjs.extend(utc)
 
 // permite emitir 'close'
 const emit = defineEmits(['close'])
@@ -53,36 +42,33 @@ const props = defineProps<{ ticket: MonthlyPaymentTicket }>()
 
 // ASCII params
 const barcodeValue = computed(() => paymentBarcodeId(props.ticket))
+const money = (value: unknown) =>
+  Number(value || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
 const formattedTicket = computed(() => {
   const { row, centerText, dashLine, eqLine } = ticketTextLayout(paperWidth.value)
   const t = props.ticket
-  const lines = []
-  lines.push(dashLine)
-  lines.push(centerText('Ticket de Pago'))
-  lines.push(dashLine)
-  lines.push(row('Cliente', t.cliente))
-  lines.push(dashLine)
-  lines.push(row('Asunto', t.asunto))
-  lines.push(dashLine)
-  lines.push(row('Atendio', t.atendio))
-  lines.push(dashLine)
-  lines.push(row('Honorarios', '$' + t.honorarios))
-  lines.push(dashLine)
-  lines.push(row('Mes y Ano', formatFechaMesAnoSQL(t.mes_ano)))
-  lines.push(dashLine)
-  lines.push(row('Fecha pago', formatFechaHoraFullPagoSQL(t.fechapago)))
-  lines.push(dashLine)
-  lines.push('')
-  lines.push(eqLine)
-  lines.push(centerText('Fecha de impresion:'))
-  const now = dayjs()
-  lines.push(centerText(now.format('h:mm A, ddd MMM DD')))
-  lines.push(eqLine)
-  lines.push(centerText('Despacho Contable Y Fiscal Sanchez'))
-  lines.push('')
-  lines.push(centerText('Gracias por su preferencia'))
-  lines.push(centerText(':)'))
-  lines.push('')
+  const lines = [
+    centerText('DESPACHO CONTABLE Y FISCAL'),
+    centerText('SÁNCHEZ'),
+    '',
+    centerText('PAGO DE MENSUALIDAD'),
+    dashLine,
+    row('Cliente', t.cliente),
+    dashLine,
+    row('Concepto', t.asunto),
+    dashLine,
+    row('Atendió', t.atendio),
+    dashLine,
+    row('Periodo', dayjs(t.mes_ano).format('MM/YYYY')),
+    dashLine,
+    row('Fecha pago', dayjs(t.fechapago).format('DD/MM/YYYY HH:mm')),
+    eqLine,
+    row('Honorarios', money(t.honorarios), 'right'),
+    eqLine,
+    centerText('Impreso: ' + dayjs().format('DD/MM/YYYY HH:mm')),
+    '',
+    centerText('Gracias por su preferencia :)')
+  ]
   return lines.join('\n')
 })
 

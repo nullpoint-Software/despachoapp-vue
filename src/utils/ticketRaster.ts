@@ -71,11 +71,13 @@ export async function rasterTicket(
       throw new Error('El ticket es demasiado largo. Reduce el periodo del corte.')
     clear()
   }
-  function text(value: string) {
+  function text(value: string, centered = false) {
     const chars = Array.from(value)
     for (let i = 0; i < Math.max(1, chars.length); i += columns) {
       if (y + lineHeight + verticalPadding > canvas.height) flush()
-      ctx!.fillText(chars.slice(i, i + columns).join(''), padding, y)
+      const line = chars.slice(i, i + columns).join('')
+      const x = centered ? Math.round((width - ctx!.measureText(line).width) / 2) : padding
+      ctx!.fillText(line, x, y)
       y += lineHeight
     }
   }
@@ -85,7 +87,14 @@ export async function rasterTicket(
     lh = Math.round(logo.naturalHeight * scale)
   ctx.drawImage(logo, Math.floor((width - lw) / 2), y, lw, lh)
   y += lh + lineHeight
-  for (const row of ticket.text.replace(/\r/g, '').split('\n')) text(row)
+  for (const row of ticket.text.replace(/\r/g, '').trimEnd().split('\n')) {
+    if (/^[-=]{3,}$/.test(row)) {
+      if (y + lineHeight + verticalPadding > canvas.height) flush()
+      ctx.fillRect(padding, y + Math.floor(lineHeight / 2), printableWidth, row[0] === '=' ? 3 : 1)
+      y += lineHeight
+    } else text(row)
+  }
+  y += 8
   const idLines = Math.ceil(Array.from(ticket.barcode).length / columns)
   if (y + symbolHeight + idLines * lineHeight + verticalPadding > canvas.height) flush()
   ctx.save()
@@ -96,7 +105,7 @@ export async function rasterTicket(
   } else ctx.drawImage(barcode, Math.floor((width - symbolWidth) / 2), y)
   ctx.restore()
   y += symbolHeight
-  text(ticket.barcode)
+  text(ticket.barcode, true)
   flush()
   return pages
 }

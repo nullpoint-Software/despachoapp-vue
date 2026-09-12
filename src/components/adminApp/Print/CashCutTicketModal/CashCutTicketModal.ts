@@ -1,3 +1,4 @@
+import Button from '@/components/ui/AppButton/AppButton.vue'
 import ThermalTicketPreview from '../ThermalTicketPreview.vue'
 import { ticketTextLayout } from '@/utils/ticketLayout'
 import AgnesConnectionNotice from '../AgnesConnectionNotice.vue'
@@ -60,7 +61,9 @@ const formattedTicket = computed(() => {
     centerText: center
   } = ticketTextLayout(paperWidth.value)
   const rows = [
-    line,
+    center('DESPACHO CONTABLE Y FISCAL'),
+    center('SÁNCHEZ'),
+    '',
     center('CORTE DE CAJA'),
     line,
     `INICIO: ${dayjs(props.from).format('DD/MM/YYYY HH:mm:ss')}`,
@@ -81,9 +84,7 @@ const formattedTicket = computed(() => {
   rows.push(
     valueRow('TOTAL NETO', `${netTotal.value < 0 ? '-' : '+'}$${amount(Math.abs(netTotal.value))}`),
     doubleLine,
-    center(`IMPRESO ${dayjs().format('DD/MM/YYYY HH:mm')}`),
-    '',
-    ''
+    center(`IMPRESO ${dayjs().format('DD/MM/YYYY HH:mm')}`)
   )
   return rows.join('\n')
 })
