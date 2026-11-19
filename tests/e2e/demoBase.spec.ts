@@ -39,12 +39,15 @@ test('typed login accepts the demo password and rejects a wrong one', async ({ p
 
 test('opens Configuración without page errors', async ({ page }) => {
   const pageErrors: Error[] = []
+  const consoleErrors: string[] = []
   page.on('pageerror', error => pageErrors.push(error))
+  page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()) })
   await enterAsAdministrator(page)
   await page.getByRole('button', { name: 'Configuración' }).click()
   await expect(page.getByTestId('configuration-page')).toBeVisible()
   await page.waitForTimeout(500)
   expect(pageErrors).toEqual([])
+  expect(consoleErrors.filter(text => text.includes('Content Security Policy'))).toEqual([])
 })
 
 test('serves the app on unknown paths', async ({ page }) => {
