@@ -45,9 +45,9 @@ function chooseAccent(value: string): void {
   <section data-testid="settings-page">
     <SettingsSectionHeader
       title="Preferencias"
-      description="Se guardan sólo en este equipo y se recuerdan al volver a abrir Fiscenix. Se respeta la preferencia de movimiento reducido del sistema."
+      description="Se guardan sólo en este equipo y se recuerdan en este navegador. Se respeta la preferencia de movimiento reducido del sistema."
       help-title="Preferencias de este equipo"
-      help-text="Son ajustes LOCALES: cada computadora del despacho tiene los suyos y no se envían al Host. Cambiar el tema o la impresora aquí no afecta a los demás equipos."
+      help-text="Son ajustes LOCALES: cada navegador tiene los suyos y no se envían a ningún servidor. Cambiar el tema o el fondo aquí no afecta a otros navegadores."
     />
     <InlineNotice
       v-if="isPreferencesSaveFailed"

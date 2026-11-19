@@ -7,7 +7,7 @@ import InlineNotice from '../../shared/components/InlineNotice.vue'
 import ThemeToggle from '../../shared/components/ThemeToggle.vue'
 import ApplicationVersion from '../../shared/components/ApplicationVersion.vue'
 import ApplicationLogo from '../../shared/components/ApplicationLogo.vue'
-import { deviceMode, isHostPendingAtLogin, signIn } from './sessionState'
+import { isHostPendingAtLogin, signIn } from './sessionState'
 import { useOfficeBranding } from '../branding/officeBrandingState'
 import { StaggeredEntrance } from '../../shared/motion/staggeredEntrance'
 import LoginBanner from './LoginBanner.vue'
@@ -93,9 +93,6 @@ onBeforeUnmount(() => { password.value = ''; screenEntrance.dispose() })
             </h1>
             <ThemeToggle />
           </div>
-          <p class="lede">
-            Accede con tu cuenta del despacho.
-          </p>
           <InlineNotice
             v-if="isHostPendingAtLogin"
             title="El servicio del despacho todavía se está preparando"
@@ -172,12 +169,12 @@ onBeforeUnmount(() => { password.value = ''; screenEntrance.dispose() })
             </ActionButton>
           </form>
           <p class="field-help">
-            La sesión caduca tras 30 minutos sin actividad. Las notas y los XML se guardan en este equipo, pero sólo se abren con una cuenta autorizada.
+            La sesión de la demo dura 8 horas; recargar la página la cierra y borra los datos.
           </p>
           <div class="login-footer login-stage">
             <!-- Marca de la app (ADR-042); arriba, la del despacho. -->
             <ApplicationLogo />
-            <span>{{ deviceMode === 'host' ? 'Este equipo es el Host del despacho' : 'Este equipo se conecta al Host del despacho' }} · <ApplicationVersion /></span>
+            <span><ApplicationVersion /></span>
           </div>
         </section>
       </div>
@@ -188,8 +185,8 @@ onBeforeUnmount(() => { password.value = ''; screenEntrance.dispose() })
 </template>
 
 <style scoped>
-.login-screen { min-height: 100dvh; container-type: inline-size; background: var(--canvasColor); }
-.login-layout { min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+.login-screen { min-height: calc(100dvh - var(--demoBannerHeight, 0px)); container-type: inline-size; background: var(--canvasColor); }
+.login-layout { min-height: calc(100dvh - var(--demoBannerHeight, 0px)); display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
 .login-column { display: flex; flex-direction: column; min-width: 0; }
 .login-aside { border-bottom: 1px solid var(--borderColor); background: var(--sidebarColor); padding: 12px 48px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px var(--spaceLarge); }
 .login-symbol { display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--radiusCard); overflow: hidden; background: var(--primaryBackgroundColor); color: var(--primaryTextColor); flex-shrink: 0; }

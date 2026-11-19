@@ -5,7 +5,7 @@ import DemoBanner from './demo/components/DemoBanner.vue'
 import StartupSplash from './shared/components/StartupSplash.vue'
 import WarmTooltip from './shared/vueBits/WarmTooltip.vue'
 import { WarmTooltipGroup } from './shared/vueBits/WarmTooltipGroup'
-import { House, Columns3, IdCard, Wallet, Percent, BadgeCheck, Landmark, Settings2, NotebookPen, BookMarked, Mail, Building2, ShieldCheck, PanelLeftClose, PanelLeftOpen, ArrowUpRight, LogOut, UserRound } from '@lucide/vue'
+import { House, Columns3, IdCard, Wallet, Percent, BadgeCheck, Landmark, Settings2, NotebookPen, BookMarked, Mail, Building2, PanelLeftClose, PanelLeftOpen, ArrowUpRight, LogOut, UserRound } from '@lucide/vue'
 import ClientsPage from './modules/clients/ClientsPage.vue'
 import { hasUnsavedClientDraft } from './modules/clients/clientDraft'
 import ConfirmDialog from './shared/components/ConfirmDialog.vue'
@@ -37,7 +37,7 @@ import MailComposerHost from './modules/mail/MailComposerHost.vue'
 import { effectiveTheme, isRestorablePage, loadPreferences, preferences, updatePreferences } from './modules/settings/localPreferencesState'
 import { hasUnsavedNotes } from './modules/notes/notesState'
 import { useOfficeBranding } from './modules/branding/officeBrandingState'
-import { deviceMode, phase, prepareDeviceAtStartup, startupMessage, refreshWorkspaceAccess, sessionUser, signOut, verifySession, workspaceAccess } from './modules/workspace/sessionState'
+import { phase, prepareDeviceAtStartup, startupMessage, refreshWorkspaceAccess, sessionUser, signOut, verifySession, workspaceAccess } from './modules/workspace/sessionState'
 import { useNotifications } from './shared/notifications/notificationStore'
 import { discardNavigationRequest, navigationRequest } from './shared/navigation/navigationRequests'
 import { startSatAutomationWatcher } from './modules/satDownloads/satAutomationWatcher'
@@ -90,7 +90,9 @@ const navigationEntries: NavigationEntry[] = [
   { key: 'mail', title: 'Correo', icon: Mail, capability: 'canSendMail' }
 ]
 const capabilityByPage: Record<RestorablePage, keyof WorkspaceAccess | null> = { home: null, tasks: 'canReadTasks', clients: 'canReadClients', payments: 'canReadMovements', fiscal: 'canUseXml', compliance: 'canReadOpinions', reconciliation: 'canReadReports', catalogs: null, mail: 'canSendMail', notes: 'canUseNotes', settings: null }
-function canOpen(key: RestorablePage): boolean { const capability = capabilityByPage[key]; return capability === null || workspaceAccess.value[capability] }
+/** Pages whose data is not simulated yet; "Catálogos SAT" returns in the catalogs delivery. */
+const unavailablePages: readonly RestorablePage[] = ['catalogs']
+function canOpen(key: RestorablePage): boolean { if (unavailablePages.includes(key)) return false; const capability = capabilityByPage[key]; return capability === null || workspaceAccess.value[capability] }
 const visibleEntries = computed(() => navigationEntries.filter(entry => canOpen(entry.key)))
 /** Si el Host retira un permiso, la página abierta vuelve a Inicio. */
 const currentPage = computed<RestorablePage>(() => canOpen(page.value) ? page.value : 'home')
@@ -274,10 +276,6 @@ onBeforeUnmount(() => { entranceMedia?.revert(); satAutomationWatcher?.stop(); s
           <div><strong class="wordmark">{{ branding.officeName }}</strong><span class="brand-caption">ADMINISTRACIÓN DEL DESPACHO</span></div>
         </div>
         <div class="header-actions">
-          <span class="connection-label"><ShieldCheck
-            :size="15"
-            aria-hidden="true"
-          /> {{ deviceMode === 'host' ? 'Equipo Host' : 'Equipo Cliente' }}</span>
           <span
             class="user-label"
             data-testid="session-user"

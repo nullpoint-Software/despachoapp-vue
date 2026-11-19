@@ -60,3 +60,14 @@ test('never requests another origin', async ({ page }) => {
   await expect(page.getByTestId('configuration-page')).toBeVisible()
   expect(foreignUrls).toEqual([])
 })
+
+test('fits the viewport without page scroll on login and in the workspace, with no Catálogos SAT entry', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 })
+  const hasPageScroll = (): Promise<boolean> => page.evaluate(() => document.documentElement.scrollHeight > window.innerHeight)
+  await page.goto('/')
+  await expect(page.getByTestId('login-page')).toBeVisible()
+  expect(await hasPageScroll()).toBe(false)
+  await enterAsAdministrator(page)
+  expect(await hasPageScroll()).toBe(false)
+  await expect(page.getByRole('button', { name: 'Catálogos SAT' })).toHaveCount(0)
+})
