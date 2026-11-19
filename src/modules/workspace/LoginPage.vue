@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import SplitText from '../../shared/vueBits/SplitText.vue'
 import { ref, onBeforeUnmount, onMounted } from 'vue'
-import { Building2, LogIn, Eye, EyeOff, Settings2 } from '@lucide/vue'
+import { Building2, LogIn, Eye, EyeOff } from '@lucide/vue'
 import ActionButton from '../../shared/components/ActionButton.vue'
 import InlineNotice from '../../shared/components/InlineNotice.vue'
 import ThemeToggle from '../../shared/components/ThemeToggle.vue'
@@ -11,6 +11,7 @@ import { deviceMode, isHostPendingAtLogin, signIn } from './sessionState'
 import { useOfficeBranding } from '../branding/officeBrandingState'
 import { StaggeredEntrance } from '../../shared/motion/staggeredEntrance'
 import LoginBanner from './LoginBanner.vue'
+import DemoAccessPanel from '../../demo/components/DemoAccessPanel.vue'
 
 /**
  * Primera pantalla una vez instalado el equipo, como en el sistema original. Clientes, pagos,
@@ -21,7 +22,6 @@ import LoginBanner from './LoginBanner.vue'
  * Sin barra de desplazamiento (2026-10-13): la columna izquierda usa espacios compactos para caber en 1280×800, 1366×768 y
  * 1920×1080; sólo en ventanas realmente pequeñas aparece el desplazamiento de la página.
  */
-const emit = defineEmits<{ reviewConnection: [] }>()
 /**
  * Si el Host no terminó de prepararse durante la animación de arranque, se avisa aquí y se sigue
  * comprobando cada 3 s; al quedar listo el aviso desaparece y ya se puede iniciar sesión.
@@ -102,7 +102,7 @@ onBeforeUnmount(() => { password.value = ''; screenEntrance.dispose() })
             tone="warning"
           >
             <p data-testid="login-host-pending">
-              Espera un momento. Si no se resuelve, usa "Revisar conexión del equipo" para ver el servidor de datos.
+              Espera un momento y vuelve a intentarlo.
             </p>
           </InlineNotice>
           <InlineNotice
@@ -114,6 +114,7 @@ onBeforeUnmount(() => { password.value = ''; screenEntrance.dispose() })
               {{ error }}
             </p>
           </InlineNotice>
+          <DemoAccessPanel class="login-stage" />
           <form
             class="login-form login-stage"
             @submit.prevent="submit"
@@ -177,12 +178,6 @@ onBeforeUnmount(() => { password.value = ''; screenEntrance.dispose() })
             <!-- Marca de la app (ADR-042); arriba, la del despacho. -->
             <ApplicationLogo />
             <span>{{ deviceMode === 'host' ? 'Este equipo es el Host del despacho' : 'Este equipo se conecta al Host del despacho' }} · <ApplicationVersion /></span>
-            <ActionButton @click="emit('reviewConnection')">
-              <Settings2
-                :size="16"
-                aria-hidden="true"
-              /> Revisar conexión del equipo
-            </ActionButton>
           </div>
         </section>
       </div>

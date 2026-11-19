@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { gsap } from 'gsap'
+import DemoBanner from './demo/components/DemoBanner.vue'
 import StartupSplash from './shared/components/StartupSplash.vue'
 import WarmTooltip from './shared/vueBits/WarmTooltip.vue'
 import { WarmTooltipGroup } from './shared/vueBits/WarmTooltipGroup'
-import { House, Columns3, IdCard, Wallet, Percent, BadgeCheck, Landmark, Settings2, NotebookPen, BookMarked, Mail, Building2, ShieldCheck, PanelLeftClose, PanelLeftOpen, ArrowUpRight, LogOut, UserRound, Power } from '@lucide/vue'
+import { House, Columns3, IdCard, Wallet, Percent, BadgeCheck, Landmark, Settings2, NotebookPen, BookMarked, Mail, Building2, ShieldCheck, PanelLeftClose, PanelLeftOpen, ArrowUpRight, LogOut, UserRound } from '@lucide/vue'
 import ClientsPage from './modules/clients/ClientsPage.vue'
 import { hasUnsavedClientDraft } from './modules/clients/clientDraft'
 import ConfirmDialog from './shared/components/ConfirmDialog.vue'
@@ -60,10 +61,6 @@ let sessionEndedNotificationId: number | null = null
 const page = ref<RestorablePage>('home')
 const pendingPage = ref<RestorablePage | null>(null)
 const isSignOutPending = ref(false)
-/** Confirmación de "Salir de Fiscenix": Main revisa además los borradores antes de detener el Host. */
-const isQuitPending = ref(false)
-async function quitApplication(): Promise<void> { isQuitPending.value = false; await window.contapp.quitApplication() }
-const isReviewingConnection = ref(false)
 let hasRestoredPage = false
 const isBackgroundPaused = computed(() => preferences.value.isBackgroundPaused)
 /** Fondo elegido (ADR-039): Dither es WebGL (AnimatedBackground); los patrones Canvas 2D van en PatternBackground; "none" no monta nada. */
@@ -183,7 +180,6 @@ watch(phase, (value, previous) => {
     void satAutomationWatcher?.checkNow()
   } else hasRestoredPage = false
   if (previous === 'workspace' && value === 'login') sessionEndedNotificationId = notify('Sesión terminada', 'Vuelve a iniciar sesión para continuar.', 'info')
-  if (value !== 'setup') isReviewingConnection.value = false
 })
 /** Consulta de fondo cada 15 s (no prolonga la sesión) y permisos cada minuto. */
 let tick = 0
@@ -227,6 +223,7 @@ onBeforeUnmount(() => { entranceMedia?.revert(); satAutomationWatcher?.stop(); s
     class="skip-link"
     href="#main-content"
   >Saltar al contenido</a>
+  <DemoBanner />
   <Transition name="splash">
     <StartupSplash
       v-if="phase === 'loading' || !isSplashDone"
@@ -237,15 +234,8 @@ onBeforeUnmount(() => { entranceMedia?.revert(); satAutomationWatcher?.stop(); s
   <!-- Un solo grupo de tooltips (Warm Tooltip, Vue Bits) para toda la aplicación: la etiqueta se desliza entre botones vecinos. -->
   <WarmTooltipGroup>
     <template v-if="phase === 'loading'" />
-    <SetupPage
-      v-else-if="phase === 'setup' || isReviewingConnection"
-      :is-reviewing="isReviewingConnection && phase === 'login'"
-      @back="isReviewingConnection = false"
-    />
-    <LoginPage
-      v-else-if="phase === 'login'"
-      @review-connection="isReviewingConnection = true"
-    />
+    <SetupPage v-else-if="phase === 'setup'" />
+    <LoginPage v-else-if="phase === 'login'" />
     <div
       v-else
       class="application-shell"
@@ -258,21 +248,6 @@ onBeforeUnmount(() => { entranceMedia?.revert(); satAutomationWatcher?.stop(); s
         @confirm="page = pendingPage ?? page; pendingPage = null"
       >
         <p>Los cambios de esta ficha se descartarán.</p>
-      </ConfirmDialog>
-      <!-- Salir de verdad (2026-10-04): cerrar la ventana sólo la oculta si el Host sigue en segundo plano. -->
-      <ConfirmDialog
-        :is-open="isQuitPending"
-        title="Salir de Fiscenix"
-        confirm-label="Salir"
-        @close="isQuitPending = false"
-        @confirm="quitApplication"
-      >
-        <p v-if="deviceMode === 'host'">
-          Se cerrará Fiscenix y se detendrá el Host: los demás equipos dejarán de conectarse hasta que vuelvas a abrirlo.
-        </p>
-        <p v-else>
-          Se cerrará Fiscenix en este equipo.
-        </p>
       </ConfirmDialog>
       <ConfirmDialog
         :is-open="isSignOutPending"
@@ -347,20 +322,6 @@ onBeforeUnmount(() => { entranceMedia?.revert(); satAutomationWatcher?.stop(); s
                 :size="18"
                 aria-hidden="true"
               /><span class="header-copy">Cerrar sesión</span>
-            </ActionButton>
-          </WarmTooltip>
-          <WarmTooltip
-            :content="deviceMode === 'host' ? 'Salir de Fiscenix y detener el Host' : 'Salir de Fiscenix'"
-            side="bottom"
-          >
-            <ActionButton
-              aria-label="Salir de Fiscenix"
-              @click="isQuitPending = true"
-            >
-              <Power
-                :size="18"
-                aria-hidden="true"
-              />
             </ActionButton>
           </WarmTooltip>
         </div>

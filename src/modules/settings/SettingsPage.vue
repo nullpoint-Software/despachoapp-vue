@@ -1,24 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { RefreshCw, Printer, SunMoon, Sparkles, Server } from '@lucide/vue'
-import { backgroundStyles, defaultPreferences, ticketWidths, type BackgroundStyle, type LocalPrinter, type ThemePreference, type TicketWidth } from '../../../shared/contracts/localPreferences'
+import { computed, ref, watch } from 'vue'
+import { SunMoon, Sparkles } from '@lucide/vue'
+import { backgroundStyles, defaultPreferences, type BackgroundStyle, type ThemePreference } from '../../../shared/contracts/localPreferences'
 import ActionButton from '../../shared/components/ActionButton.vue'
 import FormModal from '../../shared/components/FormModal.vue'
 import SelectField from '../../shared/components/SelectField.vue'
 import InlineNotice from '../../shared/components/InlineNotice.vue'
-import TicketPreviewDialog from '../../shared/components/TicketPreviewDialog.vue'
-import { useTicketPrinting } from '../../shared/printing/useTicketPrinting'
 import { effectiveTheme, isPreferencesSaveFailed, preferences, updatePreferences } from './localPreferencesState'
-import { deviceMode } from '../workspace/sessionState'
 import SettingsSectionHeader from './SettingsSectionHeader.vue'
 import SettingsCard from './SettingsCard.vue'
 import BackgroundPreview from './BackgroundPreview.vue'
 import { deriveAccentPalette, isHexColor } from '../../shared/styles/accentPalette'
 
 /**
- * Preferencias de este equipo (LOCAL): tema, fondo animado e impresora de tickets. La impresora se
- * elige de la lista que entrega el sistema; imprimir llega en 5.4. Nada de esto sale del equipo.
- * En el equipo Host (7.4): mantener el Host en segundo plano (inicio con Windows y bandeja).
+ * Preferencias de este equipo (LOCAL): tema, color y fondo animado. Nada de esto sale del navegador.
+ * Web demo: la impresora de tickets y el Host en segundo plano son de escritorio y se retiraron.
  *
  * Mosaico (adenda ADR-039, 2026-10-13): columnas CSS equilibradas por altura. Cada tarjeta mide lo que su contenido
  * (sin filas que la estiren) y el navegador reparte las tarjetas entre dos columnas de ≥ 340 px; si no caben, una sola.
@@ -30,7 +26,6 @@ import { deriveAccentPalette, isHexColor } from '../../shared/styles/accentPalet
  * dibujado como tarjetas). "Color principal" acepta cualquier RGB (selector nativo o código hexadecimal); lo que se pinta
  * se deriva para cada tema en `accentPalette.ts` y, si difiere de lo elegido, se avisa "Ajustado para que se lea bien".
  */
-const printers = ref<LocalPrinter[]>([]), isLoadingPrinters = ref(false), printerError = ref('')
 const themeOptions = [{ value: 'system', label: 'Seguir al sistema' }, { value: 'light', label: 'Claro' }, { value: 'dark', label: 'Oscuro' }]
 const themeLabel = computed(() => themeOptions.find(option => option.value === preferences.value.theme)?.label ?? '')
 const isAppearanceModalOpen = ref(false)
@@ -45,25 +40,6 @@ function chooseAccent(value: string): void {
   hasInvalidAccentDraft.value = !isHexColor(normalized)
   if (!hasInvalidAccentDraft.value && normalized !== preferences.value.accentColor) void updatePreferences({ accentColor: normalized })
 }
-const widthOptions = ticketWidths.map(width => ({ value: String(width), label: width + ' mm' }))
-async function loadPrinters(): Promise<void> {
-  isLoadingPrinters.value = true; printerError.value = ''
-  try { printers.value = await window.contapp.listLocalPrinters() } catch { printerError.value = 'No se pudo consultar la lista de impresoras del sistema.' }
-  finally { isLoadingPrinters.value = false }
-}
-function printerOptions() {
-  const saved = preferences.value.printer.printerName
-  const options = [{ value: '', label: 'Sin impresora elegida' }, ...printers.value.map(printer => ({ value: printer.name, label: printer.displayName }))]
-  // Una impresora guardada que ya no está instalada se conserva visible para que el usuario la cambie.
-  if (saved && !printers.value.some(printer => printer.name === saved)) options.push({ value: saved, label: saved + ' (no disponible)' })
-  return options
-}
-/** Ticket de prueba (5.4): confirma impresora, ancho y columnas antes de imprimir recibos. */
-const { preview: testPreview, isPreparing: isPreparingTest, openTicket, closeTicket } = useTicketPrinting()
-function printTest(): void { void openTicket(() => window.contapp.prepareTestTicket()) }
-function choosePrinter(value: string): void { void updatePreferences({ printer: { ...preferences.value.printer, printerName: value || null } }) }
-function chooseWidth(value: string): void { void updatePreferences({ printer: { ...preferences.value.printer, ticketWidthMillimeters: Number(value) as TicketWidth } }) }
-onMounted(() => { void loadPrinters() })
 </script>
 <template>
   <section data-testid="settings-page">
@@ -80,10 +56,7 @@ onMounted(() => { void loadPrinters() })
     >
       <p>El cambio se aplicó en esta sesión, pero no se pudo guardar en el equipo.</p>
     </InlineNotice>
-    <div
-      class="settings-bento"
-      :class="{ 'has-host': deviceMode === 'host' }"
-    >
+    <div class="settings-bento">
       <SettingsCard
         class="settings-panel settings-background"
         data-testid="settings-personalization"
@@ -229,84 +202,7 @@ onMounted(() => { void loadPrinters() })
           </div>
         </FormModal>
       </SettingsCard>
-      <SettingsCard
-        v-if="deviceMode === 'host'"
-        class="settings-panel settings-host"
-        data-testid="settings-background-host"
-        title="Host en segundo plano"
-        :icon="Server"
-        description="Inicia con Windows y, al cerrar la ventana, sigue en la bandeja atendiendo a los Clientes, respaldos y programaciones. Sólo aplica en la copia instalada."
-        help-title="Host en segundo plano"
-        help-text="Los demás equipos sólo trabajan mientras el Host está encendido. Con esta opción, cerrar la ventana no detiene el servicio: Fiscenix queda junto al reloj de Windows y los respaldos de las 02:00 y las consultas programadas siguen corriendo."
-      >
-        <ActionButton
-          :aria-pressed="preferences.shouldRunHostInBackground"
-          @click="updatePreferences({ shouldRunHostInBackground: !preferences.shouldRunHostInBackground })"
-        >
-          {{ preferences.shouldRunHostInBackground ? 'Detener al cerrar la ventana' : 'Mantener en segundo plano' }}
-        </ActionButton>
-      </SettingsCard>
-      <SettingsCard
-        class="settings-panel settings-printer"
-        title="Impresora de tickets"
-        :icon="Printer"
-        description="Imprime los tickets de pago y los cortes de caja de este equipo. Prueba la impresora después de elegirla."
-      >
-        <InlineNotice
-          v-if="printerError"
-          title="Impresoras no disponibles"
-          tone="error"
-        >
-          <p>{{ printerError }}</p>
-        </InlineNotice>
-        <div class="settings-printer-fields">
-          <SelectField
-            id="settings-printer"
-            :model-value="preferences.printer.printerName ?? ''"
-            label="Impresora"
-            :options="printerOptions()"
-            :disabled="isLoadingPrinters"
-            @update:model-value="choosePrinter"
-          />
-          <SelectField
-            id="settings-ticket-width"
-            :model-value="String(preferences.printer.ticketWidthMillimeters)"
-            label="Ancho del ticket"
-            :options="widthOptions"
-            @update:model-value="chooseWidth"
-          />
-          <ActionButton
-            :is-loading="isLoadingPrinters"
-            @click="loadPrinters"
-          >
-            <RefreshCw
-              :size="16"
-              aria-hidden="true"
-            /> Actualizar lista
-          </ActionButton>
-          <!-- Siempre disponible: sin impresora elegida, Main responde qué falta y no se envía nada. -->
-          <ActionButton
-            :is-loading="isPreparingTest"
-            @click="printTest"
-          >
-            <Printer
-              :size="16"
-              aria-hidden="true"
-            /> Imprimir prueba
-          </ActionButton>
-        </div>
-        <p
-          v-if="!isLoadingPrinters && !printers.length && !printerError"
-          class="field-help"
-        >
-          El sistema no informó impresoras instaladas.
-        </p>
-      </SettingsCard>
     </div>
-    <TicketPreviewDialog
-      :preview="testPreview"
-      @close="closeTicket"
-    />
   </section>
 </template>
 <style scoped>
@@ -333,5 +229,4 @@ onMounted(() => { void loadPrinters() })
 .accent-results { display: flex; flex-wrap: wrap; gap: var(--spaceMedium); margin: 0; padding: 0; list-style: none; font-size: 12px; }
 .accent-results li { display: inline-flex; align-items: center; gap: 6px; }
 .accent-chip { width: 16px; height: 16px; border: 2px solid var(--borderColor); }
-.settings-printer-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: var(--spaceMedium); align-items: end; }
 </style>
