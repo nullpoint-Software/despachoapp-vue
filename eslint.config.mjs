@@ -6,7 +6,7 @@ import vue from 'eslint-plugin-vue'
 const restrictedImports = [...builtinModules, 'electron', 'node:*', 'better-sqlite3', 'mysql2', 'mysql2/*']
 /** Las capas de presentación y contratos no pueden importar capacidades privilegiadas. */
 export default [
-  { ignores: ['node_modules/**', 'dist/**','out/**', 'release/**', '.tools/**', 'docs/**', 'test-results/**', 'video/**'] },
+  { ignores: ['node_modules/**', 'dist/**', '.env*', '.codex/**', '.codex-*', 'tmp/**', 'out/**', 'release/**', '.tools/**', 'docs/**', 'test-results/**', 'video/**'] },
   javascript.configs.recommended,
   ...typescript.configs.recommended,
   ...vue.configs['flat/recommended'],

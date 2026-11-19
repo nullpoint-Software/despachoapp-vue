@@ -5,3 +5,8 @@ playwright-report
 *.log
 .vercel
 /docs/Obsidian/
+.env
+.env.*
+/.codex/
+/.codex-*
+/tmp/
