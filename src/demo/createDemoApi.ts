@@ -11,14 +11,11 @@ export interface DemoApiOptions { now?: () => Date; storage?: Pick<Storage, 'get
 /**
  * Ensambla `window.contapp` de la demo: los handlers simulados más todo el resto del contrato rechazado con
  * `rejectInDemo`. El literal está tipado `DesktopApi`, así que añadir un método al contrato rompe el typecheck
- * hasta que se liste aquí.
+ * hasta que se liste aquí. Los `rejectInDemo` van primero y los handlers al final: si un handler nuevo
+ * conserva su clave en la lista de rechazos, el compilador falla (TS2783) en vez de dejar que el rechazo gane en silencio.
  */
 export function createDemoApi(store: DemoStore, options: DemoApiOptions = {}): DesktopApi {
   return {
-    ...createDemoSessionHandler(store, options.now ?? (() => new Date())),
-    ...createDemoPlatformHandler(options.reloadPage ?? (() => undefined)),
-    ...createDemoPreferencesHandler(options.storage ?? null),
-    ...createDemoBrandingHandler(store),
     manageLinkFile: rejectInDemo('manageLinkFile'),
     manageClients: rejectInDemo('manageClients'),
     manageDocuments: rejectInDemo('manageDocuments'),
@@ -95,6 +92,11 @@ export function createDemoApi(store: DemoStore, options: DemoApiOptions = {}): D
     configureInstallation: rejectInDemo('configureInstallation'),
     restorePreviousInstallation: rejectInDemo('restorePreviousInstallation'),
     configureHostDatabase: rejectInDemo('configureHostDatabase'),
-    prepareHostDatabase: rejectInDemo('prepareHostDatabase')
+    prepareHostDatabase: rejectInDemo('prepareHostDatabase'),
+    // Handlers go last: a key still listed in rejectInDemo above fails typecheck (TS2783 duplicate property).
+    ...createDemoSessionHandler(store, options.now ?? (() => new Date())),
+    ...createDemoPlatformHandler(options.reloadPage ?? (() => undefined)),
+    ...createDemoPreferencesHandler(options.storage ?? null),
+    ...createDemoBrandingHandler(store)
   }
 }

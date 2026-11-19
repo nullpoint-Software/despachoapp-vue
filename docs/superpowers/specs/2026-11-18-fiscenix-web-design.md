@@ -82,7 +82,7 @@ flowchart LR
 - La UI de Fiscenix sólo habla con `window.contapp: DesktopApi` (`ContaApp2/shared/contracts/desktop.ts`). Eso es lo que hace posible el port.
 - `src/` y `shared/` se copian de ContaApp2 en el commit `c0c00bf`. Los módulos Vue se tocan lo menos posible.
 - `main.ts` instala `window.contapp = createDemoApi()` antes de montar la app.
-- `DemoApi` es `DesktopApi` sin los métodos exclusivos de escritorio. Si una pantalla usa uno de esos métodos, se quita esa parte de la pantalla; no se simula.
+- `createDemoApi` devuelve el `DesktopApi` completo (porque `window.contapp` está tipado `DesktopApi` y las pantallas copiadas compilan contra él); los métodos no simulados rechazan con `DemoUnavailableError`, y la UI exclusiva de escritorio se quita de las pantallas en lugar de simularse.
 
 ### `src/demo/`: la API simulada
 
@@ -162,7 +162,7 @@ Cada entrega queda publicada en Vercel y probada. El plan detallado se escribe p
 
 - Las pruebas unitarias de `shared/` que vienen de ContaApp2 se conservan (Vitest).
 - Cada manejador de `src/demo` tiene pruebas de sus reglas: validación, permisos y formas de respuesta contra `shared/contracts`.
-- Una prueba Playwright de humo contra el build recorre: entrar a la demo, crear un cliente, recargar y comprobar que ya no está.
+- Una prueba Playwright de humo contra el build recorre: entrar a la demo, crear un cliente, recargar y comprobar que ya no está. La parte de crear un cliente llega en la entrega 1 (la entrega 0 no tiene módulos); el humo de la entrega 0 comprueba el acceso y que recargar olvida la sesión.
 
 ## Decidido por el autor
 

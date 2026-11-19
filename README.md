@@ -20,6 +20,7 @@ Contraseña de todos: `demo1234`.
 npm install
 npm run dev        # servidor de desarrollo
 npm run check      # typecheck, lint, pruebas unitarias y build
+npx playwright install chromium   # una vez
 npm run test:e2e   # Playwright contra el build servido con vite preview
 ```
 

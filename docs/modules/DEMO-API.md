@@ -32,6 +32,7 @@ Todo lo demás (clientes, documentos, movimientos, tareas, SAT, correo, respaldo
 
 - **EPHEMERAL** (`DemoStore`, memoria): usuarios y marca, sembrados por `createDemoSeed`; se pierden al recargar.
 - **LOCAL** (`localStorage`, clave `fiscenixWeb.localPreferences`): preferencias del dispositivo como el tema; sobreviven a la recarga.
+  La capa demo escribe sólo `fiscenixWeb.localPreferences`, pero algunas pantallas copiadas de Fiscenix guardan pequeñas preferencias de UI (`drawerWidth`, árbol de carpetas de notas, destinatarios recientes de correo). Los destinatarios recientes deben pasar al store en memoria al habilitar Correo (entrega 10). La CSP sólo garantiza que no hay red.
 
 ## Contrato `DemoUnavailableError`
 
@@ -40,7 +41,7 @@ Todo lo demás (clientes, documentos, movimientos, tareas, SAT, correo, respaldo
 ## Añadir un módulo en una entrega posterior
 
 1. Escribir su handler en `src/demo/handlers/` sobre `DemoStore`.
-2. Esparcirlo en `createDemoApi` y quitar sus claves de la lista de `rejectInDemo`.
+2. Esparcirlo en `createDemoApi` y quitar sus claves de la lista de `rejectInDemo`. El compilador lo impone: los handlers van después de los rechazos, y una clave duplicada falla el typecheck (TS2783).
 3. Activar sus flags de `WorkspaceAccess` por perfil en `demoProfiles.ts`.
 4. Extender el seed en `demoSeed.ts`.
 5. Pruebas unitarias del handler y e2e; actualizar este documento.

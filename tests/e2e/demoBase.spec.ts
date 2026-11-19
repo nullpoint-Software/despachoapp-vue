@@ -18,6 +18,7 @@ test('shows the banner and the demo access on load', async ({ page }) => {
 
 test('enters as Administrador and lands on Inicio', async ({ page }) => {
   await enterAsAdministrator(page)
+  await expect(page.getByTestId('home-page')).toBeVisible()
 })
 
 test('forgets the session on reload', async ({ page }) => {
@@ -45,7 +46,7 @@ test('opens Configuración without page errors', async ({ page }) => {
   await enterAsAdministrator(page)
   await page.getByRole('button', { name: 'Configuración' }).click()
   await expect(page.getByTestId('configuration-page')).toBeVisible()
-  await page.waitForTimeout(500)
+  await page.waitForLoadState('networkidle')
   expect(pageErrors).toEqual([])
   expect(consoleErrors.filter(text => text.includes('Content Security Policy'))).toEqual([])
 })
@@ -73,4 +74,15 @@ test('fits the viewport without page scroll on login and in the workspace, with 
   await enterAsAdministrator(page)
   expect(await hasPageScroll()).toBe(false)
   await expect(page.getByRole('button', { name: 'Catálogos SAT' })).toHaveCount(0)
+})
+
+test('keeps the banner notice and link fully visible at 375px', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto('/')
+  const link = page.getByTestId('demo-banner').getByRole('link', { name: 'Código' })
+  await expect(link).toBeVisible()
+  const box = await link.boundingBox()
+  expect(box && box.x >= 0 && box.x + box.width <= 375).toBe(true)
+  const isClipped = await page.getByTestId('demo-banner').evaluate(element => element.scrollWidth > element.clientWidth)
+  expect(isClipped).toBe(false)
 })

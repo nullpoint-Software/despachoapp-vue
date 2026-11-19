@@ -4,7 +4,7 @@ Pointers: diseño visual en `DESIGN.md`; especificación en `docs/superpowers/sp
 
 ## Regla de oro: sólo memoria
 
-La demo no hace peticiones externas ni usa servidor. Todo dato de negocio vive en `DemoStore` (memoria) y se pierde al recargar. Sólo las preferencias del dispositivo usan `localStorage` (clave `fiscenixWeb.localPreferences`). La CSP de `src/index.html` y `vercel.json` lo hacen cumplir.
+La demo no hace peticiones externas ni usa servidor. Todo dato de negocio vive en `DemoStore` (memoria) y se pierde al recargar. La capa demo escribe en `localStorage` sólo `fiscenixWeb.localPreferences`; algunas pantallas copiadas de Fiscenix guardan pequeñas preferencias de UI (`drawerWidth`, árbol de carpetas de notas, destinatarios recientes de correo). Los destinatarios recientes deben pasar al store en memoria cuando se habilite Correo (entrega 10). La CSP de `src/index.html` y `vercel.json` sólo hace cumplir que no hay red.
 
 ## Reglas de código (heredadas de ContaApp2)
 

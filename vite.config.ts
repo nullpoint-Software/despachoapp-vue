@@ -10,7 +10,7 @@ export default defineConfig({
     name: 'development-content-policy',
     // Vite needs inline styles and HMR websockets only during `vite dev`; the build keeps the strict CSP.
     transformIndexHtml(html, context) {
-      return context.server ? html.replace("style-src 'self'", "style-src 'self' 'unsafe-inline'").replace("connect-src 'none'", "connect-src 'self' ws:") : html
+      return context.server ? html.replace("style-src 'self'", "style-src 'self' 'unsafe-inline'").replace("connect-src 'self'", "connect-src 'self' ws:") : html
     }
   }]
 })
