@@ -1,0 +1,519 @@
+/*
+ * Base visual de Fiscenix: brutalista con un acento (rediseño 2026-10-04, ADR-034; ver 15-DESIGN-GUIDELINES):
+ * - Papel blanco y tinta negra; un solo acento, el azul tinta de los sellos de oficina, para la acción principal,
+ *   la selección y el foco. Los estados conservan su color (verde, ámbar, rojo) y se dibujan como sellos.
+ * - Geometría: esquinas rectas, bordes de 2 px en tinta y sombras duras desplazadas (4 px en tarjetas y botones,
+ *   8 px en modales y cajones).
+ * - Geist empaquetada (src/main.ts) en peso fuerte para títulos y Geist Mono para rótulos y datos. Light y Dark.
+ * Los nombres de los tokens se conservan para que los componentes no dependan de valores concretos.
+ * Los tokens de color van en hexadecimal: las pruebas de contraste los leen así.
+ */
+:root {
+  --canvasColor: #EDEDEA; --surfaceColor: #FFFFFF; --sidebarColor: #FFFFFF; --textColor: #0B0B0B;
+  --secondaryReferenceColor: #4D4D4D; --mutedTextColor: #4D4D4D; --borderColor: #0B0B0B; --strongBorderColor: #0B0B0B;
+  /* Hilo: separadores dentro de un marco (filas de tabla y de lista), más finos y tenues que el marco. */
+  --hairlineColor: #C9C9C4;
+  /* Azul tinta de sello: el único acento. Texto blanco encima (7.9:1). */
+  --accentColor: #1F3BD6; --primaryBackgroundColor: #1F3BD6; --primaryTextColor: #FFFFFF; --inkColor: #0B0B0B;
+  --focusColor: #1F3BD6; --subtleColor: #F4F4F1; --inputColor: #FFFFFF; --hoverColor: #E4E4E0;
+  --successColor: #15803D; --warningColor: #A16207; --errorColor: #D1000A; --infoColor: #1D4ED8;
+  --spaceSmall: 8px; --spaceMedium: 16px; --spaceLarge: 24px; --spaceSection: 48px;
+  --controlBorder: 2px; --structureBorder: 2px; --controlHeight: 40px;
+  /* Esquinas rectas en todo: el brutalismo no redondea. */
+  --radiusControl: 0px; --radiusCard: 0px; --radiusNested: 0px; --radiusSmall: 0px;
+  /* Movimiento (pulido 2026-10-04, escala de transitions.dev): duración y curva por uso, no por número. */
+  --durationStagger: 40ms; --durationQuick: 150ms; --durationFast: 250ms; --durationMedium: 350ms; --durationSlow: 400ms;
+  --easeSmoothOut: cubic-bezier(0.22, 1, 0.36, 1); --easeInOut: ease-in-out;
+  --scaleModal: 0.96; --scalePress: 0.96; --blurSmall: 2px;
+  /* Sombras duras en tinta: tarjetas y botones 4 px, superposiciones 8 px. */
+  --shadowInk: #0B0B0B;
+  --cardShadow: 4px 4px 0 var(--shadowInk); --buttonShadow: 3px 3px 0 var(--shadowInk); --overlayShadow: 8px 8px 0 var(--shadowInk);
+  --fontFamily: "Geist Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --monoFontFamily: "Geist Mono Variable", ui-monospace, Consolas, monospace;
+  font-family: var(--fontFamily); font-feature-settings: "ss01" on, "cv11" on; line-height: 1.45; font-size: 14px;
+  color: var(--textColor); background: var(--canvasColor); color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --canvasColor: #0B0B0B; --surfaceColor: #161616; --sidebarColor: #111111; --textColor: #F2F2EF;
+  --secondaryReferenceColor: #B8B8B8; --mutedTextColor: #B8B8B8; --borderColor: #F2F2EF; --strongBorderColor: #F2F2EF;
+  --hairlineColor: #3A3A3A;
+  --accentColor: #8FA3FF; --primaryBackgroundColor: #8FA3FF; --primaryTextColor: #0B0B0B; --inkColor: #F2F2EF;
+  --focusColor: #8FA3FF; --subtleColor: #1C1C1C; --inputColor: #161616; --hoverColor: #262626;
+  --successColor: #4ADE80; --warningColor: #FACC15; --errorColor: #FF6467; --infoColor: #60A5FA;
+  --shadowInk: #F2F2EF;
+  color-scheme: dark;
+}
+/* Color principal (ADR-039, adenda 2026-10-13): App.vue escribe en línea sobre <html> los tokens derivados del color elegido
+   (--accentColor, --primaryBackgroundColor, --primaryTextColor y --focusColor; ver accentPalette.ts). Los valores de arriba son el respaldo. */
+* { box-sizing: border-box; }
+body { margin: 0; -webkit-font-smoothing: antialiased; }
+:root { accent-color: var(--primaryBackgroundColor); caret-color: var(--textColor); scrollbar-color: var(--strongBorderColor) transparent; }
+::selection { background: var(--textColor); color: var(--surfaceColor); }
+/* Títulos equilibrados y párrafos sin viudas (make-interfaces-feel-better). */
+h1, h2, h3, h4 { text-wrap: balance; }
+p, li, dd { text-wrap: pretty; }
+button, input, select, textarea { font: inherit; }
+button, a, input, select { -webkit-tap-highlight-color: transparent; }
+button { touch-action: manipulation; }
+:focus-visible { outline: 2px solid var(--focusColor); outline-offset: 2px; }
+/* Las alternativas técnicas se revelan a petición, con un objetivo de teclado/táctil completo. */
+details { margin-block: 16px; min-width: 0; }
+summary { min-height: var(--controlHeight); padding: 10px 16px; border: 1px solid var(--borderColor); border-radius: var(--radiusControl); background: var(--surfaceColor); cursor: pointer; font-weight: 500; overflow-wrap: anywhere; }
+details[open] > summary { margin-bottom: 16px; }
+svg { flex-shrink: 0; stroke-width: 1.75; }
+code, kbd, samp, pre { font-family: var(--monoFontFamily); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* Fondo (ADR-039): Dither monocromo (AnimatedBackground) a media resolución, con el píxel visible a propósito, o un patrón Canvas 2D (PatternBackground). */
+.animated-background { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
+.animated-background canvas { display: block; image-rendering: pixelated; }
+.application-shell { min-height: 100dvh; display: flex; flex-direction: column; }
+.application-header, footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 24px; flex-wrap: wrap; background: var(--canvasColor); }
+.application-header { border-bottom: 1px solid var(--borderColor); position: relative; z-index: 2; }
+.brand-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand-identity > div { min-width: 0; }
+.brand-symbol { display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radiusNested); overflow: hidden; background: var(--primaryBackgroundColor); color: var(--primaryTextColor); flex-shrink: 0; }
+.brand-symbol:has(img) { background: var(--surfaceColor); box-shadow: inset 0 0 0 1px var(--borderColor); }
+.brand-symbol img { width: 100%; height: 100%; object-fit: contain; }
+.wordmark { font-size: 18px; font-weight: 600; line-height: 1.2; letter-spacing: -.025em; display: block; overflow-wrap: anywhere; max-width: 40ch; }
+.brand-caption { display: block; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--mutedTextColor); margin-top: 2px; font-weight: 500; }
+.header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.connection-label { display: inline-flex; gap: 6px; align-items: center; color: var(--mutedTextColor); font-size: 12px; }
+.workspace-layout { display: grid; grid-template-columns: 248px minmax(0, 1fr); flex: 1; }
+.sidebar { padding: 20px 12px; border-right: 1px solid var(--borderColor); background: var(--sidebarColor); display: flex; flex-direction: column; gap: 2px; }
+.sidebar-heading { display: flex; align-items: center; justify-content: space-between; margin: 0 8px 12px; gap: 8px; }
+.sidebar .eyebrow { margin: 0; color: var(--mutedTextColor); font-size: 12px; letter-spacing: .05em; }
+.navigation-item { width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px 12px; background: transparent; color: var(--mutedTextColor); border: 0; border-radius: var(--radiusNested); cursor: pointer; font-size: 14px; font-weight: 500; min-height: 40px; }
+.navigation-item:hover { background: var(--hoverColor); color: var(--textColor); }
+.navigation-item[aria-current="page"] { color: var(--textColor); background: var(--surfaceColor); box-shadow: var(--cardShadow); }
+.nav-arrow { margin-left: auto; }
+.sidebar-bottom { margin-top: auto; padding: 12px 0 0; border-top: 1px solid var(--borderColor); }
+.section-number { font-size: 11px; letter-spacing: .05em; color: var(--mutedTextColor); }
+.sidebar-bottom p { font-size: 13px; line-height: 1.6; }
+.sidebar-mode { display: inline-block; font-size: 12px; font-weight: 500; color: var(--textColor); background: var(--subtleColor); border-radius: var(--radiusControl); padding: 2px 8px; }
+.sidebar-collapsed .workspace-layout { grid-template-columns: 72px minmax(0, 1fr); }
+.sidebar-collapsed .sidebar-copy { display: none; }
+.sidebar-collapsed .sidebar { padding-inline: 10px; }
+.sidebar-collapsed .navigation-item { justify-content: center; padding-inline: 8px; }
+.sidebar-collapsed .sidebar-heading { margin-inline: 0; justify-content: center; }
+main { min-width: 0; width: 100%; padding: 40px 48px; }
+.page-content { min-width: 0; }
+h1 { font-size: 32px; line-height: 1.15; letter-spacing: -.025em; margin: 0 0 8px; font-weight: 600; }
+h2 { font-size: 18px; line-height: 1.4; letter-spacing: -.01em; font-weight: 600; }
+h3 { font-size: 16px; margin: 0; font-weight: 600; }
+.eyebrow { font-size: 12px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--mutedTextColor); }
+/* Contexto bajo un título (cliente, periodo): reemplaza a las etiquetas que iban encima. */
+.heading-meta { margin: 4px 0 0; font-size: 13px; color: var(--mutedTextColor); }
+.lede { max-width: 65ch; margin-bottom: 32px; color: var(--mutedTextColor); font-size: 16px; line-height: 1.5; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--borderColor); padding-top: 16px; }
+.device-information { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--borderColor); }
+.device-information dt { color: var(--mutedTextColor); font-size: 12px; }
+.device-information dd { margin: 5px 0; font-size: 14px; font-weight: 500; }
+.device-id { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; font-family: var(--monoFontFamily); }
+/* Tarjeta: superficie de papel, borde fino, 24 px y sombra apenas perceptible. */
+.configuration-form, .surface-panel, .table-panel { background: var(--surfaceColor); border: 0; border-radius: var(--radiusCard); box-shadow: var(--cardShadow); }
+.configuration-form { max-width: 760px; display: grid; gap: 18px; margin: 24px 0; padding: 20px; }
+.configuration-form > p { margin: 0; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field label { font-weight: 500; font-size: 14px; }
+/* Campo: relleno gris en reposo; el foco cambia el relleno por un anillo. */
+.field input, .field select, .field textarea { min-width: 0; width: 100%; min-height: var(--controlHeight); border: 1px solid var(--borderColor); border-radius: var(--radiusControl); padding: 8px 14px; background: var(--inputColor); color: var(--textColor); }
+.field textarea { border-radius: var(--radiusNested); padding: 10px 14px; resize: vertical; }
+.field select { padding-right: 32px; }
+.field input, .field select, .field textarea { transition-property: background-color, border-color, box-shadow; transition-duration: var(--durationQuick); transition-timing-function: var(--easeSmoothOut); }
+.field input:hover, .field select:hover, .field textarea:hover { border-color: var(--strongBorderColor); }
+.field input:focus, .field select:focus, .field textarea:focus { background: var(--surfaceColor); border-color: var(--strongBorderColor); }
+.field input::placeholder, .field textarea::placeholder { color: var(--mutedTextColor); }
+.field input[aria-invalid="true"] { border-color: var(--errorColor); }
+.field-help { color: var(--mutedTextColor); font-size: 12px; margin: 0; line-height: 1.5; }
+.check-field { display: flex; align-items: center; gap: 10px; min-height: 36px; font-size: 14px; }
+.check-field input { flex-shrink: 0; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+/* Botones en píldora: secundario con contorno fino, primario en tinta, destructivo en rojo. */
+.action-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--controlHeight); padding: 8px 16px; border: 1px solid var(--borderColor); border-radius: var(--radiusControl); background: var(--surfaceColor); color: var(--textColor); cursor: pointer; font-size: 14px; font-weight: 500; position: relative; }
+.action-button > span:not(.button-spinner):not(.sr-only) { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.action-button, .icon-button, .navigation-item, .segmented-tabs button { transition-property: background-color, border-color, color, opacity, box-shadow; transition-duration: var(--durationQuick); transition-timing-function: var(--easeSmoothOut); }
+.action-button:hover:not(:disabled) { background: var(--hoverColor); }
+.button-primary { background: var(--primaryBackgroundColor); border-color: var(--primaryBackgroundColor); color: var(--primaryTextColor); }
+.button-primary:hover:not(:disabled) { background: var(--primaryBackgroundColor); opacity: .88; }
+.button-danger { color: var(--errorColor); }
+.button-danger:hover:not(:disabled) { border-color: var(--errorColor); background: var(--surfaceColor); }
+.action-button:disabled, .field input:disabled, .field select:disabled { cursor: not-allowed; opacity: .5; }
+.button-label-loading { opacity: .2; }
+.button-spinner { position: absolute; display: grid; place-items: center; }
+.icon-button { display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 6px; cursor: pointer; border: 0; border-radius: var(--radiusControl); background: transparent; color: var(--textColor); flex-shrink: 0; }
+.icon-button:hover { background: var(--hoverColor); }
+/* Badge en píldora; los estados usan un relleno suave y el texto dice el significado además del color. */
+.status-label { display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radiusControl); padding: 2px 8px; font-size: 12px; font-weight: 500; line-height: 1.5; white-space: nowrap; background: var(--subtleColor); color: var(--textColor); box-shadow: inset 0 0 0 1px var(--borderColor); }
+.inline-notice { display: flex; align-items: flex-start; gap: 12px; border: 1px solid var(--borderColor); border-radius: var(--radiusNested); background: var(--surfaceColor); padding: 14px 16px; margin: 24px 0; overflow-wrap: anywhere; }
+.inline-notice > svg { margin-top: 2px; }
+.inline-notice strong { font-size: 14px; font-weight: 600; color: var(--textColor); }
+.inline-notice p { margin: 6px 0; font-size: 14px; color: var(--mutedTextColor); }
+.inline-notice .actions { margin-top: 12px; }
+.tone-error { color: var(--errorColor); }
+.tone-warning { color: var(--warningColor); }
+.tone-success { color: var(--successColor); }
+.tone-info { color: var(--infoColor); }
+.table-region { overflow-x: auto; max-width: 100%; border: 1px solid var(--borderColor); border-radius: var(--radiusNested); margin: 24px 0; background: var(--surfaceColor); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+caption { text-align: left; padding: 14px 16px; font-weight: 600; background: var(--surfaceColor); border-bottom: 1px solid var(--borderColor); }
+th, td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--borderColor); min-height: 40px; }
+tbody tr:last-child > td, tbody tr:last-child > th { border-bottom: 0; }
+th { background: transparent; color: var(--mutedTextColor); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+td { vertical-align: top; }
+tbody tr:hover { background: var(--subtleColor); }
+.numeric { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.reference-section { border-top: 1px solid var(--borderColor); margin-top: 32px; padding-top: 16px; }
+dialog { border: 0; border-radius: var(--radiusCard); box-shadow: var(--overlayShadow); padding: 24px; width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; background: var(--surfaceColor); color: var(--textColor); }
+dialog::backdrop { background: rgb(0 0 0 / 45%); backdrop-filter: blur(2px); }
+dialog .actions { margin-top: 24px; justify-content: flex-end; }
+footer { border-top: 1px solid var(--borderColor); color: var(--mutedTextColor); font-size: 12px; padding-block: 10px; }
+.skip-link { position: fixed; left: 16px; top: -100px; background: var(--surfaceColor); color: var(--textColor); padding: 12px; border-radius: var(--radiusControl); z-index: 100; }
+.skip-link:focus { top: 12px; }
+.autocomplete-field { position: relative; }
+.input-icon-wrap { position: relative; }
+.input-icon-wrap > svg { position: absolute; left: 14px; top: 12px; color: var(--mutedTextColor); pointer-events: none; }
+.input-icon-wrap input { padding-left: 40px; }
+.autocomplete-menu { position: absolute; top: 72px; inset-inline: 0; z-index: 5; border: 1px solid var(--borderColor); border-radius: var(--radiusNested); background: var(--surfaceColor); box-shadow: var(--overlayShadow); overflow: hidden; }
+.autocomplete-menu ul { max-height: 240px; overflow-y: auto; list-style: none; margin: 0; padding: 4px; }
+.autocomplete-menu li { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: var(--radiusSmall); cursor: pointer; font-size: 14px; }
+.autocomplete-menu li:hover, .autocomplete-menu li[aria-selected="true"] { background: var(--subtleColor); }
+.autocomplete-menu p { font-size: 12px; color: var(--mutedTextColor); padding: 10px; margin: 0; }
+.autocomplete-hint { border-top: 1px solid var(--borderColor); }
+/* En la capa superior (popover, `usePopoverMenu`): fijo junto al campo; sin los márgenes ni el inset que el navegador da a un popover. */
+.autocomplete-menu[popover] { position: fixed; inset: auto; margin: 0; padding: 0; overflow: hidden; color: var(--textColor); }
+.autocomplete-menu[popover] ul { max-height: var(--menuListHeight, 240px); }
+.notification-region { position: fixed; right: 24px; z-index: 50; width: min(380px, calc(100% - 32px)); display: grid; gap: 10px; pointer-events: none; padding: 4px; }
+.toast-caption { display: block; margin-top: 4px; font-family: var(--monoFontFamily); font-size: 11px; color: var(--mutedTextColor); }
+.surface-panel { padding: 20px; }
+/* Configuración → Despacho (2026-10-17): identidad y vista previa del mismo ancho y alto. */
+.branding-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 24px; }
+.branding-layout .configuration-form { margin: 0; }
+/* El talón que cae se recorta aquí: fuera del recuadro agrandaba el área y aparecían barras de desplazamiento. */
+.branding-preview { text-align: center; padding-block: 32px; overflow: clip; }
+.logo-preview { width: 128px; height: 128px; margin: 24px auto; display: grid; place-items: center; border: 1px solid var(--borderColor); border-radius: var(--radiusCard); overflow: hidden; color: var(--textColor); background: var(--canvasColor); }
+.logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.branding-preview h2 { overflow-wrap: anywhere; }
+.branding-preview .preview-title { margin: 0; font-size: 14px; font-weight: 500; color: var(--mutedTextColor); }
+.form-footer { border-top: 1px solid var(--borderColor); padding-top: 16px; margin-top: 4px; }
+@media (max-width: 1000px) { main { padding: 32px 28px; } .branding-layout { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  .workspace-layout, .sidebar-collapsed .workspace-layout { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--borderColor); display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; padding: 12px 16px; }
+  .sidebar-heading, .collapse-toggle { display: none; }
+  .sidebar-bottom { display: contents; }
+  .navigation-item { width: auto; flex: 1; justify-content: center; min-width: 44px; }
+  .sidebar-collapsed .sidebar-copy { display: inline; }
+  .navigation-item .nav-arrow { display: none; }
+  .navigation-item .sidebar-copy { font-size: 12px; }
+  .device-information { grid-template-columns: 1fr; }
+  main, .application-header, footer { padding: 20px; }
+  .application-header { gap: 16px; }
+  .header-actions { gap: 8px; }
+  .connection-label { display: none; }
+  .theme-button { padding: 10px; }
+  .theme-button span span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .configuration-form, .surface-panel { padding: 16px; }
+  .notification-region { right: 16px; }
+}
+@media (max-width: 420px) { .navigation-item { flex-direction: column; gap: 5px; padding: 8px 4px; } .wordmark { font-size: 17px; max-width: 22ch; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+
+/* El marco permanece inmóvil; sólo el documento central tiene desplazamiento. */
+.application-shell { height: 100dvh; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+.workspace-layout { min-height: 0; overflow: hidden; }
+.sidebar { min-height: 0; overflow-y: auto; }
+main { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.navigation-item { flex-shrink: 0; }
+.settings-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.settings-panel h2 { margin-top: 0; }
+.note-workbench { border: 1px solid var(--borderColor); border-radius: var(--radiusCard); background: var(--subtleColor); overflow: hidden; }
+.icon-button:disabled { opacity: .5; cursor: not-allowed; }
+.toolbar-divider { width: 1px; background: var(--borderColor); margin: 4px 8px; }
+.note-status { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 12px 24px; font-size: 12px; color: var(--mutedTextColor); border-top: 1px solid var(--borderColor); }
+@media (max-width: 760px) {
+  .workspace-layout { grid-template-rows: auto minmax(0, 1fr); }
+  .sidebar, .sidebar-collapsed .sidebar { flex-wrap: nowrap; overflow-x: auto; padding: 8px; gap: 4px; }
+  .navigation-item { flex-direction: row; flex: 0 0 auto; padding: 8px; }
+  .navigation-item .sidebar-copy, .sidebar-collapsed .navigation-item .sidebar-copy { display: none; }
+  .application-header { padding: 10px 16px; flex-wrap: nowrap; }
+  .brand-caption { display: none; }
+  .wordmark { font-size: 17px; max-width: 20ch; }
+  footer { padding: 6px 16px; }
+  footer > span:last-child { display: none; }
+}
+/* Estados: relleno suave + texto oscuro del mismo tono (AA). El texto identifica el significado además del color. */
+:root { --successFill: #DCFCE7; --successText: #14532D; --warningFill: #FEF3C7; --warningText: #713F12; --errorFill: #FEE2E2; --errorText: #991B1B; --infoFill: #DBEAFE; --infoText: #1E3A8A; --statusText: #0A0A0A; }
+:root[data-theme="dark"] { --successFill: #0F2E1C; --successText: #86EFAC; --warningFill: #33270A; --warningText: #FDE68A; --errorFill: #3B1112; --errorText: #FCA5A5; --infoFill: #13254A; --infoText: #BFDBFE; --statusText: #FAFAFA; }
+.status-label.tone-success { background: var(--successFill); color: var(--successText); box-shadow: none; }
+.status-label.tone-warning { background: var(--warningFill); color: var(--warningText); box-shadow: none; }
+.status-label.tone-error { background: var(--errorFill); color: var(--errorText); box-shadow: none; }
+.status-label.tone-info { background: var(--infoFill); color: var(--infoText); box-shadow: none; }
+.theme-button { width: 40px; height: 40px; padding: 10px; }
+main { max-width: none; container-type: inline-size; }
+.page-content { max-width: 1600px; margin-inline: auto; }
+.configuration-form { width: 100%; max-width: none; }
+.note-document { min-width: 0; }
+.note-metadata { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; margin-bottom: 16px; }
+.compact-field { display: grid; gap: 4px; font-size: 12px; min-width: 0; max-width: 100%; }
+.compact-field input, .compact-field select { min-height: 36px; padding: 6px 12px; max-width: 100%; min-width: 0; border: 1px solid var(--borderColor); border-radius: var(--radiusControl); color: var(--textColor); background: var(--inputColor); }
+.editor-views { display: grid; min-width: 0; }
+.split-view { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+.markdown-panel { display: grid; gap: 12px; padding: 16px; min-width: 0; }
+.markdown-panel textarea { width: 100%; min-height: 360px; resize: vertical; font-family: var(--monoFontFamily); padding: 16px; border: 1px solid var(--borderColor); border-radius: var(--radiusNested); background: var(--surfaceColor); color: var(--textColor); }
+.editor-feedback { padding: 12px 16px; font-size: 13px; }
+.kanban-create { align-items: end; margin-bottom: 24px; padding: 16px 20px; background: var(--surfaceColor); border: 0; border-radius: var(--radiusCard); box-shadow: var(--cardShadow); }.kanban-create > label { flex: 1; min-width: 160px; }
+/* Las tres columnas miden lo mismo aunque estén vacías (2026-10-17); el paginador queda al pie. */
+.kanban-board { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; align-items: stretch; }
+.kanban-board > .kanban-column { display: flex; flex-direction: column; }
+.kanban-board > .kanban-column > .column-pager { margin-top: auto; }
+/* Columnas: superficie lateral con un punto de color del estado en el encabezado (ver .kanban-column > header::before). */
+.kanban-column { background: var(--sidebarColor); padding: 12px; border: 1px solid var(--borderColor); border-radius: var(--radiusCard); min-width: 0; --columnTone: var(--infoColor); }
+.column-warning { --columnTone: var(--warningColor); }.column-success { --columnTone: var(--successColor); }
+.kanban-column > header { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin: 4px 4px 12px; }
+.kanban-column > header::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--columnTone); flex-shrink: 0; }
+.kanban-column > header > :first-child { margin-right: auto; }
+.kanban-column.is-drop-target { outline: 2px solid var(--focusColor); outline-offset: -2px; }
+.card-count { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--mutedTextColor); }
+.kanban-card { padding: 16px; margin-bottom: 10px; border: 1px solid var(--borderColor); border-radius: var(--radiusNested); background: var(--surfaceColor); box-shadow: var(--cardShadow); overflow-wrap: anywhere; cursor: grab; }
+.kanban-card:active { cursor: grabbing; }.kanban-card:hover { border-color: var(--strongBorderColor); }
+.kanban-card h2 { font-size: 15px; line-height: 1.45; margin: 10px 0; }.kanban-card p { font-size: 13px; color: var(--mutedTextColor); }
+.card-heading, .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }.card-meta { justify-content: start; color: var(--mutedTextColor); font-size: 12px; margin: 16px 0; }
+.kanban-empty { padding: 24px 8px; font-size: 13px; color: var(--mutedTextColor); }
+@container (max-width: 900px) { .kanban-board { grid-template-columns: repeat(auto-fit,minmax(min(250px,100%),1fr)); }.split-view { grid-template-columns: minmax(0,1fr); } }
+@container (max-width: 460px) { .note-metadata { grid-template-columns: minmax(0,1fr); }.configuration-form, .surface-panel { padding: 14px; } }
+@media (max-width: 760px) { .sidebar { max-width: 100%; }.brand-identity { flex: 1; }.wordmark { max-width: 100%; } }
+/* Tablas de registros (Clientes, Pagos): tarjeta con barra de título, búsqueda y acciones. */
+.table-panel { margin: var(--spaceLarge) 0; overflow: hidden; }
+.table-panel .table-region { margin: 0; border: none; border-radius: 0; border-top: 1px solid var(--borderColor); }
+.table-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spaceMedium); padding: var(--spaceMedium) 20px; }
+.table-note { padding: 0 20px var(--spaceMedium); margin: 0; }
+.table-footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--spaceMedium); padding: 10px 20px; border-top: 1px solid var(--borderColor); font-size: 13px; color: var(--mutedTextColor); }
+.actions-column { text-align: right; white-space: nowrap; }
+.actions-column .action-button + .action-button { margin-left: 6px; }
+tbody th[scope="row"] { background: transparent; color: var(--textColor); font-size: 14px; font-weight: 500; text-transform: none; letter-spacing: 0; }
+tr.is-voided > td:not(.actions-column), tr.is-voided > th { color: var(--mutedTextColor); text-decoration: line-through; }
+/* Barra superior del despacho: usuario, Notas, tema y Cerrar sesión. */
+.user-label { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; font-weight: 500; max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Salida de la animación de arranque (StartupSplash): desvanecido de 250 ms. */
+.splash-leave-active { transition: opacity .25s ease; }
+.splash-leave-to { opacity: 0; }
+@media (max-width: 760px) { .header-copy, .user-label, .connection-label { display: none; } }
+/* Encabezado de página con acción a la derecha (Clientes, Pagos): sin la línea de las secciones internas. */
+/* La acción se alinea con el título, no con el texto de introducción (antes quedaba colgando a media altura). */
+.section-heading.page-heading { border-top: none; padding-top: 0; align-items: flex-start; }
+/* Tablas extensas: se desplazan dentro de su contenedor y la columna de acciones queda fija a la derecha. */
+.table-panel table { min-width: 880px; }
+.table-panel thead th, .table-panel tbody th[scope="row"], .table-panel .nowrap { white-space: nowrap; }
+.table-panel .actions-column { position: sticky; right: 0; background: var(--surfaceColor); box-shadow: inset 1px 0 0 var(--borderColor); }
+/*
+ * El contenido desplazable es el bloque contenedor de sus elementos absolutos (.sr-only, menús de
+ * autocompletado). Sin esto se posicionan respecto del documento y lo alargan bajo el marco fijo:
+ * aparece una segunda barra de desplazamiento y el pie queda a media ventana con zoom o en ancho estrecho.
+ */
+.application-shell { position: relative; }
+main { position: relative; }
+/* Avisos arriba a la derecha, bajo la barra superior y el menú (useNotificationAnchor publica la medida). */
+/* SwipeToast (2026-10-04): la pila sale de abajo a la derecha, por encima del pie de la ventana. */
+/* Sin overflow ni altura máxima: el aviso sube desde abajo, se arrastra y se pliega sin recortarse contra la caja de la
+   pila (corrección 2026-10-04). El límite lo pone notificationStore (3 temporales más los errores). */
+.notification-region { top: auto; bottom: 68px; display: block; padding: 0; overflow: visible; }
+/* Pestañas segmentadas (Fiscal, reportes): carril gris con la opción activa en papel. */
+.segmented-tabs { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: var(--radiusControl); background: var(--subtleColor); box-shadow: inset 0 0 0 1px var(--borderColor); max-width: 100%; }
+.segmented-tabs button { min-height: 34px; padding: 0 14px; border: 0; border-radius: var(--radiusControl); background: transparent; color: var(--mutedTextColor); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+.segmented-tabs button:hover { color: var(--textColor); }
+.segmented-tabs button[aria-selected="true"], .segmented-tabs button[aria-current="page"] { background: var(--surfaceColor); color: var(--textColor); box-shadow: var(--cardShadow); }
+/* Con v-sliding-tabs el fondo de la opción activa lo dibuja la píldora, que se desliza entre opciones. */
+.segmented-tabs.has-sliding-pill { position: relative; isolation: isolate; }
+.segmented-tabs.has-sliding-pill button[aria-selected="true"], .segmented-tabs.has-sliding-pill button[aria-current="page"] { background: transparent; box-shadow: none; }
+.segmented-pill { position: absolute; top: 0; left: 0; z-index: -1; border-radius: var(--radiusControl); background: var(--surfaceColor); box-shadow: var(--cardShadow); pointer-events: none; transition: transform var(--durationFast) var(--easeSmoothOut), width var(--durationFast) var(--easeSmoothOut), height var(--durationFast) var(--easeSmoothOut); }
+/* Cifras (indicadores): etiqueta pequeña en mayúsculas y valor grande con tracking cerrado. */
+.metric-label { font-size: 12px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--mutedTextColor); }
+/* Paneles de Inicio (también los de componentes hijos con varias raíces, que no heredan estilos con alcance). */
+.home-panel { display: grid; gap: var(--spaceMedium); align-content: start; }
+.home-panel .section-heading { margin: 0; border-top: none; padding-top: 0; align-items: flex-start; }
+.home-panel h2 { margin: 0; font-size: 18px; }
+/* Warm Tooltip (Vue Bits, src/shared/vueBits): etiqueta única en body, tinta sobre papel invertido. */
+.warm-tooltip { position: fixed; top: 0; left: 0; z-index: 9999; display: block; pointer-events: none; }
+.warm-tooltip-pop { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border-radius: var(--radiusSmall); background: var(--primaryBackgroundColor); color: var(--primaryTextColor); box-shadow: 0 1px 2px rgb(0 0 0 / 12%), 0 8px 24px -8px rgb(0 0 0 / 45%); }
+.warm-tooltip[data-side="top"] .warm-tooltip-pop { transform-origin: center bottom; }
+.warm-tooltip[data-side="bottom"] .warm-tooltip-pop { transform-origin: center top; }
+.warm-tooltip[data-side="right"] .warm-tooltip-pop { transform-origin: left center; }
+.warm-tooltip[data-side="left"] .warm-tooltip-pop { transform-origin: right center; }
+.warm-tooltip-text { white-space: nowrap; font-size: 12.5px; font-weight: 500; line-height: 1.2; letter-spacing: -.01em; }
+/* El tooltip del menú no debe romper el ancho completo de cada elemento. */
+.navigation-tooltip { display: flex; width: 100%; }
+/*
+ * Modales y cajones (pulido 2026-10-04, transitions.dev "Modal open / close" y "Panel reveal"):
+ * la clase la pone useDialogMotion. Abrir: 250 ms con curva suave; cerrar: 150 ms. El fondo acompaña con opacidad.
+ */
+dialog.motion-dialog { transform-origin: center; transform: scale(var(--scaleModal)); opacity: 0; transition: transform var(--durationFast) var(--easeSmoothOut), opacity var(--durationFast) var(--easeSmoothOut); }
+dialog.motion-dialog.is-open { transform: none; opacity: 1; }
+dialog.motion-dialog.is-closing { transform: scale(var(--scaleModal)); opacity: 0; transition-duration: var(--durationQuick); }
+dialog.motion-dialog::backdrop { opacity: 0; transition: opacity var(--durationFast) var(--easeSmoothOut); }
+dialog.motion-dialog.is-open::backdrop { opacity: 1; }
+dialog.motion-drawer { transform: translateX(100%); transition: transform var(--durationSlow) var(--easeSmoothOut); }
+dialog.motion-drawer.is-open { transform: none; }
+dialog.motion-drawer.is-closing { transform: translateX(100%); transition-duration: var(--durationMedium); }
+dialog.motion-drawer::backdrop { opacity: 0; transition: opacity var(--durationSlow) var(--easeSmoothOut); }
+dialog.motion-drawer.is-open::backdrop { opacity: 1; }
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ * Gramática brutalista (ADR-034). Va al final para prevalecer sobre las reglas anteriores del mismo peso.
+ * Marco de 2 px en tinta + sombra dura; separadores internos con --hairlineColor; acento sólo en lo principal.
+ * ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+/* El lienzo lo pinta :root; body queda transparente para que el fondo Dither (z-index -1) se vea. */
+h1 { font-size: 40px; line-height: 1.05; font-weight: 800; letter-spacing: -.035em; }
+h2 { font-weight: 800; letter-spacing: -.02em; }
+h3 { font-weight: 700; }
+.lede { color: var(--mutedTextColor); }
+
+/* Marco: tarjetas, paneles, avisos, tablas, diálogos y notificaciones. */
+.configuration-form, .surface-panel, .table-panel { border: 2px solid var(--borderColor); box-shadow: var(--cardShadow); }
+.inline-notice, .table-region, .autocomplete-menu { border: 2px solid var(--borderColor); border-radius: 0; }
+.autocomplete-menu { box-shadow: var(--buttonShadow); }
+dialog { border: 2px solid var(--borderColor); box-shadow: var(--overlayShadow); }
+dialog::backdrop { background: rgb(11 11 11 / 55%); backdrop-filter: none; }
+
+/* Botones: bloque con borde de tinta y sombra dura; al presionar se hunden como un sello (sin escala). */
+.action-button { border: 2px solid var(--borderColor); font-weight: 700; box-shadow: var(--buttonShadow); transition-property: background-color, color, transform, box-shadow; }
+.action-button:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shadowInk); }
+.button-primary { background: var(--primaryBackgroundColor); border-color: var(--borderColor); color: var(--primaryTextColor); }
+.button-primary:hover:not(:disabled) { opacity: 1; background: var(--primaryBackgroundColor); filter: brightness(1.12); }
+.button-danger { color: var(--errorColor); border-color: var(--errorColor); box-shadow: 3px 3px 0 var(--errorColor); }
+.button-danger:hover:not(:disabled) { background: var(--errorFill); border-color: var(--errorColor); }
+.action-button:disabled { box-shadow: none; }
+.icon-button { border-radius: 0; }
+/*
+ * Botones parejos (2026-10-10, pedido del usuario: "algunos botones no quedan iguales a los demás"):
+ * - Sólo icono (`.icon-button`: cerrar cajón, ⋯ de los renglones, paginadores, contraer menú): el mismo bloque que
+ *   ActionButton en chico (marco de tinta de 2 px, sombra dura de 2 px y hundido al presionar), ya no un icono suelto.
+ * - Destructivo (`.button-danger`, y HoldButton en su propio componente): mismo alto, peso y sombra dura, en rojo.
+ */
+.icon-button { border: 2px solid var(--borderColor); background: var(--surfaceColor); box-shadow: 2px 2px 0 var(--shadowInk); transition-property: background-color, color, transform, box-shadow; }
+.icon-button:hover:not(:disabled) { background: var(--hoverColor); }
+.icon-button:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--shadowInk); }
+.icon-button:disabled { box-shadow: none; }
+.button-danger:active:not(:disabled) { box-shadow: 0 0 0 var(--errorColor); }
+
+/*
+ * Elemento al que lleva un aviso (revealNavigationItem, 2026-10-10): marco azul tinta por dentro (no lo recortan los
+ * contenedores con overflow) y tres pulsos de resplandor; sin animación con movimiento reducido.
+ */
+/* Desde el 2026-10-17 el marco es el anillo con dithering procedural de DitherFocusRing; aquí sólo queda encima. */
+.is-navigation-target { position: relative; z-index: 1; }
+.is-navigation-target:focus-visible { outline: none; }
+
+/* Campos: borde de tinta de 2 px, papel blanco; el foco es un anillo azul tinta de 3 px. */
+.field input, .field select, .field textarea, .compact-field input, .compact-field select { border: 2px solid var(--borderColor); background: var(--inputColor); }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--borderColor); outline: 3px solid var(--focusColor); outline-offset: 1px; }
+/* El anillo con dithering procedural (DitherFocusRing, 2026-10-17) reemplaza el contorno de los campos de texto. */
+.field input:not([type="checkbox"]):not([type="radio"]):focus, .field select:focus, .field textarea:focus { outline: none; }
+.field label, .compact-field { font-weight: 600; }
+:focus-visible { outline: 3px solid var(--focusColor); outline-offset: 2px; }
+::selection { background: var(--primaryBackgroundColor); color: var(--primaryTextColor); }
+
+/* Estados como sellos de tinta (firma visual): rectángulo con borde y texto del color del estado, mono mayúsculas. */
+.status-label { border-radius: 0; background: var(--surfaceColor); box-shadow: none; border: 2px solid currentColor; padding: 1px 6px; font-family: var(--monoFontFamily); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--textColor); }
+.status-label.tone-success { background: var(--surfaceColor); color: var(--successText); }
+.status-label.tone-warning { background: var(--surfaceColor); color: var(--warningText); }
+.status-label.tone-error { background: var(--surfaceColor); color: var(--errorText); }
+.status-label.tone-info { background: var(--surfaceColor); color: var(--primaryBackgroundColor); }
+
+/* Tablas: marco de 2 px, encabezado en mono mayúsculas sobre línea de tinta, filas con hilo fino. */
+th { color: var(--textColor); font-family: var(--monoFontFamily); font-size: 11px; font-weight: 700; letter-spacing: .06em; border-bottom: 2px solid var(--borderColor); }
+td { border-bottom: 1px solid var(--hairlineColor); }
+tbody tr:hover { background: var(--hoverColor); }
+.table-panel .actions-column { box-shadow: inset 2px 0 0 var(--borderColor); }
+.table-footer { border-top: 2px solid var(--borderColor); }
+.table-panel .table-region { border-top: 2px solid var(--borderColor); }
+
+/* Cifras y datos en Geist Mono. */
+.numeric, .metric-label, .device-id, .card-count { font-family: var(--monoFontFamily); }
+
+/* Barra superior: sigue al tema (papel en Light, papel oscuro en Dark) con línea de tinta, como un membrete. */
+.application-header { background: var(--surfaceColor); color: var(--textColor); border-bottom: 2px solid var(--borderColor); }
+.brand-symbol { border-radius: 0; border: 2px solid var(--borderColor); }
+
+/* Menú lateral como índice: borde de tinta; la opción activa es un bloque azul tinta. */
+.sidebar { border-right: 2px solid var(--borderColor); }
+.navigation-item { border-radius: 0; color: var(--textColor); font-weight: 600; border: 2px solid transparent; }
+.navigation-item:hover { background: var(--hoverColor); border-color: var(--borderColor); }
+.navigation-item[aria-current="page"] { background: var(--primaryBackgroundColor); color: var(--primaryTextColor); border-color: var(--borderColor); box-shadow: var(--buttonShadow); }
+.sidebar-bottom { border-top: 2px solid var(--borderColor); }
+.sidebar-mode { border-radius: 0; border: 2px solid var(--borderColor); }
+footer { border-top: 2px solid var(--borderColor); }
+
+/* Pestañas segmentadas: carril con marco; la píldora deslizante es un bloque azul con texto claro. */
+.segmented-tabs { border-radius: 0; box-shadow: none; border: 2px solid var(--borderColor); background: var(--surfaceColor); padding: 2px; }
+.segmented-tabs button { border-radius: 0; font-weight: 700; color: var(--textColor); }
+.segmented-tabs button[aria-selected="true"], .segmented-tabs button[aria-current="page"] { background: var(--primaryBackgroundColor); color: var(--primaryTextColor); box-shadow: none; }
+.segmented-tabs.has-sliding-pill button[aria-selected="true"], .segmented-tabs.has-sliding-pill button[aria-current="page"] { background: transparent; color: var(--primaryTextColor); }
+.segmented-pill { border-radius: 0; background: var(--primaryBackgroundColor); box-shadow: none; }
+
+/* Superficies del navegador. */
+details > summary { border: 2px solid var(--borderColor); border-radius: 0; font-weight: 700; }
+.warm-tooltip-pop { border-radius: 0; background: var(--inkColor); color: var(--canvasColor); box-shadow: 3px 3px 0 var(--primaryBackgroundColor); }
+.kanban-column, .kanban-card, .kanban-create, .note-workbench, .logo-preview { border: 2px solid var(--borderColor); border-radius: 0; }
+.kanban-card { box-shadow: var(--buttonShadow); }
+.kanban-card:hover { border-color: var(--borderColor); background: var(--hoverColor); }
+/* Contador de filtros activos en el botón "Filtros" (los filtros viven en un modal, 2026-10-04). */
+/* Barra de lista suelta (fuera de .table-panel): mismo marco y mismo relleno que la barra dentro de una tabla. */
+.toolbar-panel { padding: var(--spaceMedium) 20px; margin-bottom: var(--spaceMedium); }
+.toolbar-select { min-height: var(--controlHeight); max-width: 100%; padding: 0 12px; border: 2px solid var(--borderColor); border-radius: 0; background: var(--inputColor); color: var(--textColor); font: inherit; font-weight: 700; }
+.toolbar-title { font-size: 16px; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; }
+.filter-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; margin-left: 2px; background: var(--primaryBackgroundColor); color: var(--primaryTextColor); font-family: var(--monoFontFamily); font-size: 11px; font-weight: 700; }
+/* Datos con forma conocida (RFC, teléfono, dinero) en Geist Mono mientras se capturan. */
+.field input.formatted-mono { font-family: var(--monoFontFamily); letter-spacing: .02em; }
+
+/*
+ * Radios y casillas (2026-10-04, pedido del usuario). Referencias: "Pure CSS Custom Styled Radio Buttons" (Modern CSS)
+ * y los controles neobrutalistas (trazo grueso, sombra dura, se marcan con un sello):
+ * - Se conserva el input nativo con `appearance: none` (nunca display: none): teclado, lector de pantalla y formularios
+ *   funcionan igual.
+ * - Radio: círculo de 20 px con trazo de 2 px; al marcarse aparece el punto azul tinta (escala 0 → 1) y una sombra dura.
+ * - Casilla: cuadro de 20 px; al marcarse se llena de azul tinta con la palomita en papel.
+ * - Foco con el anillo azul de toda la app; deshabilitado al 50 %.
+ * - `.choice-card`: opción enmarcada (etiqueta que envuelve un radio o una casilla); la elegida se resalta completa.
+ */
+input[type="radio"], input[type="checkbox"] { appearance: none; -webkit-appearance: none; display: inline-grid; place-content: center; flex: none; width: 20px; height: 20px; margin: 0; border: 2px solid var(--borderColor); background: var(--inputColor); color: var(--textColor); cursor: pointer; transition-property: background-color, box-shadow, transform; transition-duration: var(--durationQuick, 150ms); transition-timing-function: var(--easeSmoothOut, ease-out); }
+input[type="radio"] { border-radius: 50%; }
+input[type="radio"]::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--primaryBackgroundColor); transform: scale(0); transition: transform var(--durationQuick, 150ms) var(--easeSmoothOut, ease-out); }
+input[type="checkbox"]::before { content: ""; width: 12px; height: 12px; background: var(--primaryTextColor); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); transform: scale(0); transition: transform var(--durationQuick, 150ms) var(--easeSmoothOut, ease-out); }
+input[type="radio"]:checked, input[type="checkbox"]:checked { box-shadow: 2px 2px 0 var(--borderColor); }
+input[type="checkbox"]:checked { background: var(--primaryBackgroundColor); }
+input[type="radio"]:checked::before, input[type="checkbox"]:checked::before { transform: scale(1); }
+input[type="radio"]:hover:not(:disabled, :checked), input[type="checkbox"]:hover:not(:disabled, :checked) { background: var(--hoverColor); }
+input[type="radio"]:active:not(:disabled), input[type="checkbox"]:active:not(:disabled) { transform: translate(1px, 1px); box-shadow: none; }
+input[type="radio"]:focus-visible, input[type="checkbox"]:focus-visible { outline: 3px solid var(--focusColor); outline-offset: 2px; }
+input[type="radio"]:disabled, input[type="checkbox"]:disabled { opacity: .5; cursor: not-allowed; }
+.choice-card { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border: 2px solid var(--hairlineColor); background: var(--surfaceColor); cursor: pointer; transition-property: border-color, background-color, box-shadow; transition-duration: var(--durationQuick, 150ms); }
+.choice-card:hover { border-color: var(--borderColor); }
+.choice-card:has(input:checked) { border-color: var(--borderColor); background: var(--subtleColor); box-shadow: var(--buttonShadow); }
+.choice-card:has(input:focus-visible) { outline: 3px solid var(--focusColor); outline-offset: 2px; }
+.choice-card > input { margin-top: 1px; }
+
+
+/*
+ * Combos (2026-10-04, pedido del usuario): el <select> sigue siendo nativo (teclado, lector de pantalla, formularios y
+ * pruebas igual), pero con `appearance: base-select` (Chromium de Electron 44) la lista desplegable también lleva el
+ * diseño de la app: marco de 2 px, sombra dura, opción activa remarcada y la elegida en azul tinta con palomita.
+ * La flecha gira al abrir. La barra de Notas conserva su select compacto (.ribbon-select).
+ */
+select:not(.ribbon-select), select:not(.ribbon-select)::picker(select) { appearance: base-select; }
+/* Un solo renglón (2026-10-12): un texto largo se recorta en lugar de crecer más alto que los demás controles; la lista abierta sí se acomoda en varios. */
+select:not(.ribbon-select) { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; overflow: hidden; }
+select:not(.ribbon-select)::picker(select) { white-space: normal; }
+select:not(.ribbon-select) > button { display: contents; }
+select:not(.ribbon-select) selectedcontent { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* flex: none: con un texto largo la flecha se encogía y parecía una ✓. */
+select:not(.ribbon-select)::picker-icon { flex: none; content: ""; width: 10px; height: 10px; margin-left: auto; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform var(--durationQuick, 150ms) var(--easeSmoothOut, ease-out); }
+select:not(.ribbon-select):open::picker-icon { transform: translateY(2px) rotate(-135deg); }
+select:not(.ribbon-select):open { outline: 3px solid var(--focusColor); outline-offset: 1px; }
+select:not(.ribbon-select)::picker(select) { margin-top: 4px; padding: 4px; border: 2px solid var(--borderColor); background: var(--surfaceColor); color: var(--textColor); box-shadow: var(--buttonShadow); max-height: 320px; overflow-y: auto; opacity: 1; transform: translateY(0); transition: opacity var(--durationQuick, 150ms) var(--easeSmoothOut, ease-out), transform var(--durationQuick, 150ms) var(--easeSmoothOut, ease-out), overlay var(--durationQuick, 150ms) allow-discrete, display var(--durationQuick, 150ms) allow-discrete; }
+@starting-style { select:not(.ribbon-select):open::picker(select) { opacity: 0; transform: translateY(-4px); } }
+select:not(.ribbon-select) option { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 10px; border: 2px solid transparent; font-weight: 600; cursor: pointer; }
+select:not(.ribbon-select) option:hover, select:not(.ribbon-select) option:focus-visible { border-color: var(--borderColor); background: var(--hoverColor); outline: none; }
+select:not(.ribbon-select) option:checked { background: var(--primaryBackgroundColor); color: var(--primaryTextColor); }
+select:not(.ribbon-select) option::checkmark { order: 1; margin-left: auto; content: "✓"; font-weight: 800; }
+select:not(.ribbon-select) option:disabled { opacity: .45; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) { select:not(.ribbon-select)::picker(select), select:not(.ribbon-select)::picker-icon { transition: none; } }

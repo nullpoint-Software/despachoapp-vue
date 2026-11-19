@@ -1,27 +1,9 @@
-import './assets/main.css'
-
+import { motionDirective } from './shared/motion/motionDirective'
+import { slidingTabsDirective } from './shared/motion/slidingTabsDirective'
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import App from './App/App.vue'
-import router from './router'
-import { initializePalette } from './composables/useColorPalette'
-import { initializeFontSize } from './composables/useFontSize'
-import { initializeFontFamily } from './composables/useFontFamily'
-import { tooltipDirective } from './directives/tooltip'
-import { imageFallbackDirective } from './directives/imageFallback'
-import { registerGlobalComponents } from './plugins/globalComponents'
-import { installModalInteractions } from './utils/modalInteractions'
-
-const app = createApp(App)
-initializePalette()
-initializeFontSize()
-installModalInteractions()
-initializeFontFamily()
-const pinia = createPinia()
-
-app.use(pinia)
-app.use(router)
-app.directive('tooltip', tooltipDirective)
-app.directive('image-fallback', imageFallbackDirective)
-registerGlobalComponents(app)
-app.mount('#app')
+import App from './App.vue'
+// Geist (OFL-1.1) empaquetada con la aplicación: nunca se descarga en tiempo de ejecución.
+import '@fontsource-variable/geist/wght.css'
+import '@fontsource-variable/geist-mono/wght.css'
+import './shared/styles/base.css'
+createApp(App).directive('motion', motionDirective).directive('sliding-tabs', slidingTabsDirective).mount('#app')

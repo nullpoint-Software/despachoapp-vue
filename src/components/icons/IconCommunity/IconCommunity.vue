@@ -1,1 +1,0 @@
-<template src="./IconCommunity.html" />
