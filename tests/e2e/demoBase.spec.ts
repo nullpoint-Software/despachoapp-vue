@@ -14,6 +14,11 @@ test('shows the banner and the demo access on load', async ({ page }) => {
   await expect(page.getByTestId('demo-banner')).toContainText('Demo · los datos se borran al recargar · SAT y correo simulados')
   await expect(page.getByTestId('demo-access')).toBeVisible()
   await expect(page.getByTestId('demo-access').locator('[data-testid^="demo-profile-"]')).toHaveCount(3)
+  // Las tarjetas muestran el rol y su retrato, no el nombre de la persona ficticia.
+  const administratorCard = page.getByTestId('demo-profile-administrator')
+  await expect(administratorCard).toContainText('Administrador')
+  await expect(administratorCard).not.toContainText('Ana Torres')
+  await expect(administratorCard.locator('img')).toHaveJSProperty('complete', true)
 })
 
 test('enters as Administrador and lands on Inicio', async ({ page }) => {

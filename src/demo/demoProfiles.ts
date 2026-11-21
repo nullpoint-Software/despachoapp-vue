@@ -7,13 +7,14 @@ import { noWorkspaceAccess, type WorkspaceAccess } from '../../shared/contracts/
  */
 export type DemoProfileId = 'administrator' | 'accountant' | 'assistant'
 
-export interface DemoProfile { profileId: DemoProfileId; username: string; displayName: string; roleName: string; access: WorkspaceAccess }
+/** `roleSummary` describe en una línea qué ve ese rol; la entrada de la demo lo muestra en lugar del nombre. */
+export interface DemoProfile { profileId: DemoProfileId; username: string; displayName: string; roleName: string; roleSummary: string; access: WorkspaceAccess }
 
 /** Contraseña pública a propósito: así la reconfirmación de ADR-038 se puede ejercitar en la demo. */
 export const demoPassword = 'demo1234'
 
 export const demoProfiles: readonly DemoProfile[] = [
-  { profileId: 'administrator', username: 'admin.demo', displayName: 'Ana Torres', roleName: 'Administrador', access: { ...noWorkspaceAccess } },
-  { profileId: 'accountant', username: 'contador.demo', displayName: 'Luis Méndez', roleName: 'Contador', access: { ...noWorkspaceAccess } },
-  { profileId: 'assistant', username: 'auxiliar.demo', displayName: 'Carla Ruiz', roleName: 'Auxiliar', access: { ...noWorkspaceAccess } }
+  { profileId: 'administrator', username: 'admin.demo', displayName: 'Ana Torres', roleName: 'Administrador', roleSummary: 'Todo el despacho y el equipo', access: { ...noWorkspaceAccess } },
+  { profileId: 'accountant', username: 'contador.demo', displayName: 'Luis Méndez', roleName: 'Contador', roleSummary: 'Clientes, fiscal y cumplimiento', access: { ...noWorkspaceAccess } },
+  { profileId: 'assistant', username: 'auxiliar.demo', displayName: 'Carla Ruiz', roleName: 'Auxiliar', roleSummary: 'Tareas, cobros y notas', access: { ...noWorkspaceAccess } }
 ]
