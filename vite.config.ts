@@ -1,65 +1,16 @@
-import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import vueDevTools from 'vite-plugin-vue-devtools'
-import tailwindcss from '@tailwindcss/vite'
-import { VitePWA } from 'vite-plugin-pwa'
-import { externalSfcSetupPlugin } from './build/externalSfcSetupPlugin'
 
-// https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
-  plugins: [
-    externalSfcSetupPlugin(),
-    vue(),
-    vueJsx(),
-    vueDevTools(),
-    tailwindcss(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['/icons/favicon.ico', '/icons/apple-touch-icon.png', '/icons/favicon.svg'],
-      manifest: {
-        name: 'ContaApp',
-        short_name: 'ContaApp',
-        description: 'App para el despacho contable sanchez',
-        theme_color: '#ffffff',
-        icons: [
-          {
-            src: '/icons/web-app-manifest-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: '/icons/web-app-manifest-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: '/icons/web-app-manifest-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any'
-          },
-          {
-            src: '/icons/web-app-manifest-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any'
-          }
-        ]
-      }
-    })
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+// Static browser build: the renderer lives in src/ and is emitted to dist/.
+export default defineConfig({
+  root: 'src',
+  publicDir: false,
+  build: { outDir: '../dist', emptyOutDir: true },
+  plugins: [vue({ template: { compilerOptions: { isCustomElement: tag => tag === 'selectedcontent' } } }), {
+    name: 'development-content-policy',
+    // Vite needs inline styles and HMR websockets only during `vite dev`; the build keeps the strict CSP.
+    transformIndexHtml(html, context) {
+      return context.server ? html.replace("style-src 'self'", "style-src 'self' 'unsafe-inline'").replace("connect-src 'self'", "connect-src 'self' ws:") : html
     }
-  },
-  optimizeDeps: {
-    include: ['chart.js', 'vue-chartjs']
-  },
-  esbuild: {
-    drop: mode === 'production' ? ['console', 'debugger'] : []
-  }
-}))
+  }]
+})

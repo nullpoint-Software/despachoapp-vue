@@ -1,42 +1,12 @@
-# Logs
-/logs/
+node_modules
+dist
+test-results
+playwright-report
 *.log
-*.log.*
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Local Codex artifacts
+.vercel
+/docs/Obsidian/
+.env
+.env.*
 /.codex/
 /.codex-*
-
-node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
-*.local
-env.d.ts
-
-/cypress/videos/
-/cypress/screenshots/
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-*.tsbuildinfo
-.env
-public/build-time.txt
-/local-printer/out/
-
-# Temporary working files
 /tmp/

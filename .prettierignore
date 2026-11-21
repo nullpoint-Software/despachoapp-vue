@@ -1,2 +1,0 @@
-# External Vue templates are validated by Vite and cannot be parsed safely in isolation.
-src/**/*.html

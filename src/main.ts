@@ -1,27 +1,19 @@
-import './assets/main.css'
-
+import { motionDirective } from './shared/motion/motionDirective'
+import { slidingTabsDirective } from './shared/motion/slidingTabsDirective'
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import App from './App/App.vue'
-import router from './router'
-import { initializePalette } from './composables/useColorPalette'
-import { initializeFontSize } from './composables/useFontSize'
-import { initializeFontFamily } from './composables/useFontFamily'
-import { tooltipDirective } from './directives/tooltip'
-import { imageFallbackDirective } from './directives/imageFallback'
-import { registerGlobalComponents } from './plugins/globalComponents'
-import { installModalInteractions } from './utils/modalInteractions'
+import App from './App.vue'
+import { createDemoApi } from './demo/createDemoApi'
+import { createDemoStore } from './demo/demoStore'
+// Geist (OFL-1.1) empaquetada con la aplicación: nunca se descarga en tiempo de ejecución.
+import '@fontsource-variable/geist/wght.css'
+import '@fontsource-variable/geist-mono/wght.css'
+import './shared/styles/base.css'
 
-const app = createApp(App)
-initializePalette()
-initializeFontSize()
-installModalInteractions()
-initializeFontFamily()
-const pinia = createPinia()
+/** `localStorage` puede lanzar al accederlo (modo privado, datos bloqueados): la demo sigue sin persistir preferencias. */
+function readBrowserStorage(): Storage | null {
+  try { return window.localStorage } catch { return null }
+}
 
-app.use(pinia)
-app.use(router)
-app.directive('tooltip', tooltipDirective)
-app.directive('image-fallback', imageFallbackDirective)
-registerGlobalComponents(app)
-app.mount('#app')
+// Un store nuevo en cada carga de página es lo que hace que los datos desaparezcan al recargar.
+window.contapp = createDemoApi(createDemoStore(), { storage: readBrowserStorage(), reloadPage: () => window.location.reload() })
+createApp(App).directive('motion', motionDirective).directive('sliding-tabs', slidingTabsDirective).mount('#app')
